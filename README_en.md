@@ -598,7 +598,7 @@ four tokens `A`, `B`, `C`, `D`, and choose the one with the highest probability 
 against the standard answer. Note that minimind models were not trained on larger datasets or fine-tuned for question
 answering, so results should be considered as reference only.
 
-* For example, detailed results for minimind-small:
+>For example, detailed results for minimind-small:
 
 | category                                     | Correct/Total | Accuracy |
 |----------------------------------------------|---------------|----------|
