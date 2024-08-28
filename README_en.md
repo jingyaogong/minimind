@@ -45,7 +45,7 @@ exacerbates the problem of finding quality content to understand LLMs, severely 
 Therefore, the goal of this project is to lower the barrier to entry for working with LLMs as much as possible, by
 training an extremely lightweight language model from scratch.
 
-(As of August 27, 2024) The initial release of MiniMind includes three model variants, with the smallest being just
+(As of August 28, 2024) The initial release of MiniMind includes four model variants, with the smallest being just
 26MB (0.02B) and still exhibiting amazing conversational capabilities!
 
 | Model (Size)           | Speed (Tokens/s) | Inference Memory | Training Memory (`batch_size=8`) | 
@@ -73,7 +73,7 @@ We hope this open-source project helps LLM beginners get started quickly!
 👉**Recent Updates**
 
 <details close> 
-<summary> <b>2024-08-27</b> </summary>
+<summary> <b>2024-08-28</b> </summary>
  - Project first open-sourced
 </details>
 
@@ -206,7 +206,7 @@ git clone https://github.com/jingyaogong/minimind.git
   performance in practical tests, with almost no failures in decoding rare words.
 
   > For comparison purposes, an additional custom Tokenizer version **MiniMind(-T)** was trained, reducing the
-  vocabulary size to 6,400, which further decreases the total model parameters to around 40M.
+  vocabulary size to 6,400, which further decreases the total model parameters to around 26M.
 
 ---
 
