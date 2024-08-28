@@ -10,17 +10,15 @@
 </div>
 
 <div align="center">
+  <h3>"大道至简"</h3>
+</div>
+
+<div align="center">
 
 中文 | [English](./README_en.md)
 
 </div>
 
-
-<p align="center">
-  <span style="font-size: 2em; font-weight: bold;">
-    “大道至简”<br/>
-  </span>
-</p>
 
 * 本开源项目旨在完全从0开始，训练出仅为26M大小的微型语言模型**MiniMind**。
 * **MiniMind**极其轻量，体积约是 GPT3 的 $\frac{1}{7000}$，力求做到CPU也可快速推理甚至训练。
@@ -182,8 +180,7 @@ python 2-eval.py
 
 ---
 
--
-📙【Pretrain数据】：[seq-monkey通用文本数据集](https://github.com/mobvoi/seq-monkey-data/blob/main/docs/pretrain_open_corpus.md)
+- 📙【Pretrain数据】：[seq-monkey通用文本数据集](https://github.com/mobvoi/seq-monkey-data/blob/main/docs/pretrain_open_corpus.md)
 是由多种公开来源的数据（如网页、百科、博客、开源代码、书籍等）汇总清洗而成。
 整理成统一的JSONL格式，并经过了严格的筛选和去重，确保数据的全面性、规模、可信性和高质量。
 总量大约在10B token，适合中文大语言模型的预训练。

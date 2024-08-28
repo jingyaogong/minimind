@@ -8,17 +8,17 @@
 [![Collection](https://img.shields.io/badge/🤗-MiniMind%20%20Collection-blue)](https://huggingface.co/collections/jingyaogong/minimind-66caf8d999f5c7fa64f399e5)
 
 </div>
+
+<div align="center">
+  <h3>"The Greatest Path is the Simplest"</h3>
+</div>
+
 <div align="center">
 
 [中文](./README.md) | English
 
 </div>
 
-<p align="center">
-  <span style="font-size: 1.5em; font-weight: bold;">
-    "The Greatest Path is the Simplest"<br/>
-  </span>
-</p>
 
 * This open-source project aims to train a miniature language model **MiniMind** from scratch, with a size of just 26MB.
 * **MiniMind** is extremely lightweight, approximately $\frac{1}{7000}$ the size of GPT-3, designed to enable fast
