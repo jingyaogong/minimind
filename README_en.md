@@ -192,7 +192,7 @@ git clone https://github.com/jingyaogong/minimind.git
   sizes:
 
   | Tokenizer Model      | Vocabulary Size | Source                |
-        |----------------------|------------------|-----------------------|
+  |----------------------|------------------|-----------------------|
   | yi tokenizer         | 64,000           | 01-AI (China)         |
   | qwen2 tokenizer      | 151,643          | Alibaba Cloud (China) |
   | glm tokenizer        | 151,329          | Zhipu AI (China)      |
