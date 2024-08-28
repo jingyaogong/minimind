@@ -2,8 +2,8 @@
 <div align="center">
 
 [![GitHub Repo stars](https://img.shields.io/github/stars/jingyaogong/minimind?style=social)](https://github.com/jingyaogong/minimind/stargazers)
-[![GitHub Code License](https://img.shields.io/github/license/jingyaogong/minimind)](LICENSE)
-[![GitHub last commit](https://img.shields.io/github/last-commit/hiyouga/LLaMA-Factory)](https://github.com/hiyouga/LLaMA-Factory/commits/main)
+[![GitHub Code License](https://img.shields.io/github/license/jingyaogong/minimind)](https://img.shields.io/github/license/hiyouga/LLaMA-Factory)
+[![GitHub last commit](https://img.shields.io/github/last-commit/jingyaogong/minimind)](https://github.com/jingyaogong/minimind/commits/master)
 [![GitHub pull request](https://img.shields.io/badge/PRs-welcome-blue)](https://github.com/jingyaogong/minimind/pulls)
 [![Collection](https://img.shields.io/badge/🤗-MiniMind%20%20Collection-blue)](https://huggingface.co/collections/jingyaogong/minimind-66caf8d999f5c7fa64f399e5)
 
@@ -19,6 +19,7 @@
 
 </div>
 
+![1](https://img.shields.io/github/license/jingyaogong/minimind)
 
 * 本开源项目旨在完全从0开始，训练出仅为26M大小的微型语言模型**MiniMind**。
 * **MiniMind**极其轻量，体积约是 GPT3 的 $\frac{1}{7000}$，力求做到CPU也可快速推理甚至训练。
@@ -573,9 +574,12 @@ minimind模型本身没有使用较大的数据集训练，也没有针对回答
 | fire_engineer_val                 | 9/31           | 29.03%     |
 | middle_school_geography_val       | 1/12           | 8.33%      |
 
-**总题数**: 1346  
-**总正确数**: 316  
-**总正确率**: 23.48%
+```text
+总题数: 1346  
+总正确数: 316  
+总正确率: 23.48%
+```
+
 ---
 
 #### 结果汇总：
@@ -681,7 +685,16 @@ MiniMind的huggingface集合地址：[MiniMind](https://huggingface.co/collectio
 * [ChatLM-mini-Chinese](https://github.com/charent/ChatLM-mini-Chinese)
 * [Zero-Chatgpt](https://github.com/AI-Study-Han/Zero-Chatgpt/tree/main)
 
+## ✨Top contributors
+<a href="https://github.com/jingyaogong/minimind/graphs/contributors">
+  <img src="https://contrib.rocks/image?repo=jingyaogong/minimind" />
+</a>
+
 # 📌 Statement
 
 本项目不承担开源模型和代码导致的数据安全、舆情风险或发生任何模型被误导、滥用、传播、不当利用而产生的风险和责任。
 
+
+## License
+
+This repository is licensed under the [Apache-2.0 License](LICENSE).

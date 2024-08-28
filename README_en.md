@@ -3,9 +3,10 @@
 
 [![GitHub Repo stars](https://img.shields.io/github/stars/jingyaogong/minimind?style=social)](https://github.com/jingyaogong/minimind/stargazers)
 [![GitHub Code License](https://img.shields.io/github/license/jingyaogong/minimind)](LICENSE)
-[![GitHub last commit](https://img.shields.io/github/last-commit/hiyouga/LLaMA-Factory)](https://github.com/hiyouga/LLaMA-Factory/commits/main)
+[![GitHub last commit](https://img.shields.io/github/last-commit/jingyaogong/minimind)](https://github.com/jingyaogong/minimind/commits/master)
 [![GitHub pull request](https://img.shields.io/badge/PRs-welcome-blue)](https://github.com/jingyaogong/minimind/pulls)
 [![Collection](https://img.shields.io/badge/🤗-MiniMind%20%20Collection-blue)](https://huggingface.co/collections/jingyaogong/minimind-66caf8d999f5c7fa64f399e5)
+
 
 </div>
 
@@ -768,6 +769,19 @@ Special thanks to the following open-source projects for their inspiration and d
 * [ChatLM-mini-Chinese](https://github.com/charent/ChatLM-mini-Chinese)
 * [Zero-Chatgpt](https://github.com/AI-Study-Han/Zero-Chatgpt/tree/main)
 
+
+## ✨Top contributors
+<a href="https://github.com/jingyaogong/minimind/graphs/contributors">
+  <img src="https://contrib.rocks/image?repo=jingyaogong/minimind" />
+</a>
+
 # 📌 Statement
 
 This project does not assume responsibility for data security, public opinion risks, or any risks and liabilities arising from model misguidance, misuse, dissemination, or improper use related to open-source models and code.
+
+
+
+
+## License
+
+This repository is licensed under the [Apache-2.0 License](LICENSE).
