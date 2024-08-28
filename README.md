@@ -2,7 +2,7 @@
 <div align="center">
 
 [![GitHub Repo stars](https://img.shields.io/github/stars/jingyaogong/minimind?style=social)](https://github.com/jingyaogong/minimind/stargazers)
-[![GitHub Code License](https://img.shields.io/github/license/jingyaogong/minimind)](https://img.shields.io/github/license/hiyouga/LLaMA-Factory)
+[![GitHub Code License](https://img.shields.io/github/license/jingyaogong/minimind)](LICENSE)
 [![GitHub last commit](https://img.shields.io/github/last-commit/jingyaogong/minimind)](https://github.com/jingyaogong/minimind/commits/master)
 [![GitHub pull request](https://img.shields.io/badge/PRs-welcome-blue)](https://github.com/jingyaogong/minimind/pulls)
 [![Collection](https://img.shields.io/badge/🤗-MiniMind%20%20Collection-blue)](https://huggingface.co/collections/jingyaogong/minimind-66caf8d999f5c7fa64f399e5)
@@ -18,8 +18,6 @@
 中文 | [English](./README_en.md)
 
 </div>
-
-![1](https://img.shields.io/github/license/jingyaogong/minimind)
 
 * 本开源项目旨在完全从0开始，训练出仅为26M大小的微型语言模型**MiniMind**。
 * **MiniMind**极其轻量，体积约是 GPT3 的 $\frac{1}{7000}$，力求做到CPU也可快速推理甚至训练。
