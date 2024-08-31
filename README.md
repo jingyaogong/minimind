@@ -1,6 +1,7 @@
 ![logo](./images/logo.png)
 <div align="center">
 
+![visitors](https://visitor-badge.laobi.icu/badge?page_id=jingyaogong/minimind)
 [![GitHub Repo stars](https://img.shields.io/github/stars/jingyaogong/minimind?style=social)](https://github.com/jingyaogong/minimind/stargazers)
 [![GitHub Code License](https://img.shields.io/github/license/jingyaogong/minimind)](LICENSE)
 [![GitHub last commit](https://img.shields.io/github/last-commit/jingyaogong/minimind)](https://github.com/jingyaogong/minimind/commits/master)
@@ -38,14 +39,15 @@
 因此，本项目的目标是把上手LLM的门槛无限降低，
 直接从0开始训练一个极其轻量的语言模型。
 
-（截至2024.8.28）MiniMind首发包含4个型号模型，最小仅需26M（0.02B），即可具备Amazing的对话能力！
+（截至2024.09.01）MiniMind包含5个型号模型，最小仅需26M（0.02B），即可具备Amazing的对话能力！
 
-| 模型 (大小)                | 速度 (Tokens/s) | 推理占用   | 训练占用(`batch_size=8`) | 
-|------------------------|---------------|--------|----------------------|
-| MiniMind-small-T (26M) | 91.9          | 0.5 GB | 3.6 GB               |
-| MiniMind-small (56M)   | 85.2          | 0.7 GB | 4.5 GB               |
-| MiniMind (218M)        | 57.6          | 2.1 GB | 10.4 GB              |
-| MiniMind-MoE (166M)    | 64.9          | 1.6 GB | 7.4 GB               |
+| 模型 (大小)                | 速度 (Tokens/s) | 推理占用   | 训练占用(`batch_size=8`) | release            | 主观评分（/100） | 
+|------------------------|---------------|--------|----------------------|--------------------|------------|
+| MiniMind-small-T (26M) | 91.9          | 0.5 GB | 3.6 GB               | 2024.08.28         | 55'        |
+| MiniMind-small (56M)   | 85.2          | 0.7 GB | 4.5 GB               | 2024.08.28         | 55'        |
+| MiniMind (218M)        | 57.6          | 2.1 GB | 10.4 GB              | 2024.08.28         | 75'        |
+| MiniMind-MoE (166M)    | 64.9          | 1.6 GB | 7.4 GB               | 2024.08.28         | 40'        |
+| MiniMind-V1 (108M)     | 78.3          | 1.0 GB | 6.4 GB               | 2024.09.01 (new🎉) | 80'        |
 
 > 该分析在一个带有Torch 2.1.2、CUDA 12.2和Flash Attention 2的RTX 3090 GPU上运行。
 
@@ -64,6 +66,8 @@
 👉**最近更新**
 
 <details close> 
+<summary> <b>2024-09-01 (new🎉)</b> </summary>
+ - 更新MiniMind-V1 (108M)模型，采用minimind_tokenizer，预训练轮次3 + SFT轮次10，更充分训练，性能更强。
 <summary> <b>2024-08-27</b> </summary>
  - 项目首次开源
 </details>
@@ -115,30 +119,30 @@ python 2-eval.py
     * 2.6 `python 4-lora_sft.py` 执行lora微调（非必须）。
     * 2.7 `python 5-dpo_train.py` 执行DPO人类偏好强化学习对齐（非必须）。
 * 3、测试模型推理效果
-  * 从下面【训练完成的模型权重】下载权重到`./out/`目录下
-     ```text
-    out
-    ├── multi_chat
-    │   ├── full_sft_1024.pth
-    │   ├── full_sft_512.pth
-    │   ├── full_sft_640_moe.pth
-    │   └── full_sft_640.pth
-    ├── single_chat
-    │   ├── full_sft_1024.pth
-    │   ├── full_sft_512.pth
-    │   ├── full_sft_640_moe.pth
-    │   └── full_sft_640.pth
-    ├── full_sft_1024.pth
-    ├── full_sft_512.pth
-    ├── full_sft_640_moe.pth
-    ├── full_sft_640.pth
-    ├── pretrain_1024.pth
-    ├── pretrain_640_moe.pth
-    ├── pretrain_640.pth
-    ```
-  * `python 0-eval_pretrain.py`测试预训练模型的接龙效果
-  * `python 2-eval.py`测试模型的对话效果
-    ![2-eval](./images/2-eval.png)
+    * 从下面【训练完成的模型权重】下载权重到`./out/`目录下
+       ```text
+      out
+      ├── multi_chat
+      │   ├── full_sft_1024.pth
+      │   ├── full_sft_512.pth
+      │   ├── full_sft_640_moe.pth
+      │   └── full_sft_640.pth
+      ├── single_chat
+      │   ├── full_sft_1024.pth
+      │   ├── full_sft_512.pth
+      │   ├── full_sft_640_moe.pth
+      │   └── full_sft_640.pth
+      ├── full_sft_1024.pth
+      ├── full_sft_512.pth
+      ├── full_sft_640_moe.pth
+      ├── full_sft_640.pth
+      ├── pretrain_1024.pth
+      ├── pretrain_640_moe.pth
+      ├── pretrain_640.pth
+      ```
+    * `python 0-eval_pretrain.py`测试预训练模型的接龙效果
+    * `python 2-eval.py`测试模型的对话效果
+      ![2-eval](./images/2-eval.png)
 
 🍭 【Tip】预训练和全参微调pretrain和full_sft均支持DDP多卡加速
 
@@ -163,7 +167,7 @@ python 2-eval.py
   强大的开源模型例如01万物、千问、chatglm、mistral、Llama3等，它们的tokenizer词表长度如下：
 
   | Tokenizer 模型       | 词表大小    | 来源         | 
-  |--------------------|---------|------------|
+                        |--------------------|---------|------------|
   | yi tokenizer       | 64,000  | 01万物（中国）   |
   | qwen2 tokenizer    | 151,643 | 阿里云（中国）    |
   | glm tokenizer      | 151,329 | 智谱AI（中国）   |
@@ -179,7 +183,9 @@ python 2-eval.py
 
 ---
 
-- 📙【Pretrain数据】：[seq-monkey通用文本数据集](https://github.com/mobvoi/seq-monkey-data/blob/main/docs/pretrain_open_corpus.md)
+-
+
+📙【Pretrain数据】：[seq-monkey通用文本数据集](https://github.com/mobvoi/seq-monkey-data/blob/main/docs/pretrain_open_corpus.md)
 是由多种公开来源的数据（如网页、百科、博客、开源代码、书籍等）汇总清洗而成。
 整理成统一的JSONL格式，并经过了严格的筛选和去重，确保数据的全面性、规模、可信性和高质量。
 总量大约在10B token，适合中文大语言模型的预训练。
@@ -252,7 +258,8 @@ MiniMind的整体结构一致，只是在RoPE计算、推理函数和FFN层的�
 | minimind-small-T | 26M    | 6400      | 8        | 512     | 8        | 16      | -           | -    |
 | minimind-small   | 56M    | 32000     | 8        | 640     | 8        | 16      | -           | -    |
 | minimind         | 218M   | 32000     | 16       | 1024    | 8        | 16      | -           | -    |
-| minimind-MoE     | 166M   | 32000     | 8        | 640     | 8        | 16      | 2+4         | 2    |
+| minimind-MoE     | 162M   | 32000     | 8        | 640     | 8        | 16      | 2+4         | 2    |
+| minimind-V1      | 108M   | 6400      | 16       | 768     | 8        | 16      | -           | -    |
 
 此外作为参考，GPT3的层数和维度参数见下表：
 ![gpt3_config.png](./images/gpt3_config.png)
@@ -272,6 +279,7 @@ CPU: Intel(R) Core(TM) i9-10980XE CPU @ 3.00GHz
 | minimind-small   | 56M    | 32000     | 24         | ≈6 hour (1 epoch)  | ≈2 hour (1 epoch) | ≈0.5 hour (1 epoch) |
 | minimind         | 218M   | 32000     | 16         | ≈15 hour (1 epoch) | ≈5 hour (1 epoch) | ≈1 hour (1 epoch)   |
 | minimind-MoE     | 166M   | 32000     | 16         | ≈13 hour (1 epoch) | ≈5 hour (1 epoch) | ≈1 hour (1 epoch)   |
+| minimind-V1      | 108M   | 6400      | 16         | ≈8 hour (1 epoch)  | ≈3 hour (1 epoch) | ≈1 hour (1 epoch)   |
 
 ---
 
@@ -323,6 +331,7 @@ CPU: Intel(R) Core(TM) i9-10980XE CPU @ 3.00GHz
 | minimind-small   | 56M    | d_model=640<br/>n_layers=8                      | [链接](https://pan.baidu.com/s/1nJuOpnu5115FDuz6Ewbeqg?pwd=6666) | [链接](https://pan.baidu.com/s/1lRX0IcpjNFSySioeCfifRQ?pwd=6666) | [链接](https://pan.baidu.com/s/1LzVxBpL0phtGUH267Undqw?pwd=6666) |
 | minimind         | 218M   | d_model=1024<br/>n_layers=16                    | [链接](https://pan.baidu.com/s/1jzA7uLEi-Jen2fW5olCmEg?pwd=6666) | [链接](https://pan.baidu.com/s/1Hvt0Q_UB_uW2sWTw6w1zRQ?pwd=6666) | [链接](https://pan.baidu.com/s/1fau9eat3lXilnrG3XNhG5Q?pwd=6666) |
 | minimind-MoE     | 166M   | d_model=1024<br/>n_layers=8<br/>share+route=2+4 | [链接](https://pan.baidu.com/s/11CneDVTkw2Y6lNilQX5bWw?pwd=6666) | [链接](https://pan.baidu.com/s/1fRq4MHZec3z-oLK6sCzj_A?pwd=6666) | [链接](https://pan.baidu.com/s/1HC2KSM_-RHRtgv7ZDkKI9Q?pwd=6666) |
+| minimind-V1      | 108M   | d_model=768<br/>n_layers=16 | -                                                              | [链接](https://pan.baidu.com/s/1p713loS7EfwHQf3G9eYI3Q?pwd=6666) | [链接](https://pan.baidu.com/s/12iHGpAs6R0kqsOnGtgK6vQ?pwd=6666) |
 
 ---
 
@@ -348,6 +357,8 @@ MobileLLM提出架构的深度比宽度更重要，「深而窄」的「瘦长�
 设定d_model=1024，n_layers=16来获取效果的更大收益，更加符合小模型scaling-law的变化曲线。
 
 # 📌 Eval
+
+> 【注】以下测试于2024.8.28完成，此日期后发布的（例如MiniMind-V1）新模型，无特殊需要时将不加入测试。
 
 [A] [minimind-small-T(0.02B)](https://pan.baidu.com/s/1_COe0FQRDmeapSsvArahCA?pwd=6666)<br/>
 [B] [minimind-small(0.05B)](https://pan.baidu.com/s/1lRX0IcpjNFSySioeCfifRQ?pwd=6666)<br/>
@@ -498,7 +509,9 @@ MobileLLM提出架构的深度比宽度更重要，「深而窄」的「瘦长�
     * minimind-MoE(0.16B)表现很差，甚至不如它同配置的dense模型minimind(0.05B)
       ，其实这并非MoE的锅。同样是因为偷懒提前kill腾出资源给小模型，但是MoE模型多专家模式需要的训练轮次本来就需要酌情更高，在epochs设置为2时训练的极其不充分。minimind不久前实验阶段在Yi
       tokenizer上试验过MoE的充分训练版本，可以做到比dense表现肉眼可见的好。现在先这样了hh，日后腾出服务器再训练更新v2 v3版本。
-* F模型的回答看起来是这里最完美的，尽管存在些许幻觉瞎编的情况。但GPT-4o和kimi的评分都一致认为它“信息过度冗长，且有重复内容，存在幻觉”。其实这种评价太严格了，100个字中有10个字是幻觉，就很容易把它归到0分。由于F模型训练文本默认长度更长，数据集大得多，所以回答的看起来很完备，在体积近似的情况下，数据比模型更重要得多。
+*
+
+F模型的回答看起来是这里最完美的，尽管存在些许幻觉瞎编的情况。但GPT-4o和kimi的评分都一致认为它“信息过度冗长，且有重复内容，存在幻觉”。其实这种评价太严格了，100个字中有10个字是幻觉，就很容易把它归到0分。由于F模型训练文本默认长度更长，数据集大得多，所以回答的看起来很完备，在体积近似的情况下，数据比模型更重要得多。
 
 > 🙋‍♂️个人主观评价：F>D>A≈B>C>E
 
@@ -515,60 +528,60 @@ minimind模型本身没有使用较大的数据集训练，也没有针对回答
 
 > 例如minimind-small的结果细项：
 
-| 类别                            | 正确数量/总题数 | 正确率      |
-|---------------------------------|----------------|------------|
-| probability_and_statistics_val   | 3/18           | 16.67%     |
-| law_val                          | 5/24           | 20.83%     |
-| middle_school_biology_val        | 4/21           | 19.05%     |
-| high_school_chemistry_val        | 7/19           | 36.84%     |
-| high_school_physics_val          | 5/19           | 26.32%     |
-| legal_professional_val           | 2/23           | 8.70%      |
-| high_school_chinese_val           | 4/19           | 21.05%     |
-| high_school_history_val           | 6/20           | 30.00%     |
-| tax_accountant_val               | 10/49          | 20.41%     |
-| modern_chinese_history_val        | 4/23           | 17.39%     |
-| middle_school_physics_val         | 4/19           | 21.05%     |
-| middle_school_history_val         | 4/22           | 18.18%     |
-| basic_medicine_val                | 1/19           | 5.26%      |
-| operating_system_val              | 3/19           | 15.79%     |
-| logic_val                         | 4/22           | 18.18%     |
-| electrical_engineer_val           | 7/37           | 18.92%     |
-| civil_servant_val                 | 11/47          | 23.40%     |
-| chinese_language_and_literature_val | 5/23           | 21.74%     |
-| college_programming_val           | 10/37          | 27.03%     |
-| accountant_val                    | 9/49           | 18.37%     |
-| plant_protection_val              | 7/22           | 31.82%     |
-| middle_school_chemistry_val       | 4/20           | 20.00%     |
-| metrology_engineer_val            | 3/24           | 12.50%     |
-| veterinary_medicine_val           | 6/23           | 26.09%     |
-| marxism_val                       | 5/19           | 26.32%     |
-| advanced_mathematics_val          | 5/19           | 26.32%     |
-| high_school_mathematics_val       | 4/18           | 22.22%     |
-| business_administration_val       | 8/33           | 24.24%     |
-| mao_zedong_thought_val            | 8/24           | 33.33%     |
-| ideological_and_moral_cultivation_val | 5/19         | 26.32%     |
-| college_economics_val             | 17/55          | 30.91%     |
-| professional_tour_guide_val       | 10/29          | 34.48%     |
-| environmental_impact_assessment_engineer_val | 7/31   | 22.58%     |
-| computer_architecture_val         | 6/21           | 28.57%     |
-| urban_and_rural_planner_val       | 11/46          | 23.91%     |
-| college_physics_val               | 5/19           | 26.32%     |
-| middle_school_mathematics_val     | 3/19           | 15.79%     |
-| high_school_politics_val          | 4/19           | 21.05%     |
-| physician_val                     | 13/49          | 26.53%     |
-| college_chemistry_val             | 3/24           | 12.50%     |
-| high_school_biology_val           | 5/19           | 26.32%     |
-| high_school_geography_val         | 4/19           | 21.05%     |
-| middle_school_politics_val        | 6/21           | 28.57%     |
-| clinical_medicine_val             | 6/22           | 27.27%     |
-| computer_network_val              | 2/19           | 10.53%     |
-| sports_science_val                | 2/19           | 10.53%     |
-| art_studies_val                   | 14/33          | 42.42%     |
-| teacher_qualification_val         | 12/44          | 27.27%     |
-| discrete_mathematics_val          | 6/16           | 37.50%     |
-| education_science_val             | 7/29           | 24.14%     |
-| fire_engineer_val                 | 9/31           | 29.03%     |
-| middle_school_geography_val       | 1/12           | 8.33%      |
+| 类别                                           | 正确数量/总题数 | 正确率    |
+|----------------------------------------------|----------|--------|
+| probability_and_statistics_val               | 3/18     | 16.67% |
+| law_val                                      | 5/24     | 20.83% |
+| middle_school_biology_val                    | 4/21     | 19.05% |
+| high_school_chemistry_val                    | 7/19     | 36.84% |
+| high_school_physics_val                      | 5/19     | 26.32% |
+| legal_professional_val                       | 2/23     | 8.70%  |
+| high_school_chinese_val                      | 4/19     | 21.05% |
+| high_school_history_val                      | 6/20     | 30.00% |
+| tax_accountant_val                           | 10/49    | 20.41% |
+| modern_chinese_history_val                   | 4/23     | 17.39% |
+| middle_school_physics_val                    | 4/19     | 21.05% |
+| middle_school_history_val                    | 4/22     | 18.18% |
+| basic_medicine_val                           | 1/19     | 5.26%  |
+| operating_system_val                         | 3/19     | 15.79% |
+| logic_val                                    | 4/22     | 18.18% |
+| electrical_engineer_val                      | 7/37     | 18.92% |
+| civil_servant_val                            | 11/47    | 23.40% |
+| chinese_language_and_literature_val          | 5/23     | 21.74% |
+| college_programming_val                      | 10/37    | 27.03% |
+| accountant_val                               | 9/49     | 18.37% |
+| plant_protection_val                         | 7/22     | 31.82% |
+| middle_school_chemistry_val                  | 4/20     | 20.00% |
+| metrology_engineer_val                       | 3/24     | 12.50% |
+| veterinary_medicine_val                      | 6/23     | 26.09% |
+| marxism_val                                  | 5/19     | 26.32% |
+| advanced_mathematics_val                     | 5/19     | 26.32% |
+| high_school_mathematics_val                  | 4/18     | 22.22% |
+| business_administration_val                  | 8/33     | 24.24% |
+| mao_zedong_thought_val                       | 8/24     | 33.33% |
+| ideological_and_moral_cultivation_val        | 5/19     | 26.32% |
+| college_economics_val                        | 17/55    | 30.91% |
+| professional_tour_guide_val                  | 10/29    | 34.48% |
+| environmental_impact_assessment_engineer_val | 7/31     | 22.58% |
+| computer_architecture_val                    | 6/21     | 28.57% |
+| urban_and_rural_planner_val                  | 11/46    | 23.91% |
+| college_physics_val                          | 5/19     | 26.32% |
+| middle_school_mathematics_val                | 3/19     | 15.79% |
+| high_school_politics_val                     | 4/19     | 21.05% |
+| physician_val                                | 13/49    | 26.53% |
+| college_chemistry_val                        | 3/24     | 12.50% |
+| high_school_biology_val                      | 5/19     | 26.32% |
+| high_school_geography_val                    | 4/19     | 21.05% |
+| middle_school_politics_val                   | 6/21     | 28.57% |
+| clinical_medicine_val                        | 6/22     | 27.27% |
+| computer_network_val                         | 2/19     | 10.53% |
+| sports_science_val                           | 2/19     | 10.53% |
+| art_studies_val                              | 14/33    | 42.42% |
+| teacher_qualification_val                    | 12/44    | 27.27% |
+| discrete_mathematics_val                     | 6/16     | 37.50% |
+| education_science_val                        | 7/29     | 24.14% |
+| fire_engineer_val                            | 9/31     | 29.03% |
+| middle_school_geography_val                  | 1/12     | 8.33%  |
 
 ```text
 总题数: 1346  
@@ -617,6 +630,7 @@ minimind模型本身没有使用较大的数据集训练，也没有针对回答
 
 * [./export_model.py](./export_model.py)可以导出模型到transformers格式，推送到huggingface
 *
+
 MiniMind的huggingface集合地址：[MiniMind](https://huggingface.co/collections/jingyaogong/minimind-66caf8d999f5c7fa64f399e5)
 
 ---
@@ -682,6 +696,7 @@ MiniMind的huggingface集合地址：[MiniMind](https://huggingface.co/collectio
 * [Zero-Chatgpt](https://github.com/AI-Study-Han/Zero-Chatgpt/tree/main)
 
 ## ✨Top contributors
+
 <a href="https://github.com/jingyaogong/minimind/graphs/contributors">
   <img src="https://contrib.rocks/image?repo=jingyaogong/minimind" />
 </a>
@@ -689,7 +704,6 @@ MiniMind的huggingface集合地址：[MiniMind](https://huggingface.co/collectio
 # 📌 Statement
 
 本项目不承担开源模型和代码导致的数据安全、舆情风险或发生任何模型被误导、滥用、传播、不当利用而产生的风险和责任。
-
 
 ## License
 

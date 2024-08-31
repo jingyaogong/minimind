@@ -10,7 +10,7 @@ conversation_history_origin = []
 conversation_history = conversation_history_origin.copy()
 while True:
     conversation_history = conversation_history_origin.copy()
-    query = input('Enter Your Q: ')
+    query = input('[Q]:')
 
     # 将用户的问题添加到对话历史中
     conversation_history.append({"role": "user", "content": query})
@@ -22,7 +22,7 @@ while True:
         stream=True
     )
 
-    print('minimind: ', end='')
+    print('[A]: ', end='')
     assistant_res = ''
     for chunk in stream:
         # 将生成的回复实时打印出来

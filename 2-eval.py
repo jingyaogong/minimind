@@ -12,12 +12,11 @@ warnings.filterwarnings('ignore')
 
 
 def count_parameters(model):
-    return sum(p.numel() for p in model.parameters())
+    return sum(p.numel() for p in model.parameters() if p.requires_grad)
 
 
 def init_model(lm_config):
-    tokenizer = AutoTokenizer.from_pretrained('./model',
-                                              trust_remote_code=True, use_fast=False)
+    tokenizer = AutoTokenizer.from_pretrained('./model/minimind_tokenizer')
     model_from = 1  # 1从权重，2用transformers
 
     if model_from == 1:
@@ -40,10 +39,7 @@ def init_model(lm_config):
         # 加载到模型中
         model.load_state_dict(state_dict, strict=False)
     else:
-        model = AutoModelForCausalLM.from_pretrained("minimind", trust_remote_code=True)
-
-        tokenizer = AutoTokenizer.from_pretrained('minimind',
-                                                  trust_remote_code=True, use_fast=False)
+        model = AutoModelForCausalLM.from_pretrained('minimind', trust_remote_code=True)
     model = model.to(device)
 
     print(f'模型参数: {count_parameters(model) / 1e6} 百万 = {count_parameters(model) / 1e9} B (Billion)')
@@ -65,7 +61,7 @@ if __name__ == "__main__":
     out_dir = 'out'
     start = ""
     temperature = 0.7
-    top_k = 8
+    top_k = 16
     setup_seed(1337)
     # device = 'cpu'
     device = 'cuda:0' if torch.cuda.is_available() else 'cpu'
@@ -89,6 +85,11 @@ if __name__ == "__main__":
     stream = True
 
     prompt_datas = [
+        '你叫什么名字啊？',
+        '你叫什么名字？',
+        '中国有哪些比较好的大学？',
+        '全世界最好的大学是什么？',
+        '你知道光速是多少吗？',
         '你知道长江吗？',
         '人类的血液主要由哪些成分组成？',
         '第一颗人造卫星是哪个国家发射的？',
