@@ -86,9 +86,24 @@ We hope this open-source project helps LLM beginners get started quickly!
 
 👉**Recent Updates**
 
+👉**Recent Updates**
+
 <details close> 
-<summary> <b>2024-08-28</b> </summary>
- - Project first open-sourced
+<summary> <b>September 1, 2024 (new🎉)</b> </summary>
+
+- Updated MiniMind-V1 (108M) model, using minimind_tokenizer, with 3 rounds of pre-training + 10 rounds of SFT, more thorough training, stronger performance.
+ 
+- The project has been deployed to the ModelScope Creation Space, where you can experience it on this website:
+
+- [ModelScope Online Experience](https://www.modelscope.cn/studios/gongjy/minimind) 
+
+</details>
+
+<details close> 
+<summary> <b>August 27, 2024</b> </summary>
+
+- Project first open-sourced
+
 </details>
 
 # 📌 Environment

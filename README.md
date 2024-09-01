@@ -79,23 +79,23 @@
 
 希望此开源项目可以帮助LLM初学者快速入门！
 
-👉**Recent Updates**
+👉**最近更新**
 
 <details close> 
-<summary> <b>September 1, 2024 (new🎉)</b> </summary>
+<summary> <b>2024-09-01 (new🎉)</b> </summary>
 
-- Updated MiniMind-V1 (108M) model, using minimind_tokenizer, with 3 rounds of pre-training + 10 rounds of SFT, more thorough training, stronger performance.
+- 更新MiniMind-V1 (108M)模型，采用minimind_tokenizer，预训练轮次3 + SFT轮次10，更充分训练，性能更强。
  
-- The project has been deployed to the ModelScope Creation Space, where you can experience it on this website:
+- 项目已部署至ModelScope创空间，可以在此网站上体验：
 
-- [ModelScope Online Experience](https://www.modelscope.cn/studios/gongjy/minimind) 
+- [ModelScope在线体验](https://www.modelscope.cn/studios/gongjy/minimind) 
 
 </details>
 
 <details close> 
-<summary> <b>August 27, 2024</b> </summary>
+<summary> <b>2024-08-27</b> </summary>
 
-- Project first open-sourced
+- 项目首次开源
 
 </details>
 
