@@ -1,4 +1,9 @@
+<div align="center">
+
 ![logo](./images/logo.png)
+
+</div>
+
 <div align="center">
 
 ![visitors](https://visitor-badge.laobi.icu/badge?page_id=jingyaogong/minimind)
