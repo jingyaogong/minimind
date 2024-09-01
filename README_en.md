@@ -32,6 +32,14 @@
 
 ---
 
+<div align="center">
+  
+  https://github.com/user-attachments/assets/88b98128-636e-43bc-a419-b1b1403c2055
+
+  [Bilibili Video](https://www.bilibili.com/video/BV12dHPeqE72/?share_source=copy_web&vd_source=670c2504f88726f8cf4a21ef6147c0e8)
+  
+</div>
+
 # 📌 Introduction
 
 In the field of large language models (LLMs) such as GPT, LLaMA, GLM, etc., while their performance is impressive, the
