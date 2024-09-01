@@ -101,18 +101,23 @@ These are my personal software and hardware environment configurations. Please a
 * CUDA == 12.2
 * [requirements.txt](./requirements.txt)
 
-# 📌 Start Inference
+# 📌 Deployment & Inference
 
 <div align="center" style="font-size: 1.5em; font-weight: bold;">
   <img src="https://huggingface.co/front/assets/huggingface_logo-noborder.svg" alt="Hugging Face Logo" style="vertical-align: middle; height: 30px;" />
   Hugging Face
 
-[MiniMind-Collection](https://huggingface.co/collections/jingyaogong/minimind-66caf8d999f5c7fa64f399e5)
+[MiniMind (HuggingFace)](https://huggingface.co/collections/jingyaogong/minimind-66caf8d999f5c7fa64f399e5)
+ 
+ <img src="https://g.alicdn.com/sail-web/maas/1.15.0/static/modelscopeIcon.cd89353f.svg" alt="Hugging Face Logo" style="vertical-align: middle; height: 30px;" />
+
+[MiniMind (ModelScope)](https://www.modelscope.cn/models/gongjy/MiniMind-V1)
+
 </div>
 
 ```bash
 # step 1
-git clone https://huggingface.co/jingyaogong/minimind
+git clone https://huggingface.co/jingyaogong/minimind-v1
 ```
 
 ```bash
@@ -120,6 +125,22 @@ git clone https://huggingface.co/jingyaogong/minimind
 python 2-eval.py
 ```
 
+or you can run streamlit, launch a web page to chat with minimind-v1
+```bash
+# or step 3, use streamlit
+streamlit run fast_inference.py
+```
+![](./images/streamlit.png)
+
+
+<div align="center">
+
+The project has been deployed to ModelScope makerspace, where you can experience:
+
+[ModelScope Online](https://www.modelscope.cn/studios/gongjy/minimind)
+
+
+</div>
 # 📌 Quick Start
 
 *

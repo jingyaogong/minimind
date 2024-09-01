@@ -79,16 +79,24 @@
 
 希望此开源项目可以帮助LLM初学者快速入门！
 
-👉**最近更新**
+👉**Recent Updates**
 
 <details close> 
-<summary> <b>2024-09-01 (new🎉)</b> </summary>
- - 更新MiniMind-V1 (108M)模型，采用minimind_tokenizer，预训练轮次3 + SFT轮次10，更充分训练，性能更强。
+<summary> <b>September 1, 2024 (new🎉)</b> </summary>
+
+- Updated MiniMind-V1 (108M) model, using minimind_tokenizer, with 3 rounds of pre-training + 10 rounds of SFT, more thorough training, stronger performance.
+ 
+- The project has been deployed to the ModelScope Creation Space, where you can experience it on this website:
+
+- [ModelScope Online Experience](https://www.modelscope.cn/studios/gongjy/minimind) 
+
 </details>
 
 <details close> 
-<summary> <b>2024-08-27</b> </summary>
- - 项目首次开源
+<summary> <b>August 27, 2024</b> </summary>
+
+- Project first open-sourced
+
 </details>
 
 # 📌 Environment
@@ -101,24 +109,44 @@
 * CUDA == 12.2
 * [requirements.txt](./requirements.txt)
 
-# 📌 Start Inference
+# 📌 Deployment & Inference
 
 <div align="center" style="font-size: 1.5em; font-weight: bold;">
   <img src="https://huggingface.co/front/assets/huggingface_logo-noborder.svg" alt="Hugging Face Logo" style="vertical-align: middle; height: 30px;" />
   Hugging Face
 
-[MiniMind-Collection](https://huggingface.co/collections/jingyaogong/minimind-66caf8d999f5c7fa64f399e5)
+[MiniMind (HuggingFace)](https://huggingface.co/collections/jingyaogong/minimind-66caf8d999f5c7fa64f399e5)
+ 
+ <img src="https://g.alicdn.com/sail-web/maas/1.15.0/static/modelscopeIcon.cd89353f.svg" alt="Hugging Face Logo" style="vertical-align: middle; height: 30px;" />
+
+[MiniMind (ModelScope)](https://www.modelscope.cn/models/gongjy/MiniMind-V1)
+
 </div>
 
 ```bash
 # step 1
-git clone https://huggingface.co/jingyaogong/minimind
+git clone https://huggingface.co/jingyaogong/minimind-v1
 ```
 
 ```bash
 # step 2
 python 2-eval.py
 ```
+或者启动streamlit，启动网页聊天界面
+```bash
+# or step 3, use streamlit
+streamlit run fast_inference.py
+```
+![](./images/streamlit.png)
+
+<div align="center">
+
+项目已部署至ModelScope创空间，可以在此网站上体验：
+
+[ModelScope在线体验](https://www.modelscope.cn/studios/gongjy/minimind)
+
+
+</div>
 
 # 📌 Quick Start
 
