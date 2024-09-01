@@ -68,6 +68,9 @@
 <details close> 
 <summary> <b>2024-09-01 (new🎉)</b> </summary>
  - 更新MiniMind-V1 (108M)模型，采用minimind_tokenizer，预训练轮次3 + SFT轮次10，更充分训练，性能更强。
+</details>
+
+<details close> 
 <summary> <b>2024-08-27</b> </summary>
  - 项目首次开源
 </details>
