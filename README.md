@@ -230,9 +230,7 @@ streamlit run fast_inference.py
 
 ---
 
--
-
-📙【Pretrain数据】：[seq-monkey通用文本数据集](https://github.com/mobvoi/seq-monkey-data/blob/main/docs/pretrain_open_corpus.md)
+- 📙【Pretrain数据】：[seq-monkey通用文本数据集](https://github.com/mobvoi/seq-monkey-data/blob/main/docs/pretrain_open_corpus.md)
 是由多种公开来源的数据（如网页、百科、博客、开源代码、书籍等）汇总清洗而成。
 整理成统一的JSONL格式，并经过了严格的筛选和去重，确保数据的全面性、规模、可信性和高质量。
 总量大约在10B token，适合中文大语言模型的预训练。
@@ -755,3 +753,9 @@ MiniMind的huggingface集合地址：[MiniMind](https://huggingface.co/collectio
 ## License
 
 This repository is licensed under the [Apache-2.0 License](LICENSE).
+
+
+[//]: # (## Star History)
+
+[//]: # ()
+[//]: # (![Star History Chart]&#40;https://api.star-history.com/svg?repos=jingyaogong/minimind&type=Date&#41;)
