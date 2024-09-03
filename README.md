@@ -674,9 +674,8 @@ minimind模型本身没有使用较大的数据集训练，也没有针对回答
 ### 推理与导出
 
 * [./export_model.py](./export_model.py)可以导出模型到transformers格式，推送到huggingface
-*
 
-MiniMind的huggingface集合地址：[MiniMind](https://huggingface.co/collections/jingyaogong/minimind-66caf8d999f5c7fa64f399e5)
+* MiniMind的huggingface集合地址：[MiniMind](https://huggingface.co/collections/jingyaogong/minimind-66caf8d999f5c7fa64f399e5)
 
 ---
 
