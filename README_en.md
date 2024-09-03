@@ -822,7 +822,7 @@ This suggests that the model performs well in logical reasoning, foundational sc
 
 
 ## ✨ Thank You for Your Support!
-[![Stargazers repo roster for @jingyaogong/minimind](https://bytecrank.com/nastyox/reporoster/php/stargazersSVG.php?user=jingyaogong&repo=minimind)](https://github.com/jingyaogong/minimind/stargazers)
+[![Stargazers repo roster for @jingyaogong/minimind](https://reporoster.com/stars/jingyaogong/minimind)](https://github.com/jingyaogong/minimind/stargazers)
 
 ![Star History Chart](https://api.star-history.com/svg?repos=jingyaogong/minimind&type=Date)
 

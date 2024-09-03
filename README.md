@@ -746,9 +746,11 @@ MiniMind的huggingface集合地址：[MiniMind](https://huggingface.co/collectio
 
 
 ## ✨感谢各位的支持！
-[![Stargazers repo roster for @jingyaogong/minimind](https://bytecrank.com/nastyox/reporoster/php/stargazersSVG.php?user=jingyaogong&repo=minimind)](https://github.com/jingyaogong/minimind/stargazers)
+
+[![Stargazers repo roster for @jingyaogong/minimind](https://reporoster.com/stars/jingyaogong/minimind)](https://github.com/jingyaogong/minimind/stargazers)
 
 ![Star History Chart](https://api.star-history.com/svg?repos=jingyaogong/minimind&type=Date)
+
 
 
 # License
