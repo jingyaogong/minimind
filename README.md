@@ -728,34 +728,31 @@ MiniMind的huggingface集合地址：[MiniMind](https://huggingface.co/collectio
 
 ![images](./images/fastgpt.png)
 
+
+
+
+
 # 📌 Acknowledge
 
-如果你觉得本项目对你有所帮助，欢迎Star🎉✨。
+> [!NOTE]
+> 如果您觉得 `MiniMind`对您有所帮助，请在 GitHub 上给一个 ⭐️。您的支持是我们持续改进项目的动力！篇幅不短水平有限难免纰漏，欢迎提issue交流指正。
 
-篇幅不短水平有限难免纰漏，欢迎提issue交流或批评指正。
 
-感谢以下开源项目的提供的灵感和开源数据集
-
-* [baby-llama2-chinese](https://github.com/DLLXW/baby-llama2-chinese)
-* [ChatLM-mini-Chinese](https://github.com/charent/ChatLM-mini-Chinese)
-* [Zero-Chatgpt](https://github.com/AI-Study-Han/Zero-Chatgpt/tree/main)
-
-## ✨Top contributors
+## 🎉Top contributors
 
 <a href="https://github.com/jingyaogong/minimind/graphs/contributors">
   <img src="https://contrib.rocks/image?repo=jingyaogong/minimind" />
 </a>
 
-# 📌 Statement
 
-本项目不承担开源模型和代码导致的数据安全、舆情风险或发生任何模型被误导、滥用、传播、不当利用而产生的风险和责任。
+## ✨感谢各位的支持！
+[![Stargazers repo roster for @jingyaogong/minimind](https://bytecrank.com/nastyox/reporoster/php/stargazersSVG.php?user=jingyaogong&repo=minimind)](https://github.com/jingyaogong/minimind/stargazers)
 
-## License
+![Star History Chart](https://api.star-history.com/svg?repos=jingyaogong/minimind&type=Date)
+
+
+# License
 
 This repository is licensed under the [Apache-2.0 License](LICENSE).
 
 
-[//]: # (## Star History)
-
-[//]: # ()
-[//]: # (![Star History Chart]&#40;https://api.star-history.com/svg?repos=jingyaogong/minimind&type=Date&#41;)

@@ -808,31 +808,25 @@ This suggests that the model performs well in logical reasoning, foundational sc
 
 ---
 
-# 📌 Acknowledge
+# 📌 Acknowledgement
 
-If you find this project helpful, feel free to give it a Star 🎉✨.
-
-The document is somewhat lengthy and may contain errors due to my limited proficiency. Please feel free to open issues for discussion or criticism.
-
-Special thanks to the following open-source projects for their inspiration and datasets:
-
-* [baby-llama2-chinese](https://github.com/DLLXW/baby-llama2-chinese)
-* [ChatLM-mini-Chinese](https://github.com/charent/ChatLM-mini-Chinese)
-* [Zero-Chatgpt](https://github.com/AI-Study-Han/Zero-Chatgpt/tree/main)
+> [!NOTE]
+> If you find `MiniMind` helpful, please give us a ⭐️ on GitHub. Your support is the driving force behind our continuous efforts to improve the project! Due to the length and limited expertise, there may be some errors. We welcome any issues for discussion and correction.
 
 
-## ✨Top contributors
+## 🎉 Top Contributors
+
 <a href="https://github.com/jingyaogong/minimind/graphs/contributors">
   <img src="https://contrib.rocks/image?repo=jingyaogong/minimind" />
 </a>
 
-# 📌 Statement
 
-This project does not assume responsibility for data security, public opinion risks, or any risks and liabilities arising from model misguidance, misuse, dissemination, or improper use related to open-source models and code.
+## ✨ Thank You for Your Support!
+[![Stargazers repo roster for @jingyaogong/minimind](https://bytecrank.com/nastyox/reporoster/php/stargazersSVG.php?user=jingyaogong&repo=minimind)](https://github.com/jingyaogong/minimind/stargazers)
+
+![Star History Chart](https://api.star-history.com/svg?repos=jingyaogong/minimind&type=Date)
 
 
-
-
-## License
+# License
 
 This repository is licensed under the [Apache-2.0 License](LICENSE).
