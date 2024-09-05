@@ -732,19 +732,24 @@ minimind模型本身没有使用较大的数据集训练，也没有针对回答
 # 📌 Acknowledge
 
 > [!NOTE]
-> 如果您觉得 `MiniMind`对您有所帮助，请在 GitHub 上给一个 ⭐️。您的支持是我们持续改进项目的动力！篇幅不短水平有限难免纰漏，欢迎提issue交流指正。
+> 如果您觉得 `MiniMind`对您有所帮助，请在 GitHub 上给一个 ⭐️。您的支持是我们持续改进项目的动力！篇幅不短水平有限难免纰漏，欢迎在issue交流和指正。
 
 
-## 🎉Top contributors
+
+## 🤝贡献者
+
+<br/>
 
 <a href="https://github.com/jingyaogong/minimind/graphs/contributors">
   <img src="https://contrib.rocks/image?repo=jingyaogong/minimind" />
 </a>
 
-
-## ✨感谢各位的支持！
+## 🫶感谢支持！
 
 [![Stargazers repo roster for @jingyaogong/minimind](https://reporoster.com/stars/jingyaogong/minimind)](https://github.com/jingyaogong/minimind/stargazers)
+
+[![Forkers repo roster for @jingyaogong/minimind](https://reporoster.com/forks/jingyaogong/minimind)](https://github.com/jingyaogong/minimind/network/members)
+
 
 ![Star History Chart](https://api.star-history.com/svg?repos=jingyaogong/minimind&type=Date)
 

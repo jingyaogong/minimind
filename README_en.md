@@ -814,15 +814,17 @@ This suggests that the model performs well in logical reasoning, foundational sc
 > If you find `MiniMind` helpful, please give us a ⭐️ on GitHub. Your support is the driving force behind our continuous efforts to improve the project! Due to the length and limited expertise, there may be some errors. We welcome any issues for discussion and correction.
 
 
-## 🎉 Top Contributors
-
+## 🤝Contributors
+<br/>
 <a href="https://github.com/jingyaogong/minimind/graphs/contributors">
   <img src="https://contrib.rocks/image?repo=jingyaogong/minimind" />
 </a>
 
 
-## ✨ Thank You for Your Support!
+## 🫶Thank You for Your Support!
 [![Stargazers repo roster for @jingyaogong/minimind](https://reporoster.com/stars/jingyaogong/minimind)](https://github.com/jingyaogong/minimind/stargazers)
+
+[![Forkers repo roster for @jingyaogong/minimind](https://reporoster.com/forks/jingyaogong/minimind)](https://github.com/jingyaogong/minimind/network/members)
 
 ![Star History Chart](https://api.star-history.com/svg?repos=jingyaogong/minimind&type=Date)
 
