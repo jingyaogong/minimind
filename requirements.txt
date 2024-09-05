@@ -13,7 +13,6 @@ numpy==2.1.0
 openai==1.42.0
 pandas==1.5.3
 peft==0.7.1
-psutil==5.9.7
 psutil==5.9.8
 pydantic==2.8.2
 rich==13.7.1
@@ -23,6 +22,6 @@ simhash==2.1.2
 tiktoken==0.5.1
 torch==2.1.2+cu121
 transformers==4.44.0
-jinja2==3.0.2
+jinja2==3.1.2
 trl==0.8.6
 ujson==5.1.0
