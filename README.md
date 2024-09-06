@@ -1,5 +1,3 @@
-
-
 <div align="center">
 
 ![logo](./images/logo.png)
@@ -35,13 +33,12 @@
 ---
 
 <div align="center">
-  
-  https://github.com/user-attachments/assets/88b98128-636e-43bc-a419-b1b1403c2055
 
-  [Bilibili视频链接](https://www.bilibili.com/video/BV12dHPeqE72/?share_source=copy_web&vd_source=670c2504f88726f8cf4a21ef6147c0e8)
-  
+https://github.com/user-attachments/assets/88b98128-636e-43bc-a419-b1b1403c2055
+
+[Bilibili视频链接](https://www.bilibili.com/video/BV12dHPeqE72/?share_source=copy_web&vd_source=670c2504f88726f8cf4a21ef6147c0e8)
+
 </div>
-
 
 # 📌 Introduction
 
@@ -85,10 +82,10 @@
 <summary> <b>2024-09-01 (new🎉)</b> </summary>
 
 - 更新MiniMind-V1 (108M)模型，采用minimind_tokenizer，预训练轮次3 + SFT轮次10，更充分训练，性能更强。
- 
+
 - 项目已部署至ModelScope创空间，可以在此网站上体验：
 
-- [ModelScope在线体验](https://www.modelscope.cn/studios/gongjy/minimind) 
+- [ModelScope在线体验](https://www.modelscope.cn/studios/gongjy/minimind)
 
 </details>
 
@@ -116,7 +113,7 @@
   Hugging Face
 
 [MiniMind (HuggingFace)](https://huggingface.co/collections/jingyaogong/minimind-66caf8d999f5c7fa64f399e5)
- 
+
  <img src="https://g.alicdn.com/sail-web/maas/1.15.0/static/modelscopeIcon.cd89353f.svg" alt="Hugging Face Logo" style="vertical-align: middle; height: 30px;" />
 
 [MiniMind (ModelScope)](https://www.modelscope.cn/models/gongjy/MiniMind-V1)
@@ -132,11 +129,14 @@ git clone https://huggingface.co/jingyaogong/minimind-v1
 # step 2
 python 2-eval.py
 ```
+
 或者启动streamlit，启动网页聊天界面
+
 ```bash
 # or step 3, use streamlit
 streamlit run fast_inference.py
 ```
+
 ![](./images/streamlit.png)
 
 <div align="center">
@@ -214,7 +214,7 @@ streamlit run fast_inference.py
   强大的开源模型例如01万物、千问、chatglm、mistral、Llama3等，它们的tokenizer词表长度如下：
 
   | Tokenizer 模型       | 词表大小    | 来源         | 
-  |--------------------|---------|------------|
+    |--------------------|---------|------------|
   | yi tokenizer       | 64,000  | 01万物（中国）   |
   | qwen2 tokenizer    | 151,643 | 阿里云（中国）    |
   | glm tokenizer      | 151,329 | 智谱AI（中国）   |
@@ -230,7 +230,8 @@ streamlit run fast_inference.py
 
 ---
 
-- 📙【Pretrain数据】：[seq-monkey通用文本数据集](https://github.com/mobvoi/seq-monkey-data/blob/main/docs/pretrain_open_corpus.md)
+-
+📙【Pretrain数据】：[seq-monkey通用文本数据集](https://github.com/mobvoi/seq-monkey-data/blob/main/docs/pretrain_open_corpus.md)
 是由多种公开来源的数据（如网页、百科、博客、开源代码、书籍等）汇总清洗而成。
 整理成统一的JSONL格式，并经过了严格的筛选和去重，确保数据的全面性、规模、可信性和高质量。
 总量大约在10B token，适合中文大语言模型的预训练。
@@ -376,7 +377,7 @@ CPU: Intel(R) Core(TM) i9-10980XE CPU @ 3.00GHz
 | minimind-small   | 56M    | d_model=640<br/>n_layers=8                      | [链接](https://pan.baidu.com/s/1nJuOpnu5115FDuz6Ewbeqg?pwd=6666) | [链接](https://pan.baidu.com/s/1lRX0IcpjNFSySioeCfifRQ?pwd=6666) | [链接](https://pan.baidu.com/s/1LzVxBpL0phtGUH267Undqw?pwd=6666) |
 | minimind         | 218M   | d_model=1024<br/>n_layers=16                    | [链接](https://pan.baidu.com/s/1jzA7uLEi-Jen2fW5olCmEg?pwd=6666) | [链接](https://pan.baidu.com/s/1Hvt0Q_UB_uW2sWTw6w1zRQ?pwd=6666) | [链接](https://pan.baidu.com/s/1fau9eat3lXilnrG3XNhG5Q?pwd=6666) |
 | minimind-MoE     | 166M   | d_model=1024<br/>n_layers=8<br/>share+route=2+4 | [链接](https://pan.baidu.com/s/11CneDVTkw2Y6lNilQX5bWw?pwd=6666) | [链接](https://pan.baidu.com/s/1fRq4MHZec3z-oLK6sCzj_A?pwd=6666) | [链接](https://pan.baidu.com/s/1HC2KSM_-RHRtgv7ZDkKI9Q?pwd=6666) |
-| minimind-V1      | 108M   | d_model=768<br/>n_layers=16 | -                                                              | [链接](https://pan.baidu.com/s/1p713loS7EfwHQf3G9eYI3Q?pwd=6666) | [链接](https://pan.baidu.com/s/12iHGpAs6R0kqsOnGtgK6vQ?pwd=6666) |
+| minimind-V1      | 108M   | d_model=768<br/>n_layers=16                     | -                                                              | [链接](https://pan.baidu.com/s/1p713loS7EfwHQf3G9eYI3Q?pwd=6666) | [链接](https://pan.baidu.com/s/12iHGpAs6R0kqsOnGtgK6vQ?pwd=6666) |
 
 ---
 
@@ -554,7 +555,8 @@ MobileLLM提出架构的深度比宽度更重要，「深而窄」的「瘦长�
     * minimind-MoE(0.16B)表现很差，甚至不如它同配置的dense模型minimind(0.05B)
       ，其实这并非MoE的锅。同样是因为偷懒提前kill腾出资源给小模型，但是MoE模型多专家模式需要的训练轮次本来就需要酌情更高，在epochs设置为2时训练的极其不充分。minimind不久前实验阶段在Yi
       tokenizer上试验过MoE的充分训练版本，可以做到比dense表现肉眼可见的好。现在先这样了hh，日后腾出服务器再训练更新v2 v3版本。
-* F模型的回答看起来是这里最完美的，尽管存在些许幻觉瞎编的情况。但GPT-4o和kimi的评分都一致认为它“信息过度冗长，且有重复内容，存在幻觉”。其实这种评价太严格了，100个字中有10个字是幻觉，就很容易把它归到0分。由于F模型训练文本默认长度更长，数据集大得多，所以回答的看起来很完备，在体积近似的情况下，数据比模型更重要得多。
+*
+F模型的回答看起来是这里最完美的，尽管存在些许幻觉瞎编的情况。但GPT-4o和kimi的评分都一致认为它“信息过度冗长，且有重复内容，存在幻觉”。其实这种评价太严格了，100个字中有10个字是幻觉，就很容易把它归到0分。由于F模型训练文本默认长度更长，数据集大得多，所以回答的看起来很完备，在体积近似的情况下，数据比模型更重要得多。
 
 > 🙋‍♂️个人主观评价：F>D>A≈B>C>E
 
@@ -673,7 +675,8 @@ minimind模型本身没有使用较大的数据集训练，也没有针对回答
 
 * [./export_model.py](./export_model.py)可以导出模型到transformers格式，推送到huggingface
 
-* MiniMind的huggingface集合地址：[MiniMind](https://huggingface.co/collections/jingyaogong/minimind-66caf8d999f5c7fa64f399e5)
+*
+MiniMind的huggingface集合地址：[MiniMind](https://huggingface.co/collections/jingyaogong/minimind-66caf8d999f5c7fa64f399e5)
 
 ---
 
@@ -725,24 +728,18 @@ minimind模型本身没有使用较大的数据集训练，也没有针对回答
 
 ![images](./images/fastgpt.png)
 
-
-
-
-
 # 📌 Acknowledge
 
 > [!NOTE]
 > 如果您觉得 `MiniMind`对您有所帮助，请在 GitHub 上给一个⭐<br/>
 > 您的支持是我们持续改进项目的动力！篇幅不短水平有限难免纰漏，欢迎在issue交流和指正。
 
-
-
 ## 🤝贡献者
 
 <br/>
 
 <a href="https://github.com/jingyaogong/minimind/graphs/contributors">
-  <img src="https://contrib.rocks/image?repo=jingyaogong/minimind" />
+  <img src="https://contrib.rocks/image?repo=jingyaogong/minimind&v=2" />
 </a>
 
 ## 🫶感谢支持！
@@ -751,10 +748,7 @@ minimind模型本身没有使用较大的数据集训练，也没有针对回答
 
 [![Forkers repo roster for @jingyaogong/minimind](https://reporoster.com/forks/jingyaogong/minimind)](https://github.com/jingyaogong/minimind/network/members)
 
-
 ![Star History Chart](https://api.star-history.com/svg?repos=jingyaogong/minimind&type=Date)
-
-
 
 # License
 

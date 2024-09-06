@@ -816,8 +816,9 @@ This suggests that the model performs well in logical reasoning, foundational sc
 
 ## 🤝Contributors
 <br/>
+
 <a href="https://github.com/jingyaogong/minimind/graphs/contributors">
-  <img src="https://contrib.rocks/image?repo=jingyaogong/minimind" />
+  <img src="https://contrib.rocks/image?repo=jingyaogong/minimind&v=2" />
 </a>
 
 
