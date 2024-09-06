@@ -26,7 +26,6 @@
 
 </div>
 
-
 * This open-source project aims to train a miniature language model **MiniMind** from scratch, with a size of just 26MB.
 * **MiniMind** is extremely lightweight, approximately $\frac{1}{7000}$ the size of GPT-3, designed to enable fast
   inference and even training on CPUs.
@@ -38,11 +37,11 @@
 ---
 
 <div align="center">
-  
-  https://github.com/user-attachments/assets/88b98128-636e-43bc-a419-b1b1403c2055
 
-  [Bilibili Video](https://www.bilibili.com/video/BV12dHPeqE72/?share_source=copy_web&vd_source=670c2504f88726f8cf4a21ef6147c0e8)
-  
+https://github.com/user-attachments/assets/88b98128-636e-43bc-a419-b1b1403c2055
+
+[Bilibili Video](https://www.bilibili.com/video/BV12dHPeqE72/?share_source=copy_web&vd_source=670c2504f88726f8cf4a21ef6147c0e8)
+
 </div>
 
 # 📌 Introduction
@@ -91,11 +90,12 @@ We hope this open-source project helps LLM beginners get started quickly!
 <details close> 
 <summary> <b>September 1, 2024 (new🎉)</b> </summary>
 
-- Updated MiniMind-V1 (108M) model, using minimind_tokenizer, with 3 rounds of pre-training + 10 rounds of SFT, more thorough training, stronger performance.
- 
+- Updated MiniMind-V1 (108M) model, using minimind_tokenizer, with 3 rounds of pre-training + 10 rounds of SFT, more
+  thorough training, stronger performance.
+
 - The project has been deployed to the ModelScope Creation Space, where you can experience it on this website:
 
-- [ModelScope Online Experience](https://www.modelscope.cn/studios/gongjy/minimind) 
+- [ModelScope Online Experience](https://www.modelscope.cn/studios/gongjy/minimind)
 
 </details>
 
@@ -123,7 +123,7 @@ These are my personal software and hardware environment configurations. Please a
   Hugging Face
 
 [MiniMind (HuggingFace)](https://huggingface.co/collections/jingyaogong/minimind-66caf8d999f5c7fa64f399e5)
- 
+
  <img src="https://g.alicdn.com/sail-web/maas/1.15.0/static/modelscopeIcon.cd89353f.svg" alt="Hugging Face Logo" style="vertical-align: middle; height: 30px;" />
 
 [MiniMind (ModelScope)](https://www.modelscope.cn/models/gongjy/MiniMind-V1)
@@ -141,10 +141,12 @@ python 2-eval.py
 ```
 
 or you can run streamlit, launch a web page to chat with minimind-v1
+
 ```bash
 # or step 3, use streamlit
 streamlit run fast_inference.py
 ```
+
 ![](./images/streamlit.png)
 
 
@@ -243,7 +245,7 @@ git clone https://github.com/jingyaogong/minimind.git
   sizes:
 
   | Tokenizer Model      | Vocabulary Size | Source                |
-  |----------------------|------------------|-----------------------|
+      |----------------------|------------------|-----------------------|
   | yi tokenizer         | 64,000           | 01-AI (China)         |
   | qwen2 tokenizer      | 151,643          | Alibaba Cloud (China) |
   | glm tokenizer        | 151,329          | Zhipu AI (China)      |
@@ -559,54 +561,51 @@ and provide ratings and rankings.
 **Model A**
 
 - **Accuracy**: Most answers are accurate, but there are occasional minor errors.
-- **Clarity**: Responses are concise and fluent.
-- **Completeness**: Responses are sometimes slightly simplistic, but overall the information is sufficient.
-- **Score**: 80
+  **Clarity**: Responses are concise and fluent.
+  **Completeness**: Responses are sometimes slightly simplistic, but overall the information is sufficient.
+  **Score**: 80
 
 **Model B**
 
 - **Accuracy**: Most answers are accurate, but there are some minor errors (e.g., regarding the first artificial
   satellite).
-- **Clarity**: Language is relatively clear, but sometimes expressions are slightly confusing.
-- **Completeness**: Responses are fairly comprehensive but contain information discrepancies.
-- **Score**: 75
+  **Clarity**: Language is relatively clear, but sometimes expressions are slightly confusing.
+  **Completeness**: Responses are fairly comprehensive but contain information discrepancies.
+  **Score**: 75
 
 **Model C**
 
 - **Accuracy**: Responses are inaccurate, with several instances of self-asking and answering.
-- **Clarity**: Language is fluent, but the logic of responses is poor.
-- **Completeness**: Information is incomplete and sometimes lacks important details.
-- **Score**: 55
+  **Clarity**: Language is fluent, but the logic of responses is poor.
+  **Completeness**: Information is incomplete and sometimes lacks important details.
+  **Score**: 55
 
 **Model D**
 
 - **Accuracy**: Most answers are accurate and generally correct.
-- **Clarity**: Expression is clear, with appropriate information density.
-- **Completeness**: Responses are relatively complete, but some answers might include unnecessary details.
-- **Score**: 85
+  **Clarity**: Expression is clear, with appropriate information density.
+  **Completeness**: Responses are relatively complete, but some answers might include unnecessary details.
+  **Score**: 85
 
 **Model E**
 
 - **Accuracy**: Accuracy is lower, with some answers unrelated to the questions.
-- **Clarity**: Expression is unclear and can cause confusion.
-- **Completeness**: Information is incomplete and sometimes deviates from the topic.
-- **Score**: 50
+  **Clarity**: Expression is unclear and can cause confusion.
+  **Completeness**: Information is incomplete and sometimes deviates from the topic.
+  **Score**: 50
 
 **Model F**
 
 - **Accuracy**: Some answers are inaccurate, with notable errors (e.g., "24 days").
-- **Clarity**: Expression is lengthy and can cause confusion.
-- **Completeness**: Information is excessively lengthy and repetitive, reducing readability.
-- **Score**: 60
+  **Clarity**: Expression is lengthy and can cause confusion.
+  **Completeness**: Information is excessively lengthy and repetitive, reducing readability.
+  **Score**: 60
 
 ### Ranking (from highest to lowest):
 
-1. **Model D** - 85
-2. **Model A** - 80
-3. **Model B** - 75
-4. **Model F** - 60
-5. **Model C** - 55
-6. **Model E** - 50
+| 模型 | D模型 | A模型 | B模型 | F模型 | C模型 | E模型 |
+|----|-----|-----|-----|-----|-----|-----|
+| 分数 | 85  | 80  | 75  | 60  | 55  | 50  |
 
 These scores and rankings are based on each model’s overall performance in accuracy, clarity, and completeness.
 
@@ -649,62 +648,16 @@ four tokens `A`, `B`, `C`, `D`, and choose the one with the highest probability 
 against the standard answer. Note that minimind models were not trained on larger datasets or fine-tuned for question
 answering, so results should be considered as reference only.
 
->For example, detailed results for minimind-small:
+> For example, detailed results for minimind-small:
 
-| category                                     | Correct/Total | Accuracy |
-|----------------------------------------------|---------------|----------|
-| probability_and_statistics_val               | 3/18          | 16.67%   |
-| law_val                                      | 5/24          | 20.83%   |
-| middle_school_biology_val                    | 4/21          | 19.05%   |
-| high_school_chemistry_val                    | 7/19          | 36.84%   |
-| high_school_physics_val                      | 5/19          | 26.32%   |
-| legal_professional_val                       | 2/23          | 8.70%    |
-| high_school_chinese_val                      | 4/19          | 21.05%   |
-| high_school_history_val                      | 6/20          | 30.00%   |
-| tax_accountant_val                           | 10/49         | 20.41%   |
-| modern_chinese_history_val                   | 4/23          | 17.39%   |
-| middle_school_physics_val                    | 4/19          | 21.05%   |
-| middle_school_history_val                    | 4/22          | 18.18%   |
-| basic_medicine_val                           | 1/19          | 5.26%    |
-| operating_system_val                         | 3/19          | 15.79%   |
-| logic_val                                    | 4/22          | 18.18%   |
-| electrical_engineer_val                      | 7/37          | 18.92%   |
-| civil_servant_val                            | 11/47         | 23.40%   |
-| chinese_language_and_literature_val          | 5/23          | 21.74%   |
-| college_programming_val                      | 10/37         | 27.03%   |
-| accountant_val                               | 9/49          | 18.37%   |
-| plant_protection_val                         | 7/22          | 31.82%   |
-| middle_school_chemistry_val                  | 4/20          | 20.00%   |
-| metrology_engineer_val                       | 3/24          | 12.50%   |
-| veterinary_medicine_val                      | 6/23          | 26.09%   |
-| marxism_val                                  | 5/19          | 26.32%   |
-| advanced_mathematics_val                     | 5/19          | 26.32%   |
-| high_school_mathematics_val                  | 4/18          | 22.22%   |
-| business_administration_val                  | 8/33          | 24.24%   |
-| mao_zedong_thought_val                       | 8/24          | 33.33%   |
-| ideological_and_moral_cultivation_val        | 5/19          | 26.32%   |
-| college_economics_val                        | 17/55         | 30.91%   |
-| professional_tour_guide_val                  | 10/29         | 34.48%   |
-| environmental_impact_assessment_engineer_val | 7/31          | 22.58%   |
-| computer_architecture_val                    | 6/21          | 28.57%   |
-| urban_and_rural_planner_val                  | 11/46         | 23.91%   |
-| college_physics_val                          | 5/19          | 26.32%   |
-| middle_school_mathematics_val                | 3/19          | 15.79%   |
-| high_school_politics_val                     | 4/19          | 21.05%   |
-| physician_val                                | 13/49         | 26.53%   |
-| college_chemistry_val                        | 3/24          | 12.50%   |
-| high_school_biology_val                      | 5/19          | 26.32%   |
-| high_school_geography_val                    | 4/19          | 21.05%   |
-| middle_school_politics_val                   | 6/21          | 28.57%   |
-| clinical_medicine_val                        | 6/22          | 27.27%   |
-| computer_network_val                         | 2/19          | 10.53%   |
-| sports_science_val                           | 2/19          | 10.53%   |
-| art_studies_val                              | 14/33         | 42.42%   |
-| teacher_qualification_val                    | 12/44         | 27.27%   |
-| discrete_mathematics_val                     | 6/16          | 37.50%   |
-| education_science_val                        | 7/29          | 24.14%   |
-| fire_engineer_val                            | 9/31          | 29.03%   |
-| middle_school_geography_val                  | 1/12          | 8.33%    |
+| Type | 1                          | 2   | 3                     | 4                     | 5                   | 6                  | 7                   | 8                   | 9              | 10                     | 11                    | 12                    | 13             | 14               | 15    | 16                  | 17            | 18                              | 19                  | 20         | 21               | 22                      | 23                 | 24                  | 25      | 26                   | 27                      | 28                      | 29                 | 30                                | 31                | 32                      | 33                                       | 34                    | 35                      | 36              | 37                        | 38                   | 39        | 40                | 41                  | 42                    | 43                     | 44                | 45               | 46             | 47          | 48                    | 49                   | 50                | 51            | 52                      |
+|------|----------------------------|-----|-----------------------|-----------------------|---------------------|--------------------|---------------------|---------------------|----------------|------------------------|-----------------------|-----------------------|----------------|------------------|-------|---------------------|---------------|---------------------------------|---------------------|------------|------------------|-------------------------|--------------------|---------------------|---------|----------------------|-------------------------|-------------------------|--------------------|-----------------------------------|-------------------|-------------------------|------------------------------------------|-----------------------|-------------------------|-----------------|---------------------------|----------------------|-----------|-------------------|---------------------|-----------------------|------------------------|-------------------|------------------|----------------|-------------|-----------------------|----------------------|-------------------|---------------|-------------------------|
+| Data | probability_and_statistics | law | middle_school_biology | high_school_chemistry | high_school_physics | legal_professional | high_school_chinese | high_school_history | tax_accountant | modern_chinese_history | middle_school_physics | middle_school_history | basic_medicine | operating_system | logic | electrical_engineer | civil_servant | chinese_language_and_literature | college_programming | accountant | plant_protection | middle_school_chemistry | metrology_engineer | veterinary_medicine | marxism | advanced_mathematics | high_school_mathematics | business_administration | mao_zedong_thought | ideological_and_moral_cultivation | college_economics | professional_tour_guide | environmental_impact_assessment_engineer | computer_architecture | urban_and_rural_planner | college_physics | middle_school_mathematics | high_school_politics | physician | college_chemistry | high_school_biology | high_school_geography | middle_school_politics | clinical_medicine | computer_network | sports_science | art_studies | teacher_qualification | discrete_mathematics | education_science | fire_engineer | middle_school_geography |
+
+| Type     | 1      | 2      | 3      | 4      | 5      | 6     | 7      | 8      | 9      | 10     | 11     | 12     | 13    | 14     | 15     | 16     | 17     | 18     | 19     | 20     | 21     | 22     | 23     | 24     | 25     | 26     | 27     | 28     | 29     | 30     | 31     | 32     | 33     | 34     | 35     | 36     | 37     | 38     | 39     | 40     | 41     | 42     | 43     | 44     | 45     | 46     | 47     | 48     | 49     | 50     | 51     | 52    |
+|----------|--------|--------|--------|--------|--------|-------|--------|--------|--------|--------|--------|--------|-------|--------|--------|--------|--------|--------|--------|--------|--------|--------|--------|--------|--------|--------|--------|--------|--------|--------|--------|--------|--------|--------|--------|--------|--------|--------|--------|--------|--------|--------|--------|--------|--------|--------|--------|--------|--------|--------|--------|-------|
+| T/A      | 3/18   | 5/24   | 4/21   | 7/19   | 5/19   | 2/23  | 4/19   | 6/20   | 10/49  | 4/23   | 4/19   | 4/22   | 1/19  | 3/19   | 4/22   | 7/37   | 11/47  | 5/23   | 10/37  | 9/49   | 7/22   | 4/20   | 3/24   | 6/23   | 5/19   | 5/19   | 4/18   | 8/33   | 8/24   | 5/19   | 17/55  | 10/29  | 7/31   | 6/21   | 11/46  | 5/19   | 3/19   | 4/19   | 13/49  | 3/24   | 5/19   | 4/19   | 6/21   | 6/22   | 2/19   | 2/19   | 14/33  | 12/44  | 6/16   | 7/29   | 9/31   | 1/12  |
+| Accuracy | 16.67% | 20.83% | 19.05% | 36.84% | 26.32% | 8.70% | 21.05% | 30.00% | 20.41% | 17.39% | 21.05% | 18.18% | 5.26% | 15.79% | 18.18% | 18.92% | 23.40% | 21.74% | 27.03% | 18.37% | 31.82% | 20.00% | 12.50% | 26.09% | 26.32% | 26.32% | 22.22% | 24.24% | 33.33% | 26.32% | 30.91% | 34.48% | 22.58% | 28.57% | 23.91% | 26.32% | 15.79% | 21.05% | 26.53% | 12.50% | 26.32% | 21.05% | 28.57% | 27.27% | 10.53% | 10.53% | 42.42% | 27.27% | 37.50% | 24.14% | 29.03% | 8.33% |
 
 **Total number of questions**: 1346
 
@@ -747,22 +700,24 @@ answering, so results should be considered as reference only.
 This suggests that the model performs well in logical reasoning, foundational sciences, and some engineering disciplines but is weaker in humanities, social sciences, and certain specialized fields (such as law and taxation). To improve the model's performance, additional training in humanities, physics, law, and environmental science may be beneficial.
 ```
 
-
 # 📌 Others
 
 ### Inference and Export
 
 * [./export_model.py](./export_model.py) can export the model to the transformers format and push it to Hugging Face.
 
-* MiniMind's Hugging Face collection address: [MiniMind](https://huggingface.co/collections/jingyaogong/minimind-66caf8d999f5c7fa64f399e5)
+* MiniMind's Hugging Face collection
+  address: [MiniMind](https://huggingface.co/collections/jingyaogong/minimind-66caf8d999f5c7fa64f399e5)
 
 ---
 
 ### API Inference
 
-[./my_openai_api.py](./my_openai_api.py) provides a chat interface for the OpenAI API, making it easier to integrate your model with third-party UIs, such as fastgpt, OpenWebUI, etc.
+[./my_openai_api.py](./my_openai_api.py) provides a chat interface for the OpenAI API, making it easier to integrate
+your model with third-party UIs, such as fastgpt, OpenWebUI, etc.
 
-* Download the model weight files from [Hugging Face](https://huggingface.co/collections/jingyaogong/minimind-66caf8d999f5c7fa64f399e5):
+* Download the model weight files
+  from [Hugging Face](https://huggingface.co/collections/jingyaogong/minimind-66caf8d999f5c7fa64f399e5):
     ```
     minimind (root dir)
     ├─minimind
@@ -811,24 +766,26 @@ This suggests that the model performs well in logical reasoning, foundational sc
 # 📌 Acknowledgement
 
 > [!NOTE]
-> If you find `MiniMind` helpful, please give us a ⭐️ on GitHub. Your support is the driving force behind our continuous efforts to improve the project! Due to the length and limited expertise, there may be some errors. We welcome any issues for discussion and correction.
-
+> If you find `MiniMind` helpful, please give us a ⭐️ on GitHub. Your support is the driving force behind our continuous
+> efforts to improve the project! Due to the length and limited expertise, there may be some errors. We welcome any
+> issues
+> for discussion and correction.
 
 ## 🤝Contributors
+
 <br/>
 
 <a href="https://github.com/jingyaogong/minimind/graphs/contributors">
   <img src="https://contrib.rocks/image?repo=jingyaogong/minimind&v=2" />
 </a>
 
-
 ## 🫶Thank You for Your Support!
+
 [![Stargazers repo roster for @jingyaogong/minimind](https://reporoster.com/stars/jingyaogong/minimind)](https://github.com/jingyaogong/minimind/stargazers)
 
 [![Forkers repo roster for @jingyaogong/minimind](https://reporoster.com/forks/jingyaogong/minimind)](https://github.com/jingyaogong/minimind/network/members)
 
 ![Star History Chart](https://api.star-history.com/svg?repos=jingyaogong/minimind&type=Date)
-
 
 # License
 
