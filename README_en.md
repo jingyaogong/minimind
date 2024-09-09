@@ -245,7 +245,7 @@ git clone https://github.com/jingyaogong/minimind.git
   sizes:
 
   | Tokenizer Model      | Vocabulary Size | Source                |
-      |----------------------|------------------|-----------------------|
+            |----------------------|------------------|-----------------------|
   | yi tokenizer         | 64,000           | 01-AI (China)         |
   | qwen2 tokenizer      | 151,643          | Alibaba Cloud (China) |
   | glm tokenizer        | 151,329          | Zhipu AI (China)      |
@@ -304,12 +304,13 @@ git clone https://github.com/jingyaogong/minimind.git
 
 ### Dataset Download Links
 
-| MiniMind Training Dataset | Download Link                                                                                                                      |
-|---------------------------|------------------------------------------------------------------------------------------------------------------------------------|
-| **[Pretrain Data]**       | [Seq-Monkey General Text Dataset](http://share.mobvoi.com:5000/sharing/O91blwPkY)                                                  |
-| **[SFT Data]**            | [Jiangshu Large Model SFT Dataset](https://www.modelscope.cn/datasets/deepctrl/deepctrl-sft-data/resolve/master/sft_data_zh.jsonl) |
-| **[DPO Data]**            | [Huozi Dataset 1](https://huggingface.co/datasets/Skepsun/huozi_rlhf_data_json)                                                    |
-| **[DPO Data]**            | [Huozi Dataset 2](https://huggingface.co/datasets/beyond/rlhf-reward-single-round-trans_chinese)                                   |
+| MiniMind Training Dataset | Download Link                                                                                                                                             |
+|---------------------------|-----------------------------------------------------------------------------------------------------------------------------------------------------------|
+| **[tokenizer Data]**      | [HuggingFace](https://huggingface.co/datasets/jingyaogong/minimind_dataset/tree/main) / [Baidu](https://pan.baidu.com/s/1yAw1LVTftuhQGAC1Y9RdYQ?pwd=6666) |
+| **[Pretrain Data]**       | [Seq-Monkey General Text Dataset](http://share.mobvoi.com:5000/sharing/O91blwPkY)                                                                         |
+| **[SFT Data]**            | [Jiangshu Large Model SFT Dataset](https://www.modelscope.cn/datasets/deepctrl/deepctrl-sft-data/resolve/master/sft_data_zh.jsonl)                        |
+| **[DPO Data]**            | [Huozi Dataset 1](https://huggingface.co/datasets/Skepsun/huozi_rlhf_data_json)                                                                           |
+| **[DPO Data]**            | [Huozi Dataset 2](https://huggingface.co/datasets/beyond/rlhf-reward-single-round-trans_chinese)                                                          |
 
 # 📌 Model
 
@@ -430,12 +431,12 @@ Environment: python 3.9 + Torch 2.1.2 + DDP multi-GPU training
 ---
 🔗 **Trained Model Weights**:
 
-| Model Name       | params | Config                                          | pretrain_model                                                 | single_sft_model                                               | multi_sft_model                                                |
-|------------------|--------|-------------------------------------------------|----------------------------------------------------------------|----------------------------------------------------------------|----------------------------------------------------------------|
-| minimind-small-T | 26M    | d_model=512<br/>n_layers=8                      | -                                                              | [链接](https://pan.baidu.com/s/1_COe0FQRDmeapSsvArahCA?pwd=6666) | [链接](https://pan.baidu.com/s/1GsGsWSL0Dckl0YPRXiBIFQ?pwd=6666) |
-| minimind-small   | 56M    | d_model=640<br/>n_layers=8                      | [链接](https://pan.baidu.com/s/1nJuOpnu5115FDuz6Ewbeqg?pwd=6666) | [链接](https://pan.baidu.com/s/1lRX0IcpjNFSySioeCfifRQ?pwd=6666) | [链接](https://pan.baidu.com/s/1LzVxBpL0phtGUH267Undqw?pwd=6666) |
-| minimind         | 218M   | d_model=1024<br/>n_layers=16                    | [链接](https://pan.baidu.com/s/1jzA7uLEi-Jen2fW5olCmEg?pwd=6666) | [链接](https://pan.baidu.com/s/1Hvt0Q_UB_uW2sWTw6w1zRQ?pwd=6666) | [链接](https://pan.baidu.com/s/1fau9eat3lXilnrG3XNhG5Q?pwd=6666) |
-| minimind-MoE     | 166M   | d_model=1024<br/>n_layers=8<br/>share+route=2+4 | [链接](https://pan.baidu.com/s/11CneDVTkw2Y6lNilQX5bWw?pwd=6666) | [链接](https://pan.baidu.com/s/1fRq4MHZec3z-oLK6sCzj_A?pwd=6666) | [链接](https://pan.baidu.com/s/1HC2KSM_-RHRtgv7ZDkKI9Q?pwd=6666) |
+| Model Name       | params | Config                                          | pretrain_model                                                  | single_sft_model                                                | multi_sft_model                                                 |
+|------------------|--------|-------------------------------------------------|-----------------------------------------------------------------|-----------------------------------------------------------------|-----------------------------------------------------------------|
+| minimind-small-T | 26M    | d_model=512<br/>n_layers=8                      | -                                                               | [URL](https://pan.baidu.com/s/1_COe0FQRDmeapSsvArahCA?pwd=6666) | [URL](https://pan.baidu.com/s/1GsGsWSL0Dckl0YPRXiBIFQ?pwd=6666) |
+| minimind-small   | 56M    | d_model=640<br/>n_layers=8                      | [URL](https://pan.baidu.com/s/1nJuOpnu5115FDuz6Ewbeqg?pwd=6666) | [URL](https://pan.baidu.com/s/1lRX0IcpjNFSySioeCfifRQ?pwd=6666) | [URL](https://pan.baidu.com/s/1LzVxBpL0phtGUH267Undqw?pwd=6666) |
+| minimind         | 218M   | d_model=1024<br/>n_layers=16                    | [URL](https://pan.baidu.com/s/1jzA7uLEi-Jen2fW5olCmEg?pwd=6666) | [URL](https://pan.baidu.com/s/1Hvt0Q_UB_uW2sWTw6w1zRQ?pwd=6666) | [URL](https://pan.baidu.com/s/1fau9eat3lXilnrG3XNhG5Q?pwd=6666) |
+| minimind-MoE     | 166M   | d_model=1024<br/>n_layers=8<br/>share+route=2+4 | [URL](https://pan.baidu.com/s/11CneDVTkw2Y6lNilQX5bWw?pwd=6666) | [URL](https://pan.baidu.com/s/1fRq4MHZec3z-oLK6sCzj_A?pwd=6666) | [URL](https://pan.baidu.com/s/1HC2KSM_-RHRtgv7ZDkKI9Q?pwd=6666) |
 
 ---
 
@@ -603,9 +604,9 @@ and provide ratings and rankings.
 
 ### Ranking (from highest to lowest):
 
-| 模型 | D模型 | A模型 | B模型 | F模型 | C模型 | E模型 |
-|----|-----|-----|-----|-----|-----|-----|
-| 分数 | 85  | 80  | 75  | 60  | 55  | 50  |
+| Model | D Model | A Model | B Model | F Model | C Model | E Model |
+|-------|---------|---------|---------|---------|---------|---------|
+| Score | 85      | 80      | 75      | 60      | 55      | 50      |
 
 These scores and rankings are based on each model’s overall performance in accuracy, clarity, and completeness.
 
