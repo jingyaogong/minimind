@@ -193,13 +193,13 @@ streamlit run fast_inference.py
 
 🍭 【Tip】预训练和全参微调pretrain和full_sft均支持多卡加速
 
-* 单机N卡启动训练(ddp)
+* 单机N卡启动训练(DDP)
     ```bash
     torchrun --nproc_per_node N 1-pretrain.py
     # and
     torchrun --nproc_per_node N 3-full_sft.py
     ```
-* 单机N卡启动训练(deepspeed)
+* 单机N卡启动训练(DeepSpeed)
     ```bash
     deepspeed --master_port 29500 --num_gpus=N 1-pretrain.py
     # and
