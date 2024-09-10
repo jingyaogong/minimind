@@ -70,7 +70,7 @@ https://github.com/user-attachments/assets/88b98128-636e-43bc-a419-b1b1403c2055
 
 - 公开MiniMind模型代码（包含Dense和MoE模型）、Pretrain、SFT指令微调、LoRA微调、DPO偏好优化的全过程代码、数据集和来源。
 - 兼容`transformers`、`accelerate`、`trl`、`peft`等流行框架。
-- 训练支持单机单卡、单机多卡训练。训练过程中支持在任意位置停止，及在任意位置继续训练。
+- 训练支持单机单卡、单机多卡(DDP、DeepSpeed)训练。训练过程中支持在任意位置停止，及在任意位置继续训练。
 - 在Ceval数据集上进行模型测试的代码。
 - 实现Openai-Api基本的chat接口，便于集成到第三方ChatUI使用（FastGPT、Open-WebUI等）。
 
@@ -191,16 +191,19 @@ streamlit run fast_inference.py
     * `python 2-eval.py`测试模型的对话效果
       ![2-eval](./images/2-eval.png)
 
-🍭 【Tip】预训练和全参微调pretrain和full_sft均支持DDP多卡加速
+🍭 【Tip】预训练和全参微调pretrain和full_sft均支持多卡加速
 
-* 单机N卡启动训练
-
-    ```text
+* 单机N卡启动训练(ddp)
+    ```bash
     torchrun --nproc_per_node N 1-pretrain.py
-    ```
-
-    ```text
+    # and
     torchrun --nproc_per_node N 3-full_sft.py
+    ```
+* 单机N卡启动训练(deepspeed)
+    ```bash
+    deepspeed --master_port 29500 --num_gpus=N 1-pretrain.py
+    # and
+    deepspeed --master_port 29500 --num_gpus=N 3-full_sft.py
     ```
 
 # 📌 Data sources

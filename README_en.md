@@ -75,7 +75,7 @@ The project includes:
 - Public MiniMind model code (including Dense and MoE models), code for Pretrain, SFT instruction fine-tuning, LoRA
   fine-tuning, and DPO preference optimization, along with datasets and sources.
 - Compatibility with popular frameworks such as `transformers`, `accelerate`, `trl`, and `peft`.
-- Training support for single-GPU and multi-GPU setups. The training process allows for stopping and resuming at any
+- Training support for single-GPU and multi-GPU setups(DDP、DeepSpeed). The training process allows for stopping and resuming at any
   point.
 - Code for testing the model on the Ceval dataset.
 - Implementation of a basic chat interface compatible with OpenAI's API, facilitating integration into third-party Chat
@@ -214,15 +214,19 @@ git clone https://github.com/jingyaogong/minimind.git
 
 🍭 **Tip**: Pretraining and full parameter fine-tuning (`pretrain` and `full_sft`) support DDP multi-GPU acceleration.
 
-* Start training on a single machine with N GPUs
-
-    ```text
+* Start training on a single machine with N GPUs(DDP)
+    ```bash
     torchrun --nproc_per_node N 1-pretrain.py
-    ```
-
-    ```text
+    # and
     torchrun --nproc_per_node N 3-full_sft.py
     ```
+* Start training on a single machine with N GPUs(DeepSpeed)
+    ```bash
+    deepspeed --master_port 29500 --num_gpus=N 1-pretrain.py
+    # and
+    deepspeed --master_port 29500 --num_gpus=N 3-full_sft.py
+    ```
+
 
 # 📌 Data sources
 
