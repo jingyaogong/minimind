@@ -76,7 +76,7 @@ https://github.com/user-attachments/assets/88b98128-636e-43bc-a419-b1b1403c2055
 
 希望此开源项目可以帮助LLM初学者快速入门！
 
-👉**最近更新**
+### 👉**最近更新**
 
 <details close> 
 <summary> <b>2024-09-01 (new🎉)</b> </summary>
