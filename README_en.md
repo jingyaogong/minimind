@@ -83,9 +83,7 @@ The project includes:
 
 We hope this open-source project helps LLM beginners get started quickly!
 
-👉**Recent Updates**
-
-👉**Recent Updates**
+### 👉**Recent Updates**
 
 <details close> 
 <summary> <b>September 1, 2024 (new🎉)</b> </summary>
