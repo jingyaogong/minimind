@@ -75,7 +75,8 @@ The project includes:
 - Public MiniMind model code (including Dense and MoE models), code for Pretrain, SFT instruction fine-tuning, LoRA
   fine-tuning, and DPO preference optimization, along with datasets and sources.
 - Compatibility with popular frameworks such as `transformers`, `accelerate`, `trl`, and `peft`.
-- Training support for single-GPU and multi-GPU setups(DDP、DeepSpeed). The training process allows for stopping and resuming at any
+- Training support for single-GPU and multi-GPU setups(DDP、DeepSpeed). The training process allows for stopping and
+  resuming at any
   point.
 - Code for testing the model on the Ceval dataset.
 - Implementation of a basic chat interface compatible with OpenAI's API, facilitating integration into third-party Chat
@@ -223,7 +224,6 @@ git clone https://github.com/jingyaogong/minimind.git
     deepspeed --master_port 29500 --num_gpus=N 3-full_sft.py
     ```
 
-
 # 📌 Data sources
 
 - 🤖 Tokenizer: In NLP, a Tokenizer is similar to a dictionary, mapping words from natural language to numbers like 0, 1,
@@ -245,7 +245,7 @@ git clone https://github.com/jingyaogong/minimind.git
   sizes:
 
   | Tokenizer Model      | Vocabulary Size | Source                |
-            |----------------------|------------------|-----------------------|
+              |----------------------|------------------|-----------------------|
   | yi tokenizer         | 64,000           | 01-AI (China)         |
   | qwen2 tokenizer      | 151,643          | Alibaba Cloud (China) |
   | glm tokenizer        | 151,329          | Zhipu AI (China)      |
@@ -264,7 +264,7 @@ git clone https://github.com/jingyaogong/minimind.git
 ---
 
 - 📙 **[Pretrain Data](https://github.com/mobvoi/seq-monkey-data/blob/main/docs/pretrain_open_corpus.md)**:
-  The [Seq-Monkey General Text Dataset](https://github.com/mobvoi/seq-monkey-data/blob/main/docs/pretrain_open_corpus.md)
+  The [Seq-Monkey General Text Dataset](https://github.com/mobvoi/seq-monkey-data/blob/main/docs/pretrain_open_corpus.md) / [Baidu](https://pan.baidu.com/s/114F1k3eksiWCOQLvaT3RYQ?pwd=6666)
   is a collection of data from various public sources such as websites, encyclopedias, blogs, open-source code, books,
   etc. It has been compiled, cleaned, and organized into a unified JSONL format, with rigorous filtering and
   deduplication to ensure data comprehensiveness, scale, reliability, and high quality. The total amount is
@@ -307,7 +307,7 @@ git clone https://github.com/jingyaogong/minimind.git
 | MiniMind Training Dataset | Download Link                                                                                                                                             |
 |---------------------------|-----------------------------------------------------------------------------------------------------------------------------------------------------------|
 | **[tokenizer Data]**      | [HuggingFace](https://huggingface.co/datasets/jingyaogong/minimind_dataset/tree/main) / [Baidu](https://pan.baidu.com/s/1yAw1LVTftuhQGAC1Y9RdYQ?pwd=6666) |
-| **[Pretrain Data]**       | [Seq-Monkey General Text Dataset](http://share.mobvoi.com:5000/sharing/O91blwPkY)                                                                         |
+| **[Pretrain Data]**       | [Seq-Monkey General Text Dataset](http://share.mobvoi.com:5000/sharing/O91blwPkY) / [Baidu](https://pan.baidu.com/s/114F1k3eksiWCOQLvaT3RYQ?pwd=6666)     |
 | **[SFT Data]**            | [Jiangshu Large Model SFT Dataset](https://www.modelscope.cn/datasets/deepctrl/deepctrl-sft-data/resolve/master/sft_data_zh.jsonl)                        |
 | **[DPO Data]**            | [Huozi Dataset 1](https://huggingface.co/datasets/Skepsun/huozi_rlhf_data_json)                                                                           |
 | **[DPO Data]**            | [Huozi Dataset 2](https://huggingface.co/datasets/beyond/rlhf-reward-single-round-trans_chinese)                                                          |

@@ -214,25 +214,25 @@ streamlit run fast_inference.py
   因为LLM体积非常小，为了避免模型头重脚轻（词嵌入embedding层参数占整个LLM比太高），所以词表长度需要选择比较小。
   强大的开源模型例如01万物、千问、chatglm、mistral、Llama3等，它们的tokenizer词表长度如下：
 
-    | Tokenizer 模型       | 词表大小    | 来源             |
-    |--------------------|---------|----------------|
-    | yi tokenizer       | 64,000  | 01万物（中国）       |
-    | qwen2 tokenizer    | 151,643 | 阿里云（中国）        |
-    | glm tokenizer      | 151,329 | 智谱AI（中国）       |
-    | mistral tokenizer  | 32,000  | Mistral AI（法国） |
-    | llama3 tokenizer   | 128,000 | Meta（美国）       |
-    | minimind tokenizer | 6,400   | 自定义            |
-    
-    > 尽管Mistral中文词语占比很少，编解码效率弱于qwen2、glm等中文友好型分词器。
-    > 但MiniMind这里选择了mistral tokenizer作为分词器以保持整体参数轻量，避免头重脚轻，因为mistral的词表大小只有32,000。
-    > 且MiniMind在实际测试中几乎没有出现过生僻词汇解码失败的情况，效果良好。
-    
-    > 方便对比测试效果，额外训练了一个自定义Tokenizer模型的版本**MiniMind-small-T**，自定义词表压缩长度到6400，使得LLM总参数进一步降低到26M左右。
+  | Tokenizer 模型       | 词表大小    | 来源             |
+        |--------------------|---------|----------------|
+  | yi tokenizer       | 64,000  | 01万物（中国）       |
+  | qwen2 tokenizer    | 151,643 | 阿里云（中国）        |
+  | glm tokenizer      | 151,329 | 智谱AI（中国）       |
+  | mistral tokenizer  | 32,000  | Mistral AI（法国） |
+  | llama3 tokenizer   | 128,000 | Meta（美国）       |
+  | minimind tokenizer | 6,400   | 自定义            |
+
+  > 尽管Mistral中文词语占比很少，编解码效率弱于qwen2、glm等中文友好型分词器。
+  > 但MiniMind这里选择了mistral tokenizer作为分词器以保持整体参数轻量，避免头重脚轻，因为mistral的词表大小只有32,000。
+  > 且MiniMind在实际测试中几乎没有出现过生僻词汇解码失败的情况，效果良好。
+
+  > 方便对比测试效果，额外训练了一个自定义Tokenizer模型的版本**MiniMind-small-T**，自定义词表压缩长度到6400，使得LLM总参数进一步降低到26M左右。
 
 ---
 
 - 📙【Pretrain数据】：
-  [seq-monkey通用文本数据集](https://github.com/mobvoi/seq-monkey-data/blob/main/docs/pretrain_open_corpus.md)
+  [Seq-Monkey通用文本数据集](https://github.com/mobvoi/seq-monkey-data/blob/main/docs/pretrain_open_corpus.md) / [Seq-Monkey百度网盘](https://pan.baidu.com/s/114F1k3eksiWCOQLvaT3RYQ?pwd=6666)
   是由多种公开来源的数据（如网页、百科、博客、开源代码、书籍等）汇总清洗而成。整理成统一的JSONL格式，并经过了严格的筛选和去重，确保数据的全面性、规模、可信性和高质量。总量大约在10B
   token，适合中文大语言模型的预训练。
 
@@ -271,7 +271,7 @@ streamlit run fast_inference.py
 | MiniMind训练数据集      | 下载地址                                                                                                                                                     |
 |--------------------|----------------------------------------------------------------------------------------------------------------------------------------------------------|
 | **【tokenizer训练集】** | [HuggingFace](https://huggingface.co/datasets/jingyaogong/minimind_dataset/tree/main) / [百度网盘](https://pan.baidu.com/s/1yAw1LVTftuhQGAC1Y9RdYQ?pwd=6666) |
-| **【Pretrain数据】**   | [seq-monkey通用文本数据集](http://share.mobvoi.com:5000/sharing/O91blwPkY)                                                                                      |
+| **【Pretrain数据】**   | [Seq-Monkey通用文本数据集](http://share.mobvoi.com:5000/sharing/O91blwPkY)  / [百度网盘](https://pan.baidu.com/s/114F1k3eksiWCOQLvaT3RYQ?pwd=6666)                  |
 | **【SFT数据】**        | [匠数大模型SFT数据集](https://www.modelscope.cn/datasets/deepctrl/deepctrl-sft-data/resolve/master/sft_data_zh.jsonl)                                            |
 | **【DPO数据】**        | [活字数据集1](https://huggingface.co/datasets/Skepsun/huozi_rlhf_data_json)                                                                                   |
 | **【DPO数据】**        | [活字数据集2](https://huggingface.co/datasets/beyond/rlhf-reward-single-round-trans_chinese)                                                                  |
