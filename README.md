@@ -106,7 +106,7 @@ https://github.com/user-attachments/assets/88b98128-636e-43bc-a419-b1b1403c2055
 * CUDA == 12.2
 * [requirements.txt](./requirements.txt)
 
-# 📌 Deployment & Inference
+# 📌 Quick Inference & Test
 
 <div align="center" style="font-size: 1.5em; font-weight: bold;">
   <img src="https://huggingface.co/front/assets/huggingface_logo-noborder.svg" alt="Hugging Face Logo" style="vertical-align: middle; height: 30px;" />
@@ -174,15 +174,13 @@ streamlit run fast_inference.py
       │   ├── full_sft_512.pth
       │   ├── full_sft_640_moe.pth
       │   └── full_sft_640.pth
+      │   └── full_sft_768.pth
       ├── single_chat
       │   ├── full_sft_1024.pth
       │   ├── full_sft_512.pth
       │   ├── full_sft_640_moe.pth
       │   └── full_sft_640.pth
-      ├── full_sft_1024.pth
-      ├── full_sft_512.pth
-      ├── full_sft_640_moe.pth
-      ├── full_sft_640.pth
+      │   └── full_sft_768.pth
       ├── pretrain_1024.pth
       ├── pretrain_640_moe.pth
       ├── pretrain_640.pth
