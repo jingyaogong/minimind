@@ -214,20 +214,20 @@ streamlit run fast_inference.py
   因为LLM体积非常小，为了避免模型头重脚轻（词嵌入embedding层参数占整个LLM比太高），所以词表长度需要选择比较小。
   强大的开源模型例如01万物、千问、chatglm、mistral、Llama3等，它们的tokenizer词表长度如下：
 
-  | Tokenizer 模型       | 词表大小    | 来源             |
-        |--------------------|---------|----------------|
-  | yi tokenizer       | 64,000  | 01万物（中国）       |
-  | qwen2 tokenizer    | 151,643 | 阿里云（中国）        |
-  | glm tokenizer      | 151,329 | 智谱AI（中国）       |
-  | mistral tokenizer  | 32,000  | Mistral AI（法国） |
-  | llama3 tokenizer   | 128,000 | Meta（美国）       |
-  | minimind tokenizer | 6,400   | 自定义            |
+| Tokenizer 模型       | 词表大小    | 来源             |
+|--------------------|---------|----------------|
+| yi tokenizer       | 64,000  | 01万物（中国）       |
+| qwen2 tokenizer    | 151,643 | 阿里云（中国）        |
+| glm tokenizer      | 151,329 | 智谱AI（中国）       |
+| mistral tokenizer  | 32,000  | Mistral AI（法国） |
+| llama3 tokenizer   | 128,000 | Meta（美国）       |
+| minimind tokenizer | 6,400   | 自定义            |
 
-  > 尽管Mistral中文词语占比很少，编解码效率弱于qwen2、glm等中文友好型分词器。
-  > 但MiniMind这里选择了mistral tokenizer作为分词器以保持整体参数轻量，避免头重脚轻，因为mistral的词表大小只有32,000。
-  > 且MiniMind在实际测试中几乎没有出现过生僻词汇解码失败的情况，效果良好。
+> 尽管Mistral中文词语占比很少，编解码效率弱于qwen2、glm等中文友好型分词器。
+> 但MiniMind这里选择了mistral tokenizer作为分词器以保持整体参数轻量，避免头重脚轻，因为mistral的词表大小只有32,000。
+> 且MiniMind在实际测试中几乎没有出现过生僻词汇解码失败的情况，效果良好。
 
-  > 方便对比测试效果，额外训练了一个自定义Tokenizer模型的版本**MiniMind-small-T**，自定义词表压缩长度到6400，使得LLM总参数进一步降低到26M左右。
+> 方便对比测试效果，额外训练了一个自定义Tokenizer模型的版本**MiniMind-small-T**，自定义词表压缩长度到6400，使得LLM总参数进一步降低到26M左右。
 
 ---
 
