@@ -243,16 +243,15 @@ git clone https://github.com/jingyaogong/minimind.git
 
   Powerful open-source models like 01万物, 千问, chatglm, mistral, and Llama3 have the following tokenizer vocabulary
   sizes:
-
-  | Tokenizer Model      | Vocabulary Size | Source                |
-              |----------------------|------------------|-----------------------|
-  | yi tokenizer         | 64,000           | 01-AI (China)         |
-  | qwen2 tokenizer      | 151,643          | Alibaba Cloud (China) |
-  | glm tokenizer        | 151,329          | Zhipu AI (China)      |
-  | mistral tokenizer    | 32,000           | Mistral AI (France)   |
-  | llama3 tokenizer     | 128,000          | Meta (USA)            |
-  | minimind tokenizer   | 6,400            | Custom                |
-
+    <table>
+      <tr><th>Tokenizer Model</th><th>Vocabulary Size</th><th>Come from</th></tr>
+      <tr><td>yi tokenizer</td><td>64,000</td><td>01-AI（China）</td></tr>
+      <tr><td>qwen2 tokenizer</td><td>151,643</td><td>Alibaba Cloud（China）</td></tr>
+      <tr><td>glm tokenizer</td><td>151,329</td><td>Zhipu AI（China）</td></tr>
+      <tr><td>mistral tokenizer</td><td>32,000</td><td>Mistral AI（China）</td></tr>
+      <tr><td>llama3 tokenizer</td><td>128,000</td><td>Meta（China）</td></tr>
+      <tr><td>minimind tokenizer</td><td>6,400</td><td>Custom</td></tr>
+    </table>
   > Although Mistral’s Chinese vocabulary proportion is small and its encoding/decoding efficiency is weaker than
   Chinese-friendly tokenizers like qwen2 and glm, MiniMind chose the Mistral tokenizer to keep the overall model
   lightweight and avoid being top-heavy, as Mistral’s vocabulary size is only 32,000. MiniMind has shown excellent
