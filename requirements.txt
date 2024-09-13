@@ -9,7 +9,7 @@ marshmallow==3.22.0
 matplotlib==3.5.1
 ngrok==1.4.0
 nltk==3.8
-numpy==2.1.0
+numpy==1.26.4
 openai==1.42.0
 pandas==1.5.3
 peft==0.7.1
