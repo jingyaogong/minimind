@@ -68,13 +68,17 @@ def process_seq_monkey():
     doc_ids = []
     with jsonlines.open('./dataset/mobvoi_seq_monkey_general_open_corpus.jsonl') as reader:
         for idx, obj in enumerate(reader):
-            content = obj.get('text', '')
-            if len(content) > 512:
+            try:
+                content = obj.get('text', '')
+                if len(content) > 512:
+                    continue
+                text_id = tokenizer(f'{bos_token}{content}{eos_token}').data['input_ids']
+                doc_ids += text_id
+                if idx % 50000 == 0:
+                    print(f"seq_monkey: [{idx}]")
+            except UnicodeDecodeError as e:
+                print(f"Skipping invalid line {idx + 1}: {e}")
                 continue
-            text_id = tokenizer(f'{bos_token}{content}{eos_token}').data['input_ids']
-            doc_ids += text_id
-            if idx % 50000 == 0:
-                print(f"seq_monkey: [{idx}]")
 
     arr = np.array(doc_ids, dtype=np.uint16)
     with open('./dataset/clean_seq_monkey.bin', 'wb') as f:
@@ -150,15 +154,19 @@ def sft_process(contain_history=False):
     for path in sft_datasets:
         with jsonlines.open(path) as reader:
             for idx, obj in enumerate(reader):
-                data.append({
-                    'history': obj.get('history', ''),
-                    'q': obj.get('input', '') + obj.get('q', ''),
-                    'a': obj.get('output', '') + obj.get('a', '')
-                })
+                try:
+                    data.append({
+                        'history': obj.get('history', ''),
+                        'q': obj.get('input', '') + obj.get('q', ''),
+                        'a': obj.get('output', '') + obj.get('a', '')
+                    })
 
-                if len(data) >= chunk_size:
-                    process_and_write_data(data)
-                    data = []
+                    if len(data) >= chunk_size:
+                        process_and_write_data(data)
+                        data = []
+                except jsonlines.InvalidLineError as e:
+                    print(f"Skipping invalid JSON line {idx + 1}: {e}")
+                    continue
 
             if data:
                 process_and_write_data(data)
@@ -191,7 +199,7 @@ def rl_process():
 
 
 if __name__ == "__main__":
-    tokenizer = AutoTokenizer.from_pretrained('./model', use_fast=False)
+    tokenizer = AutoTokenizer.from_pretrained('./model/minimind_tokenizer', use_fast=False)
     print('tokenizer词表大小：', len(tokenizer))
 
     ################
@@ -199,7 +207,7 @@ if __name__ == "__main__":
     # 2: sft
     # 3: RL
     ################
-    process_type = 2
+    process_type = 1
 
     if process_type == 1:
         pretrain_process()

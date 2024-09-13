@@ -109,7 +109,7 @@ def init_model(lm_config):
 
     if model_from == 1:
         moe_path = '_moe' if lm_config.use_moe else ''
-        ckp = f'./out/single_chat/full_sft_{lm_config.dim}{moe_path}.pth'
+        ckp = f'./out/pretrain_{lm_config.dim}{moe_path}.pth'
 
         model = Transformer(lm_config)
         state_dict = torch.load(ckp, map_location=device)
@@ -148,8 +148,8 @@ if __name__ == "__main__":
     out_dir = 'out'
     epochs = 19
     gradient_accumulation_steps = 1
-    batch_size = 48
-    learning_rate = 2e-8
+    batch_size = 80
+    learning_rate = 2e-4
     device = 'cuda:0'
     dtype = 'bfloat16'
     # dtype = 'float16'
@@ -175,7 +175,7 @@ if __name__ == "__main__":
 
     model, tokenizer = init_model(lm_config)
     # -----init dataloader------
-    df = pd.read_csv('./dataset/sft_data.csv')
+    df = pd.read_csv('./dataset/sft_data_single.csv')
     df = df.sample(frac=1.0)
     train_ds = SFTDataset(df, tokenizer, max_length=max_seq_len)
     train_sampler = DistributedSampler(train_ds) if ddp else None
