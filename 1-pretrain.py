@@ -133,7 +133,7 @@ if __name__ == "__main__":
     max_seq_len = lm_config.max_seq_len
     out_dir = 'out'
     epochs = 20
-    batch_size = 8
+    batch_size = 64
     learning_rate = 1e-4
     device = 'cuda:0'
     dtype = 'bfloat16'

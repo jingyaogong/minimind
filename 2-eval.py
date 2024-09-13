@@ -60,7 +60,7 @@ if __name__ == "__main__":
     # -----------------------------------------------------------------------------
     out_dir = 'out'
     start = ""
-    temperature = 0.7
+    temperature = 0.5
     top_k = 16
     setup_seed(1337)
     # device = 'cpu'

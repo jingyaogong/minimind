@@ -112,13 +112,13 @@ def init_model(lm_config):
         ckp = f'./out/pretrain_{lm_config.dim}{moe_path}.pth'
 
         model = Transformer(lm_config)
-        state_dict = torch.load(ckp, map_location=device)
-
-        unwanted_prefix = '_orig_mod.'
-        for k, v in list(state_dict.items()):
-            if k.startswith(unwanted_prefix):
-                state_dict[k[len(unwanted_prefix):]] = state_dict.pop(k)
-        model.load_state_dict(state_dict, strict=False)
+        # state_dict = torch.load(ckp, map_location=device)
+        #
+        # unwanted_prefix = '_orig_mod.'
+        # for k, v in list(state_dict.items()):
+        #     if k.startswith(unwanted_prefix):
+        #         state_dict[k[len(unwanted_prefix):]] = state_dict.pop(k)
+        # model.load_state_dict(state_dict, strict=False)
     else:
         model = AutoModel.from_pretrained('./minimind', trust_remote_code=True)
 
