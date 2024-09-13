@@ -276,14 +276,13 @@ streamlit run fast_inference.py
 
 下载到`./dataset/`目录下
 
-| MiniMind训练数据集         | 下载地址                                                                                                                                                     |
-|-----------------------|----------------------------------------------------------------------------------------------------------------------------------------------------------|
-| **【tokenizer训练集】**    | [HuggingFace](https://huggingface.co/datasets/jingyaogong/minimind_dataset/tree/main) / [百度网盘](https://pan.baidu.com/s/1yAw1LVTftuhQGAC1Y9RdYQ?pwd=6666) |
-| **【Pretrain数据(2选1)】** | [Seq-Monkey通用文本数据集](http://share.mobvoi.com:5000/sharing/O91blwPkY)  / [百度网盘](https://pan.baidu.com/s/1-Z8Q37lJD4tOKhyBs1D_6Q?pwd=6666)                  |
-| **【Pretrain数据(2选1)】** | [SkyPile-150B数据集](https://hf-mirror.com/datasets/Skywork/SkyPile-150B/tree/main/data)                                                                    |
-| **【SFT数据】**           | [匠数大模型SFT数据集](https://www.modelscope.cn/datasets/deepctrl/deepctrl-sft-data/resolve/master/sft_data_zh.jsonl)                                            |
-| **【DPO数据1】**          | [活字数据集1](https://huggingface.co/datasets/Skepsun/huozi_rlhf_data_json)                                                                                   |
-| **【DPO数据2】**          | [活字数据集2](https://huggingface.co/datasets/beyond/rlhf-reward-single-round-trans_chinese)                                                                  |
+| MiniMind训练数据集      | 下载地址                                                                                                                                                                                                                       |
+|--------------------|----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
+| **【tokenizer训练集】** | [HuggingFace](https://huggingface.co/datasets/jingyaogong/minimind_dataset/tree/main) / [百度网盘](https://pan.baidu.com/s/1yAw1LVTftuhQGAC1Y9RdYQ?pwd=6666)                                                                   |
+| **【Pretrain数据】**   | [Seq-Monkey官方](http://share.mobvoi.com:5000/sharing/O91blwPkY)  / [百度网盘](https://pan.baidu.com/s/1-Z8Q37lJD4tOKhyBs1D_6Q?pwd=6666) / [HuggingFace](https://huggingface.co/datasets/jingyaogong/minimind_dataset/tree/main) |
+| **【SFT数据】**        | [匠数大模型SFT数据集](https://www.modelscope.cn/datasets/deepctrl/deepctrl-sft-data/resolve/master/sft_data_zh.jsonl)                                                                                                              |
+| **【DPO数据1】**       | [活字数据集1](https://huggingface.co/datasets/Skepsun/huozi_rlhf_data_json)                                                                                                                                                     |
+| **【DPO数据2】**       | [活字数据集2](https://huggingface.co/datasets/beyond/rlhf-reward-single-round-trans_chinese)                                                                                                                                    |
 
 # 📌 Model
 
