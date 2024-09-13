@@ -150,6 +150,10 @@ streamlit run fast_inference.py
 
 # 📌 Quick Start
 
+* 0、环境安装
+  ```bash
+    pip install -r requirements.txt
+  ```
 * 1、克隆项目代码
     ```text
     git clone https://github.com/jingyaogong/minimind.git

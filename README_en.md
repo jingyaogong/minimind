@@ -160,15 +160,18 @@ The project has been deployed to ModelScope makerspace, where you can experience
 
 # 📌 Quick Start
 
-*
-    1. Clone the project code
+* 0. Install the required dependencies
+  ```bash
+    pip install -r requirements.txt
+  ```
+  
+* 1. Clone the project code
 
 ```text
 git clone https://github.com/jingyaogong/minimind.git
 ```
 
-*
-    2. If you need to train the model yourself
+* 2. If you need to train the model yourself
 
     * 2.1 Download the [dataset download link](#dataset-download-link) and place it in the `./dataset` directory.
 
