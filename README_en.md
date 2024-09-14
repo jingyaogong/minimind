@@ -782,7 +782,21 @@ your model with third-party UIs, such as fastgpt, OpenWebUI, etc.
   <img src="https://contrib.rocks/image?repo=jingyaogong/minimind&v=2" />
 </a>
 
-## 🫶Thank You for Your Support!
+## 😊Thanks for
+
+<table style="border-spacing: 10px; border-collapse: separate;">
+  <tr>
+    <td style="text-align: center; padding: 10px;">
+      <a href="https://github.com/ipfgao" style="">
+        <img src="https://avatars.githubusercontent.com/u/16459707?s=80&v=4" width="60px" height="60px" alt="" style="font-size: 14px; border-radius: 50%;"/>
+        <sub style="display: block; margin-top: 0px;"><b>ipfgao</b></sub>
+      </a>
+      <a href="https://github.com/jingyaogong/minimind/issues/26" style="display: block; margin-top: 0px; font-size: 14px;">👉Training step record</a>
+    </td>
+  </tr>
+</table>
+
+## 🫶Supporter
 
 [![Stargazers repo roster for @jingyaogong/minimind](https://reporoster.com/stars/jingyaogong/minimind)](https://github.com/jingyaogong/minimind/stargazers)
 

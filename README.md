@@ -708,7 +708,22 @@ minimind模型本身没有使用较大的数据集训练，也没有针对回答
   <img src="https://contrib.rocks/image?repo=jingyaogong/minimind&v=2" />
 </a>
 
-## 🫶感谢支持！
+
+## 😊鸣谢
+
+<table style="border-spacing: 10px; border-collapse: separate;">
+  <tr>
+    <td style="text-align: center; padding: 10px;">
+      <a href="https://github.com/ipfgao" style="">
+        <img src="https://avatars.githubusercontent.com/u/16459707?s=80&v=4" width="60px" height="60px" alt="" style="font-size: 14px; border-radius: 50%;"/>
+        <sub style="display: block; margin-top: 0px;"><b>ipfgao</b></sub>
+      </a>
+      <a href="https://github.com/jingyaogong/minimind/issues/26" style="display: block; margin-top: 0px; font-size: 14px;">👉训练步骤记录</a>
+    </td>
+  </tr>
+</table>
+
+## 🫶支持者
 
 [![Stargazers repo roster for @jingyaogong/minimind](https://reporoster.com/stars/jingyaogong/minimind)](https://github.com/jingyaogong/minimind/stargazers)
 
