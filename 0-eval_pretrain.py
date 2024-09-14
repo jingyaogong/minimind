@@ -16,7 +16,7 @@ def count_parameters(model):
 
 
 def init_model(lm_config):
-    tokenizer = AutoTokenizer.from_pretrained('./model',
+    tokenizer = AutoTokenizer.from_pretrained('./model/minimind_tokenizer',
                                               trust_remote_code=True, use_fast=False)
     model_from = 1  # 1从权重，2用transformers
 
