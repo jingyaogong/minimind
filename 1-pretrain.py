@@ -99,7 +99,7 @@ def init_model():
 
     # model init
     model = Transformer(lm_config).to(device)
-    # moe_path = '_moe' if lm_config.use_moe else ''
+    moe_path = '_moe' if lm_config.use_moe else ''
     # ckp = f'{save_dir}/pretrain_{lm_config.dim}{moe_path}.pth'
     #
     # state_dict = torch.load(ckp, map_location=device)
