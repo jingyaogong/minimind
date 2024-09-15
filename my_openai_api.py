@@ -14,7 +14,7 @@ from flask_cors import CORS
 from sentence_transformers import SentenceTransformer
 from sklearn.preprocessing import PolynomialFeatures
 from transformers import AutoTokenizer, AutoModelForCausalLM
-from marshmallow import validate, Schema, fields
+from marshmallow import validate, Schema, fields, EXCLUDE
 from pydantic import BaseModel
 
 warnings.filterwarnings('ignore', category=UserWarning)
@@ -165,6 +165,9 @@ class ChatMessageSchema(Schema):
 
 
 class CreateChatCompletionSchema(Schema):
+    class Meta:
+        unknown = EXCLUDE  # 忽略未知的字段
+
     model = fields.Str(required=True, metadata={"example": "minimind"})
     messages = fields.List(
         fields.Nested(ChatMessageSchema), required=True,
