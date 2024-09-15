@@ -774,7 +774,7 @@ your model with third-party UIs, such as fastgpt, OpenWebUI, etc.
 > issues
 > for discussion and correction.
 
-## 🤝Contributors
+## 🤝[Contributors](https://github.com/jingyaogong/minimind/graphs/contributors)
 
 
 [//]: # (<br/>)
