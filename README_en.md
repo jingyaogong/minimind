@@ -782,48 +782,16 @@ your model with third-party UIs, such as fastgpt, OpenWebUI, etc.
 [//]: # (  <img src="https://contrib.rocks/image?repo=jingyaogong/minimind&v=3" />)
 [//]: # (</a>)
 
-<table style="border-spacing: 10px; border-collapse: separate;">
-  <tr>
-    <td align="center" style="padding: 15px;">
-      <a href="https://github.com/jingyaogong">
-        <img src="https://avatars.githubusercontent.com/u/62287848" width="70px" height="70px" alt="" style="border-radius: 50%;"/>
-        <br/>        
-        <b>jingyaogong</b>
-      </a>
-    </td>
-    <td align="center" style="padding: 15px;">
-      <a href="https://github.com/MuWinds">
-        <img src="https://avatars.githubusercontent.com/u/93832089" width="70px" height="70px" alt="" style="border-radius: 50%;"/>
-        <br/>        
-        <b>MuWinds</b>
-      </a>
-    </td>
-    <td align="center" style="padding: 15px;">
-      <a href="https://github.com/chuanzhubin">
-        <img src="https://avatars.githubusercontent.com/u/2813798" width="70px" height="70px" alt="" style="border-radius: 50%;"/>
-        <br/>        
-        <b>chuanzhubin</b>
-      </a>
-    </td>
-  </tr>
-</table>
+<a href="https://github.com/jingyaogong"><img src="https://avatars.githubusercontent.com/u/62287848" width="70px" height="70px"/></a>&nbsp;
+<a href="https://github.com/MuWinds"><img src="https://avatars.githubusercontent.com/u/93832089" width="70px" height="70px"/></a>&nbsp;
+<a href="https://github.com/chuanzhubin"><img src="https://avatars.githubusercontent.com/u/2813798" width="70px" height="70px"/></a>&nbsp;
 
 
 ## 😊Thanks for
 
-<table style="border-spacing: 10px; border-collapse: separate;">
-  <tr>
-    <td align="center" style="padding: 15px;">
-      <a href="https://github.com/ipfgao">
-        <img src="https://avatars.githubusercontent.com/u/16459707?s=80&v=4" width="70px" height="70px" alt="" style="border-radius: 50%;"/>
-        <br/>        
-        <b>ipfgao</b>
-      </a>
-      <br/>
-      <a href="https://github.com/jingyaogong/minimind/issues/26">👉Step record</a>
-    </td>
-  </tr>
-</table>
+<a href="https://github.com/ipfgao"><b>@ipfgao</b></a>:
+<a href="https://github.com/jingyaogong/minimind/issues/26">🔗训练步骤记录</a>
+
 
 ## 🫶Supporter
 
