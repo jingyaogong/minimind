@@ -56,10 +56,10 @@ def train_tokenizer():
     assert tokenizer.token_to_id("</s>") == 2
 
     # 保存tokenizer
-    tokenizer_dir = "./minimind_tokenizer"
+    tokenizer_dir = "./model/minimind_tokenizer"
     os.makedirs(tokenizer_dir, exist_ok=True)
     tokenizer.save(os.path.join(tokenizer_dir, "tokenizer.json"))
-    tokenizer.model.save("./minimind_tokenizer")
+    tokenizer.model.save("./model/minimind_tokenizer")
 
     # 手动创建配置文件
     config = {

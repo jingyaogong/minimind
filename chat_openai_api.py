@@ -2,7 +2,7 @@ from openai import OpenAI
 
 client = OpenAI(
     api_key="none",
-    base_url="http://202.195.167.142:8000/v1"
+    base_url="http://202.195.167.206:8000/v1"
 )
 
 # 初始化对话历史列表

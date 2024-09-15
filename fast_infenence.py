@@ -4,8 +4,8 @@ import torch
 from transformers import AutoModelForCausalLM, AutoTokenizer
 from transformers.generation.utils import GenerationConfig
 
-st.set_page_config(page_title="MiniMind-V1 Demo(无历史上文)")
-st.title("MiniMind-V1 Demo(无历史上文)")
+st.set_page_config(page_title="MiniMind-V1 108M(无历史上文)")
+st.title("MiniMind-V1 108M(无历史上文)")
 
 model_id = "minimind-v1"
 
@@ -14,7 +14,6 @@ temperature = 0.7
 top_k = 8
 max_seq_len = 1 * 1024
 # -----------------------------------------------------------------------------
-
 
 @st.cache_resource
 def load_model_tokenizer():
@@ -30,7 +29,6 @@ def load_model_tokenizer():
     model = model.eval()
     generation_config = GenerationConfig.from_pretrained(model_id)
     return model, tokenizer, generation_config
-
 
 def clear_chat_messages():
     del st.session_state.messages
@@ -49,7 +47,6 @@ def init_chat_messages():
         st.session_state.messages = []
 
     return st.session_state.messages
-
 
 # max_new_tokens = st.sidebar.slider("max_new_tokens", 0, 1024, 512, step=1)
 # top_p = st.sidebar.slider("top_p", 0.0, 1.0, 0.8, step=0.01)
@@ -119,7 +116,6 @@ def main():
             #     messages.append({"role": "assistant", "content": assistant_answer})
 
         messages.append({"role": "assistant", "content": response})
-        # print("messages: ", json.dumps(response, ensure_ascii=False), flush=True)
 
     st.button("清空对话", on_click=clear_chat_messages)
 
