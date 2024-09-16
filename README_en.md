@@ -160,18 +160,21 @@ The project has been deployed to ModelScope makerspace, where you can experience
 
 # 📌 Quick Start
 
-* 0. Install the required dependencies
-  ```bash
-    pip install -r requirements.txt
-  ```
-  
-* 1. Clone the project code
+*
+    0. Install the required dependencies
+```bash
+  pip install -r requirements.txt
+```
+
+*
+    1. Clone the project code
 
 ```text
 git clone https://github.com/jingyaogong/minimind.git
 ```
 
-* 2. If you need to train the model yourself
+*
+    2. If you need to train the model yourself
 
     * 2.1 Download the [dataset download link](#dataset-download-link) and place it in the `./dataset` directory.
 
@@ -776,35 +779,42 @@ your model with third-party UIs, such as fastgpt, OpenWebUI, etc.
 
 ## 🤝[Contributors](https://github.com/jingyaogong/minimind/graphs/contributors)
 
-
 [//]: # (<br/>)
+
 [//]: # (<a href="https://github.com/jingyaogong/minimind/graphs/contributors">)
+
 [//]: # (  <img src="https://contrib.rocks/image?repo=jingyaogong/minimind&v=3" />)
+
 [//]: # (</a>)
 
-<a href="https://github.com/jingyaogong"><img src="https://avatars.githubusercontent.com/u/62287848" width="70px" height="70px"/></a>&nbsp;
-<a href="https://github.com/MuWinds"><img src="https://avatars.githubusercontent.com/u/93832089" width="70px" height="70px"/></a>&nbsp;
-<a href="https://github.com/chuanzhubin"><img src="https://avatars.githubusercontent.com/u/2813798" width="70px" height="70px"/></a>&nbsp;
-
+<a href="https://github.com/jingyaogong"><img src="https://avatars.githubusercontent.com/u/62287848" width="70px" height="70px"/></a>
+&nbsp;
+<a href="https://github.com/MuWinds"><img src="https://avatars.githubusercontent.com/u/93832089" width="70px" height="70px"/></a>
+&nbsp;
+<a href="https://github.com/chuanzhubin"><img src="https://avatars.githubusercontent.com/u/2813798" width="70px" height="70px"/></a>
+&nbsp;
 
 ## 😊Thanks for
 
 <a href="https://github.com/ipfgao"><b>@ipfgao</b></a>:
 <a href="https://github.com/jingyaogong/minimind/issues/26">🔗训练步骤记录</a>
 
-
 ## 🫶Supporter
 
 <a href="https://github.com/jingyaogong/minimind/stargazers">
-  <source media="(prefers-color-scheme: dark)" srcset="https://reporoster.com/stars/dark/jingyaogong/minimind"/>
-  <source media="(prefers-color-scheme: light)" srcset="https://reporoster.com/stars/jingyaogong/minimind"/>
-  <img alt="github contribution grid snake animation" src="https://reporoster.com/stars/jingyaogong/minimind"/>
+    <picture>
+      <source media="(prefers-color-scheme: dark)" srcset="https://reporoster.com/stars/dark/jingyaogong/minimind"/>
+      <source media="(prefers-color-scheme: light)" srcset="https://reporoster.com/stars/jingyaogong/minimind"/>
+      <img alt="github contribution grid snake animation" src="https://reporoster.com/stars/jingyaogong/minimind"/>
+    </picture>
 </a>
 
 <a href="https://github.com/jingyaogong/minimind/network/members">
-  <source media="(prefers-color-scheme: dark)" srcset="https://reporoster.com/forks/dark/jingyaogong/minimind"/>
-  <source media="(prefers-color-scheme: light)" srcset="https://reporoster.com/forks/jingyaogong/minimind"/>
-  <img alt="github contribution grid snake animation" src="https://reporoster.com/forks/jingyaogong/minimind"/>
+    <picture>
+      <source media="(prefers-color-scheme: dark)" srcset="https://reporoster.com/forks/dark/jingyaogong/minimind"/>
+      <source media="(prefers-color-scheme: light)" srcset="https://reporoster.com/forks/jingyaogong/minimind"/>
+      <img alt="github contribution grid snake animation" src="https://reporoster.com/forks/jingyaogong/minimind"/>
+    </picture>
 </a>
 
 <picture>
@@ -812,7 +822,6 @@ your model with third-party UIs, such as fastgpt, OpenWebUI, etc.
   <source media="(prefers-color-scheme: light)" srcset="https://api.star-history.com/svg?repos=jingyaogong/minimind&type=Date"/>
   <img alt="Star History Chart" src="https://api.star-history.com/svg?repos=jingyaogong/minimind&type=Date"/>
 </picture>
-
 
 # License
 
