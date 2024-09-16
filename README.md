@@ -152,7 +152,7 @@ streamlit run fast_inference.py
 
 * 0、环境安装
   ```bash
-    pip install -r requirements.txt
+  pip install -r requirements.txt -i https://pypi.tuna.tsinghua.edu.cn/simple
   ```
 * 1、克隆项目代码
     ```text
@@ -702,10 +702,11 @@ minimind模型本身没有使用较大的数据集训练，也没有针对回答
 
 ## 🤝[贡献者](https://github.com/jingyaogong/minimind/graphs/contributors)
 
-[//]: # (<br/>)
-[//]: # (<a href="https://github.com/jingyaogong/minimind/graphs/contributors">)
-[//]: # (  <img src="https://contrib.rocks/image?repo=jingyaogong/minimind&v=3" />)
-[//]: # (</a>)
+<!--
+<a href="https://github.com/jingyaogong/minimind/graphs/contributors">
+  <img src="https://contrib.rocks/image?repo=jingyaogong/minimind&v3" />
+</a>
+-->
 
 <a href="https://github.com/jingyaogong"><img src="https://avatars.githubusercontent.com/u/62287848" width="70px" height="70px"/></a>&nbsp;
 <a href="https://github.com/MuWinds"><img src="https://avatars.githubusercontent.com/u/93832089" width="70px" height="70px"/></a>&nbsp;

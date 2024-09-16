@@ -779,20 +779,16 @@ your model with third-party UIs, such as fastgpt, OpenWebUI, etc.
 
 ## 🤝[Contributors](https://github.com/jingyaogong/minimind/graphs/contributors)
 
-[//]: # (<br/>)
+<!--
+<a href="https://github.com/jingyaogong/minimind/graphs/contributors">
+  <img src="https://contrib.rocks/image?repo=jingyaogong/minimind&v3" />
+</a>
+-->
 
-[//]: # (<a href="https://github.com/jingyaogong/minimind/graphs/contributors">)
+<a href="https://github.com/jingyaogong"><img src="https://avatars.githubusercontent.com/u/62287848" width="70px" height="70px"/></a>&nbsp;
+<a href="https://github.com/MuWinds"><img src="https://avatars.githubusercontent.com/u/93832089" width="70px" height="70px"/></a>&nbsp;
+<a href="https://github.com/chuanzhubin"><img src="https://avatars.githubusercontent.com/u/2813798" width="70px" height="70px"/></a>&nbsp;
 
-[//]: # (  <img src="https://contrib.rocks/image?repo=jingyaogong/minimind&v=3" />)
-
-[//]: # (</a>)
-
-<a href="https://github.com/jingyaogong"><img src="https://avatars.githubusercontent.com/u/62287848" width="70px" height="70px"/></a>
-&nbsp;
-<a href="https://github.com/MuWinds"><img src="https://avatars.githubusercontent.com/u/93832089" width="70px" height="70px"/></a>
-&nbsp;
-<a href="https://github.com/chuanzhubin"><img src="https://avatars.githubusercontent.com/u/2813798" width="70px" height="70px"/></a>
-&nbsp;
 
 ## 😊Thanks for
 
