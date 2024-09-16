@@ -795,11 +795,24 @@ your model with third-party UIs, such as fastgpt, OpenWebUI, etc.
 
 ## 🫶Supporter
 
-[![Stargazers repo roster for @jingyaogong/minimind](https://reporoster.com/stars/jingyaogong/minimind)](https://github.com/jingyaogong/minimind/stargazers)
+<a href="https://github.com/jingyaogong/minimind/stargazers">
+  <source media="(prefers-color-scheme: dark)" srcset="https://reporoster.com/stars/dark/jingyaogong/minimind"/>
+  <source media="(prefers-color-scheme: light)" srcset="https://reporoster.com/stars/jingyaogong/minimind"/>
+  <img alt="github contribution grid snake animation" src="https://reporoster.com/stars/jingyaogong/minimind"/>
+</a>
 
-[![Forkers repo roster for @jingyaogong/minimind](https://reporoster.com/forks/jingyaogong/minimind)](https://github.com/jingyaogong/minimind/network/members)
+<a href="https://github.com/jingyaogong/minimind/network/members">
+  <source media="(prefers-color-scheme: dark)" srcset="https://reporoster.com/forks/dark/jingyaogong/minimind"/>
+  <source media="(prefers-color-scheme: light)" srcset="https://reporoster.com/forks/jingyaogong/minimind"/>
+  <img alt="github contribution grid snake animation" src="https://reporoster.com/forks/jingyaogong/minimind"/>
+</a>
 
-![Star History Chart](https://api.star-history.com/svg?repos=jingyaogong/minimind&type=Date)
+<picture>
+  <source media="(prefers-color-scheme: dark)" srcset="https://api.star-history.com/svg?repos=jingyaogong/minimind&type=Date&theme=dark"/>
+  <source media="(prefers-color-scheme: light)" srcset="https://api.star-history.com/svg?repos=jingyaogong/minimind&type=Date"/>
+  <img alt="Star History Chart" src="https://api.star-history.com/svg?repos=jingyaogong/minimind&type=Date"/>
+</picture>
+
 
 # License
 
