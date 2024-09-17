@@ -58,17 +58,17 @@ exacerbates the problem of finding quality content to understand LLMs, severely 
 Therefore, the goal of this project is to lower the barrier to entry for working with LLMs as much as possible, by
 training an extremely lightweight language model from scratch.
 
-(As of August 28, 2024) The initial release of MiniMind includes four model variants, with the smallest being just
-26MB (0.02B) and still exhibiting amazing conversational capabilities!
+> [!CAUTION]
+> As of 2024-09-17, MiniMind has trained three model versions, with the smallest model requiring only 26M (0.02B)
+> parameters to achieve smooth conversational abilities!
 
-| Model (Size)           | Speed (Tokens/s) | Inference Memory | Training Memory (`batch_size=8`) | 
-|------------------------|------------------|------------------|----------------------------------|
-| MiniMind-small-T (26M) | 91.9             | 0.5 GB           | 3.6 GB                           |
-| MiniMind-small (56M)   | 85.2             | 0.7 GB           | 4.5 GB                           |
-| MiniMind (218M)        | 57.6             | 2.1 GB           | 10.4 GB                          |
-| MiniMind-MoE (166M)    | 64.9             | 1.6 GB           | 7.4 GB                           |
+| Model (Size)            | Tokenizer Length | Inference Memory Usage | Release Date | Subjective Rating (/100) |
+|-------------------------|------------------|------------------------|--------------|--------------------------|
+| minimind-v1-small (26M) | 6400             | 0.5 GB                 | 2024.08.28   | 50'                      |
+| minimind-v1-moe (4×26M) | 6400             | 1.0 GB                 | 2024.09.17   | 55'                      |
+| MiniMind-V1 (108M)      | 6400             | 1.0 GB                 | 2024.09.01   | 60'                      |
 
-> This analysis was conducted on an RTX 3090 GPU with Torch 2.1.2, CUDA 12.2, and Flash Attention 2.
+> This analysis was run on an RTX 3090 GPU with Torch 2.1.2, CUDA 12.2, and Flash Attention 2.
 
 The project includes:
 
@@ -87,21 +87,30 @@ We hope this open-source project helps LLM beginners get started quickly!
 ### 👉**Recent Updates**
 
 <details close> 
-<summary> <b>September 1, 2024 (new🎉)</b> </summary>
+<summary> <b>2024-09-17 (new🎉)</b> </summary>
 
-- Updated MiniMind-V1 (108M) model, using minimind_tokenizer, with 3 rounds of pre-training + 10 rounds of SFT, more
-  thorough training, stronger performance.
+- Updated the minimind-v1-moe model
+- To prevent ambiguity, all mistral_tokenizer versions have been removed, and a custom minimind_tokenizer is now used as
+  the tokenizer.
 
-- The project has been deployed to the ModelScope Creation Space, where you can experience it on this website:
+</details>
+
+<details close>
+<summary> <b>2024-09-01</b> </summary>
+
+- Updated the MiniMind-V1 (108M) model, using minimind_tokenizer with 3 pre-training epochs and 10 SFT epochs for more
+  thorough training and improved performance.
+
+- The project has been deployed to ModelScope's Creative Space and can be experienced on the website:
 
 - [ModelScope Online Experience](https://www.modelscope.cn/studios/gongjy/minimind)
 
 </details>
 
 <details close> 
-<summary> <b>August 27, 2024</b> </summary>
+<summary> <b>2024-08-27</b> </summary>
 
-- Project first open-sourced
+- The project was open-sourced for the first time.
 
 </details>
 
@@ -162,6 +171,7 @@ The project has been deployed to ModelScope makerspace, where you can experience
 
 *
     0. Install the required dependencies
+
 ```bash
   pip install -r requirements.txt
 ```
@@ -176,7 +186,7 @@ git clone https://github.com/jingyaogong/minimind.git
 *
     2. If you need to train the model yourself
 
-    * 2.1 Download the [dataset download link](#dataset-download-link) and place it in the `./dataset` directory.
+    * 2.1 Download the [dataset download link](#dataset-download-links) and place it in the `./dataset` directory.
 
     * 2.2 Run `python data_process.py` to process the dataset, such as token-encoding pretrain data and extracting QA
       data to CSV files for the SFT dataset.
@@ -190,25 +200,22 @@ git clone https://github.com/jingyaogong/minimind.git
 *
     3. Test model inference performance
 
-    * Download the weights from the [trained model weights](#trained-model-weights) section below and place them in
-      the `./out/` directory
+    * Ensure that the required trained parameter weights are located in the `./out/` directory.
+    * You can also directly download and use the trained model weights
+      from [Trained Model Weights](#Trained Model Weights).
        ```text
       out
       ├── multi_chat
-      │   ├── full_sft_1024.pth
       │   ├── full_sft_512.pth
-      │   ├── full_sft_640_moe.pth
-      │   └── full_sft_640.pth
+      │   ├── full_sft_512_moe.pth
       │   └── full_sft_768.pth
       ├── single_chat
-      │   ├── full_sft_1024.pth
       │   ├── full_sft_512.pth
-      │   ├── full_sft_640_moe.pth
-      │   └── full_sft_640.pth
+      │   ├── full_sft_512_moe.pth
       │   └── full_sft_768.pth
-      ├── pretrain_1024.pth
-      ├── pretrain_640_moe.pth
-      ├── pretrain_640.pth
+      ├── pretrain_768.pth
+      ├── pretrain_512_moe.pth
+      ├── pretrain_512.pth
       ```
 
     * Test the pretraining model's chain effect with `python 0-eval_pretrain.py`
@@ -258,13 +265,18 @@ git clone https://github.com/jingyaogong/minimind.git
       <tr><td>llama3 tokenizer</td><td>128,000</td><td>Meta（China）</td></tr>
       <tr><td>minimind tokenizer</td><td>6,400</td><td>Custom</td></tr>
     </table>
-  > Although Mistral’s Chinese vocabulary proportion is small and its encoding/decoding efficiency is weaker than
-  Chinese-friendly tokenizers like qwen2 and glm, MiniMind chose the Mistral tokenizer to keep the overall model
-  lightweight and avoid being top-heavy, as Mistral’s vocabulary size is only 32,000. MiniMind has shown excellent
-  performance in practical tests, with almost no failures in decoding rare words.
 
-  > For comparison purposes, an additional custom Tokenizer version **MiniMind(-T)** was trained, reducing the
-  vocabulary size to 6,400, which further decreases the total model parameters to around 26M.
+  > [!IMPORTANT]
+  > Update on 2024-09-17: To avoid ambiguity from previous versions and control the model size, all Minimind models now
+  use the Minimind_tokenizer for tokenization, and all versions of the Mistral_tokenizer have been deprecated.
+
+  > Although the Minimind_tokenizer has a small length and its encoding/decoding efficiency is weaker compared to
+  Chinese-friendly tokenizers like Qwen2 and GLM, the Minimind models have opted for their custom-trained
+  Minimind_tokenizer to maintain a lightweight parameter structure and prevent an imbalance between encoding and
+  computation layers. This is because the Minimind vocabulary size is only 6,400.
+  > Moreover, Minimind has not encountered any issues with decoding rare words in practical tests, and the performance
+  has been satisfactory. Due to the custom vocabulary being compressed to 6,400 tokens, the total parameter size of the
+  LLM is minimized to only 26M.
 
 ---
 
@@ -346,15 +358,11 @@ and FFN layer code. The structure is illustrated in the figure below (redrawn):
 Model configurations can be found in [./model/LMConfig.py](./model/LMConfig.py). The model types and parameters are
 shown in the table below:
 
-| Model Name       | Params | Vocabulary Size | Layers | Model Dimension | KV Heads | Query Heads | Share+Route | TopK |
-|------------------|--------|-----------------|--------|-----------------|----------|-------------|-------------|------|
-| minimind-small-T | 26M    | 6400            | 8      | 512             | 8        | 16          | -           | -    |
-| minimind-small   | 56M    | 32000           | 8      | 640             | 8        | 16          | -           | -    |
-| minimind         | 218M   | 32000           | 16     | 1024            | 8        | 16          | -           | -    |
-| minimind-MoE     | 166M   | 32000           | 8      | 640             | 8        | 16          | 2+4         | 2    |
-
-For reference, the configuration details for GPT-3 are shown in the table below:
-![gpt3_config.png](./images/gpt3_config.png)
+| Model Name        | params | len_vocab | n_layers | d_model | kv_heads | q_heads | share+route | TopK |
+|-------------------|--------|-----------|----------|---------|----------|---------|-------------|------|
+| minimind-v1-small | 26M    | 6400      | 8        | 512     | 8        | 16      | -           | -    |
+| minimind-v1-moe   | 4×26M  | 6400      | 8        | 512     | 8        | 16      | 2+4         | 2    |
+| minimind-v1       | 108M   | 6400      | 16       | 768     | 8        | 16      | -           | -    |
 
 # 📌 Experiment
 
@@ -365,12 +373,11 @@ GPU: NVIDIA GeForce RTX 3090 (24GB) * 2
 Environment: python 3.9 + Torch 2.1.2 + DDP multi-GPU training
 ```
 
-| Model Name       | params | len_vocab | batch_size | pretrain_time      | sft_single_time   | sft_multi_time      |
-|------------------|--------|-----------|------------|--------------------|-------------------|---------------------|
-| minimind-small-T | 26M    | 6400      | 64         | ≈5 hour (1 epoch)  | ≈2 hour (1 epoch) | ≈0.5 hour (1 epoch) |
-| minimind-small   | 56M    | 32000     | 24         | ≈6 hour (1 epoch)  | ≈2 hour (1 epoch) | ≈0.5 hour (1 epoch) |
-| minimind         | 218M   | 32000     | 16         | ≈15 hour (1 epoch) | ≈5 hour (1 epoch) | ≈1 hour (1 epoch)   |
-| minimind-MoE     | 166M   | 32000     | 16         | ≈13 hour (1 epoch) | ≈5 hour (1 epoch) | ≈1 hour (1 epoch)   |
+| Model Name        | params | len_vocab | batch_size | pretrain_time     | sft_single_time   | sft_multi_time      |
+|-------------------|--------|-----------|------------|-------------------|-------------------|---------------------|
+| minimind-v1-small | 26M    | 6400      | 64         | ≈2 hour (1 epoch) | ≈2 hour (1 epoch) | ≈0.5 hour (1 epoch) |
+| minimind-v1-moe   | 4×26M  | 6400      | 40         | ≈6 hour (1 epoch) | ≈5 hour (1 epoch) | ≈1 hour (1 epoch)   |
+| minimind-v1       | 108M   | 6400      | 16         | ≈6 hour (1 epoch) | ≈4 hour (1 epoch) | ≈1 hour (1 epoch)   |
 
 ---
 
@@ -434,216 +441,176 @@ Environment: python 3.9 + Torch 2.1.2 + DDP multi-GPU training
     ```
 
 ---
-🔗 **Trained Model Weights**:
+📋 Regarding LLM parameter configuration, an interesting paper [MobileLLM](https://arxiv.org/pdf/2402.14905) provides
+detailed research and experiments.
+The scaling law exhibits unique patterns in small models. The parameters that significantly influence the scaling of
+Transformer models are primarily `d_model` and `n_layers`.
 
-| Model Name       | params | Config                                          | pretrain_model                                                  | single_sft_model                                                | multi_sft_model                                                 |
-|------------------|--------|-------------------------------------------------|-----------------------------------------------------------------|-----------------------------------------------------------------|-----------------------------------------------------------------|
-| minimind-small-T | 26M    | d_model=512<br/>n_layers=8                      | -                                                               | [URL](https://pan.baidu.com/s/1_COe0FQRDmeapSsvArahCA?pwd=6666) | [URL](https://pan.baidu.com/s/1GsGsWSL0Dckl0YPRXiBIFQ?pwd=6666) |
-| minimind-small   | 56M    | d_model=640<br/>n_layers=8                      | [URL](https://pan.baidu.com/s/1nJuOpnu5115FDuz6Ewbeqg?pwd=6666) | [URL](https://pan.baidu.com/s/1lRX0IcpjNFSySioeCfifRQ?pwd=6666) | [URL](https://pan.baidu.com/s/1LzVxBpL0phtGUH267Undqw?pwd=6666) |
-| minimind         | 218M   | d_model=1024<br/>n_layers=16                    | [URL](https://pan.baidu.com/s/1jzA7uLEi-Jen2fW5olCmEg?pwd=6666) | [URL](https://pan.baidu.com/s/1Hvt0Q_UB_uW2sWTw6w1zRQ?pwd=6666) | [URL](https://pan.baidu.com/s/1fau9eat3lXilnrG3XNhG5Q?pwd=6666) |
-| minimind-MoE     | 166M   | d_model=1024<br/>n_layers=8<br/>share+route=2+4 | [URL](https://pan.baidu.com/s/11CneDVTkw2Y6lNilQX5bWw?pwd=6666) | [URL](https://pan.baidu.com/s/1fRq4MHZec3z-oLK6sCzj_A?pwd=6666) | [URL](https://pan.baidu.com/s/1HC2KSM_-RHRtgv7ZDkKI9Q?pwd=6666) |
+* `d_model`↑ + `n_layers`↓ -> Short and wide models
+* `d_model`↓ + `n_layers`↑ -> Tall and narrow models
+
+The Scaling Law proposed in 2020 posits that the amount of training data, parameter count, and training iterations are
+the key factors determining performance, with the influence of model architecture being nearly negligible. However, this
+law seems not to fully apply to small models.
+MobileLLM suggests that the depth of the architecture is more important than its width. A "deep and narrow" model can
+learn more abstract concepts compared to a "wide and shallow" model. For instance, when the model parameters are fixed
+at 125M or 350M, a 30–42 layer "narrow" model significantly outperforms a 12-layer "short and wide" model. This trend is
+observed across eight benchmark tests, including common sense reasoning, question answering, and reading comprehension.
+This is a fascinating discovery, as previously, few attempts were made to stack more than 12 layers when designing
+architectures for small models around the 100M parameter range. This aligns with the observations from MiniMind, where
+adjusting parameters between `d_model` and `n_layers` during training produced similar effects.
+However, "deep and narrow" has its limitations. When `d_model` < 512, the disadvantages of collapsing word embedding
+dimensions become very pronounced, and increasing layers does not compensate for the shortcomings in `d_head` caused by
+fixed `q_head`. Conversely, when `d_model` > 1536, increasing layers seems to have a higher priority than `d_model`,
+providing a better "cost-performance" ratio and effect gain.
+Therefore, MiniMind sets `d_model = 512` and `n_layers = 8` for the small model to achieve a balance between "minimal
+size <-> better performance." For greater performance gains, `d_model = 768` and `n_layers = 16` are set, aligning
+better with the scaling law for small models.
+
+> For reference, the configuration details for GPT-3 are shown in the table below:
+
+![gpt3_config.png](./images/gpt3_config.png)
 
 ---
 
-Regarding the parameter configuration of LLMs, an interesting paper [MobileLLM](https://arxiv.org/pdf/2402.14905) has
-conducted detailed research and experiments.
+### Trained Model Weights
 
-The scaling laws exhibit unique patterns in small models.
+[baidu](https://pan.baidu.com/s/1KUfSzEkSXYbCCBj0Pw-9fA?pwd=6666)
 
-The parameters that cause the scaling of Transformer models almost solely depend on `d_model` and `n_layers`.
-
-* `d_model`↑ + `n_layers`↓ -> Short and Fat
-* `d_model`↓ + `n_layers`↑ -> Tall and Thin
-
-The paper proposing the Scaling Law in 2020 suggested that the amount of training data, the number of parameters, and
-the number of training iterations are the key factors determining performance, while the impact of model architecture
-can be nearly ignored. However, this law does not seem to fully apply to small models.
-
-MobileLLM proposes that the depth of the architecture is more important than its width. A "deep and narrow" model can
-learn more abstract concepts compared to a "wide and shallow" model. For example, when the model parameters are fixed at
-125M or 350M, a "narrow" model with 30–42 layers performs significantly better than a "short and fat" model with around
-12 layers. This trend is observed across eight benchmark tests, including common-sense reasoning, question answering,
-and reading comprehension.
-
-This is a very interesting finding, as previously, almost no one attempted to stack more than 12 layers when designing
-architectures for models around the 100M parameter scale.
-
-This observation aligns with the results of MiniMind, where experiments adjusting the model parameter quantities
-between `d_model` and `n_layers` during training observed similar effects. However, there is a dimensional limit to "
-deep and narrow" models. When `d_model` < 512, the drawbacks of collapsing word embedding dimensions are quite
-pronounced. Increasing the number of layers cannot compensate for the deficiencies in `d_head` caused by fixed `q_head`.
-
-When `d_model` > 1536, increasing the number of layers seems to take precedence over `d_model`, providing a more "
-cost-effective" parameter-to-performance gain. Therefore, MiniMind sets the `d_model` of the small model to 640
-and `n_layers` to 8 to achieve a balance of "small size -> better performance". Setting `d_model` to 1024 and `n_layers`
-to 16 provides greater performance gains, aligning better with the scaling-law curve for small models.
+| Model Name        | params | Config                      | pretrain_model                                                  | single_sft_model                                                | multi_sft_model                                                 |
+|-------------------|--------|-----------------------------|-----------------------------------------------------------------|-----------------------------------------------------------------|-----------------------------------------------------------------|
+| minimind-v1-small | 26M    | d_model=512<br/>n_layers=8  | [URL](https://pan.baidu.com/s/1wP_cAIc8cgaJ6CxUmR9ECQ?pwd=6666) | [URL](https://pan.baidu.com/s/1_COe0FQRDmeapSsvArahCA?pwd=6666) | [URL](https://pan.baidu.com/s/1GsGsWSL0Dckl0YPRXiBIFQ?pwd=6666) |
+| minimind-v1-moe   | 4×26M  | d_model=512<br/>n_layers=8  | -                                                               | -                                                               | -                                                               |
+| minimind-v1       | 108M   | d_model=768<br/>n_layers=16 | -                                                               | [URL](https://pan.baidu.com/s/1p713loS7EfwHQf3G9eYI3Q?pwd=6666) | [URL](https://pan.baidu.com/s/12iHGpAs6R0kqsOnGtgK6vQ?pwd=6666) |
 
 ---
 
 # 📌 Eval
 
-[A] [minimind-small-T(0.02B)](https://pan.baidu.com/s/1_COe0FQRDmeapSsvArahCA?pwd=6666)<br/>
-[B] [minimind-small(0.05B)](https://pan.baidu.com/s/1lRX0IcpjNFSySioeCfifRQ?pwd=6666)<br/>
-[C] [minimind-MoE(0.16B)](https://pan.baidu.com/s/1fRq4MHZec3z-oLK6sCzj_A?pwd=6666)<br/>
-[D] [minimind(0.2B)](https://pan.baidu.com/s/1Hvt0Q_UB_uW2sWTw6w1zRQ?pwd=6666)<br/>
-[E] [baby-llama2-chinese(0.2B)](https://github.com/DLLXW/baby-llama2-chinese)<br/>
-[F] [chatlm-mini-chinese(0.2B)](https://github.com/charent/ChatLM-mini-Chinese)<br/>
+> [!TIP]
+> The following tests were completed on September 17, 2024. New models released after this date will not be included in
+> the tests unless there is a special need.
 
-```
-[Q]: How many days are there in a week?
-[A]: There are seven days in a week.
-[B]: There are 7 days in a week.
-[C]: According to your calculation, there are 12 hours in a week. Therefore, we need to multiply the number of hours by 12. This will give us the number of hours in 12.
-[D]: There are seven days in a week.
-[E]: As an AI assistant, I cannot determine the number of weeks you are referring to. If you can provide the number of weeks you are describing, I can provide information about the number of days in that week.
-[F]: There are seven days in a week, which is the product of seven days, i.e., 7 x 7 = 24 days. This number is obtained by dividing 24 by 7, because a week has seven days, so a week has 24 x 7 = 24 days.
+[A] [minimind-v1-small(0.02B)](https://pan.baidu.com/s/1_COe0FQRDmeapSsvArahCA?pwd=6666)<br/>
+[B] minimind-v1-moe(0.1B)<br/>
+[C] [minimind-v1(0.1B)](https://pan.baidu.com/s/1p713loS7EfwHQf3G9eYI3Q?pwd=6666)<br/>
+[D] [baby-llama2-chinese(0.2B)](https://github.com/DLLXW/baby-llama2-chinese)<br/>
+[E] [chatlm-mini-chinese(0.2B)](https://github.com/charent/ChatLM-mini-Chinese)<br/>
 
-[Q]: Do you know about the Yangtze River?
-[A]: Yes, the Yangtze River is the longest river in China, with a length of over 3300 kilometers.
-[B]: Yes, the Yangtze River is the longest river in China, with a length of approximately 7100 kilometers. Its basin area is about 33.28 million square kilometers, making it one of the largest rivers in China and the third-longest river in the world, with a total length of about 6300 kilometers.
-[C]: I know. The Yangtze River is an important water system in China, with a long history and culture. The Yangtze River is a symbol and spiritual pillar of the Chinese nation, and it is also one of the most beautiful natural landscapes in the world. People living along the Yangtze River, especially those in the Yangtze River basin, have lived there for thousands of years. The Yangtze River has deep historical and cultural significance in China, especially in its ancient culture.
-[D]: The Yangtze River is the largest river in China, with a length of about 6380 kilometers. It is the longest river in Asia and the largest river in China. The Yangtze River basin is one of China’s important river basins, rich in natural resources and cultural heritage. The Yangtze River basin is a major agricultural and economic development area in China, with numerous cultural heritage sites and historical attractions, making it one of China's most important cultural tourism destinations.
-[E]: Also, China is one of the longest cities in the world, with a population of over 34 million.
-[F]: Yes, the Yangtze River is the longest river in China and one of the longest rivers in the world. It originates from the Tibetan Plateau, flows through nine provinces and regions, and finally empties into the East China Sea. The Yangtze River basin has a mild climate with distinct seasons, making it an important agricultural and industrial base in China. The Yangtze River basin is rich in aquatic resources and is one of China’s important fishing resources.
+```text
+[Q]: Do you know the Yangtze River?
+[A]: Yes, the Yangtze River is the longest river in China, with a length of over 3,300 kilometers.
+[B]: Yes, the Yangtze River is the longest river in China, with a length of about 7,100 kilometers. Its drainage area is about 33.28 million square kilometers, making it one of China's largest rivers and the third longest river in the world, with a total length of about 6,300 kilometers.
+[C]: Yes, the Yangtze River is one of the longest rivers in China and the third longest river in the world. It originates from the Tibetan Plateau, flows through 11 provinces, and eventually empties into the East China Sea. The Yangtze River Basin is one of China's largest river basins, with abundant natural resources and cultural heritage, such as the Yangtze River Bridge, Yangtze River Maritime Museum, and ancient cities along the Yangtze.
+[D]: I also know that China is one of the longest cities in the world, with a population of over 34 million people.
+[E]: Yes, the Yangtze River is the longest river in China and also one of the longest rivers in the world. It originates from the Tibetan Plateau, flows through nine provinces and regions, and eventually empties into the East China Sea. The climate in the Yangtze River Basin is mild, with distinct seasons, making it an important agricultural and industrial base in China. The river basin is rich in aquatic resources and is one of China's major fishing resources.
 
 [Q]: Which country launched the first artificial satellite?
 [A]: The first artificial satellite was Sputnik 1.
 [B]: The first artificial satellite was launched by the United States.
-[C]: The first artificial satellite was launched by the China National Space Administration, which is a satellite launched by the China National Space Administration.
-[D]: The first artificial satellite was launched by the Soviet Union in 1957.
-[E]: The satellite named "Armstrong" was launched on November 20, 1961, and was the first to successfully send humans into space.
-[F]: The first artificial satellite was launched by the Soviet Union on April 4, 1957. It was launched by Soviet astronaut Yuri Gagarin and Soviet engineer Roald Skohley. During the launch, Gagarin and Skohley used a small satellite named "Sputnik 1," which had a diameter of 4.3 meters and weighed 1,051 kilograms. This satellite, called "Sputnik 1," was a milestone in the Soviet space race and marked the first time humans conducted a spacewalk in space.
+[C]: The first artificial satellite was launched by the Soviet Union on October 4, 1957.
+[D]: This satellite, named "Armstrong," was launched on November 20, 1961, and was the first successful satellite to send a human into space.
+[E]: The first artificial satellite was launched by the Soviet Union on April 4, 1957. It was launched by Soviet astronaut Yuri Gagarin and Soviet engineer Roald Skohley. During the launch, Gagarin and Skohley used a small satellite named "Sputnik 1," which had a diameter of 4.3 meters and weighed 1,051 kilograms. This satellite, known as "Sputnik 1," marked a milestone in the Soviet space race and was the first instance of a human spacewalk in history.
 
 [Q]: Do you know where Mount Tai is located?
-[A]: Mount Tai is located in the eastern part of China and is one of the Five Great Mountains of China.
-[B]: Mount Tai is located in Tai'an, Shandong Province, and is one of the Five Great Mountains of China.
-[C]: Where is Mount Tai?
-[D]: Mount Tai is located in Kunshan, Shandong Province, China. It is one of the treasures of ancient Chinese culture and one of the world-famous mountain scenic spots. Mount Tai is one of the Five Great Mountains, known for its steep peaks, beautiful natural scenery, and rich cultural heritage.
-[E]: As an AI assistant, I do not have internet access and therefore cannot provide information about your location. However, you can search or look up related keywords to obtain information about your location, or check news or websites for information about your location.
-[F]: Mount Tai is located in Tai'an, Shandong Province, China, and is one of the Five Great Mountains of China. It is also one of the important symbols of Chinese culture and history. Mount Tai is one of the Five Great Mountains, and it is one of the origins of Taoism and Buddhism in China. The elevation of Mount Tai is 1,545 meters, making it one of the most famous tourist attractions in China. Its history dates back to the 5th century BC and was a place for ancient emperors to offer sacrifices. Mount Tai is also an important part of Chinese culture, known as the "First of the Five Great Mountains," and is one of China's important cultural heritage sites.
+[A]: Mount Tai is located in eastern China and is one of the Five Great Mountains of China.
+[B]: Mount Tai is located in Tai'an City, Shandong Province, and is one of the Five Great Mountains of China.
+[C]: Mount Tai is located in Tai'an City, Shandong Province, China, and is one of the Five Great Mountains of China.
+[D]: As an AI assistant, I cannot access the internet, so I cannot provide information about your location. However, you can search for information or related keywords to find details about your location, or check news and websites for relevant information.
+[E]: Mount Tai is located in Tai'an City, Shandong Province, China, and is one of the Five Great Mountains of China. It is also an important symbol of Chinese culture and history. With an elevation of 1,545 meters, it is one of the most famous tourist destinations in China. Its history dates back to the 5th century BC and was a site for ancient royal sacrifices. Mount Tai is a significant part of Chinese culture, known as the "First of the Five Great Mountains."
 
 [Q]: What is the highest mountain in the world?
-[A]: The highest mountain in the world is Mount Everest, located on the border between Nepal and China, with an elevation of 8848 meters.
-[B]: Mount Everest is the highest mountain in the world, located in the Himalayas, with an elevation of 8848 meters.
-[C]: The highest mountain in the world is Mount Everest.
-[D]: The highest mountain in the world is Mount Everest, located in the Himalayas, with an elevation of 8,848.86 meters.
-[E]: The highest mountain in the world is Mount Everest, located in the Himalayas, with an elevation of 8,848.86 meters (29,031.69 feet).
-[F]: The highest mountain in the world is Mount Everest, also known as Sagarmatha, located on the border between Nepal and China in the Himalayas, with an elevation of 8,848.86 meters (29,031.69 feet). It is one of the most famous climbing targets in the world, attracting climbers from around the globe. The name Everest comes from the Tibetan language and means "Goddess's forehead peak." It consists of two different peaks, one in Nepal and the other in China. Its height is determined by measuring sea level elevation, as it is calculated based on Earth's average height. Although Mount Everest is the highest mountain in the world, it is not accessible from any other place on Earth. Other places, such as the Andes Mountains in South America, are also high mountains, but they are not the highest mountains in the world. In summary, Mount Everest is the highest mountain in the world, but it is not accessible from anywhere else on Earth. It is the highest mountain range on Earth, but it is not accessible from anywhere else on Earth.
+[A]: The highest mountain in the world is Mount Everest, located on the border between Nepal and China, with an elevation of 8,848 meters.
+[B]: Mount Everest is the highest mountain in the world, located in the Himalayas, with an elevation of 8,848 meters.
+[C]: Mount Everest is the highest mountain in the world, with an elevation of 8,848 meters.
+[D]: The highest mountain in the world is Mount Everest, located in the Himalayas, with an elevation of 8,848.86 meters (29,031.69 feet).
+[E]: The highest mountain in the world is Mount Everest, also known as Sagarmatha, located on the border between Nepal and China in the Himalayas, with an elevation of 8,848.86 meters (29,031.69 feet). It is one of the most famous climbing destinations, attracting climbers from around the world. The name Everest comes from Tibetan, meaning "The Goddess’s Peak," and it consists of two peaks, one in Nepal and one in China. Its height is determined through measurements of sea level, as it is the highest point on Earth. Although Everest is the highest mountain, it is not accessible from every place on Earth. Other places, such as the Andes Mountains in South America, are also high but do not have the highest peak. Overall, Everest is the highest mountain, but it is not accessible from every location on Earth.
 
 [Q]: Who proposed the law of universal gravitation?
-[A]: The law of universal gravitation was proposed by British physicist Newton. He believed that all objects produce gravitational force, which is determined by the mass of the objects and their distance. This theory reveals the relationship between mass and distance and proves the nature of universal gravitation.
-[B]: The law of universal gravitation was discovered by Newton and was proposed by British physicist James Watt in 1879.
-[C]: Who proposed the law of universal gravitation?
-[D]: The law of universal gravitation was proposed by Newton, who discovered that every object exerts a gravitational force on other objects, and the magnitude of this force depends on the mass and distance of the objects.
-[E]: Gravity is a force in the universe composed of mass or energy. According to Newton's law of universal gravitation, the gravitational force between two objects is directly proportional to their mass and inversely proportional to their distance. Therefore, Newton's law of universal gravitation shows that the gravitational force between two objects is directly proportional to their mass and inversely proportional to their distance. This law has wide applications in physics, astronomy, and other fields.
-[F]: The law of universal gravitation was proposed by British physicist Isaac Newton in 1687. He published a famous paper titled "Mathematical Principles of Natural Philosophy" in 1687, in which he proposed the law of universal gravitation, stating that there is a gravitational force between any two objects, which is directly proportional to their mass and inversely proportional to the square of their distance. This law, known as the law of universal gravitation, describes the relationship between mass and distance. It shows that the gravitational force between two objects is proportional to their mass and inversely proportional to the square of the distance between them. This law is crucial for explaining many phenomena in the universe, such as planetary motion around the sun, gravitational lensing between stars, etc. It is also widely used in astronomy, physics, and engineering, providing an important theoretical foundation for understanding the nature and evolution of the universe.
+[A]: The law of universal gravitation was proposed by the British physicist Newton. He believed that all objects exert gravitational force, which depends on their mass and distance. This theory reveals the relationship between mass and distance and explains the nature of gravitation.
+[B]: The law of universal gravitation was discovered by Newton and proposed by the British physicist James Watt in 1879.
+[C]: The law of universal gravitation was proposed by the British physicist Isaac Newton in the 17th century.
+[D]: Gravitation is a force in the universe composed of mass or energy. According to Newton's law of universal gravitation, the force between two objects is proportional to their mass and inversely proportional to their distance. Thus, Newton's law of universal gravitation shows that the gravitational force between two objects is proportional to their mass and inversely proportional to their distance. This law has wide applications in physics, astronomy, and other fields.
+[E]: The law of universal gravitation was proposed by the British physicist Isaac Newton in 1687. In his famous paper "Philosophiæ Naturalis Principia Mathematica," Newton proposed the law of universal gravitation, stating that any two objects exert a gravitational force on each other, proportional to their masses and inversely proportional to the square of their distance. This law is known as the law of universal gravitation and describes the relationship between mass and distance. It is crucial for explaining many phenomena in the universe, such as planetary orbits and gravitational lensing between stars, and has broad applications in astronomy, physics, and engineering, providing a fundamental theoretical basis for understanding the nature and evolution of the universe.
 
 [Q]: Do you know what the main food of giant pandas is?
-[A]: The main food of giant pandas is bamboo. They typically eat bamboo and need to consume about 30 kilograms of bamboo daily.
-[B]: Giant pandas primarily eat bamboo. Their digestive system is quite specialized, and they need to digest a large amount of bamboo daily to meet their survival needs. Besides bamboo, giant pandas also survive in the wild.
-[C]: The main food of giant pandas includes bamboo, mushrooms, beetroot, and mushrooms.
-[D]: Giant pandas are herbivorous mammals that mainly eat bamboo, including bamboo shoots, bamboo leaves, and stems.
-[E]: The main food of giant pandas is bamboo.
-[F]: Giant pandas are herbivores whose main food is bamboo. Their digestive system is adapted to digest high-fiber bamboo, but they also eat some other plants, such as herbaceous plants and small mammals. The digestive system of giant pandas is adapted to high-fiber bamboo, which allows them to digest large amounts of cellulose, helping them survive in the wild. Additionally, giant pandas have an enzyme called "cellulase" in their digestive tract that helps them break down cellulose, aiding in the digestion of a lot of water and nutrients. Their digestive tract also contains a protein called "cellulase protein," which helps maintain their energy levels, supporting their survival in the wild. Overall, the main food of giant pandas is bamboo, but they also consume some other plants, such as herbaceous plants and small mammals.
+[A]: The main food of giant pandas is bamboo. They typically eat bamboo and need to consume about 30 kilograms of it each day.
+[B]: Giant pandas mainly eat bamboo, which is their primary food. Their digestive system is quite specialized, and they need to digest a large amount of bamboo daily to meet their survival needs. Besides bamboo, giant pandas also survive in the wild.
+[C]: Giant pandas mainly eat bamboo but occasionally consume other plants and animals. They also eat some wild fruits, small animals, and plants, but these are not their main food sources.
+[D]: The main food of giant pandas is bamboo.
+[E]: Giant pandas are herbivores that primarily eat bamboo. Their digestive system is adapted to process the high cellulose content of bamboo, but they also consume some other plants, such as herbaceous plants and small mammals. Their digestive system includes enzymes like "cellulase" to break down cellulose, helping them digest a large amount of fiber and nutrients. Additionally, they have "cellulose protein" that helps maintain their energy levels, aiding their survival in the wild. Overall, bamboo is their primary food, but they also eat other plants and small mammals.
 
 [Q]: Why is seawater salty?
-[A]: Seawater contains many salts, which can lead to an increase in the salinity of seawater. The salts in seawater primarily come from the salt content in seawater, and these salts can form hydrogen bonds with the seawater, increasing its salinity.
-[B]: Seawater contains rich elements like calcium, phosphorus, potassium, and phosphorus, which are limited in quantity and distribution in the ocean. Additionally, seawater contains various nutrients from organisms and microorganisms, such as shells and seaweed.
-[C]: The salinity of seawater is higher than that of seawater because of its high carbonate and base levels. The carbonate and base levels in seawater are higher than in seawater, making the seawater salty.
-[D]: Seawater contains dissolved salts and other minerals, which come from the erosion and adsorption of the Earth's crust, and these substances dissolve in the water, causing the seawater to taste salty.
-[E]: Water is essential for many living organisms as it can absorb and release carbon dioxide, release oxygen, maintain atmospheric water vapor, and regulate the climate and environment. The salts and chemicals in water release oxygen, which allows organisms on Earth to breathe. Additionally, water plays many other roles, such as maintaining the water cycle, regulating the climate, and supporting the environment. Water is essential for many living organisms and is also a fundamental aspect of many natural phenomena.
-[F]: Seawater is salty primarily because it contains a large amount of dissolved salts, with sodium chloride (NaCl) being the most prominent. Sodium chloride is a common type of salt found in many places on Earth, including oceans, lakes, rivers, and groundwater. When water evaporates from the ocean, it carries away some of the salts, making the seawater salty. Additionally, seawater contains other dissolved salts, such as sulfate, magnesium sulfate, calcium sulfate, and potassium sulfate. 
+[A]: Seawater contains many salts, which increase its salinity. The salts in seawater mainly come from the dissolved salts and form hydrogen bonds with water molecules, increasing the salinity.
+[B]: Seawater contains abundant elements like calcium, phosphorus, potassium, and phosphorus, which are limited in quantity and distribution in the ocean. Additionally, seawater contains nutrients from various organisms and microorganisms, such as shells and seaweeds.
+[C]: Seawater contains many dissolved salts, with the most common being sodium chloride. When salt is added to water, its molecules react with water molecules to form sodium hydroxide, which is a type of salt.
+[D]: Water is essential for many organisms, as it can absorb and release carbon dioxide, release oxygen,
 ```
 
-🙋‍♂️Directly throw the answer of the above model to GPT-4o and ask it to help score it:
+> [!NOTE]
+> 🙋‍♂️Directly throw the answer of the above model to GPT-4o and ask it to help score it:
 
 ---
 
-According to your request, I will evaluate the performance of each model based on accuracy, clarity, and completeness,
-and provide ratings and rankings.
+### Model Performance Review:
 
-### Model Performance Ratings and Summary
+1. **Model A**:
+    - **Performance**: Model A's responses are usually concise and clear but lack detail and accuracy in some cases. For
+      example, Model A provided incorrect information about the length of the Yangtze River.
+    - **Score**: 60
 
-**Model A**
+2. **Model B**:
+    - **Performance**: Model B provides additional information in some cases, but this information can sometimes be
+      inaccurate or excessive. For instance, Model B gave incorrect figures for the length and drainage area of the
+      Yangtze River.
+    - **Score**: 65
 
-- **Accuracy**: Most answers are accurate, but there are occasional minor errors.
-  **Clarity**: Responses are concise and fluent.
-  **Completeness**: Responses are sometimes slightly simplistic, but overall the information is sufficient.
-  **Score**: 80
+3. **Model C**:
+    - **Performance**: Model C typically provides detailed and accurate answers for most questions. For example,
+      responses about the Yangtze River and Mount Tai were accurate.
+    - **Score**: 75
 
-**Model B**
+4. **Model D**:
+    - **Performance**: Model D’s responses sometimes appear disorganized and lack accuracy. For example, the answer
+      about Mount Tai was completely off-topic.
+    - **Score**: 50
 
-- **Accuracy**: Most answers are accurate, but there are some minor errors (e.g., regarding the first artificial
-  satellite).
-  **Clarity**: Language is relatively clear, but sometimes expressions are slightly confusing.
-  **Completeness**: Responses are fairly comprehensive but contain information discrepancies.
-  **Score**: 75
+5. **Model E**:
+    - **Performance**: Model E’s responses are usually very detailed, but they can be overly verbose and contain
+      unnecessary information. For instance, the answer on gravity was overly complex.
+    - **Score**: 70
 
-**Model C**
+#### Ranking (from highest to lowest):
 
-- **Accuracy**: Responses are inaccurate, with several instances of self-asking and answering.
-  **Clarity**: Language is fluent, but the logic of responses is poor.
-  **Completeness**: Information is incomplete and sometimes lacks important details.
-  **Score**: 55
-
-**Model D**
-
-- **Accuracy**: Most answers are accurate and generally correct.
-  **Clarity**: Expression is clear, with appropriate information density.
-  **Completeness**: Responses are relatively complete, but some answers might include unnecessary details.
-  **Score**: 85
-
-**Model E**
-
-- **Accuracy**: Accuracy is lower, with some answers unrelated to the questions.
-  **Clarity**: Expression is unclear and can cause confusion.
-  **Completeness**: Information is incomplete and sometimes deviates from the topic.
-  **Score**: 50
-
-**Model F**
-
-- **Accuracy**: Some answers are inaccurate, with notable errors (e.g., "24 days").
-  **Clarity**: Expression is lengthy and can cause confusion.
-  **Completeness**: Information is excessively lengthy and repetitive, reducing readability.
-  **Score**: 60
-
-### Ranking (from highest to lowest):
-
-| Model | D Model | A Model | B Model | F Model | C Model | E Model |
-|-------|---------|---------|---------|---------|---------|---------|
-| Score | 85      | 80      | 75      | 60      | 55      | 50      |
-
-These scores and rankings are based on each model’s overall performance in accuracy, clarity, and completeness.
+| Model | C  | E  | B  | A  | D  |
+|-------|----|----|----|----|----|
+| Score | 75 | 70 | 65 | 60 | 50 |
 
 ---
 
-### 👉 Summary of Results
+## 👉 Summary of Effects
 
-* The ranking of the minimind series (ABCD) is intuitive. minimind(0.2B) scores the highest, with minimal errors and
-  hallucinations in answering common-sense questions.
-    * Surprisingly, minimind-small-T (0.02B) with only 26M parameters performs close to minimind(0.2B).
-    * minimind(0.2B) had less than 2 epochs of SFT training. Despite the training time being several times that of
-      0.02B, the model was terminated early to free up resources for smaller models. Even with insufficient training,
-      0.2B achieved the best performance, highlighting the impact of model size.
-    * minimind-MoE (0.16B) performed poorly, even worse than its dense counterpart minimind(0.05B). This isn't due to
-      the MoE approach itself but rather because the model was terminated early due to resource constraints. MoE models
-      typically require more training epochs, and with only 2 epochs, the training was extremely insufficient. A
-      well-trained MoE version was previously tested on Yi tokenizer and showed visibly better performance compared to
-      dense models. Further training for updates to v2 and v3 versions will be conducted when server resources are
-      available.
+* The ranking of the minimind series (ABC) is intuitive, with minimind-v1(0.1B) scoring the highest and providing mostly
+  accurate answers to common knowledge questions.
+    * Surprisingly, minimind-v1-small (0.02B) with only 26M parameters performs close to minimind-v1(0.1B).
+    * Despite having less than 2 epochs of training, minimind-v1(0.1B) performed the best. This suggests that a larger
+      model often yields better performance, even with limited training.
+    * minimind-v1-moe (0.1B) performed poorly, likely because it was terminated early to free up resources for smaller
+      models. MoE models require more training epochs, and with only 2 epochs, it was under-trained. Previous
+      experiments with a fully trained MoE model on Yi tokenizer showed visible improvements. Future versions, v2 and
+      v3, will be updated with better training.
 
-* Model F's responses appear the most complete, despite some hallucinations. Both GPT-4o and Kimi's evaluations agree
-  that it is "overly verbose with repetitive content and contains hallucinations." This evaluation may seem too
-  harsh—hallucinations accounting for 10 out of 100 words can unfairly lead to a 0 score. Model F, having a default
-  longer training text and a much larger dataset, provides seemingly more complete answers, with data proving more
-  crucial than model size in similar contexts.
+* Model E’s responses appear the most complete, despite some instances of hallucination and overly verbose content.
+  However, GPT-4o and Deepseek's evaluations suggest it is "overly verbose and repetitive, with some hallucinations."
+  This strict evaluation might penalize models with some hallucinations heavily. Due to F models having longer default
+  text lengths and much larger datasets, the quality of responses depends significantly on the data rather than the
+  model size alone.
 
-> 🙋‍♂️ Personal subjective rating: F > D > A ≈ B > C > E
+> 🙋‍♂️ Personal Subjective Evaluation: E>C>B≈A>D
 
-> 🤖 GPT-4o rating: D > A > B > F > C > E
+> 🤖 GPT-4o Evaluation: C>E>B>A>D
 
-In summary, the scaling law suggests that larger model parameters and more training data generally lead to stronger
-model performance.
+Scaling Law: Larger model parameters and more training data generally lead to better model performance.
 
 # 📌 Objective Dataset: C-Eval
 
@@ -675,12 +642,10 @@ answering, so results should be considered as reference only.
 
 #### Results summary：
 
-| category         | correct  | question_count | accuracy  |
-|:-----------------|:--------:|:--------------:|:---------:|
-| minimind-small-T | 	   344	 |      1346      |  25.56%   |
-| minimind-small	  |   	312   |     	1346      | 	  23.18% |
-| minimind         | 	   351	 |      1346      |  26.08%   |
-| minimind-moe     |   	316   |     	1346      | 	  23.48% |
+| category          | correct  | question_count | accuracy |
+|:------------------|:--------:|:--------------:|:--------:|
+| minimind-v1-small | 	   344	 |      1346      |  25.56%  |
+| minimind-v1       | 	   351	 |      1346      |  26.08%  |
 
 ### Model Performance Insights from GPT-4o
 
@@ -785,10 +750,12 @@ your model with third-party UIs, such as fastgpt, OpenWebUI, etc.
 </a>
 -->
 
-<a href="https://github.com/jingyaogong"><img src="https://avatars.githubusercontent.com/u/62287848" width="70px" height="70px"/></a>&nbsp;
-<a href="https://github.com/MuWinds"><img src="https://avatars.githubusercontent.com/u/93832089" width="70px" height="70px"/></a>&nbsp;
-<a href="https://github.com/chuanzhubin"><img src="https://avatars.githubusercontent.com/u/2813798" width="70px" height="70px"/></a>&nbsp;
-
+<a href="https://github.com/jingyaogong"><img src="https://avatars.githubusercontent.com/u/62287848" width="70px" height="70px"/></a>
+&nbsp;
+<a href="https://github.com/MuWinds"><img src="https://avatars.githubusercontent.com/u/93832089" width="70px" height="70px"/></a>
+&nbsp;
+<a href="https://github.com/chuanzhubin"><img src="https://avatars.githubusercontent.com/u/2813798" width="70px" height="70px"/></a>
+&nbsp;
 
 ## 😊Thanks for
 

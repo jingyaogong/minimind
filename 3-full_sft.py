@@ -110,13 +110,13 @@ def init_model(lm_config):
     if model_from == 1:
         model = Transformer(lm_config)
         moe_path = '_moe' if lm_config.use_moe else ''
-        ckp = f'./out/pretrain_{lm_config.dim}{moe_path}.pth'
-        state_dict = torch.load(ckp, map_location=device)
-        unwanted_prefix = '_orig_mod.'
-        for k, v in list(state_dict.items()):
-            if k.startswith(unwanted_prefix):
-                state_dict[k[len(unwanted_prefix):]] = state_dict.pop(k)
-        model.load_state_dict(state_dict, strict=False)
+        # ckp = f'./out/pretrain_{lm_config.dim}{moe_path}.pth'
+        # state_dict = torch.load(ckp, map_location=device)
+        # unwanted_prefix = '_orig_mod.'
+        # for k, v in list(state_dict.items()):
+        #     if k.startswith(unwanted_prefix):
+        #         state_dict[k[len(unwanted_prefix):]] = state_dict.pop(k)
+        # model.load_state_dict(state_dict, strict=False)
     else:
         model = AutoModel.from_pretrained('./minimind', trust_remote_code=True)
 
@@ -146,8 +146,8 @@ if __name__ == "__main__":
     out_dir = 'out'
     epochs = 19
     gradient_accumulation_steps = 1
-    batch_size = 50
-    learning_rate = 2e-4
+    batch_size = 40
+    learning_rate = 1e-4
     device = 'cuda:0'
     dtype = 'bfloat16'
     # dtype = 'float16'
@@ -173,7 +173,7 @@ if __name__ == "__main__":
 
     model, tokenizer = init_model(lm_config)
     # -----init dataloader------
-    df = pd.read_csv('./dataset/sft_data_multi.csv')
+    df = pd.read_csv('./dataset/sft_data_single.csv')
     df = df.sample(frac=1.0)
     train_ds = SFTDataset(df, tokenizer, max_length=max_seq_len)
     train_sampler = DistributedSampler(train_ds) if ddp else None

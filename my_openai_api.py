@@ -22,7 +22,7 @@ warnings.filterwarnings('ignore', category=UserWarning)
 # ------------------------------------------------------------------------------------------------------------------
 DEVICE_NAME = "cuda:0" if torch.cuda.is_available() else "cpu"
 DEVICE = torch.device(DEVICE_NAME)
-MODEL_PATH = "./minimind-small-T"
+MODEL_PATH = "./minimind-v1-small"
 TOKENIZE_PATH = MODEL_PATH
 max_new_tokens = 1024
 temperature = 0.7

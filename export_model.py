@@ -6,6 +6,7 @@ from model.model import Transformer
 
 warnings.filterwarnings('ignore', category=UserWarning)
 
+
 def count_parameters(model):
     return sum(p.numel() for p in model.parameters() if p.requires_grad)
 
@@ -18,7 +19,7 @@ def export_transformers_model():
     lm_model = Transformer(lm_config)
     device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
     moe_path = '_moe' if lm_config.use_moe else ''
-    ckpt_path = f'./out/full_sft_{lm_config.dim}{moe_path}.pth'
+    ckpt_path = f'./out/single_chat/full_sft_{lm_config.dim}{moe_path}.pth'
 
     state_dict = torch.load(ckpt_path, map_location=device)
     unwanted_prefix = '_orig_mod.'
@@ -28,26 +29,26 @@ def export_transformers_model():
     lm_model.load_state_dict(state_dict, strict=False)
     print(f'模型参数: {count_parameters(lm_model) / 1e6} 百万 = {count_parameters(lm_model) / 1e9} B (Billion)')
 
-    lm_model.save_pretrained("minimind-small-T", safe_serialization=False)
+    lm_model.save_pretrained("minimind-v1-small", safe_serialization=False)
 
 
 def export_tokenizer():
     tokenizer = AutoTokenizer.from_pretrained('./model/minimind_tokenizer',
                                               trust_remote_code=True, use_fast=False)
-    tokenizer.save_pretrained("minimind-small-T")
+    tokenizer.save_pretrained("minimind-v1-small")
 
 
 def push_to_hf():
     def init_model():
         tokenizer = AutoTokenizer.from_pretrained('./model/minimind_tokenizer',
                                                   trust_remote_code=True, use_fast=False)
-        model = AutoModelForCausalLM.from_pretrained('minimind-small', trust_remote_code=True)
+        model = AutoModelForCausalLM.from_pretrained('minimind-v1-small', trust_remote_code=True)
         return model, tokenizer
 
     model, tokenizer = init_model()
     # 推送到huggingface
-    model.push_to_hub("minimind-small")
-    # tokenizer.push_to_hub("minimind-small-T", safe_serialization=False)
+    model.push_to_hub("minimind-v1-small")
+    # tokenizer.push_to_hub("minimind-v1-small", safe_serialization=False)
 
 
 if __name__ == '__main__':
