@@ -477,10 +477,10 @@ better with the scaling law for small models.
 
 [baidu](https://pan.baidu.com/s/1KUfSzEkSXYbCCBj0Pw-9fA?pwd=6666)
 
-| Model Name        | params | Config                      | pretrain_model                                                  | single_sft_model                                                | multi_sft_model                                                 |
-|-------------------|--------|-----------------------------|-----------------------------------------------------------------|-----------------------------------------------------------------|-----------------------------------------------------------------|
+| Model Name        | params | Config                      | pretrain_model                                                  | single_sft_model                                               | multi_sft_model                                                |
+|-------------------|--------|-----------------------------|-----------------------------------------------------------------|----------------------------------------------------------------|----------------------------------------------------------------|
 | minimind-v1-small | 26M    | d_model=512<br/>n_layers=8  | [URL](https://pan.baidu.com/s/1wP_cAIc8cgaJ6CxUmR9ECQ?pwd=6666) | [URL](https://pan.baidu.com/s/1_COe0FQRDmeapSsvArahCA?pwd=6666) | [URL](https://pan.baidu.com/s/1GsGsWSL0Dckl0YPRXiBIFQ?pwd=6666) |
-| minimind-v1-moe   | 4×26M  | d_model=512<br/>n_layers=8  | -                                                               | -                                                               | -                                                               |
+| minimind-v1-moe   | 4×26M  | d_model=512<br/>n_layers=8  | [URL](https://pan.baidu.com/s/1IZdkzPRhbZ_bSsRL8vInjg?pwd=6666)  | [URL](https://pan.baidu.com/s/1tqB-GMvuiGQBvEl-yZ-oBw?pwd=6666) | [URL](https://pan.baidu.com/s/1GHJ2T4904EcT1u8l1rVqtg?pwd=6666) |
 | minimind-v1       | 108M   | d_model=768<br/>n_layers=16 | -                                                               | [URL](https://pan.baidu.com/s/1p713loS7EfwHQf3G9eYI3Q?pwd=6666) | [URL](https://pan.baidu.com/s/12iHGpAs6R0kqsOnGtgK6vQ?pwd=6666) |
 
 ---
@@ -492,7 +492,7 @@ better with the scaling law for small models.
 > the tests unless there is a special need.
 
 [A] [minimind-v1-small(0.02B)](https://pan.baidu.com/s/1_COe0FQRDmeapSsvArahCA?pwd=6666)<br/>
-[B] minimind-v1-moe(0.1B)<br/>
+[B] [minimind-v1-moe(0.1B)](https://pan.baidu.com/s/1tqB-GMvuiGQBvEl-yZ-oBw?pwd=6666)<br/>
 [C] [minimind-v1(0.1B)](https://pan.baidu.com/s/1p713loS7EfwHQf3G9eYI3Q?pwd=6666)<br/>
 [D] [baby-llama2-chinese(0.2B)](https://github.com/DLLXW/baby-llama2-chinese)<br/>
 [E] [chatlm-mini-chinese(0.2B)](https://github.com/charent/ChatLM-mini-Chinese)<br/>
