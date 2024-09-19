@@ -131,7 +131,7 @@ if __name__ == "__main__":
     epochs = 20
     batch_size = 64
     learning_rate = 2e-4
-    device = 'cuda:0'
+    device = 'cuda:0' if torch.cuda.is_available() else 'cpu'
     dtype = 'bfloat16'
     save_dir = os.path.join(out_dir)
     os.makedirs(save_dir, exist_ok=True)
