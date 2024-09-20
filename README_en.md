@@ -730,11 +730,18 @@ your model with third-party UIs, such as fastgpt, OpenWebUI, etc.
 
 # 📌 Acknowledgement
 
+> [!TIP]
+> If you find `MiniMind` helpful, please give us a ⭐ on GitHub.<br/>
+> Given the length and the limitations of our expertise, there may be errors. We welcome discussions and corrections in the Issues section.<br/>
+> Your support is the driving force behind our continuous improvement of the project!
+
+
 > [!NOTE]
-> If you find `MiniMind` helpful, please give us a ⭐️ on GitHub. Your support is the driving force behind our continuous
-> efforts to improve the project! Due to the length and limited expertise, there may be some errors. We welcome any
-> issues
-> for discussion and correction.
+> An individual's resources, energy, and time are limited, so we encourage everyone to participate and contribute collectively. If you have trained model weights, you are welcome to share them in the Discussions or Issues sections.<br/>
+> These models can be new versions of MiniMind tailored for specific downstream tasks or vertical domains (such as sentiment recognition, healthcare, psychology, finance, legal Q&A, etc.).<br/>
+> They can also be new versions of MiniMind models that have undergone extended training, exploring longer text sequences, larger volumes (such as 0.1B+), or more extensive datasets.<br/>
+> Each contribution is unique, and all attempts are valuable and encouraged.<br/>
+> Any shared contributions will be promptly recognized and compiled in the acknowledgments list. Thank you once again for everyone's support!
 
 ## 🤝[Contributors](https://github.com/jingyaogong/minimind/graphs/contributors)
 
@@ -779,6 +786,26 @@ your model with third-party UIs, such as fastgpt, OpenWebUI, etc.
   <source media="(prefers-color-scheme: light)" srcset="https://api.star-history.com/svg?repos=jingyaogong/minimind&type=Date"/>
   <img alt="Star History Chart" src="https://api.star-history.com/svg?repos=jingyaogong/minimind&type=Date"/>
 </picture>
+
+<details close> 
+<summary> <b>Reference Links & Acknowledgments to the Following Excellent Papers or Projects</b> </summary>
+
+- No specific order
+- [https://github.com/meta-llama/llama3](https://github.com/meta-llama/llama3)
+- [https://github.com/karpathy/llama2.c](https://github.com/karpathy/llama2.c)
+- [https://github.com/DLLXW/baby-llama2-chinese](https://github.com/DLLXW/baby-llama2-chinese)
+- [(DeepSeek-V2)https://arxiv.org/abs/2405.04434](https://arxiv.org/abs/2405.04434)
+- [https://github.com/charent/ChatLM-mini-Chinese](https://github.com/charent/ChatLM-mini-Chinese)
+- [https://github.com/wdndev/tiny-llm-zh](https://github.com/wdndev/tiny-llm-zh)
+- [(Mistral-MoE)https://arxiv.org/pdf/2401.04088](https://arxiv.org/pdf/2401.04088)
+- [https://github.com/Tongjilibo/build_MiniLLM_from_scratch](https://github.com/Tongjilibo/build_MiniLLM_from_scratch)
+- [https://github.com/jzhang38/TinyLlama](https://github.com/jzhang38/TinyLlama)
+- [https://github.com/AI-Study-Han/Zero-Chatgpt](https://github.com/AI-Study-Han/Zero-Chatgpt)
+- [https://github.com/xusenlinzy/api-for-open-llm](https://github.com/xusenlinzy/api-for-open-llm)
+- [https://github.com/HqWu-HITCS/Awesome-Chinese-LLM](https://github.com/HqWu-HITCS/Awesome-Chinese-LLM)
+
+</details>
+
 
 # License
 

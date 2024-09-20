@@ -661,9 +661,18 @@ minimind模型本身没有使用较大的数据集训练，也没有针对回答
 
 # 📌 Acknowledge
 
+> [!TIP]
+> 如果您觉得 `MiniMind`对您有所帮助，可以在 GitHub 上加一个⭐<br/>
+> 篇幅不短水平有限难免纰漏，欢迎在Issues交流指正或提交PR改进项目<br/>
+> 您的支持就是持续改进项目的动力
+
 > [!NOTE]
-> 如果您觉得 `MiniMind`对您有所帮助，请在 GitHub 上给一个⭐<br/>
-> 您的支持是我们持续改进项目的动力！篇幅不短水平有限难免纰漏，欢迎在issue交流和指正。
+> 众擎易举。如果您已经尝试训练了新的MiniMind型号，欢迎在Discussions或Issues中分享您的模型权重<br/>
+> 它们可以是在特定下游任务或垂直领域（例如情感识别、医疗、心理、金融、法律问答等）的MiniMind新模型版本<br/>
+> 也可以是经过拓展训练后（例如探索更长文本序列、更大体积（0.1B+）或更大的数据集）的MiniMind新模型版本<br/>
+> 任何分享都视作独一无二的，所有尝试都具有价值，并受到鼓励<br/>
+> 这些贡献都会被及时发现并整理在鸣谢列表中，再次感谢所有支持！
+
 
 ## 🤝[贡献者](https://github.com/jingyaogong/minimind/graphs/contributors)
 
@@ -711,6 +720,25 @@ minimind模型本身没有使用较大的数据集训练，也没有针对回答
   <source media="(prefers-color-scheme: light)" srcset="https://api.star-history.com/svg?repos=jingyaogong/minimind&type=Date"/>
   <img alt="Star History Chart" src="https://api.star-history.com/svg?repos=jingyaogong/minimind&type=Date"/>
 </picture>
+
+<details close> 
+<summary> <b>参考链接 & 致谢以下优秀的论文或项目</b> </summary>
+
+- 排名不分任何先后顺序
+- [https://github.com/meta-llama/llama3](https://github.com/meta-llama/llama3)
+- [https://github.com/karpathy/llama2.c](https://github.com/karpathy/llama2.c)
+- [https://github.com/DLLXW/baby-llama2-chinese](https://github.com/DLLXW/baby-llama2-chinese)
+- [(DeepSeek-V2)https://arxiv.org/abs/2405.04434](https://arxiv.org/abs/2405.04434)
+- [https://github.com/charent/ChatLM-mini-Chinese](https://github.com/charent/ChatLM-mini-Chinese)
+- [https://github.com/wdndev/tiny-llm-zh](https://github.com/wdndev/tiny-llm-zh)
+- [(Mistral-MoE)https://arxiv.org/pdf/2401.04088](https://arxiv.org/pdf/2401.04088)
+- [https://github.com/Tongjilibo/build_MiniLLM_from_scratch](https://github.com/Tongjilibo/build_MiniLLM_from_scratch)
+- [https://github.com/jzhang38/TinyLlama](https://github.com/jzhang38/TinyLlama)
+- [https://github.com/AI-Study-Han/Zero-Chatgpt](https://github.com/AI-Study-Han/Zero-Chatgpt)
+- [https://github.com/xusenlinzy/api-for-open-llm](https://github.com/xusenlinzy/api-for-open-llm)
+- [https://github.com/HqWu-HITCS/Awesome-Chinese-LLM](https://github.com/HqWu-HITCS/Awesome-Chinese-LLM)
+
+</details>
 
 # License
 
