@@ -120,7 +120,6 @@ def init_distributed_mode():
     DEVICE = f"cuda:{ddp_local_rank}"
     torch.cuda.set_device(DEVICE)
 
-
 # torchrun --nproc_per_node 2 1-pretrain.py
 # I/O
 if __name__ == "__main__":

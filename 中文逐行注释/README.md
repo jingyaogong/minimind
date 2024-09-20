@@ -3,4 +3,4 @@
 
 感谢[@chuanzhubin](https://github.com/chuanzhubin)贡献此部分内容
 
-很大程度方便了学习者快速理解！
+很大程度方便了学习者快速理解

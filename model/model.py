@@ -375,7 +375,6 @@ class Transformer(PreTrainedModel):
 
         self.OUT.__setitem__('logits', logits)
         self.OUT.__setitem__('last_loss', self.last_loss)
-
         return self.OUT
 
     @torch.inference_mode()
