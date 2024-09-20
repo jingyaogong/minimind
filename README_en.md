@@ -545,6 +545,7 @@ better with the scaling law for small models.
 [B]: Seawater contains abundant elements like calcium, phosphorus, potassium, and phosphorus, which are limited in quantity and distribution in the ocean. Additionally, seawater contains nutrients from various organisms and microorganisms, such as shells and seaweeds.
 [C]: Seawater contains many dissolved salts, with the most common being sodium chloride. When salt is added to water, its molecules react with water molecules to form sodium hydroxide, which is a type of salt.
 [D]: Water is essential for many organisms, as it can absorb and release carbon dioxide, release oxygen,
+[E]: The primary reason seawater is salty is due to the high concentration of dissolved salts, with sodium chloride (NaCl) being the most significant. Sodium chloride is a very common salt that is present in most regions of the Earth, including oceans, lakes, rivers, and groundwater. When water evaporates from the ocean, it carries away some of the salt, making the seawater salty. Additionally, seawater contains other dissolved salts such as sulfates, magnesium sulfate, calcium sulfate, magnesium potassium sulfate, magnesium sodium sulfate, magnesium calcium sulfate, magnesium magnesium calcium sulfate, magnesium magnesium calcium sulfate, magnesium magnesium calcium sulfate, magnesium magnesium sodium sulfate, magnesium magnesium calcium sulfate, magnesium magnesium magnesium calcium sulfate, magnesium magnesium magnesium 
 ```
 
 > [!NOTE]
@@ -590,21 +591,14 @@ better with the scaling law for small models.
 
 ## 👉 Summary of Effects
 
-* The ranking of the minimind series (ABC) is intuitive, with minimind-v1(0.1B) scoring the highest and providing mostly
-  accurate answers to common knowledge questions.
-    * Surprisingly, minimind-v1-small (0.02B) with only 26M parameters performs close to minimind-v1(0.1B).
-    * Despite having less than 2 epochs of training, minimind-v1(0.1B) performed the best. This suggests that a larger
-      model often yields better performance, even with limited training.
-    * minimind-v1-moe (0.1B) performed poorly, likely because it was terminated early to free up resources for smaller
-      models. MoE models require more training epochs, and with only 2 epochs, it was under-trained. Previous
-      experiments with a fully trained MoE model on Yi tokenizer showed visible improvements. Future versions, v2 and
-      v3, will be updated with better training.
+* The ranking of the minimind series (ABC) aligns with intuition, with minimind-v1(0.1B) scoring the highest, and its responses to common sense questions are mostly error-free and free of hallucinations.
+    * Surprisingly, minimind-v1-small(0.02B), with only 26M parameters, can perform nearly as well as minimind-v1(0.1B).
+    * minimind-v1(0.1B) underwent less than 2 epochs of SFT (Supervised Fine-Tuning) due to being prematurely killed to free up resources for smaller models. Despite not being fully trained, it still achieved the best performance, demonstrating that larger models generally outperform smaller ones.
+    * minimind-v1-moe(0.1B) performed only slightly better than minimind-v1-small(0.02B), also due to early termination to free up resources for other training. However, the MoE (Mixture of Experts) model, with its sparse multi-Experts mode, requires more training epochs to fully activate and train all FFN (Feed-Forward Network) layer experts. In the current setup with 3 epochs, the training is not yet sufficient.
+      Early experiments with minimind on the Yi-Tokenizer showed that a fully trained MoE version could outperform dense small models visibly. This aspect may need to be reserved for future training and updates to v2 and v3 versions when more server resources are available.
 
-* Model E’s responses appear the most complete, despite some instances of hallucination and overly verbose content.
-  However, GPT-4o and Deepseek's evaluations suggest it is "overly verbose and repetitive, with some hallucinations."
-  This strict evaluation might penalize models with some hallucinations heavily. Due to F models having longer default
-  text lengths and much larger datasets, the quality of responses depends significantly on the data rather than the
-  model size alone.
+* The responses from Model E appear to be quite good to the naked eye, although there are occasional instances of hallucinations and fabrications. However, both GPT-4o and Deepseek's evaluations consistently noted that it "provides overly verbose and repetitive information, and contains hallucinations."
+  This evaluation seems somewhat strict, as even a small number of hallucinated words in a 100-word response can easily result in a low score. Given that Model E was pre-trained on longer texts and a larger dataset, its responses appear more comprehensive. In models of similar size, both the quantity and quality of the data are crucial.
 
 > 🙋‍♂️ Personal Subjective Evaluation: E>C>B≈A>D
 
