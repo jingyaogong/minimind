@@ -763,6 +763,9 @@ your model with third-party UIs, such as fastgpt, OpenWebUI, etc.
 <a href="https://github.com/ipfgao"><b>@ipfgao</b></a>:
 <a href="https://github.com/jingyaogong/minimind/issues/26">🔗Training step record</a>
 
+<a href="https://github.com/chuanzhubin"><b>@chuanzhubin</b></a>:
+<a href="https://github.com/jingyaogong/minimind/pull/34">🔗Code line by line comments (Chinese)</a>
+
 <details close> 
 <summary> <b>Reference Links & Acknowledgments to the Following Excellent Papers or Projects</b> </summary>
 
