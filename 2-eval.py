@@ -55,7 +55,6 @@ def setup_seed(seed):
     torch.backends.cudnn.deterministic = True  # 确保每次返回的卷积算法是确定的
     torch.backends.cudnn.benchmark = False  # 关闭 cuDNN 的自动调优，避免不确定性
 
-
 if __name__ == "__main__":
     # -----------------------------------------------------------------------------
     out_dir = 'out'
