@@ -292,8 +292,7 @@ streamlit run fast_inference.py
 | **【tokenizer训练集】** | [HuggingFace](https://huggingface.co/datasets/jingyaogong/minimind_dataset/tree/main) / [百度网盘](https://pan.baidu.com/s/1yAw1LVTftuhQGAC1Y9RdYQ?pwd=6666)                                                                   |
 | **【Pretrain数据】**   | [Seq-Monkey官方](http://share.mobvoi.com:5000/sharing/O91blwPkY)  / [百度网盘](https://pan.baidu.com/s/1-Z8Q37lJD4tOKhyBs1D_6Q?pwd=6666) / [HuggingFace](https://huggingface.co/datasets/jingyaogong/minimind_dataset/tree/main) |
 | **【SFT数据】**        | [匠数大模型SFT数据集](https://www.modelscope.cn/datasets/deepctrl/deepctrl-sft-data/resolve/master/sft_data_zh.jsonl)                                                                                                              |
-| **【DPO数据1】**       | [活字数据集1](https://huggingface.co/datasets/Skepsun/huozi_rlhf_data_json)                                                                                                                                                     |
-| **【DPO数据2】**       | [活字数据集2](https://huggingface.co/datasets/beyond/rlhf-reward-single-round-trans_chinese)                                                                                                                                    |
+| **【DPO数据】**        | [Huggingface](https://huggingface.co/datasets/jingyaogong/minimind_dataset/tree/main/dpo)                                                                                                                                  |
 
 # 📌 Model
 
@@ -531,7 +530,8 @@ MobileLLM提出架构的深度比宽度更重要，「深而窄」的「瘦长�
 * minimind系列（ABC）的排序符合直觉，minimind-v1(0.1B)评分最高，常识性问题的回答基本没有错误和幻觉。
     * 出乎意料的是，minimind-v1-small(0.02B)仅有26M参数，却可以接近minimind-v1(0.1B)的表现。
     * minimind-v1(0.1B)的sft轮数`epochs`仅有不到2，偷懒提前kill腾出资源给小模型，0.1B没有得到充分训练的情况下依然做到了最强，其实还是底大一级压死人。
-    * minimind-v1-moe(0.1B)表现只比minimind-v1-small(0.02B)略好，同样是因为偷懒早停腾出资源做其它训练了，但是MoE模型这种稀疏多Experts模式需要的训练轮次需要酌情更高，让所有FFN层专家得到路由的激活充分训练，在目前epochs设置为3时训练的还不够充足。
+    * minimind-v1-moe(0.1B)表现只比minimind-v1-small(0.02B)
+      略好，同样是因为偷懒早停腾出资源做其它训练了，但是MoE模型这种稀疏多Experts模式需要的训练轮次需要酌情更高，让所有FFN层专家得到路由的激活充分训练，在目前epochs设置为3时训练的还不够充足。
       minimind在早期实验验证阶段在Yi-Tokenizer上试验过moe的充分训练版本，可以做到比dense小模型表现肉眼可见地更好。此部分可能需要留给日后腾出服务器再训练并更新v2、v3版本。
 
 * E模型的回答肉眼看起来是非常不错的，尽管存在些许幻觉瞎编的情况。但GPT-4o和Deepseek的评分都一致认为它“信息过度冗长，且有重复内容，存在幻觉”。
@@ -673,7 +673,6 @@ minimind模型本身没有使用较大的数据集训练，也没有针对回答
 > 任何分享都视作独一无二的，所有尝试都具有价值，并受到鼓励<br/>
 > 这些贡献都会被及时发现并整理在鸣谢列表中，再次感谢所有支持！
 
-
 ## 🤝[贡献者](https://github.com/jingyaogong/minimind/graphs/contributors)
 
 <!--
@@ -719,7 +718,6 @@ minimind模型本身没有使用较大的数据集训练，也没有针对回答
 
 </details>
 
-
 ## 🫶支持者
 
 <a href="https://github.com/jingyaogong/minimind/stargazers">
@@ -743,7 +741,6 @@ minimind模型本身没有使用较大的数据集训练，也没有针对回答
   <source media="(prefers-color-scheme: light)" srcset="https://api.star-history.com/svg?repos=jingyaogong/minimind&type=Date"/>
   <img alt="Star History Chart" src="https://api.star-history.com/svg?repos=jingyaogong/minimind&type=Date"/>
 </picture>
-
 
 # License
 

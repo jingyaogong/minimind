@@ -326,8 +326,7 @@ git clone https://github.com/jingyaogong/minimind.git
 | **[tokenizer Data]**      | [HuggingFace](https://huggingface.co/datasets/jingyaogong/minimind_dataset/tree/main) / [Baidu](https://pan.baidu.com/s/1yAw1LVTftuhQGAC1Y9RdYQ?pwd=6666) |
 | **[Pretrain Data]**       | [Seq-Monkey General Text Dataset](http://share.mobvoi.com:5000/sharing/O91blwPkY) / [Baidu](https://pan.baidu.com/s/114F1k3eksiWCOQLvaT3RYQ?pwd=6666)     |
 | **[SFT Data]**            | [Jiangshu Large Model SFT Dataset](https://www.modelscope.cn/datasets/deepctrl/deepctrl-sft-data/resolve/master/sft_data_zh.jsonl)                        |
-| **[DPO Data]**            | [Huozi Dataset 1](https://huggingface.co/datasets/Skepsun/huozi_rlhf_data_json)                                                                           |
-| **[DPO Data]**            | [Huozi Dataset 2](https://huggingface.co/datasets/beyond/rlhf-reward-single-round-trans_chinese)                                                          |
+| **[DPO Data]**            | [Huggingface](https://huggingface.co/datasets/jingyaogong/minimind_dataset/tree/main/dpo)                                                                                                                                  |
 
 # 📌 Model
 
