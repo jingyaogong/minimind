@@ -756,6 +756,8 @@ your model with third-party UIs, such as fastgpt, OpenWebUI, etc.
 &nbsp;
 <a href="https://github.com/chuanzhubin"><img src="https://avatars.githubusercontent.com/u/2813798" width="70px" height="70px"/></a>
 &nbsp;
+<a href="https://github.com/iomgaa-ycz"><img src="https://avatars.githubusercontent.com/u/124225682" width="70px" height="70px"/></a>
+&nbsp;
 
 ## 😊Thanks for
 

@@ -95,7 +95,7 @@ def process_seq_monkey(chunk_size=50000):
 
     if doc_ids:
         arr = np.array(doc_ids, dtype=np.uint16)
-        with open(f'./dataset/clean_seq_monkey.bin', 'wb') as f:
+        with open(f'./dataset/clean_seq_monkey.bin', 'ab') as f:
             f.write(arr.tobytes())
 
 

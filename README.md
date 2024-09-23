@@ -687,6 +687,8 @@ minimind模型本身没有使用较大的数据集训练，也没有针对回答
 &nbsp;
 <a href="https://github.com/chuanzhubin"><img src="https://avatars.githubusercontent.com/u/2813798" width="70px" height="70px"/></a>
 &nbsp;
+<a href="https://github.com/iomgaa-ycz"><img src="https://avatars.githubusercontent.com/u/124225682" width="70px" height="70px"/></a>
+&nbsp;
 
 ## 😊鸣谢
 
