@@ -73,7 +73,7 @@ def train_epoch(epoch, wandb):
                     optimizer.param_groups[-1]['lr'],
                     spend_time / (step + 1) * iter_per_epoch // 60 - spend_time // 60))
 
-            if use_wandb is not None:
+            if wandb is not None:
                 wandb.log({"loss": loss.item(), "lr": optimizer.param_groups[-1]['lr'],
                            "epoch_Time": spend_time / (step + 1) * iter_per_epoch // 60 - spend_time // 60})
 
