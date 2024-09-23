@@ -73,7 +73,8 @@ def train_epoch(epoch, wandb, accumulation_steps=8):
                     loss.item() * accumulation_steps,
                     optimizer.param_groups[-1]['lr'],
                     spend_time / (step + 1) * iter_per_epoch // 60 - spend_time // 60))
-            if wandb != None:
+
+            if (use_wandb is not None) and (not ddp or dist.get_rank() == 0):
                 wandb.log({"loss": loss.item() * accumulation_steps,
                            "lr": optimizer.param_groups[-1]['lr'],
                            "epoch_Time": spend_time / (step + 1) * iter_per_epoch // 60 - spend_time // 60})
@@ -124,6 +125,7 @@ def init_distributed_mode():
     DEVICE = f"cuda:{ddp_local_rank}"
     torch.cuda.set_device(DEVICE)
 
+
 # torchrun --nproc_per_node 2 1-pretrain.py
 # I/O
 if __name__ == "__main__":
@@ -143,7 +145,7 @@ if __name__ == "__main__":
     torch.manual_seed(1337)
     device_type = device if "cuda" in device else "cpu"
 
-    use_wandb = True #是否使用wandb
+    use_wandb = False  # 是否使用wandb
     wandb_project = "MiniMind-Pretrain"
     wandb_run_name = f"MiniMind-Pretrain-Epoch-{epochs}-BatchSize-{batch_size}-LearningRate-{learning_rate}"
     if use_wandb:
@@ -151,7 +153,6 @@ if __name__ == "__main__":
         wandb.init(project=wandb_project, name=wandb_run_name)
     else:
         wandb = None
-
 
     ctx = (
         nullcontext()

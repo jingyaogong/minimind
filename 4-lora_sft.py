@@ -72,9 +72,10 @@ def train_epoch(epoch, wandb):
                     loss.item(),
                     optimizer.param_groups[-1]['lr'],
                     spend_time / (step + 1) * iter_per_epoch // 60 - spend_time // 60))
-        if use_wandb != None:
-            wandb.log({"loss": loss.item(), "lr": optimizer.param_groups[-1]['lr'],
-                       "epoch_Time": spend_time / (step + 1) * iter_per_epoch // 60 - spend_time // 60})
+
+            if use_wandb is not None:
+                wandb.log({"loss": loss.item(), "lr": optimizer.param_groups[-1]['lr'],
+                           "epoch_Time": spend_time / (step + 1) * iter_per_epoch // 60 - spend_time // 60})
 
 
 def find_all_linear_names(model):
@@ -91,8 +92,8 @@ def find_all_linear_names(model):
 
 
 def init_model():
-    model_name_or_path = "./minimind"
-    tokenizer_name_or_path = "./minimind"
+    model_name_or_path = "./minimind-v1-small"
+    tokenizer_name_or_path = "./minimind-v1-small"
     tokenizer = AutoTokenizer.from_pretrained(tokenizer_name_or_path, trust_remote_code=True, use_fast=False)
     model = AutoModelForCausalLM.from_pretrained(model_name_or_path, trust_remote_code=True).to(device)
 
@@ -131,11 +132,12 @@ if __name__ == "__main__":
     torch.manual_seed(1337)
     device_type = device if "cuda" in device else "cpu"
 
-    use_wandb = True #是否使用wandb
-    wandb_project = "MiniMind-LoRA"
-    wandb_run_name = f"MiniMind-LoRA-Epoch-{epochs}-BatchSize-{batch_size}-LearningRate-{learning_rate}"
+    use_wandb = False  # 是否使用wandb
+    wandb_project = "MiniMind-LoRA-SFT"
+    wandb_run_name = f"MiniMind-LoRA-SFT-Epoch-{epochs}-BatchSize-{batch_size}-LearningRate-{learning_rate}"
     if use_wandb:
         import wandb
+
         wandb.init(project=wandb_project, name=wandb_run_name)
     else:
         wandb = None
@@ -150,7 +152,7 @@ if __name__ == "__main__":
     model, tokenizer = init_model()
 
     # -----init dataloader------
-    df = pd.read_csv('./dataset/sft_data.csv')
+    df = pd.read_csv('./dataset/sft_data_single.csv')
     df = df.sample(frac=1.0)
     train_ds = SFTDataset(df, tokenizer, max_length=max_seq_len)
     train_loader = DataLoader(

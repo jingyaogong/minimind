@@ -69,10 +69,9 @@ https://github.com/user-attachments/assets/88b98128-636e-43bc-a419-b1b1403c2055
 
 - 公开MiniMind模型代码（包含Dense和MoE模型）、Pretrain、SFT指令微调、LoRA微调、DPO偏好优化的全过程代码、数据集和来源。
 - 兼容`transformers`、`accelerate`、`trl`、`peft`等流行框架。
-- 训练支持单机单卡、单机多卡(DDP、DeepSpeed)训练。训练过程中支持在任意位置停止，及在任意位置继续训练。
+- 训练支持单机单卡、单机多卡(DDP、DeepSpeed)训练，使用wandb可视化训练流程。支持在任意位置停止，及在任意位置继续训练。
 - 在Ceval数据集上进行模型测试的代码。
 - 实现Openai-Api基本的chat接口，便于集成到第三方ChatUI使用（FastGPT、Open-WebUI等）。
-- 使用wandb可视化训练流程。
 
 希望此开源项目可以帮助LLM初学者快速入门！
 
