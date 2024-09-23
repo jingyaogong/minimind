@@ -81,6 +81,7 @@ The project includes:
 - Code for testing the model on the Ceval dataset.
 - Implementation of a basic chat interface compatible with OpenAI's API, facilitating integration into third-party Chat
   UIs (such as FastGPT, Open-WebUI, etc.).
+- Use wandb to visualize the training process.
 
 We hope this open-source project helps LLM beginners get started quickly!
 

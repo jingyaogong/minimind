@@ -43,7 +43,7 @@ def get_lr(it, all):
 
 
 # ------------------------------------------------------------------------------
-def train_epoch(epoch):
+def train_epoch(epoch, wandb):
     start_time = time.time()
     for step, (X, Y, loss_mask) in enumerate(train_loader):
         X = X.to(device)
@@ -85,6 +85,9 @@ def train_epoch(epoch):
                     loss,
                     optimizer.param_groups[-1]['lr'],
                     spend_time / (step + 1) * iter_per_epoch // 60 - spend_time // 60))
+        if use_wandb != None:
+            wandb.log({"loss": loss, "lr": optimizer.param_groups[-1]['lr'],
+                       "epoch_Time": spend_time / (step + 1) * iter_per_epoch // 60 - spend_time // 60})
 
         if (step + 1) % 1000 == 0 and (not ddp or dist.get_rank() == 0):
             model.eval()
@@ -157,6 +160,16 @@ if __name__ == "__main__":
     os.makedirs(out_dir, exist_ok=True)
     torch.manual_seed(1337)
     device_type = device if "cuda" in device else "cpu"
+
+    use_wandb = True #是否使用wandb
+    wandb_project = "MiniMind-Full-SFT"
+    wandb_run_name = f"MiniMind-Full-SFT-Epoch-{epochs}-BatchSize-{batch_size}-LearningRate-{learning_rate}"
+    if use_wandb:
+        import wandb
+        wandb.init(project=wandb_project, name=wandb_run_name)
+    else:
+        wandb = None
+
     ctx = (
         nullcontext()
         if device_type == "cpu"
@@ -206,5 +219,5 @@ if __name__ == "__main__":
         model = DistributedDataParallel(model, device_ids=[ddp_local_rank])
 
     # training loop
-    for epoch in range(epochs):
+    for epoch in range(epochs,wandb):
         train_epoch(epoch)
