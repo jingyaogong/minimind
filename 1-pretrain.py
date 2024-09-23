@@ -37,7 +37,7 @@ def get_lr(it, all):
     return min_lr + coeff * (learning_rate - min_lr)
 
 
-def train_epoch(epoch, accumulation_steps=8):
+def train_epoch(epoch, wandb, accumulation_steps=8):
     start_time = time.time()
     for step, (X, Y) in enumerate(train_loader):
         X = X.to(device)
@@ -73,6 +73,10 @@ def train_epoch(epoch, accumulation_steps=8):
                     loss.item() * accumulation_steps,
                     optimizer.param_groups[-1]['lr'],
                     spend_time / (step + 1) * iter_per_epoch // 60 - spend_time // 60))
+            if wandb != None:
+                wandb.log({"loss": loss.item() * accumulation_steps,
+                           "lr": optimizer.param_groups[-1]['lr'],
+                           "epoch_Time": spend_time / (step + 1) * iter_per_epoch // 60 - spend_time // 60})
 
         if (step + 1) % 1000 == 0 and (not ddp or dist.get_rank() == 0):
             model.eval()
@@ -138,6 +142,17 @@ if __name__ == "__main__":
     tokens_per_iter = batch_size * max_seq_len
     torch.manual_seed(1337)
     device_type = device if "cuda" in device else "cpu"
+
+    use_wandb = True #是否使用wandb
+    wandb_project = "MiniMind-Pretrain"
+    wandb_run_name = f"MiniMind-Pretrain-Epoch-{epochs}-BatchSize-{batch_size}-LearningRate-{learning_rate}"
+    if use_wandb:
+        import wandb
+        wandb.init(project=wandb_project, name=wandb_run_name)
+    else:
+        wandb = None
+
+
     ctx = (
         nullcontext()
         if device_type == "cpu"
@@ -186,4 +201,4 @@ if __name__ == "__main__":
     # training loop
     iter_per_epoch = len(train_loader)
     for epoch in range(epochs):
-        train_epoch(epoch)
+        train_epoch(epoch, wandb)

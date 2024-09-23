@@ -35,7 +35,7 @@ def get_lr(it):
 
 
 # ------------------------------------------------------------------------------
-def train_epoch(epoch):
+def train_epoch(epoch, wandb):
     start_time = time.time()
     for step, (X, Y, loss_mask) in enumerate(train_loader):
         X = X.to(device)
@@ -72,6 +72,9 @@ def train_epoch(epoch):
                     loss.item(),
                     optimizer.param_groups[-1]['lr'],
                     spend_time / (step + 1) * iter_per_epoch // 60 - spend_time // 60))
+        if use_wandb != None:
+            wandb.log({"loss": loss.item(), "lr": optimizer.param_groups[-1]['lr'],
+                       "epoch_Time": spend_time / (step + 1) * iter_per_epoch // 60 - spend_time // 60})
 
 
 def find_all_linear_names(model):
@@ -127,6 +130,16 @@ if __name__ == "__main__":
     os.makedirs(out_dir, exist_ok=True)
     torch.manual_seed(1337)
     device_type = device if "cuda" in device else "cpu"
+
+    use_wandb = True #是否使用wandb
+    wandb_project = "MiniMind-LoRA"
+    wandb_run_name = f"MiniMind-LoRA-Epoch-{epochs}-BatchSize-{batch_size}-LearningRate-{learning_rate}"
+    if use_wandb:
+        import wandb
+        wandb.init(project=wandb_project, name=wandb_run_name)
+    else:
+        wandb = None
+
     ctx = (
         nullcontext()
         if device_type == "cpu"
@@ -162,5 +175,5 @@ if __name__ == "__main__":
     raw_model = model
     # training loop
     for epoch in range(epochs):
-        train_epoch(epoch)
+        train_epoch(epoch, wandb)
         model.save_pretrained('minimind')
