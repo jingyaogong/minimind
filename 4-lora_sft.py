@@ -102,8 +102,8 @@ def find_all_linear_names(model):
 
 
 def init_model():
-    model_name_or_path = "./minimind"
-    tokenizer_name_or_path = "./minimind"
+    model_name_or_path = "./minimind-v1-small"
+    tokenizer_name_or_path = "./minimind-v1-small"
     tokenizer = AutoTokenizer.from_pretrained(tokenizer_name_or_path, trust_remote_code=True, use_fast=False)
     model = AutoModelForCausalLM.from_pretrained(model_name_or_path, trust_remote_code=True).to(args.device)
 

@@ -75,13 +75,10 @@ The project includes:
 - Public MiniMind model code (including Dense and MoE models), code for Pretrain, SFT instruction fine-tuning, LoRA
   fine-tuning, and DPO preference optimization, along with datasets and sources.
 - Compatibility with popular frameworks such as `transformers`, `accelerate`, `trl`, and `peft`.
-- Training support for single-GPU and multi-GPU setups(DDP、DeepSpeed). The training process allows for stopping and
-  resuming at any
-  point.
+- Training support for single-GPU and multi-GPU setups(DDP、DeepSpeed), Use wandb to visualize the training process. The training process allows for stopping and resuming at any point.
 - Code for testing the model on the Ceval dataset.
 - Implementation of a basic chat interface compatible with OpenAI's API, facilitating integration into third-party Chat
   UIs (such as FastGPT, Open-WebUI, etc.).
-- Use wandb to visualize the training process.
 
 We hope this open-source project helps LLM beginners get started quickly!
 
@@ -763,6 +760,8 @@ your model with third-party UIs, such as fastgpt, OpenWebUI, etc.
 <a href="https://github.com/MuWinds"><img src="https://avatars.githubusercontent.com/u/93832089" width="70px" height="70px"/></a>
 &nbsp;
 <a href="https://github.com/chuanzhubin"><img src="https://avatars.githubusercontent.com/u/2813798" width="70px" height="70px"/></a>
+&nbsp;
+<a href="https://github.com/iomgaa-ycz"><img src="https://avatars.githubusercontent.com/u/124225682" width="70px" height="70px"/></a>
 &nbsp;
 
 ## 😊Thanks for
