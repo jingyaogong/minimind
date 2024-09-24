@@ -237,6 +237,13 @@ git clone https://github.com/jingyaogong/minimind.git
     # and
     deepspeed --master_port 29500 --num_gpus=N 3-full_sft.py
     ```
+* Record the training process
+    ```bash
+    torchrun --nproc_per_node N 1-pretrain.py --use_wandb
+    # and
+    python 1-pretrain.py --use_wandb
+    ```
+    By adding the `--use_wandb` parameter, you can record the training process. After training is complete, you can view the training process on the wandb website. You can specify the project name and run name by modifying the `wandb_project` and `wandb_run_name` parameters.
 
 # 📌 Data sources
 
