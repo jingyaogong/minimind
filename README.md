@@ -213,6 +213,14 @@ streamlit run fast_inference.py
     deepspeed --master_port 29500 --num_gpus=N 3-full_sft.py
     ```
 
+* 记录训练过程
+    ```bash
+    torchrun --nproc_per_node N 1-pretrain.py --use_wandb
+    # and
+    python 1-pretrain.py --use_wandb
+    ```
+    通过添加`--use_wandb`参数，可以记录训练过程，训练完成后，可以在wandb网站上查看训练过程。通过修改`wandb_project`和`wandb_run_name`参数，可以指定项目名称和运行名称。
+
 # 📌 Data sources
 
 - 🤖 分词器：nlp中的Tokenizer类似于词典，将单词从自然语言通过“词典”映射到0,1,36这样的数字，可以理解为数字就代表了单词在“词典”中的页码。

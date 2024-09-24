@@ -1,5 +1,6 @@
 import os
 import platform
+import argparse
 import time
 import math
 import warnings
@@ -16,32 +17,36 @@ from torch.utils.data import DataLoader
 from model.LMConfig import LMConfig
 from model.dataset import SFTDataset
 
-warnings.filterwarnings('ignore', category=UserWarning)
+warnings.filterwarnings('ignore')
 
 
-def get_lr(it):
-    warmup_iters = 1000
-    lr_decay_iters = 80000
-    min_lr = 1e-5
+def Logger(content):
+    print(content)
+
+
+def get_lr(it, all):
+    warmup_iters = args.warmup_iters
+    lr_decay_iters = all
+    min_lr = args.learning_rate / 10
 
     if it < warmup_iters:
-        return learning_rate * it / warmup_iters
+        return args.learning_rate * it / warmup_iters
     if it > lr_decay_iters:
         return min_lr
     decay_ratio = (it - warmup_iters) / (lr_decay_iters - warmup_iters)
     assert 0 <= decay_ratio <= 1
     coeff = 0.5 * (1.0 + math.cos(math.pi * decay_ratio))
-    return min_lr + coeff * (learning_rate - min_lr)
+    return min_lr + coeff * (args.learning_rate - min_lr)
 
 
-# ------------------------------------------------------------------------------
 def train_epoch(epoch, wandb):
     start_time = time.time()
     for step, (X, Y, loss_mask) in enumerate(train_loader):
-        X = X.to(device)
-        Y = Y.to(device)
-        loss_mask = loss_mask.to(device)
-        lr = get_lr(epoch * iter_per_epoch + step)
+        X = X.to(args.device)
+        Y = Y.to(args.device)
+        loss_mask = loss_mask.to(args.device)
+
+        lr = get_lr(epoch * iter_per_epoch + step, args.epochs * iter_per_epoch)
         for param_group in optimizer.param_groups:
             param_group['lr'] = lr
 
@@ -50,32 +55,37 @@ def train_epoch(epoch, wandb):
             loss = F.cross_entropy(logits.view(-1, logits.size(-1)), Y.view(-1), ignore_index=0, reduction='none')
             loss_mask = loss_mask.view(-1)
             loss = torch.sum(loss * loss_mask) / loss_mask.sum()
+            loss = loss / args.accumulation_steps
 
         scaler.scale(loss).backward()
 
-        scaler.unscale_(optimizer)
-        torch.nn.utils.clip_grad_norm_(model.parameters(), 1.0)
+        if (step + 1) % args.accumulation_steps == 0:
+            scaler.unscale_(optimizer)
+            torch.nn.utils.clip_grad_norm_(model.parameters(), args.grad_clip)
 
-        scaler.step(optimizer)
-        scaler.update()
+            scaler.step(optimizer)
+            scaler.update()
 
-        optimizer.zero_grad(set_to_none=True)
+            optimizer.zero_grad(set_to_none=True)
 
-        if step % 100 == 0:
+        if step % args.log_interval == 0:
             spend_time = time.time() - start_time
-            print(
+            Logger(
                 'Epoch:[{}/{}]({}/{}) loss:{:.3f} lr:{:.7f} epoch_Time:{}min:'.format(
                     epoch,
-                    epochs,
+                    args.epochs,
                     step,
                     iter_per_epoch,
-                    loss.item(),
+                    loss.item() * args.accumulation_steps,
                     optimizer.param_groups[-1]['lr'],
                     spend_time / (step + 1) * iter_per_epoch // 60 - spend_time // 60))
-
             if wandb is not None:
-                wandb.log({"loss": loss.item(), "lr": optimizer.param_groups[-1]['lr'],
+                wandb.log({"loss": loss.item() * args.accumulation_steps,
+                           "lr": optimizer.param_groups[-1]['lr'],
                            "epoch_Time": spend_time / (step + 1) * iter_per_epoch // 60 - spend_time // 60})
+
+        if (step + 1) % args.save_interval == 0:
+            model.save_pretrained(args.save_dir)
 
 
 def find_all_linear_names(model):
@@ -95,7 +105,7 @@ def init_model():
     model_name_or_path = "./minimind-v1-small"
     tokenizer_name_or_path = "./minimind-v1-small"
     tokenizer = AutoTokenizer.from_pretrained(tokenizer_name_or_path, trust_remote_code=True, use_fast=False)
-    model = AutoModelForCausalLM.from_pretrained(model_name_or_path, trust_remote_code=True).to(device)
+    model = AutoModelForCausalLM.from_pretrained(model_name_or_path, trust_remote_code=True).to(args.device)
 
     target_modules = find_all_linear_names(model)
     peft_config = LoraConfig(
@@ -108,74 +118,70 @@ def init_model():
     )
     model = get_peft_model(model, peft_config)
     model.print_trainable_parameters()
-    model = model.to(device)
+    model = model.to(args.device)
     return model, tokenizer
 
 
-# I/O
 if __name__ == "__main__":
-    # -----------------------------------------------------------------------------
+    parser = argparse.ArgumentParser(description="MiniMind LoRA Fine-tuning")
+    parser.add_argument("--out_dir", type=str, default="out", help="Output directory")
+    parser.add_argument("--epochs", type=int, default=20, help="Number of epochs")
+    parser.add_argument("--batch_size", type=int, default=16, help="Batch size")
+    parser.add_argument("--learning_rate", type=float, default=1e-4, help="Learning rate")
+    parser.add_argument("--device", type=str, default="cuda:0" if torch.cuda.is_available() else "cpu", help="Device to use")
+    parser.add_argument("--dtype", type=str, default="bfloat16", help="Data type")
+    parser.add_argument("--use_wandb", action="store_true", help="Use Weights & Biases")
+    parser.add_argument("--wandb_project", type=str, default="MiniMind-LoRA", help="Weights & Biases project name")
+    parser.add_argument("--num_workers", type=int, default=0, help="Number of workers for data loading")
+    parser.add_argument("--accumulation_steps", type=int, default=1, help="Gradient accumulation steps")
+    parser.add_argument("--grad_clip", type=float, default=1.0, help="Gradient clipping threshold")
+    parser.add_argument("--warmup_iters", type=int, default=1000, help="Number of warmup iterations")
+    parser.add_argument("--log_interval", type=int, default=100, help="Logging interval")
+    parser.add_argument("--save_interval", type=int, default=1000, help="Model saving interval")
+
+    args = parser.parse_args()
+
     lm_config = LMConfig()
     max_seq_len = lm_config.max_seq_len
-    out_dir = 'out'
-    epochs = 20
-    gradient_accumulation_steps = 1
-    batch_size = 16
-    learning_rate = 1e-4
-    weight_decay = 1e-1
-    device = 'cuda:0'
-    dtype = 'bfloat16'
-    save_dir = os.path.join(out_dir)
-    os.makedirs(save_dir, exist_ok=True)
-    tokens_per_iter = gradient_accumulation_steps * batch_size * max_seq_len
-    os.makedirs(out_dir, exist_ok=True)
+    args.save_dir = os.path.join(args.out_dir)
+    os.makedirs(args.save_dir, exist_ok=True)
+    os.makedirs(args.out_dir, exist_ok=True)
+    tokens_per_iter = args.batch_size * max_seq_len
     torch.manual_seed(1337)
-    device_type = device if "cuda" in device else "cpu"
+    device_type = "cuda" if "cuda" in args.device else "cpu"
 
-    use_wandb = False  # 是否使用wandb
-    wandb_project = "MiniMind-LoRA-SFT"
-    wandb_run_name = f"MiniMind-LoRA-SFT-Epoch-{epochs}-BatchSize-{batch_size}-LearningRate-{learning_rate}"
-    if use_wandb:
+    args.wandb_run_name = f"MiniMind-LoRA-Epoch-{args.epochs}-BatchSize-{args.batch_size}-LearningRate-{args.learning_rate}"
+
+    ctx = nullcontext() if device_type == "cpu" else torch.cuda.amp.autocast()
+
+    if args.use_wandb:
         import wandb
-
-        wandb.init(project=wandb_project, name=wandb_run_name)
+        wandb.init(project=args.wandb_project, name=args.wandb_run_name)
     else:
         wandb = None
 
-    ctx = (
-        nullcontext()
-        if device_type == "cpu"
-        else torch.cuda.amp.autocast()
-    )
-    # -----------------------------------------------------------------------------
-
     model, tokenizer = init_model()
 
-    # -----init dataloader------
-    df = pd.read_csv('./dataset/sft_data_single.csv')
+    df = pd.read_csv('./dataset/sft_data.csv')
     df = df.sample(frac=1.0)
     train_ds = SFTDataset(df, tokenizer, max_length=max_seq_len)
     train_loader = DataLoader(
         train_ds,
-        batch_size=batch_size,
-        pin_memory=False,
+        batch_size=args.batch_size,
+        pin_memory=True,
         drop_last=False,
         shuffle=False,
-        num_workers=0,
+        num_workers=args.num_workers,
     )
 
-    scaler = torch.cuda.amp.GradScaler(enabled=(dtype == 'float16'))
-    # optimizer
-    optimizer = optim.Adam(model.parameters(), lr=learning_rate)
-    iter_per_epoch = len(train_loader)
-    # compile the model
+    scaler = torch.cuda.amp.GradScaler(enabled=(args.dtype == 'float16'))
+    optimizer = optim.Adam(model.parameters(), lr=args.learning_rate)
+
     if False and platform.system() != 'Windows' and float(torch.__version__.split('.')[0]) >= 2:
-        print("compiling the model... (takes a ~minute)")
+        Logger("compiling the model... (takes a ~minute)")
         unoptimized_model = model
         model = torch.compile(model)
 
-    raw_model = model
-    # training loop
-    for epoch in range(epochs):
+    iter_per_epoch = len(train_loader)
+    for epoch in range(args.epochs):
         train_epoch(epoch, wandb)
-        model.save_pretrained('minimind')
