@@ -198,7 +198,7 @@ if __name__ == "__main__":
         sampler=train_sampler
     )
 
-    scaler = torch.cuda.amp.GradScaler(enabled=(args.dtype == args.dtype))
+    scaler = torch.cuda.amp.GradScaler(enabled=(args.dtype in ['float16', 'bfloat16']))
     optimizer = optim.Adam(model.parameters(), lr=args.learning_rate)
 
     if False and not lm_config.use_moe and platform.system() != 'Windows' and float(torch.__version__.split('.')[0]) >= 2:

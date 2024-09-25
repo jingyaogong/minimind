@@ -174,7 +174,7 @@ if __name__ == "__main__":
         num_workers=args.num_workers,
     )
 
-    scaler = torch.cuda.amp.GradScaler(enabled=(args.dtype == 'float16'))
+    scaler = torch.cuda.amp.GradScaler(enabled=(args.dtype in ['float16', 'bfloat16']))
     optimizer = optim.Adam(model.parameters(), lr=args.learning_rate)
 
     if False and platform.system() != 'Windows' and float(torch.__version__.split('.')[0]) >= 2:
