@@ -107,6 +107,7 @@ if __name__ == "__main__":
             print('问题：', prompt)
             qa_index += 1
 
+        prompt = tokenizer.bos_token + prompt
         x = tokenizer(prompt).data['input_ids']
         x = (torch.tensor(x, dtype=torch.long, device=device)[None, ...])
 
