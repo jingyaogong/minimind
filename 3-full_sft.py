@@ -155,6 +155,7 @@ if __name__ == "__main__":
     parser.add_argument("--warmup_iters", type=int, default=0, help="Number of warmup iterations")
     parser.add_argument("--log_interval", type=int, default=100, help="Logging interval")
     parser.add_argument("--save_interval", type=int, default=1000, help="Model saving interval")
+    parser.add_argument('--local_rank', type=int, default=-1, help='local rank for distributed training')
 
     args = parser.parse_args()
 
