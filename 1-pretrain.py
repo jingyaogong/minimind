@@ -45,9 +45,10 @@ def get_lr(it, all):
 
 def train_epoch(epoch, wandb):
     start_time = time.time()
-    for step, (X, Y) in enumerate(train_loader):
+    for step, (X, Y, loss_mask) in enumerate(train_loader):
         X = X.to(args.device)
         Y = Y.to(args.device)
+        loss_mask = loss_mask.to(args.device)
 
         lr = get_lr(epoch * iter_per_epoch + step, args.epochs * iter_per_epoch)
         for param_group in optimizer.param_groups:
@@ -56,6 +57,8 @@ def train_epoch(epoch, wandb):
         with ctx:
             out = model(X, Y)
             loss = out.last_loss / args.accumulation_steps
+            loss_mask = loss_mask.view(-1)
+            loss = torch.sum(loss * loss_mask) / loss_mask.sum()
 
         scaler.scale(loss).backward()
 
@@ -129,7 +132,7 @@ if __name__ == "__main__":
     parser = argparse.ArgumentParser(description="MiniMind Pretraining")
     parser.add_argument("--out_dir", type=str, default="out", help="Output directory")
     parser.add_argument("--epochs", type=int, default=20, help="Number of epochs")
-    parser.add_argument("--batch_size", type=int, default=48, help="Batch size")
+    parser.add_argument("--batch_size", type=int, default=64, help="Batch size")
     parser.add_argument("--learning_rate", type=float, default=2e-4, help="Learning rate")
     parser.add_argument("--device", type=str, default="cuda:0" if torch.cuda.is_available() else "cpu",
                         help="Device to use")

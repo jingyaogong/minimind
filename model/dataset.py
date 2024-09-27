@@ -28,14 +28,18 @@ class PretrainDataset(Dataset):
         sample = self.df.iloc[index]
         text = f"{self.tokenizer.bos_token}{str(sample['text'])}{self.tokenizer.eos_token}"
         input_id = self.tokenizer(text).data['input_ids'][:self.max_length]
+        text_len = len(input_id)
         # 没满最大长度的剩余部分
-        padding_len = self.max_length - len(input_id)
+        padding_len = self.max_length - text_len
         input_id = input_id + [self.padding] * padding_len
+        # 0表示不计算损失
+        loss_mask = [1] * text_len + [0] * padding_len
 
         input_id = np.array(input_id)
         X = np.array(input_id[:-1]).astype(np.int64)
         Y = np.array(input_id[1:]).astype(np.int64)
-        return torch.from_numpy(X), torch.from_numpy(Y)
+        loss_mask = np.array(loss_mask[1:]).astype(np.int64)
+        return torch.from_numpy(X), torch.from_numpy(Y), torch.from_numpy(loss_mask)
 
 
 class SFTDataset(Dataset):
