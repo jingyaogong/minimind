@@ -87,7 +87,7 @@ We hope this open-source project helps LLM beginners get started quickly!
 <details close> 
 <summary> <b>2024-09-27</b> </summary>
 
-- Updated the preprocessing method for the pretrain dataset on 09-27 to ensure text integrity, opting to abandon the preprocessing into .bin training format (slightly sacrificing training speed).
+- 👉Updated the preprocessing method for the pretrain dataset on 09-27 to ensure text integrity, opting to abandon the preprocessing into .bin training format (slightly sacrificing training speed).
 
 - The current filename for the pretrain data after preprocessing is: pretrain_data.csv.
 
@@ -282,8 +282,7 @@ git clone https://github.com/jingyaogong/minimind.git
       <tr><td>minimind tokenizer</td><td>6,400</td><td>Custom</td></tr>
     </table>
 
-  > [!IMPORTANT]
-  > Update on 2024-09-17: To avoid ambiguity from previous versions and control the model size, all Minimind models now
+  > 👉Update on 2024-09-17: To avoid ambiguity from previous versions and control the model size, all Minimind models now
   use the Minimind_tokenizer for tokenization, and all versions of the Mistral_tokenizer have been deprecated.
 
   > Although the Minimind_tokenizer has a small length and its encoding/decoding efficiency is weaker compared to
