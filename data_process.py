@@ -1,3 +1,4 @@
+import csv
 import itertools
 import re
 import json
@@ -12,110 +13,31 @@ from datasets import load_dataset
 bos_token = "<s>"
 eos_token = "</s>"
 
-# pretrain
-def process_wiki_clean():
-    with open('./dataset/clean-wikipedia-cn.json', 'r', encoding='utf-8') as f_read:
-        data = [ujson.loads(line) for line in f_read]
-    data_len = len(data)
-    doc_ids = []
-    for idx, line in enumerate(data):
-        text = line['response']
-        text_id = tokenizer(f'{bos_token}{text}{eos_token}').data['input_ids']
-        if len(text_id) > 5:
-            doc_ids += text_id
-        if idx % (int(data_len / 20)) == 0:
-            print(f"[{idx}/{data_len}] {text}")
-    arr = np.array(doc_ids, dtype=np.uint16)
-    with open('./dataset/clean-wikipedia-cn.bin', 'wb') as f:
-        f.write(arr.tobytes())
 
-
-# pretrain
-def process_other():
-    data = []
-
-    with open('./dataset/alpaca_gpt4_data_zh.json', 'r', encoding='utf-8') as f:
-        data_ = json.load(f)
-        data += data_
-
-    with open('./dataset/alpaca_data_zh_51k.json', 'r', encoding='utf-8') as f:
-        data_ = json.load(f)
-        data += data_
-
-    doc_ids = []
-    for idx, per in enumerate(data):
-        q = per['instruction']
-        i = per['input']
-        a = per['output']
-        q = q + i
-        if len(q) < 10 or len(a) < 5:
-            continue
-        if len(q) > 256 or len(a) > 256:
-            continue
-        text_id = tokenizer(f'{bos_token}{q}，{a}{eos_token}').data['input_ids']
-        if len(text_id) > 5:
-            doc_ids += text_id
-        if idx % 50000 == 0:
-            print(idx, len(data))
-
-    arr = np.array(doc_ids, dtype=np.uint16)
-    with open('./dataset/clean_other.bin', 'wb') as f:
-        f.write(arr.tobytes())
-
-
-def process_seq_monkey(chunk_size=50000):
-    doc_ids = []
+def pretrain_process(chunk_size=50000):
     chunk_idx = 0
 
     with jsonlines.open('./dataset/mobvoi_seq_monkey_general_open_corpus.jsonl') as reader:
-        while True:
-            chunk = list(itertools.islice(reader, chunk_size))
-            if not chunk:
-                break
+        with open('./dataset/pretrain_data.csv', 'w', newline='', encoding='utf-8') as csvfile:
+            writer = csv.writer(csvfile)
+            writer.writerow(['text'])
 
-            for idx, obj in enumerate(chunk):
-                try:
-                    content = obj.get('text', '')
-                    if len(content) > 512:
+            while True:
+                chunk = list(itertools.islice(reader, chunk_size))
+                if not chunk:
+                    break
+
+                for idx, obj in enumerate(chunk):
+                    try:
+                        content = obj.get('text', '')
+                        if len(content) > 512:
+                            continue
+                        writer.writerow([content])
+                    except UnicodeDecodeError as e:
+                        print(f"Skipping invalid line {chunk_idx * chunk_size + idx + 1}: {e}")
                         continue
-                    text_id = tokenizer(f'{bos_token}{content}{eos_token}').data['input_ids']
-                    doc_ids += text_id
-                except UnicodeDecodeError as e:
-                    print(f"Skipping invalid line {chunk_idx * chunk_size + idx + 1}: {e}")
-                    continue
-
-            chunk_idx += 1
-            print(f"Processed chunk {chunk_idx} with {chunk_size} lines")
-
-            if len(doc_ids) > 1000000:
-                arr = np.array(doc_ids, dtype=np.uint16)
-                with open(f'./dataset/clean_seq_monkey.bin', 'ab') as f:
-                    f.write(arr.tobytes())
-                doc_ids = []
-
-    if doc_ids:
-        arr = np.array(doc_ids, dtype=np.uint16)
-        with open(f'./dataset/clean_seq_monkey.bin', 'ab') as f:
-            f.write(arr.tobytes())
-
-
-def pretrain_process():
-    # process_wiki_clean()
-    process_seq_monkey()
-
-    data_path_list = [
-        # './dataset/clean-wikipedia-cn.bin',
-        './dataset/clean_seq_monkey.bin'
-    ]
-    data_lst = []
-    for data_path in data_path_list:
-        with open(data_path, 'rb') as f:
-            data = np.fromfile(f, dtype=np.uint16)
-            data_lst.append(data)
-    arr = np.concatenate(data_lst)
-    print(arr.shape)
-    with open('./dataset/pretrain_data.bin', 'wb') as f:
-        f.write(arr.tobytes())
+                chunk_idx += 1
+                print('chunk:', ((chunk_idx - 1) * chunk_size, chunk_idx * chunk_size), 'process end')
 
 
 def sft_process(contain_history=False):
@@ -185,6 +107,7 @@ def sft_process(contain_history=False):
             if data:
                 process_and_write_data(data)
                 data = []
+
 
 def rl_process():
     ################

@@ -78,7 +78,18 @@ https://github.com/user-attachments/assets/88b98128-636e-43bc-a419-b1b1403c2055
 ### 👉**最近更新**
 
 <details close> 
-<summary> <b>2024-09-17 (new🎉)</b> </summary>
+<summary> <b>2024-09-27</b> </summary>
+
+- 09-27更新pretrain数据集的预处理方式，为了保证文本完整性，放弃预处理成.bin训练的形式（轻微牺牲训练速度）。
+
+- 目前pretrain预处理后的文件命名为：pretrain_data.csv。
+
+- 删除了一些冗余的代码。
+
+</details>
+
+<details close> 
+<summary> <b>2024-09-17</b> </summary>
 
 - 更新minimind-v1-moe模型
 

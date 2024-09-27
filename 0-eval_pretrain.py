@@ -69,18 +69,11 @@ if __name__ == "__main__":
     max_seq_len = 512
     lm_config = LMConfig()
     lm_config.max_seq_len = max_seq_len
-    # 对话是否携带历史对话（当前模型太弱，增大历史上下文，基本导致胡言乱语）
-    contain_history_chat = False
     # -----------------------------------------------------------------------------
 
     model, tokenizer = init_model(lm_config)
-
     model = model.eval()
-    # 推送到huggingface
-    # model.push_to_hub("minimind")
-    # tokenizer.push_to_hub("minimind")
-
-    # answer_way = int(input('输入0自动测试，输入1问题测试：'))
+    # int(input('输入0自动测试，输入1问题测试：'))
     answer_way = 0
     stream = True
 
@@ -101,15 +94,9 @@ if __name__ == "__main__":
         '江苏省的最好的大学',
     ]
 
-    messages_origin = []
-    messages = messages_origin
-
     qa_index = 0
     while True:
         start = time.time()
-        if not contain_history_chat:
-            messages = messages_origin.copy()
-
         if answer_way == 1:
             # run generation
             prompt = input('用户：')
@@ -120,19 +107,8 @@ if __name__ == "__main__":
             print('问题：', prompt)
             qa_index += 1
 
-        messages.append({"role": "user", "content": prompt})
-
-        # print(messages)
-        new_prompt = tokenizer.apply_chat_template(
-            messages,
-            tokenize=False,
-            add_generation_prompt=True
-        )[-(max_seq_len - 1):]
-
         x = tokenizer(prompt).data['input_ids']
         x = (torch.tensor(x, dtype=torch.long, device=device)[None, ...])
-
-        answer = new_prompt
 
         with torch.no_grad():
             res_y = model.generate(x, tokenizer.eos_token_id, max_new_tokens=max_seq_len, temperature=temperature,
@@ -172,8 +148,5 @@ if __name__ == "__main__":
 
             print('\n')
 
-        if contain_history_chat:
-            assistant_answer = answer.replace(new_prompt, "")
-            messages.append({"role": "assistant", "content": assistant_answer})
         end = time.time()
-        print(end - start,'s')
+        print(end - start, 's')

@@ -13,37 +13,28 @@ os.environ["TOKENIZERS_PARALLELISM"] = "false"
 
 
 class PretrainDataset(Dataset):
-    def __init__(self, data_path_lst, max_length=512, memmap=False):
+    def __init__(self, df, tokenizer, max_length=512):
         super().__init__()
-        #
-        if memmap:
-            with open(data_path_lst[0], 'r') as f:
-                nbytes = f.seek(0, 2)
-                flen = f.tell() // np.dtype('uint16').itemsize
-            self.data = np.memmap(data_path_lst[0], dtype=np.dtype('uint16'), shape=(flen // max_length, max_length))
-        else:
-            data_lst = []
-            for data_path in data_path_lst:
-                with open(data_path, 'rb') as f:
-                    data = np.fromfile(f, dtype=np.uint16)
-                    data_lst.append(data)
-            data = np.concatenate(data_lst)
-            data = data[:max_length * int(len(data) / max_length)]
-            # np.random.shuffle(data)
-            self.data = data.reshape(-1, max_length)
-        #
-        print("memmap:{} train data.shape:{}".format(memmap, self.data.shape))
-        print("downloading finished.....")
+        self.df = df
+        self.tokenizer = tokenizer
+        self.max_length = max_length
+        self.padding = 0
 
     def __len__(self):
-        return self.data.shape[0]
+        return self.df.shape[0]
 
     def __getitem__(self, index: int):
         #
-        sample = self.data[index]
-        X = np.array(sample[:-1]).astype(np.int64)
-        Y = np.array(sample[1:]).astype(np.int64)
+        sample = self.df.iloc[index]
+        text = f"{self.tokenizer.bos_token}{str(sample['text'])}{self.tokenizer.eos_token}"
+        input_id = self.tokenizer(text).data['input_ids'][:self.max_length]
+        # 没满最大长度的剩余部分
+        padding_len = self.max_length - len(input_id)
+        input_id = input_id + [self.padding] * padding_len
 
+        input_id = np.array(input_id)
+        X = np.array(input_id[:-1]).astype(np.int64)
+        Y = np.array(input_id[1:]).astype(np.int64)
         return torch.from_numpy(X), torch.from_numpy(Y)
 
 
@@ -56,7 +47,7 @@ class SFTDataset(Dataset):
         self.answer_max_len = answer_max_len
         #
         self.tokenizer = tokenizer
-        self.padding = 0  # self.tokenizer.special_tokens['<pad>']
+        self.padding = 0
         self.bos_id = self.tokenizer('<s>assistant').data['input_ids']
 
     def __len__(self):

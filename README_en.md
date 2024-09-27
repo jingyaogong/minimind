@@ -85,6 +85,17 @@ We hope this open-source project helps LLM beginners get started quickly!
 ### 👉**Recent Updates**
 
 <details close> 
+<summary> <b>2024-09-27</b> </summary>
+
+- Updated the preprocessing method for the pretrain dataset on 09-27 to ensure text integrity, opting to abandon the preprocessing into .bin training format (slightly sacrificing training speed).
+
+- The current filename for the pretrain data after preprocessing is: pretrain_data.csv.
+
+- Removed some redundant code.
+
+</details>
+
+<details close> 
 <summary> <b>2024-09-17 (new🎉)</b> </summary>
 
 - Updated the minimind-v1-moe model

@@ -4,6 +4,8 @@ import argparse
 import time
 import math
 import warnings
+
+import pandas as pd
 import torch
 import torch.distributed as dist
 from torch import optim
@@ -11,6 +13,9 @@ from torch.nn.parallel import DistributedDataParallel
 from torch.optim.lr_scheduler import CosineAnnealingLR
 from torch.utils.data import DataLoader, DistributedSampler
 from contextlib import nullcontext
+
+from transformers import AutoTokenizer
+
 from model.model import Transformer
 from model.LMConfig import LMConfig
 from model.dataset import PretrainDataset
@@ -98,11 +103,13 @@ def init_model():
     def count_parameters(model):
         return sum(p.numel() for p in model.parameters() if p.requires_grad)
 
+    tokenizer = AutoTokenizer.from_pretrained('./model/minimind_tokenizer')
+
     model = Transformer(lm_config).to(args.device)
-    moe_path = '_moe' if lm_config.use_moe else ''
+    # moe_path = '_moe' if lm_config.use_moe else ''
 
     Logger(f'LLM总参数量：{count_parameters(model) / 1e6:.3f} 百万')
-    return model
+    return model, tokenizer
 
 
 def init_distributed_mode():
@@ -122,14 +129,15 @@ if __name__ == "__main__":
     parser = argparse.ArgumentParser(description="MiniMind Pretraining")
     parser.add_argument("--out_dir", type=str, default="out", help="Output directory")
     parser.add_argument("--epochs", type=int, default=20, help="Number of epochs")
-    parser.add_argument("--batch_size", type=int, default=32, help="Batch size")
+    parser.add_argument("--batch_size", type=int, default=48, help="Batch size")
     parser.add_argument("--learning_rate", type=float, default=2e-4, help="Learning rate")
-    parser.add_argument("--device", type=str, default="cuda:0" if torch.cuda.is_available() else "cpu", help="Device to use")
+    parser.add_argument("--device", type=str, default="cuda:0" if torch.cuda.is_available() else "cpu",
+                        help="Device to use")
     parser.add_argument("--dtype", type=str, default="bfloat16", help="Data type")
     parser.add_argument("--use_wandb", action="store_true", help="Use Weights & Biases")
     parser.add_argument("--wandb_project", type=str, default="MiniMind-Pretrain", help="Weights & Biases project name")
     parser.add_argument("--num_workers", type=int, default=8, help="Number of workers for data loading")
-    parser.add_argument("--data_path", type=str, default="./dataset/pretrain_data.bin", help="Path to training data")
+    parser.add_argument("--data_path", type=str, default="./dataset/pretrain_data.csv", help="Path to training data")
     parser.add_argument("--ddp", action="store_true", help="Use DistributedDataParallel")
     parser.add_argument("--accumulation_steps", type=int, default=8, help="Gradient accumulation steps")
     parser.add_argument("--grad_clip", type=float, default=1.0, help="Gradient clipping threshold")
@@ -160,12 +168,15 @@ if __name__ == "__main__":
 
     if args.use_wandb and (not ddp or ddp_local_rank == 0):
         import wandb
+
         wandb.init(project=args.wandb_project, name=args.wandb_run_name)
     else:
         wandb = None
 
-    data_path_list = [args.data_path]
-    train_ds = PretrainDataset(data_path_list, max_length=max_seq_len, memmap=True)
+    model, tokenizer = init_model()
+    df = pd.read_csv(args.data_path)
+    df = df.sample(frac=1.0)
+    train_ds = PretrainDataset(df, tokenizer, max_length=max_seq_len)
     train_sampler = DistributedSampler(train_ds) if ddp else None
     train_loader = DataLoader(
         train_ds,
@@ -176,8 +187,6 @@ if __name__ == "__main__":
         num_workers=args.num_workers,
         sampler=train_sampler
     )
-
-    model = init_model()
 
     scaler = torch.cuda.amp.GradScaler(enabled=(args.dtype in ['float16', 'bfloat16']))
     optimizer = optim.Adam(model.parameters(), lr=args.learning_rate)
