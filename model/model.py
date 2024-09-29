@@ -369,7 +369,8 @@ class Transformer(PreTrainedModel):
 
         if targets is not None:
             logits = self.output(h)
-            self.last_loss = F.cross_entropy(logits.view(-1, logits.size(-1)), targets.view(-1), ignore_index=-1)
+            self.last_loss = F.cross_entropy(logits.view(-1, logits.size(-1)), targets.view(-1),
+                                             ignore_index=0, reduction='none')
         else:
             logits = self.output(h[:, [-1], :])
             self.last_loss = None
