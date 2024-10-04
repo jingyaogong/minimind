@@ -31,8 +31,10 @@
   inference and even training on CPUs.
 * **MiniMind** is an improvement on the DeepSeek-V2 and Llama3 architectures. The project includes all stages of data
   processing, pretraining, SFT, and DPO, and features a Mixture of Experts (MoE) model.
-* This project is not only an open-source initiative but also a beginner's tutorial for LLMs, and serves as a nascent
-  open-source model with the hope of inspiring further development.
+* This is not only the implementation of an open-source model, but also a tutorial for getting started with large language models (LLMs).
+* We hope that this project serves as a stepping stone for researchers and developers, providing an introductory example to help them quickly get started and foster more exploration and innovation in the LLM field.
+
+  > To avoid any misunderstanding, "fastest 3 hours" refers to the requirement of using hardware with higher specifications than the author's setup. Detailed specifications will be provided below.
 
 ---
 
@@ -85,6 +87,15 @@ We hope this open-source project helps LLM beginners get started quickly!
 ### 👉**Recent Updates**
 
 <details close> 
+<summary> <b>2024-10-05 (newest 🎉)</b> </summary>
+
+- Added visual capabilities to MiniMind-V(ision)
+
+- Check out the twin project [minimind-v](https://github.com/jingyaogong/minimind-v) for more details!
+
+</details>
+
+<details close> 
 <summary> <b>2024-09-27</b> </summary>
 
 - 👉Updated the preprocessing method for the pretrain dataset on 09-27 to ensure text integrity, opting to abandon the preprocessing into .bin training format (slightly sacrificing training speed).
@@ -126,6 +137,14 @@ We hope this open-source project helps LLM beginners get started quickly!
 # 📌 Environment
 
 These are my personal software and hardware environment configurations. Please adjust according to your own setup:
+
+
+```bash
+CPU: Intel(R) Core(TM) i9-10980XE CPU @ 3.00GHz
+Memory: 128 GB
+GPU: NVIDIA GeForce RTX 3090 (24GB) * 2
+Environment: python 3.9 + Torch 2.1.2 + DDP multi-GPU training
+```
 
 * Ubuntu == 20.04
 * Python == 3.9
@@ -380,12 +399,6 @@ shown in the table below:
 
 # 📌 Experiment
 
-```bash
-CPU: Intel(R) Core(TM) i9-10980XE CPU @ 3.00GHz
-Memory: 128 GB
-GPU: NVIDIA GeForce RTX 3090 (24GB) * 2
-Environment: python 3.9 + Torch 2.1.2 + DDP multi-GPU training
-```
 
 | Model Name        | params | len_vocab | batch_size | pretrain_time     | sft_single_time   | sft_multi_time      |
 |-------------------|--------|-----------|------------|-------------------|-------------------|---------------------|
