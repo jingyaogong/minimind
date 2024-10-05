@@ -31,10 +31,13 @@
   inference and even training on CPUs.
 * **MiniMind** is an improvement on the DeepSeek-V2 and Llama3 architectures. The project includes all stages of data
   processing, pretraining, SFT, and DPO, and features a Mixture of Experts (MoE) model.
-* This is not only the implementation of an open-source model, but also a tutorial for getting started with large language models (LLMs).
-* We hope that this project serves as a stepping stone for researchers and developers, providing an introductory example to help them quickly get started and foster more exploration and innovation in the LLM field.
+* This is not only the implementation of an open-source model, but also a tutorial for getting started with large
+  language models (LLMs).
+* We hope that this project serves as a stepping stone for researchers and developers, providing an introductory example
+  to help them quickly get started and foster more exploration and innovation in the LLM field.
 
-  > To avoid any misunderstanding, "fastest 3 hours" refers to the requirement of using hardware with higher specifications than the author's setup. Detailed specifications will be provided below.
+  > To avoid any misunderstanding, "fastest 3 hours" refers to the requirement of using hardware with higher
+  specifications than the author's setup. Detailed specifications will be provided below.
 
 ---
 
@@ -77,7 +80,8 @@ The project includes:
 - Public MiniMind model code (including Dense and MoE models), code for Pretrain, SFT instruction fine-tuning, LoRA
   fine-tuning, and DPO preference optimization, along with datasets and sources.
 - Compatibility with popular frameworks such as `transformers`, `accelerate`, `trl`, and `peft`.
-- Training support for single-GPU and multi-GPU setups(DDP、DeepSpeed), Use wandb to visualize the training process. The training process allows for stopping and resuming at any point.
+- Training support for single-GPU and multi-GPU setups(DDP、DeepSpeed), Use wandb to visualize the training process. The
+  training process allows for stopping and resuming at any point.
 - Code for testing the model on the Ceval dataset.
 - Implementation of a basic chat interface compatible with OpenAI's API, facilitating integration into third-party Chat
   UIs (such as FastGPT, Open-WebUI, etc.).
@@ -98,7 +102,8 @@ We hope this open-source project helps LLM beginners get started quickly!
 <details close> 
 <summary> <b>2024-09-27</b> </summary>
 
-- 👉Updated the preprocessing method for the pretrain dataset on 09-27 to ensure text integrity, opting to abandon the preprocessing into .bin training format (slightly sacrificing training speed).
+- 👉Updated the preprocessing method for the pretrain dataset on 09-27 to ensure text integrity, opting to abandon the
+  preprocessing into .bin training format (slightly sacrificing training speed).
 
 - The current filename for the pretrain data after preprocessing is: pretrain_data.csv.
 
@@ -137,7 +142,6 @@ We hope this open-source project helps LLM beginners get started quickly!
 # 📌 Environment
 
 These are my personal software and hardware environment configurations. Please adjust according to your own setup:
-
 
 ```bash
 CPU: Intel(R) Core(TM) i9-10980XE CPU @ 3.00GHz
@@ -197,22 +201,19 @@ The project has been deployed to ModelScope makerspace, where you can experience
 
 # 📌 Quick Start
 
-*
-    0. Install the required dependencies
+* 0.Clone the project code
 
-```bash
-  pip install -r requirements.txt
-```
+  ```text
+  git clone https://github.com/jingyaogong/minimind.git & cd minimind
+  ```
+  
+* 1.Install the required dependencies
 
-*
-    1. Clone the project code
+  ```bash
+    pip install -r requirements.txt
+  ```
 
-```text
-git clone https://github.com/jingyaogong/minimind.git
-```
-
-*
-    2. If you need to train the model yourself
+* 2.If you need to train the model yourself
 
     * 2.1 Download the [dataset download link](#dataset-download-links) and place it in the `./dataset` directory.
 
@@ -225,8 +226,7 @@ git clone https://github.com/jingyaogong/minimind.git
     * 2.6 Perform LoRA fine-tuning (optional) with `python 4-lora_sft.py`.
     * 2.7 Execute DPO human preference reinforcement learning alignment (optional) with `python 5-dpo_train.py`.
 
-*
-    3. Test model inference performance
+* 3.Test model inference performance
 
     * Ensure that the required trained parameter weights are located in the `./out/` directory.
     * You can also directly download and use the trained model weights
@@ -270,7 +270,9 @@ git clone https://github.com/jingyaogong/minimind.git
     # and
     python 1-pretrain.py --use_wandb
     ```
-    By adding the `--use_wandb` parameter, you can record the training process. After training is complete, you can view the training process on the wandb website. You can specify the project name and run name by modifying the `wandb_project` and `wandb_run_name` parameters.
+  By adding the `--use_wandb` parameter, you can record the training process. After training is complete, you can view
+  the training process on the wandb website. You can specify the project name and run name by modifying
+  the `wandb_project` and `wandb_run_name` parameters.
 
 # 📌 Data sources
 
@@ -360,7 +362,7 @@ git clone https://github.com/jingyaogong/minimind.git
 | **[tokenizer Data]**      | [HuggingFace](https://huggingface.co/datasets/jingyaogong/minimind_dataset/tree/main) / [Baidu](https://pan.baidu.com/s/1yAw1LVTftuhQGAC1Y9RdYQ?pwd=6666) |
 | **[Pretrain Data]**       | [Seq-Monkey General Text Dataset](http://share.mobvoi.com:5000/sharing/O91blwPkY) / [Baidu](https://pan.baidu.com/s/114F1k3eksiWCOQLvaT3RYQ?pwd=6666)     |
 | **[SFT Data]**            | [Jiangshu Large Model SFT Dataset](https://www.modelscope.cn/datasets/deepctrl/deepctrl-sft-data/resolve/master/sft_data_zh.jsonl)                        |
-| **[DPO Data]**            | [Huggingface](https://huggingface.co/datasets/jingyaogong/minimind_dataset/tree/main/dpo)                                                                                                                                  |
+| **[DPO Data]**            | [Huggingface](https://huggingface.co/datasets/jingyaogong/minimind_dataset/tree/main/dpo)                                                                 |
 
 # 📌 Model
 
@@ -398,7 +400,6 @@ shown in the table below:
 | minimind-v1       | 108M   | 6400      | 16       | 768     | 8        | 16      | -           | -    |
 
 # 📌 Experiment
-
 
 | Model Name        | params | len_vocab | batch_size | pretrain_time     | sft_single_time   | sft_multi_time      |
 |-------------------|--------|-----------|------------|-------------------|-------------------|---------------------|
@@ -504,8 +505,8 @@ better with the scaling law for small models.
 
 [baidu](https://pan.baidu.com/s/1KUfSzEkSXYbCCBj0Pw-9fA?pwd=6666)
 
-| Model Name        | params | Config                      | pretrain_model                                                  | single_sft_model                                               | multi_sft_model                                                |
-|-------------------|--------|-----------------------------|-----------------------------------------------------------------|----------------------------------------------------------------|----------------------------------------------------------------|
+| Model Name        | params | Config                      | pretrain_model                                                  | single_sft_model                                                | multi_sft_model                                                 |
+|-------------------|--------|-----------------------------|-----------------------------------------------------------------|-----------------------------------------------------------------|-----------------------------------------------------------------|
 | minimind-v1-small | 26M    | d_model=512<br/>n_layers=8  | [URL](https://pan.baidu.com/s/1wP_cAIc8cgaJ6CxUmR9ECQ?pwd=6666) | [URL](https://pan.baidu.com/s/1_COe0FQRDmeapSsvArahCA?pwd=6666) | [URL](https://pan.baidu.com/s/1GsGsWSL0Dckl0YPRXiBIFQ?pwd=6666) |
 | minimind-v1-moe   | 4×26M  | d_model=512<br/>n_layers=8  | [URL](https://pan.baidu.com/s/1IZdkzPRhbZ_bSsRL8vInjg?pwd=6666) | [URL](https://pan.baidu.com/s/1tqB-GMvuiGQBvEl-yZ-oBw?pwd=6666) | [URL](https://pan.baidu.com/s/1GHJ2T4904EcT1u8l1rVqtg?pwd=6666) |
 | minimind-v1       | 108M   | d_model=768<br/>n_layers=16 | [URL](https://pan.baidu.com/s/1B60jYo4T8OmJI0ooqsixaA?pwd=6666) | [URL](https://pan.baidu.com/s/1p713loS7EfwHQf3G9eYI3Q?pwd=6666) | [URL](https://pan.baidu.com/s/12iHGpAs6R0kqsOnGtgK6vQ?pwd=6666) |
@@ -618,14 +619,26 @@ better with the scaling law for small models.
 
 ## 👉 Summary of Effects
 
-* The ranking of the minimind series (ABC) aligns with intuition, with minimind-v1(0.1B) scoring the highest, and its responses to common sense questions are mostly error-free and free of hallucinations.
+* The ranking of the minimind series (ABC) aligns with intuition, with minimind-v1(0.1B) scoring the highest, and its
+  responses to common sense questions are mostly error-free and free of hallucinations.
     * Surprisingly, minimind-v1-small(0.02B), with only 26M parameters, can perform nearly as well as minimind-v1(0.1B).
-    * minimind-v1(0.1B) underwent less than 2 epochs of SFT (Supervised Fine-Tuning) due to being prematurely killed to free up resources for smaller models. Despite not being fully trained, it still achieved the best performance, demonstrating that larger models generally outperform smaller ones.
-    * minimind-v1-moe(0.1B) performed only slightly better than minimind-v1-small(0.02B), also due to early termination to free up resources for other training. However, the MoE (Mixture of Experts) model, with its sparse multi-Experts mode, requires more training epochs to fully activate and train all FFN (Feed-Forward Network) layer experts. In the current setup with 3 epochs, the training is not yet sufficient.
-      Early experiments with minimind on the Yi-Tokenizer showed that a fully trained MoE version could outperform dense small models visibly. This aspect may need to be reserved for future training and updates to v2 and v3 versions when more server resources are available.
+    * minimind-v1(0.1B) underwent less than 2 epochs of SFT (Supervised Fine-Tuning) due to being prematurely killed to
+      free up resources for smaller models. Despite not being fully trained, it still achieved the best performance,
+      demonstrating that larger models generally outperform smaller ones.
+    * minimind-v1-moe(0.1B) performed only slightly better than minimind-v1-small(0.02B), also due to early termination
+      to free up resources for other training. However, the MoE (Mixture of Experts) model, with its sparse
+      multi-Experts mode, requires more training epochs to fully activate and train all FFN (Feed-Forward Network) layer
+      experts. In the current setup with 3 epochs, the training is not yet sufficient.
+      Early experiments with minimind on the Yi-Tokenizer showed that a fully trained MoE version could outperform dense
+      small models visibly. This aspect may need to be reserved for future training and updates to v2 and v3 versions
+      when more server resources are available.
 
-* The responses from Model E appear to be quite good to the naked eye, although there are occasional instances of hallucinations and fabrications. However, both GPT-4o and Deepseek's evaluations consistently noted that it "provides overly verbose and repetitive information, and contains hallucinations."
-  This evaluation seems somewhat strict, as even a small number of hallucinated words in a 100-word response can easily result in a low score. Given that Model E was pre-trained on longer texts and a larger dataset, its responses appear more comprehensive. In models of similar size, both the quantity and quality of the data are crucial.
+* The responses from Model E appear to be quite good to the naked eye, although there are occasional instances of
+  hallucinations and fabrications. However, both GPT-4o and Deepseek's evaluations consistently noted that it "provides
+  overly verbose and repetitive information, and contains hallucinations."
+  This evaluation seems somewhat strict, as even a small number of hallucinated words in a 100-word response can easily
+  result in a low score. Given that Model E was pre-trained on longer texts and a larger dataset, its responses appear
+  more comprehensive. In models of similar size, both the quantity and quality of the data are crucial.
 
 > 🙋‍♂️ Personal Subjective Evaluation: E>C>B≈A>D
 
@@ -759,16 +772,22 @@ your model with third-party UIs, such as fastgpt, OpenWebUI, etc.
 
 > [!TIP]
 > If you find `MiniMind` helpful, please give us a ⭐ on GitHub.<br/>
-> Given the length and the limitations of our expertise, there may be errors. We welcome discussions and corrections in the Issues section.<br/>
+> Given the length and the limitations of our expertise, there may be errors. We welcome discussions and corrections in
+> the Issues section.<br/>
 > Your support is the driving force behind our continuous improvement of the project!
 
 
 > [!NOTE]
-> An individual's resources, energy, and time are limited, so we encourage everyone to participate and contribute collectively. If you have trained model weights, you are welcome to share them in the Discussions or Issues sections.<br/>
-> These models can be new versions of MiniMind tailored for specific downstream tasks or vertical domains (such as sentiment recognition, healthcare, psychology, finance, legal Q&A, etc.).<br/>
-> They can also be new versions of MiniMind models that have undergone extended training, exploring longer text sequences, larger volumes (such as 0.1B+), or more extensive datasets.<br/>
+> An individual's resources, energy, and time are limited, so we encourage everyone to participate and contribute
+> collectively. If you have trained model weights, you are welcome to share them in the Discussions or Issues
+> sections.<br/>
+> These models can be new versions of MiniMind tailored for specific downstream tasks or vertical domains (such as
+> sentiment recognition, healthcare, psychology, finance, legal Q&A, etc.).<br/>
+> They can also be new versions of MiniMind models that have undergone extended training, exploring longer text
+> sequences, larger volumes (such as 0.1B+), or more extensive datasets.<br/>
 > Each contribution is unique, and all attempts are valuable and encouraged.<br/>
-> Any shared contributions will be promptly recognized and compiled in the acknowledgments list. Thank you once again for everyone's support!
+> Any shared contributions will be promptly recognized and compiled in the acknowledgments list. Thank you once again
+> for everyone's support!
 
 ## 🤝[Contributors](https://github.com/jingyaogong/minimind/graphs/contributors)
 
@@ -817,7 +836,6 @@ your model with third-party UIs, such as fastgpt, OpenWebUI, etc.
 
 </details>
 
-
 ## 🫶Supporter
 
 <a href="https://github.com/jingyaogong/minimind/stargazers">
@@ -841,8 +859,6 @@ your model with third-party UIs, such as fastgpt, OpenWebUI, etc.
   <source media="(prefers-color-scheme: light)" srcset="https://api.star-history.com/svg?repos=jingyaogong/minimind&type=Date"/>
   <img alt="Star History Chart" src="https://api.star-history.com/svg?repos=jingyaogong/minimind&type=Date"/>
 </picture>
-
-
 
 # License
 

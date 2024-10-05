@@ -188,20 +188,22 @@ streamlit run fast_inference.py
 
 # 📌 Quick Start
 
-* 0、环境安装
+* 0、克隆项目代码
+    ```bash
+    git clone https://github.com/jingyaogong/minimind.git & cd minimind
+    ```
+
+* 1、环境安装
   ```bash
   pip install -r requirements.txt -i https://pypi.tuna.tsinghua.edu.cn/simple
   ```
-* 1、克隆项目代码
-    ```text
-    git clone https://github.com/jingyaogong/minimind.git
-    ```
+
 * 2、如果你需要自己训练
 
     * 2.1 下载[数据集下载地址](#数据集下载地址)放到`./dataset`目录下
 
     * 2.2 `python data_process.py`处理数据集，例如pretrain数据提前进行token-encoder、sft数据集抽离qa到csv文件
-  
+
     * 2.3 在`./model/LMConfig.py` 中调整model的参数配置
       > 这里仅需调整dim和n_layers和use_moe参数，分别是`(512+8)`或`(768+16)`，对应于`minimind-v1-small`和`minimind-v1`
     * 2.4 `python 1-pretrain.py` 执行预训练，得到 `pretrain_*.pth` 作为预训练的输出权重
@@ -231,26 +233,27 @@ streamlit run fast_inference.py
 
 🍭 【Tip】预训练和全参微调pretrain和full_sft均支持多卡加速
 
-  * 单机N卡启动训练(DDP)
-      ```bash
-      torchrun --nproc_per_node N 1-pretrain.py
-      # and
-      torchrun --nproc_per_node N 3-full_sft.py
-      ```
-  * 单机N卡启动训练(DeepSpeed)
-      ```bash
-      deepspeed --master_port 29500 --num_gpus=N 1-pretrain.py
-      # and
-      deepspeed --master_port 29500 --num_gpus=N 3-full_sft.py
-      ```
+* 单机N卡启动训练(DDP)
+    ```bash
+    torchrun --nproc_per_node N 1-pretrain.py
+    # and
+    torchrun --nproc_per_node N 3-full_sft.py
+    ```
+* 单机N卡启动训练(DeepSpeed)
+    ```bash
+    deepspeed --master_port 29500 --num_gpus=N 1-pretrain.py
+    # and
+    deepspeed --master_port 29500 --num_gpus=N 3-full_sft.py
+    ```
 
-  * 记录训练过程
-      ```bash
-      torchrun --nproc_per_node N 1-pretrain.py --use_wandb
-      # and
-      python 1-pretrain.py --use_wandb
-      ```
-      通过添加`--use_wandb`参数，可以记录训练过程，训练完成后，可以在wandb网站上查看训练过程。通过修改`wandb_project`和`wandb_run_name`参数，可以指定项目名称和运行名称。
+* 记录训练过程
+    ```bash
+    torchrun --nproc_per_node N 1-pretrain.py --use_wandb
+    # and
+    python 1-pretrain.py --use_wandb
+    ```
+  通过添加`--use_wandb`参数，可以记录训练过程，训练完成后，可以在wandb网站上查看训练过程。通过修改`wandb_project`
+  和`wandb_run_name`参数，可以指定项目名称和运行名称。
 
 # 📌 Data sources
 
