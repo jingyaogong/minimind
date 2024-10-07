@@ -144,7 +144,7 @@ CPU: Intel(R) Core(TM) i9-10980XE CPU @ 3.00GHz
 * CUDA == 12.2
 * [requirements.txt](./requirements.txt)
 
-# 📌 Quick Inference & Test
+# 📌 Quick Start Test
 
 <div align="center" style="font-size: 1.5em; font-weight: bold;">
   <img src="https://huggingface.co/front/assets/huggingface_logo-noborder.svg" alt="Hugging Face Logo" style="vertical-align: middle; height: 30px;" />
@@ -197,6 +197,16 @@ streamlit run fast_inference.py
   ```bash
   pip install -r requirements.txt -i https://pypi.tuna.tsinghua.edu.cn/simple
   ```
+  
+  ```python
+  # 测试torch是否可用cuda
+  import torch
+  print(torch.cuda.is_available())
+  ```
+
+  > 如果不可用，请自行去[torch_stable](https://download.pytorch.org/whl/torch_stable.html)
+  下载whl文件安装。参考[链接](https://blog.csdn.net/weixin_45456738/article/details/141029610?ops_request_misc=&request_id=&biz_id=102&utm_term=%E5%AE%89%E8%A3%85torch&utm_medium=distribute.pc_search_result.none-task-blog-2~all~sobaiduweb~default-2-141029610.nonecase&spm=1018.2226.3001.4187)
+
 
 * 2、如果你需要自己训练
 

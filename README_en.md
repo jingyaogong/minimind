@@ -156,7 +156,7 @@ Environment: python 3.9 + Torch 2.1.2 + DDP multi-GPU training
 * CUDA == 12.2
 * [requirements.txt](./requirements.txt)
 
-# 📌 Quick Inference & Test
+# 📌 Quick Start Test
 
 <div align="center" style="font-size: 1.5em; font-weight: bold;">
   <img src="https://huggingface.co/front/assets/huggingface_logo-noborder.svg" alt="Hugging Face Logo" style="vertical-align: middle; height: 30px;" />
@@ -212,7 +212,16 @@ The project has been deployed to ModelScope makerspace, where you can experience
   ```bash
     pip install -r requirements.txt
   ```
+  
+  ```python
+  # Test if torch can use CUDA
+  import torch
+  print(torch.cuda.is_available())
+  ```
 
+  > If it is not available, please go to [torch_stable](https://download.pytorch.org/whl/torch_stable.html)
+  to download the whl file for installation. Refer to [this link](https://blog.csdn.net/weixin_45456738/article/details/141029610?ops_request_misc=&request_id=&biz_id=102&utm_term=安装torch&utm_medium=distribute.pc_search_result.none-task-blog-2~all~sobaiduweb~default-2-141029610.nonecase&spm=1018.2226.3001.4187)
+  
 * 2.If you need to train the model yourself
 
     * 2.1 Download the [dataset download link](#dataset-download-links) and place it in the `./dataset` directory.
