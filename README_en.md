@@ -43,11 +43,14 @@
 
 <div align="center">
 
-https://github.com/user-attachments/assets/88b98128-636e-43bc-a419-b1b1403c2055
+![](./images/minimind-demo.gif)
 
-[Bilibili Video](https://www.bilibili.com/video/BV12dHPeqE72/?share_source=copy_web&vd_source=670c2504f88726f8cf4a21ef6147c0e8)
+[ModelScope Online Testing](https://www.modelscope.cn/studios/gongjy/minimind) | [Bilibili Video Link](https://www.bilibili.com/video/BV12dHPeqE72/?share_source=copy_web&vd_source=670c2504f88726f8cf4a21ef6147c0e8) 
+
+---
 
 </div>
+
 
 # 📌 Introduction
 
@@ -187,18 +190,6 @@ or you can run streamlit, launch a web page to chat with minimind-v1
 streamlit run fast_inference.py
 ```
 
-![](./images/streamlit.png)
-
-
-<div align="center">
-
-The project has been deployed to ModelScope makerspace, where you can experience:
-
-[ModelScope Online](https://www.modelscope.cn/studios/gongjy/minimind)
-
-
-</div>
-
 # 📌 Quick Start Train
 
 * 0.Clone the project code
@@ -213,7 +204,7 @@ The project has been deployed to ModelScope makerspace, where you can experience
     pip install -r requirements.txt
   ```
   
-  ```python
+  ```text
   # Test if torch can use CUDA
   import torch
   print(torch.cuda.is_available())

@@ -35,11 +35,16 @@
 
 ---
 
+
+
+
 <div align="center">
 
-https://github.com/user-attachments/assets/88b98128-636e-43bc-a419-b1b1403c2055
+![](./images/minimind-demo.gif)
 
-[Bilibili视频链接](https://www.bilibili.com/video/BV12dHPeqE72/?share_source=copy_web&vd_source=670c2504f88726f8cf4a21ef6147c0e8)
+[ModelScope在线测试](https://www.modelscope.cn/studios/gongjy/minimind) | [Bilibili视频链接](https://www.bilibili.com/video/BV12dHPeqE72/?share_source=copy_web&vd_source=670c2504f88726f8cf4a21ef6147c0e8) 
+
+---
 
 </div>
 
@@ -116,7 +121,7 @@ https://github.com/user-attachments/assets/88b98128-636e-43bc-a419-b1b1403c2055
 
 - 项目已部署至ModelScope创空间，可以在此网站上体验：
 
-- [ModelScope在线体验](https://www.modelscope.cn/studios/gongjy/minimind)
+- [🔗ModelScope在线体验🔗](https://www.modelscope.cn/studios/gongjy/minimind)
 
 </details>
 
@@ -175,16 +180,6 @@ python 2-eval.py
 streamlit run fast_inference.py
 ```
 
-![](./images/streamlit.png)
-
-<div align="center">
-
-项目已部署至ModelScope创空间，可以在此网站上体验：
-
-[ModelScope在线体验](https://www.modelscope.cn/studios/gongjy/minimind)
-
-
-</div>
 
 # 📌 Quick Start Train
 
@@ -198,7 +193,7 @@ streamlit run fast_inference.py
   pip install -r requirements.txt -i https://pypi.tuna.tsinghua.edu.cn/simple
   ```
   
-  ```python
+  ```text
   # 测试torch是否可用cuda
   import torch
   print(torch.cuda.is_available())
