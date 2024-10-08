@@ -40,7 +40,7 @@
 
 <div align="center">
 
-![](./images/minimind-demo.gif)
+![streamlit](./images/streamlit.gif)
 
 [ModelScope在线测试](https://www.modelscope.cn/studios/gongjy/minimind) | [Bilibili视频链接](https://www.bilibili.com/video/BV12dHPeqE72/?share_source=copy_web&vd_source=670c2504f88726f8cf4a21ef6147c0e8) 
 
