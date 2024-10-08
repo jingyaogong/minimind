@@ -186,7 +186,7 @@ streamlit run fast_inference.py
 
 </div>
 
-# 📌 Quick Start
+# 📌 Quick Start Train
 
 * 0、克隆项目代码
     ```bash

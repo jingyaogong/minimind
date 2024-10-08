@@ -199,7 +199,7 @@ The project has been deployed to ModelScope makerspace, where you can experience
 
 </div>
 
-# 📌 Quick Start
+# 📌 Quick Start Train
 
 * 0.Clone the project code
 
