@@ -1,17 +1,17 @@
 <div align="center">
 
-<img src="./images/logo.png"></img>
+<img src="./images/logo.png"/>
 
----
+<hr>
 
-<img src="https://visitor-badge.laobi.icu/badge?page_id=jingyaogong/minimind"></img>
-<img src="https://img.shields.io/github/stars/jingyaogong/minimind?style=social"></img>
-<img src="https://img.shields.io/github/license/jingyaogong/minimind"></img>
-<img src="https://img.shields.io/github/last-commit/jingyaogong/minimind"></img>
-<img src="https://img.shields.io/badge/PRs-welcome-blue"></img>
-<img src="https://img.shields.io/badge/🤗-MiniMind%20%20Collection-blue"></img>
+<img src="https://visitor-badge.laobi.icu/badge?page_id=jingyaogong/minimind"/>
+<img src="https://img.shields.io/github/stars/jingyaogong/minimind?style=social"/>
+<img src="https://img.shields.io/github/license/jingyaogong/minimind"/>
+<img src="https://img.shields.io/github/last-commit/jingyaogong/minimind"/>
+<img src="https://img.shields.io/badge/PRs-welcome-blue"/>
+<img src="https://img.shields.io/badge/🤗-MiniMind%20%20Collection-blue">
 
----
+<hr>
 
 </div>
 
@@ -23,7 +23,7 @@
 <a href="https://github.com/jingyaogong/minimind">🔗MiniMind Github Repo🔗</a>
 </div>
 
-
+<hr>
 
 * This open-source project aims to train a tiny language model called **MiniMind** from scratch in just 3 hours, with a model size of only 26.88M.
 
@@ -41,14 +41,14 @@
 
 <div align="center">
 
----
+<hr>
 
-<img src="./images/streamlit.gif"></img>
+<img src="./images/streamlit.gif"/>
 
 <a href="https://www.modelscope.cn/studios/gongjy/minimind">ModelScope Online</a> | 
 <a href="https://www.bilibili.com/video/BV12dHPeqE72/?share_source=copy_web&vd_source=670c2504f88726f8cf4a21ef6147c0e8">Bilibili Video Link</a>
 
----
+<hr>
 
 </div>
 
