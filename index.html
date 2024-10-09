@@ -1,0 +1,134 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>MiniMind Project</title>
+    <!-- 引入 Bootstrap CSS -->
+    <link href="https://lf6-cdn-tos.bytecdntp.com/cdn/expire-1-M/bootstrap/5.1.3/css/bootstrap.min.css" rel="stylesheet">
+    <!-- 可选: 引入自定义样式 -->
+    <style>
+        .logo {
+            max-width: 100%;
+            height: auto;
+        }
+
+        .scroll-container {
+            display: flex;
+            overflow-x: auto; /* 启用水平滚动 */
+            width: 100%;
+            padding: 20px 10px 1px 10px; /* 内边距 */
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.5); /* 阴影效果 */
+            border-radius: 20px 20px 5px 5px; /* 圆角 */
+        }
+
+        .scroll-container img {
+            width: auto; /* 图片最大宽度为100%，以适应容器 */
+            height: 500px; /* 维持图片的宽高比 */
+            margin: 0 10px; /* 图片之间有间距 */
+            object-fit: contain; /* 确保图片不被拉伸且完全显示 */
+        }
+
+
+        /* 自定义滚动条整体部分 */
+        .scroll-container::-webkit-scrollbar {
+            width: 10px; /* 滚动条宽度 */
+            height: 10px; /* 对于水平滚动条有效 */
+        }
+
+        /* 自定义滚动条轨道 */
+        .scroll-container::-webkit-scrollbar-track {
+            background: rgba(0, 0, 0, 0.1); /* 轨道背景颜色 */
+            border-radius: 60px; /* 轨道圆角 */
+        }
+
+        /* 自定义滚动条滑块 */
+        .scroll-container::-webkit-scrollbar-thumb {
+            background: rgba(0, 0, 0, 0.1); /* 滑块颜色 */
+            border-radius: 10px; /* 滑块圆角 */
+        }
+
+        /* 当鼠标悬停在滑块上时的样式 */
+        .scroll-container::-webkit-scrollbar-thumb:hover {
+            background: rgba(0, 0, 0, 0.3); /* 悬停时的颜色 */
+        }
+
+        /* 对于Firefox浏览器（如果需要支持） */
+        @-moz-document url-prefix() {
+            .scroll-container {
+                scrollbar-width: thin; /* "auto"、"thin" 或 "none" */
+                scrollbar-color: rgba(0, 0, 0, 0.3) rgba(0, 0, 0, 0.1); /* thumb 和 track 颜色 */
+            }
+        }
+    </style>
+</head>
+<body>
+<div class="container" style="max-width: 1000px;">
+    <div align="center">
+        <img src="./images/logo.png" alt="Logo" class="logo mb-4"/>
+        <!--<br>-->
+        <img src="https://visitor-badge.laobi.icu/badge?page_id=jingyaogong/minimind" alt="Visitor Badge" class="me-2">
+        <img src="https://img.shields.io/github/stars/jingyaogong/minimind?style=social" alt="GitHub Stars"
+             class="me-2">
+        <img src="https://img.shields.io/github/license/jingyaogong/minimind" alt="License" class="me-2">
+        <img src="https://img.shields.io/github/last-commit/jingyaogong/minimind" alt="Last Commit" class="me-2">
+        <img src="https://img.shields.io/badge/PRs-welcome-blue" alt="Pull Requests Welcome" class="me-2">
+        <img src="https://img.shields.io/badge/🤗-MiniMind%20%20Collection-blue" alt="MiniMind Collection" class="me-2">
+    </div>
+
+    <div align="center">
+        <br/>
+        <p style="font-size: 4vh;font-weight: bold;">"The Greatest Path is the Simplest"</p>
+        <a href="https://github.com/jingyaogong/minimind">🔗 MiniMind Github Repo 🔗</a>
+    </div>
+
+    <hr>
+
+    <ul>
+        <li>This open-source project aims to train a tiny language model called <strong>MiniMind</strong> from scratch
+            in just 3 hours, with a model size of only 26.88M.
+        </li>
+        <li><strong>MiniMind</strong> is extremely lightweight, with the smallest version being approximately <span
+                style="white-space: nowrap;">1/7000</span> the size of GPT3, making it possible for even an ordinary
+            personal GPU to perform quick inference and even training.
+        </li>
+        <li><strong>MiniMind</strong> provides the full-stage code for a simplified large model structure, dataset
+            cleaning and preprocessing, supervised pretraining, supervised instruction fine-tuning (SFT), low-rank
+            adaptation (LoRA) fine-tuning, and direct preference alignment with reinforcement learning without rewards
+            (DPO). It also includes code for expanding to sparse models with mixed experts (MoE) and multi-modal vision
+            language models (VLM): <a href="https://github.com/jingyaogong/minimind-v">MiniMind-V</a>.
+        </li>
+        <li>This is not just an implementation of an open-source model but also a tutorial for getting started with
+            large language models (LLM).
+        </li>
+        <li>We hope this project will serve as an introductory example for researchers, helping them quickly get started
+            and inspiring more exploration and innovation in the LLM field.
+        </li>
+        <li style="color: #aaa;">To avoid misinterpretation, "fastest 3 hours" means you need a machine with hardware
+            configuration superior
+            to mine. Detailed specifications will be provided below.
+        </li>
+    </ul>
+
+
+    <div align="center">
+
+        <div class="scroll-container">
+            <img src="./images/streamlit.gif" alt="Streamlit Demo" class="img-fluid mb-4">
+            <img src="./images/LLM-structure.png" alt="LLM Structure" class="img-fluid mb-4">
+            <img src="./images/LLM-structure-moe.png" alt="LLM Structure MOE" class="img-fluid mb-4">
+        </div>
+        <br/>
+        <a href="https://www.modelscope.cn/studios/gongjy/minimind">ModelScope Online</a> |
+        <a href="https://www.bilibili.com/video/BV12dHPeqE72/?share_source=copy_web&vd_source=670c2504f88726f8cf4a21ef6147c0e8">Bilibili
+            Video Link</a>
+        <br/>
+        <br/>
+    </div>
+</div>
+
+<!-- 引入 Bootstrap JS 和 Popper.js（用于一些组件） -->
+<script src="https://lf6-cdn-tos.bytecdntp.com/cdn/expire-1-M/popper.js/2.11.2/cjs/popper.min.js"></script>
+<script src="https://lf6-cdn-tos.bytecdntp.com/cdn/expire-1-M/bootstrap/5.1.3/js/bootstrap.min.js"></script>
+</body>
+</html>
