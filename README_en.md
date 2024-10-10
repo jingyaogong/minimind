@@ -194,7 +194,8 @@ streamlit run fast_inference.py
 * 0.Clone the project code
 
   ```text
-  git clone https://github.com/jingyaogong/minimind.git & cd minimind
+  git clone https://github.com/jingyaogong/minimind.git
+  cd minimind
   ```
   
 * 1.Install the required dependencies

@@ -185,7 +185,8 @@ streamlit run fast_inference.py
 
 * 0、克隆项目代码
     ```bash
-    git clone https://github.com/jingyaogong/minimind.git & cd minimind
+    git clone https://github.com/jingyaogong/minimind.git
+    cd minimind
     ```
 
 * 1、环境安装
