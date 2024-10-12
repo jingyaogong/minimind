@@ -114,24 +114,20 @@ def rl_process():
     # Dataset
     ################
 
-    dataset_path = ['./dataset/dpo/dpo_zh_demo.json',
-                    './dataset/dpo/train_data.json',
-                    './dataset/dpo/huozi_rlhf_data.json', ]
+    dataset_paths = [
+        './dataset/dpo/dpo_zh_demo.json',
+        './dataset/dpo/dpo_train_data.json',
+        './dataset/dpo/huozi_rlhf_data.json',
+    ]
 
-    train_dataset = load_dataset('json', data_files=dataset_path)
+    train_dataset = load_dataset('json', data_files=dataset_paths)
 
-    def process(row):
-        row["chosen"] = tokenizer.apply_chat_template(row["chosen"], tokenize=False)
-        row["reject"] = tokenizer.apply_chat_template(row["rejected"], tokenize=False)
-        return row
+    merged_data = []
+    for split in train_dataset.keys():
+        merged_data.extend(train_dataset[split])
 
-    ds = train_dataset.map(
-        process,
-        load_from_cache_file=False,
-    )
-
-    output_dataset_path = './dataset/dpo/train_data.json'
-    ds['train'].to_json(output_dataset_path, force_ascii=False, orient='records', lines=True)
+    with open('./dataset/dpo/train_data.json', 'w', encoding='utf-8') as f:
+        json.dump(merged_data, f, ensure_ascii=False, indent=4)
 
 
 if __name__ == "__main__":
@@ -143,7 +139,7 @@ if __name__ == "__main__":
     # 2: sft
     # 3: RL
     ################
-    process_type = 1
+    process_type = 3
 
     if process_type == 1:
         pretrain_process()
