@@ -4,15 +4,17 @@ import torch
 from transformers import AutoModelForCausalLM, AutoTokenizer
 from transformers.generation.utils import GenerationConfig
 
-st.set_page_config(page_title="MiniMind-V1 108M(无历史上文)")
-st.title("MiniMind-V1 108M(无历史上文)")
+st.set_page_config(page_title="minimind-v1(108M)")
+st.title("minimind-v1(108M)")
 
 model_id = "minimind-v1"
 
 # -----------------------------------------------------------------------------
-temperature = 0.7
-top_k = 8
+temperature = 0.5
+top_k = 16
 max_seq_len = 1 * 1024
+
+
 # -----------------------------------------------------------------------------
 
 @st.cache_resource
@@ -30,13 +32,14 @@ def load_model_tokenizer():
     generation_config = GenerationConfig.from_pretrained(model_id)
     return model, tokenizer, generation_config
 
+
 def clear_chat_messages():
     del st.session_state.messages
 
 
 def init_chat_messages():
     with st.chat_message("assistant", avatar='🤖'):
-        st.markdown("您好，我是由Joya开发的MiniMind，很高兴为您服务😄")
+        st.markdown("您好，我是由JingyaoGong创造的MiniMind，很高兴为您服务😄")
 
     if "messages" in st.session_state:
         for message in st.session_state.messages:
@@ -47,6 +50,7 @@ def init_chat_messages():
         st.session_state.messages = []
 
     return st.session_state.messages
+
 
 # max_new_tokens = st.sidebar.slider("max_new_tokens", 0, 1024, 512, step=1)
 # top_p = st.sidebar.slider("top_p", 0.0, 1.0, 0.8, step=0.01)
@@ -67,7 +71,7 @@ def main():
             placeholder = st.empty()
 
             chat_messages = []
-            chat_messages.append({"role": "user", "content": prompt})
+            chat_messages.append({"role": "user", "content": '请问，' + prompt})
             # print(messages)
             new_prompt = tokenizer.apply_chat_template(
                 chat_messages,
