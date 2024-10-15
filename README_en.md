@@ -26,17 +26,26 @@
 
 </div>
 
-* This open-source project aims to train a tiny language model called **MiniMind** from scratch in just 3 hours, with a model size of only 26.88M.
+* This open-source project aims to train a tiny language model called **MiniMind** from scratch in just 3 hours, with a
+  model size of only 26.88M.
 
-* **MiniMind** is extremely lightweight, with the smallest version being approximately $\frac{1}{7000}$ the size of GPT3, making it possible for even an ordinary personal GPU to perform quick inference and even training.
+* **MiniMind** is extremely lightweight, with the smallest version being approximately $\frac{1}{7000}$ the size of
+  GPT3, making it possible for even an ordinary personal GPU to perform quick inference and even training.
 
-* **MiniMind** provides the full-stage code for a simplified large model structure, dataset cleaning and preprocessing, supervised pretraining, supervised instruction fine-tuning (SFT), low-rank adaptation (LoRA) fine-tuning, and direct preference alignment with reinforcement learning without rewards (DPO). It also includes code for expanding to sparse models with mixed experts (MoE) and multi-modal vision language models (VLM): [MiniMind-V](https://github.com/jingyaogong/minimind-v).
+* **MiniMind** provides the full-stage code for a simplified large model structure, dataset cleaning and preprocessing,
+  supervised pretraining, supervised instruction fine-tuning (SFT), low-rank adaptation (LoRA) fine-tuning, and direct
+  preference alignment with reinforcement learning without rewards (DPO). It also includes code for expanding to sparse
+  models with mixed experts (MoE) and multi-modal vision language models (
+  VLM): [MiniMind-V](https://github.com/jingyaogong/minimind-v).
 
-* This is not just an implementation of an open-source model but also a tutorial for getting started with large language models (LLM).
+* This is not just an implementation of an open-source model but also a tutorial for getting started with large language
+  models (LLM).
 
-* We hope this project will serve as an introductory example for researchers, helping them quickly get started and inspiring more exploration and innovation in the LLM field.
+* We hope this project will serve as an introductory example for researchers, helping them quickly get started and
+  inspiring more exploration and innovation in the LLM field.
 
-> To avoid misinterpretation, "fastest 3 hours" means you need a machine with hardware configuration superior to mine. Detailed specifications will be provided below.
+> To avoid misinterpretation, "fastest 3 hours" means you need a machine with hardware configuration superior to mine.
+> Detailed specifications will be provided below.
 
 ---
 
@@ -44,12 +53,11 @@
 
 ![streamlit](./images/streamlit.gif)
 
-[ModelScope Online Testing](https://www.modelscope.cn/studios/gongjy/minimind) | [Bilibili Video Link](https://www.bilibili.com/video/BV12dHPeqE72/?share_source=copy_web&vd_source=670c2504f88726f8cf4a21ef6147c0e8) 
+[ModelScope Online Testing](https://www.modelscope.cn/studios/gongjy/minimind) | [Bilibili Video Link](https://www.bilibili.com/video/BV12dHPeqE72/?share_source=copy_web&vd_source=670c2504f88726f8cf4a21ef6147c0e8)
 
 ---
 
 </div>
-
 
 # 📌 Introduction
 
@@ -197,13 +205,13 @@ streamlit run fast_inference.py
   git clone https://github.com/jingyaogong/minimind.git
   cd minimind
   ```
-  
+
 * 1.Install the required dependencies
 
   ```bash
     pip install -r requirements.txt
   ```
-  
+
   ```text
   # Test if torch can use CUDA
   import torch
@@ -211,8 +219,9 @@ streamlit run fast_inference.py
   ```
 
   > If it is not available, please go to [torch_stable](https://download.pytorch.org/whl/torch_stable.html)
-  to download the whl file for installation. Refer to [this link](https://blog.csdn.net/weixin_45456738/article/details/141029610?ops_request_misc=&request_id=&biz_id=102&utm_term=安装torch&utm_medium=distribute.pc_search_result.none-task-blog-2~all~sobaiduweb~default-2-141029610.nonecase&spm=1018.2226.3001.4187)
-  
+  to download the whl file for installation. Refer
+  to [this link](https://blog.csdn.net/weixin_45456738/article/details/141029610?ops_request_misc=&request_id=&biz_id=102&utm_term=安装torch&utm_medium=distribute.pc_search_result.none-task-blog-2~all~sobaiduweb~default-2-141029610.nonecase&spm=1018.2226.3001.4187)
+
 * 2.If you need to train the model yourself
 
     * 2.1 Download the [dataset download link](#dataset-download-links) and place it in the `./dataset` directory.
@@ -458,10 +467,18 @@ shown in the table below:
     ```
 
 4. **Direct Preference Optimization (DPO)**:
-    - After the previous training steps, the model has basic conversational abilities. However, we want it to align more
-      closely with human preferences and provide more satisfactory responses.
-    - This process is similar to workplace training for the model, where it learns from examples of excellent employees
-      and negative examples to better serve customers.
+    - In previous training sessions, GPT has already acquired basic conversational abilities, but these abilities are
+      entirely based on word-by-word concatenation, lacking the motivation of positive and negative examples.
+    - GPT is still unaware of what constitutes a good response and what constitutes a poor one. We hope it can align
+      more with human preferences and provide more satisfying responses.
+    - This process is akin to training GPT in a workplace setting, learning from the examples of outstanding employees
+      and the mistakes of underperforming ones, to better serve customers.
+    - In the RLHF series, unlike PPO (Proximal Policy Optimization), which requires reward models and value models,
+    - DPO derives an explicit solution for the PPO reward model, replacing the online reward model with offline data,
+      where ref outputs can be saved in advance.
+    - DPO maintains nearly the same performance, requiring only the actor and ref models to run, significantly reducing
+      memory overhead and increasing training stability.
+    - Similarly, the RL steps for LLM are **not mandatory**, with both advantages and disadvantages.
    > For the Huozi trio (q, chose, reject) dataset, the learning rate is set to 1e-5, with half-precision fp16, 1 epoch,
    and it takes about 1 hour.
     ```bash
@@ -505,15 +522,57 @@ better with the scaling law for small models.
 
 [baidu](https://pan.baidu.com/s/1KUfSzEkSXYbCCBj0Pw-9fA?pwd=6666)
 
-| Model Name        | params | Config                      | pretrain_model                                                  | single_sft_model                                                | multi_sft_model                                                 |
-|-------------------|--------|-----------------------------|-----------------------------------------------------------------|-----------------------------------------------------------------|-----------------------------------------------------------------|
-| minimind-v1-small | 26M    | d_model=512<br/>n_layers=8  | [URL](https://pan.baidu.com/s/1wP_cAIc8cgaJ6CxUmR9ECQ?pwd=6666) | [URL](https://pan.baidu.com/s/1_COe0FQRDmeapSsvArahCA?pwd=6666) | [URL](https://pan.baidu.com/s/1GsGsWSL0Dckl0YPRXiBIFQ?pwd=6666) |
-| minimind-v1-moe   | 4×26M  | d_model=512<br/>n_layers=8  | [URL](https://pan.baidu.com/s/1IZdkzPRhbZ_bSsRL8vInjg?pwd=6666) | [URL](https://pan.baidu.com/s/1tqB-GMvuiGQBvEl-yZ-oBw?pwd=6666) | [URL](https://pan.baidu.com/s/1GHJ2T4904EcT1u8l1rVqtg?pwd=6666) |
-| minimind-v1       | 108M   | d_model=768<br/>n_layers=16 | [URL](https://pan.baidu.com/s/1B60jYo4T8OmJI0ooqsixaA?pwd=6666) | [URL](https://pan.baidu.com/s/1p713loS7EfwHQf3G9eYI3Q?pwd=6666) | [URL](https://pan.baidu.com/s/12iHGpAs6R0kqsOnGtgK6vQ?pwd=6666) |
+| Model Name        | params | Config                      | pretrain_model                                                  | single_sft_model                                                | multi_sft_model                                                 | rl_model |
+|-------------------|--------|-----------------------------|-----------------------------------------------------------------|-----------------------------------------------------------------|-----------------------------------------------------------------|----------|
+| minimind-v1-small | 26M    | d_model=512<br/>n_layers=8  | [URL](https://pan.baidu.com/s/1wP_cAIc8cgaJ6CxUmR9ECQ?pwd=6666) | [URL](https://pan.baidu.com/s/1_COe0FQRDmeapSsvArahCA?pwd=6666) | [URL](https://pan.baidu.com/s/1GsGsWSL0Dckl0YPRXiBIFQ?pwd=6666) |          | [URL](https://pan.baidu.com/s/1C_dOCzNxr_XF3Qk3pkdrwg?pwd=6666) |
+| minimind-v1-moe   | 4×26M  | d_model=512<br/>n_layers=8  | [URL](https://pan.baidu.com/s/1IZdkzPRhbZ_bSsRL8vInjg?pwd=6666) | [URL](https://pan.baidu.com/s/1tqB-GMvuiGQBvEl-yZ-oBw?pwd=6666) | [URL](https://pan.baidu.com/s/1GHJ2T4904EcT1u8l1rVqtg?pwd=6666) |          | -                                                              |
+| minimind-v1       | 108M   | d_model=768<br/>n_layers=16 | [URL](https://pan.baidu.com/s/1B60jYo4T8OmJI0ooqsixaA?pwd=6666) | [URL](https://pan.baidu.com/s/1p713loS7EfwHQf3G9eYI3Q?pwd=6666) | [URL](https://pan.baidu.com/s/12iHGpAs6R0kqsOnGtgK6vQ?pwd=6666) |          | [URL](https://pan.baidu.com/s/1vmUrir-UuucqBftqNPI4ng?pwd=6666) |
 
 ---
 
-# 📌 Eval
+# 📌 Evaluation
+
+### ① RLHF Section
+
+> [!TIP]
+> Testing based on the comparison of the "single-turn dialogue full_sft" and "DPO reinforcement learning alignment" versions of the minimind model.
+
+Model files are available on [Baidu Netdisk](https://pan.baidu.com/s/1KUfSzEkSXYbCCBj0Pw-9fA?pwd=6666), where `rl_<dim>.pth` represents the weights of the minimind model after "DPO reinforcement learning alignment."
+
+```text
+[Q]: What is your name?
+[ft_768]: I am an artificial intelligence language model, capable of answering your questions and providing assistance. Do you need any help?
+[rl_768]: I am a natural language processing system based on artificial intelligence technology, primarily used for processing and generating human language tasks. I can assist users in text processing, speech recognition, text generation, and various other tasks. I can also help with intelligent chat, translation, and many other applications. If you need more information about this project, please let me know.
+[ft_512]: I am glad to help you. Do you have any other questions you need me to answer?
+[rl_512]: I am a chatbot based on natural language processing technology, capable of understanding and responding to user questions and instructions. I am trained to interact with humans and answer various questions and tasks. Is there anything you need?
+
+[Q]: Who are you?
+[ft_768]: I am an artificial intelligence language model, without personal identity or status. I only generate responses based on the input instructions and text information.
+[rl_768]: I am a computer program, without personal identity or status. I am designed to answer various questions and provide assistance, including answering questions, offering advice, conducting experiments, providing information, and more. I am widely used in various fields such as natural language processing, computer vision, and artificial intelligence. If you need more help or information, please feel free to contact me. I will do my best to assist you in your work and life.
+[ft_512]: I am a large language model, capable of answering a wide variety of questions, including those related to science, history, culture, and technology. Do you have any questions you need me to answer?
+[rl_512]: I am a computer program, without a specific background or identity. If you can tell me the specific information you want to know, I will do my best to answer your questions.
+
+[Q]: What are some good universities in China?
+[ft_768]: China has many renowned universities, including Peking University, Shanghai Jiao Tong University, Fuxing Chinese Medicine College, Zhejiang University, and more. These universities have their own iconic buildings and research directions in different fields, and they enjoy a high reputation in China's top educational resources.
+[rl_768]: There are many universities in China, and the choice depends on your needs. If you need more detailed information, it is recommended to consult the university rankings and policies in your city to choose a suitable university. You can also search for relevant information online or consult some university-related institutions such as Renmin University of China, Renmin University of China, etc., to obtain more detailed and professional guidance and advice.
+[ft_512]: China has many excellent universities, such as MIT, Peking University, Shanghai University, and more. These universities have made significant contributions to the development and achievements of China's education.
+[rl_512]: The Chinese Ministry of Education, Chinese universities, mainland Chinese universities, and mainland Chinese universities all have excellent educational systems, but the educational levels and professional requirements may vary. The Chinese Ministry of Education has different academic requirements, teaching methods, and faculty strengths, and the academic requirements of universities also vary. The academic requirements for mainland Chinese students also differ, and you need to choose based on your actual situation. If you have more specific needs for the professional requirements of mainland Chinese students, it is recommended to compare and communicate through the internet, various domestic and international institutions, and organizations. You can also seek help and advice from people around you, such as friends, teachers, and parents. I hope the above answer is helpful to you.
+
+[Q]: Do you know what the speed of light is?
+[ft_768]: The speed of light is a physical constant, representing the speed at which light travels in a vacuum, approximately 299,792,458 meters per second. The speed of light is one of the most fundamental physical constants in physics and is also an important basis for relativity.
+[rl_768]: Of course, I know. The speed of light is the speed at which light travels in a vacuum, usually denoted by c. It is a very important theory in cosmology. In physics, the speed of light is considered one of the most important speeds in the universe. It represents the speed at which light travels in a vacuum, which is the basis for many important formulas and equations.
+[ft_512]: The speed of light is the speed at which light travels in a vacuum, approximately 299,792,458 meters per second. It is one of the most mysterious and important physical concepts in the universe.
+[rl_512]: The speed of light is the speed at which light travels in a vacuum, an irreversible speed in nature. The source of light consists of atoms, molecules, solids, and light, with a speed of approximately one light year per second. This number is calculated based on relativity, quantum mechanics, and gravitational theory. The speed of light is a relative concept, representing our understanding and interpretation of any event in nature.
+```
+
+### 👉Effect Summary
+* Approximately 100,000 RLHF data samples were used; the full_sft model performs better in terms of conciseness and information accuracy; the rl model provides more background information in its responses, but the accuracy of the information needs improvement.
+* Overall, the model after RLHF tends to learn: to say more polite but useless "fluff" to please the "conversation" itself, while slightly sacrificing information accuracy.
+* There is no such thing as a free lunch; we need to continue to improve the quality of the RLHF dataset, and we must also accept the inevitable loss of model capabilities (with varying degrees of severity).
+* The difference between DPO and online PPO is that reject and chosen are prepared offline, which inevitably creates a large distribution difference with the output of the minimind model itself.
+* This is similar to the DPO algorithm making the model watch the "replay" of the table tennis world champion's gameplay for reinforcement learning, rather than having the reward model act as a "coach" to correct its gameplay in real-time, like PPO.
+
+## ② Instruct Fine-Tuning Section
 
 > [!TIP]
 > The following tests were completed on September 17, 2024. New models released after this date will not be included in
