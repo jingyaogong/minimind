@@ -238,7 +238,18 @@ streamlit run fast_inference.py
     * `python 2-eval.py`测试模型的对话效果
       ![2-eval](./images/2-eval.png)
 
-🍭 【Tip】预训练和全参微调pretrain和full_sft均支持多卡加速
+🍭「Tip」预训练和全参微调pretrain和full_sft均支持多卡加速
+
+> 假设你的设备只有1张显卡，使用原生python启动训练即可：
+
+* 执行预训练或指令微调训练
+    ```bash
+    python 1-pretrain.py
+    # and
+    python 3-full_sft.py
+    ```
+  
+> 假设你的设备有N (N＞1) 张显卡：
 
 * 单机N卡启动训练(DDP)
     ```bash
@@ -253,7 +264,7 @@ streamlit run fast_inference.py
     deepspeed --master_port 29500 --num_gpus=N 3-full_sft.py
     ```
 
-* 记录训练过程
+* 开启wandb记录训练过程(非必须)
     ```bash
     torchrun --nproc_per_node N 1-pretrain.py --use_wandb
     # and

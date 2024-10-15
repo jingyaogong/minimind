@@ -259,7 +259,18 @@ streamlit run fast_inference.py
     * Test the model's conversational effect with `python 2-eval.py`
       ![2-eval](./images/2-eval.png)
 
-🍭 **Tip**: Pretraining and full parameter fine-tuning (`pretrain` and `full_sft`) support DDP multi-GPU acceleration.
+🍭「Tip」Both pretrain and full_sft support multi-card acceleration.
+
+> If your device has only 1 GPU, you can start the training using native Python:
+
+* Execute pretrain or instruction fine-tuning:
+    ```bash
+    python 1-pretrain.py
+    # and
+    python 3-full_sft.py
+    ```
+  
+> If your device has N (N > 1) GPUs:
 
 * Start training on a single machine with N GPUs(DDP)
     ```bash
