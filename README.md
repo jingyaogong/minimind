@@ -299,7 +299,7 @@ streamlit run fast_inference.py
   > 第2种选择：[SkyPile-150B数据集](https://hf-mirror.com/datasets/Skywork/SkyPile-150B/tree/main/data)
   的可公开访问部分包含约2.33亿个独立网页，每个网页平均包含1000多个汉字。数据集包括大约1500亿个令牌和620GB的纯文本数据。
   **如果着急的话**，可以尝试只挑选SkyPile-150B的部分jsonl下载（并在./data_process.py中对文本tokenizer生成*
-  .bin文件），以便快速跑通预训练流程。
+  .csv文件），以便快速跑通预训练流程。
 
 ---
 
