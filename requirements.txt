@@ -19,7 +19,7 @@ scikit_learn==1.5.1
 sentence_transformers==2.3.1
 simhash==2.1.2
 tiktoken==0.5.1
-torch==2.1.2
+torch==2.2.0
 transformers==4.44.0
 jinja2==3.1.2
 jsonlines==4.0.0
