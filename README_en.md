@@ -887,6 +887,9 @@ your model with third-party UIs, such as fastgpt, OpenWebUI, etc.
 <a href="https://github.com/WangRongsheng"><b>@WangRongsheng</b></a>:
 <a href="https://github.com/jingyaogong/minimind/issues/39">🔗Preprocessing of large datasets</a>
 
+<a href="https://github.com/pengqianhan"><b>@pengqianhan</b></a>:
+<a href="https://github.com/jingyaogong/minimind/issues/73">🔗A Concise Tutorial</a>
+
 <a href="https://github.com/RyanSunn"><b>@RyanSunn</b></a>:
 <a href="https://github.com/jingyaogong/minimind/issues/75">🔗Learning Record of Model Inference Process</a>
 

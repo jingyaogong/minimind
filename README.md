@@ -801,6 +801,9 @@ minimind模型本身没有使用较大的数据集训练，也没有针对回答
 <a href="https://github.com/WangRongsheng"><b>@WangRongsheng</b></a>:
 <a href="https://github.com/jingyaogong/minimind/issues/39">🔗大型数据集预处理</a>
 
+<a href="https://github.com/pengqianhan"><b>@pengqianhan</b></a>:
+<a href="https://github.com/jingyaogong/minimind/issues/73">🔗一个简明教程</a>
+
 <a href="https://github.com/RyanSunn"><b>@RyanSunn</b></a>:
 <a href="https://github.com/jingyaogong/minimind/issues/75">🔗推理过程学习记录</a>
 
