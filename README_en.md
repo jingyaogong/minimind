@@ -531,13 +531,13 @@ better with the scaling law for small models.
 
 ### Trained Model Weights
 
-[baidu](https://pan.baidu.com/s/1KUfSzEkSXYbCCBj0Pw-9fA?pwd=6666)
+[🔗Baidu Netdisk](https://pan.baidu.com/s/1KUfSzEkSXYbCCBj0Pw-9fA?pwd=6666)
 
-| Model Name        | params | Config                      | pretrain_model                                                  | single_sft_model                                                | multi_sft_model                                                 | rl_model |
-|-------------------|--------|-----------------------------|-----------------------------------------------------------------|-----------------------------------------------------------------|-----------------------------------------------------------------|----------|
-| minimind-v1-small | 26M    | d_model=512<br/>n_layers=8  | [URL](https://pan.baidu.com/s/1wP_cAIc8cgaJ6CxUmR9ECQ?pwd=6666) | [URL](https://pan.baidu.com/s/1_COe0FQRDmeapSsvArahCA?pwd=6666) | [URL](https://pan.baidu.com/s/1GsGsWSL0Dckl0YPRXiBIFQ?pwd=6666) |          | [URL](https://pan.baidu.com/s/1C_dOCzNxr_XF3Qk3pkdrwg?pwd=6666) |
-| minimind-v1-moe   | 4×26M  | d_model=512<br/>n_layers=8  | [URL](https://pan.baidu.com/s/1IZdkzPRhbZ_bSsRL8vInjg?pwd=6666) | [URL](https://pan.baidu.com/s/1tqB-GMvuiGQBvEl-yZ-oBw?pwd=6666) | [URL](https://pan.baidu.com/s/1GHJ2T4904EcT1u8l1rVqtg?pwd=6666) |          | -                                                              |
-| minimind-v1       | 108M   | d_model=768<br/>n_layers=16 | [URL](https://pan.baidu.com/s/1B60jYo4T8OmJI0ooqsixaA?pwd=6666) | [URL](https://pan.baidu.com/s/1p713loS7EfwHQf3G9eYI3Q?pwd=6666) | [URL](https://pan.baidu.com/s/12iHGpAs6R0kqsOnGtgK6vQ?pwd=6666) |          | [URL](https://pan.baidu.com/s/1vmUrir-UuucqBftqNPI4ng?pwd=6666) |
+| Model Name        | params | Config                      | pretrain_model         | single_sft_model                   | multi_sft_model                   | rl_model     |
+|-------------------|--------|-----------------------------|------------------------|------------------------------------|-----------------------------------|--------------|
+| minimind-v1-small | 26M    | d_model=512<br/>n_layers=8  | `pretrain_512.pth`     | `single_chat/full_sft_512.pth`     | `multi_chat/full_sft_512.pth`     | `rl_512.pth` |
+| minimind-v1-moe   | 4×26M  | d_model=512<br/>n_layers=8  | `pretrain_512_moe.pth` | `single_chat/full_sft_512_moe.pth` | `multi_chat/full_sft_512_moe.pth` | -            |
+| minimind-v1       | 108M   | d_model=768<br/>n_layers=16 | `pretrain_768.pth`     | `single_chat/full_sft_768.pth`     | `multi_chat/full_sft_768.pth`     | `rl_768.pth` |
 
 ---
 

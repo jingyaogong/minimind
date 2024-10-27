@@ -248,7 +248,7 @@ streamlit run fast_inference.py
     # and
     python 3-full_sft.py
     ```
-  
+
 > 假设你的设备有N (N＞1) 张显卡：
 
 * 单机N卡启动训练(DDP)
@@ -469,13 +469,13 @@ MobileLLM提出架构的深度比宽度更重要，「深而窄」的「瘦长�
 
 ### 训练完成的模型权重
 
-[百度网盘](https://pan.baidu.com/s/1KUfSzEkSXYbCCBj0Pw-9fA?pwd=6666)
+[🔗百度网盘](https://pan.baidu.com/s/1KUfSzEkSXYbCCBj0Pw-9fA?pwd=6666)
 
-| Model Name        | params | Config                      | pretrain_model                                                 | single_sft_model                                               | multi_sft_model                                                | rl_model                                                       |
-|-------------------|--------|-----------------------------|----------------------------------------------------------------|----------------------------------------------------------------|----------------------------------------------------------------|----------------------------------------------------------------|
-| minimind-v1-small | 26M    | d_model=512<br/>n_layers=8  | [链接](https://pan.baidu.com/s/1wP_cAIc8cgaJ6CxUmR9ECQ?pwd=6666) | [链接](https://pan.baidu.com/s/1_COe0FQRDmeapSsvArahCA?pwd=6666) | [链接](https://pan.baidu.com/s/1GsGsWSL0Dckl0YPRXiBIFQ?pwd=6666) | [链接](https://pan.baidu.com/s/1C_dOCzNxr_XF3Qk3pkdrwg?pwd=6666) |
-| minimind-v1-moe   | 4×26M  | d_model=512<br/>n_layers=8  | [链接](https://pan.baidu.com/s/1IZdkzPRhbZ_bSsRL8vInjg?pwd=6666) | [链接](https://pan.baidu.com/s/1tqB-GMvuiGQBvEl-yZ-oBw?pwd=6666) | [链接](https://pan.baidu.com/s/1GHJ2T4904EcT1u8l1rVqtg?pwd=6666) | -                                                              |
-| minimind-v1       | 108M   | d_model=768<br/>n_layers=16 | [链接](https://pan.baidu.com/s/1B60jYo4T8OmJI0ooqsixaA?pwd=6666) | [链接](https://pan.baidu.com/s/1p713loS7EfwHQf3G9eYI3Q?pwd=6666) | [链接](https://pan.baidu.com/s/12iHGpAs6R0kqsOnGtgK6vQ?pwd=6666) | [链接](https://pan.baidu.com/s/1vmUrir-UuucqBftqNPI4ng?pwd=6666) |
+| Model Name        | params | Config                      | pretrain_model         | single_sft_model                   | multi_sft_model                   | rl_model     |
+|-------------------|--------|-----------------------------|------------------------|------------------------------------|-----------------------------------|--------------|
+| minimind-v1-small | 26M    | d_model=512<br/>n_layers=8  | `pretrain_512.pth`     | `single_chat/full_sft_512.pth`     | `multi_chat/full_sft_512.pth`     | `rl_512.pth` |
+| minimind-v1-moe   | 4×26M  | d_model=512<br/>n_layers=8  | `pretrain_512_moe.pth` | `single_chat/full_sft_512_moe.pth` | `multi_chat/full_sft_512_moe.pth` | -            |
+| minimind-v1       | 108M   | d_model=768<br/>n_layers=16 | `pretrain_768.pth`     | `single_chat/full_sft_768.pth`     | `multi_chat/full_sft_768.pth`     | `rl_768.pth` |
 
 ---
 
@@ -486,7 +486,8 @@ MobileLLM提出架构的深度比宽度更重要，「深而窄」的「瘦长�
 > [!TIP]
 > 测试基于「单轮对话full_sft」和「DPO强化学习对齐」的minimind模型对比。
 
-模型文件[百度网盘](https://pan.baidu.com/s/1KUfSzEkSXYbCCBj0Pw-9fA?pwd=6666)，其中 `rl_<dim>.pth` 即为「DPO强化学习对齐」后的minimind模型权重。
+模型文件[百度网盘](https://pan.baidu.com/s/1KUfSzEkSXYbCCBj0Pw-9fA?pwd=6666)，其中 `rl_<dim>.pth`
+即为「DPO强化学习对齐」后的minimind模型权重。
 
 ```text
 [Q]: 你叫什么名字？
@@ -515,6 +516,7 @@ MobileLLM提出架构的深度比宽度更重要，「深而窄」的「瘦长�
 ```
 
 ### 👉效果总结
+
 * RLHF数据使用大约10万条；full_sft模型在简洁性和信息准确性方面表现更好；rl模型在回答中提供了更多的背景信息，但信息准确性有待改进。
 * 总的来说RLHF后的模型倾向于学习：说更多有礼貌但无用的废话讨好“对话”本身，而对信息准确性则有轻微损失。
 * 天下没有免费的午餐，还需要继续提升RLHF数据集的质量，也要接受模型能力无法避免的损失(程度有轻重)。
