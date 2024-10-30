@@ -176,6 +176,7 @@ python 2-eval.py
 ```
 
 或者启动streamlit，启动网页聊天界面
+> 「注意」需要python>=3.10，安装 `pip install streamlit==1.27.2`
 
 ```bash
 # or step 3, use streamlit

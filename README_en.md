@@ -191,6 +191,7 @@ python 2-eval.py
 ```
 
 or you can run streamlit, launch a web page to chat with minimind-v1
+> Requires python>=3.10, install `pip install streamlit==1.27.2`
 
 ```bash
 # or step 3, use streamlit
