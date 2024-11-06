@@ -122,36 +122,25 @@ def eval_tokenizer():
 
     messages = [
         {"role": "system", "content": "你是一个优秀的聊天机器人，总是给我正确的回应！"},
-        {"role": "user", "content": '是椭圆形的'},
-        {"role": "assistant", "content": '456'},
-        {"role": "user", "content": '456'},
-        {"role": "assistant", "content": '789'}
+        {"role": "user", "content": '你来自哪里？'},
+        {"role": "assistant", "content": '我来自地球'}
     ]
     new_prompt = tokenizer.apply_chat_template(
         messages,
         tokenize=False
     )
-
     print(new_prompt)
-    # 获取词汇表大小（不包括特殊符号）
-    print('tokenizer词表大小：', tokenizer.vocab_size)
 
     # 获取实际词汇表长度（包括特殊符号）
     actual_vocab_size = len(tokenizer)
-    print('qwen实际词表长度：', actual_vocab_size)
+    print('tokenizer实际词表长度：', actual_vocab_size)
 
-    new_prompt = 'wenjie，椭圆和⚪的关系是什么呢？因为明天下午要带家人去下医院，所以申请上午在家办公，因为明天下午要带家人去下医院，所以申请上午在家办公，因为明天下午要带家人去下医院，所以申请上午在家办公，下午请半天假~@LWJWe '
-    print(new_prompt)
     model_inputs = tokenizer(new_prompt)
+    print('encoder长度：', len(model_inputs['input_ids']))
 
-    print(model_inputs)
-    print('长度：', len(model_inputs['input_ids']))
-
-    input_ids_ = model_inputs['input_ids']
-
-    response = tokenizer.decode(input_ids_)
-    print(response, end='')
-
+    input_ids = model_inputs['input_ids']
+    response = tokenizer.decode(input_ids)
+    print('decoder和原始文本是否一致：', response == new_prompt)
 
 def main():
     # train_tokenizer()
