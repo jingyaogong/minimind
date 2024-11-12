@@ -26,3 +26,4 @@ jsonlines==4.0.0
 trl==0.11.3
 ujson==5.1.0
 wandb==0.18.3
+streamlit==1.39.0
