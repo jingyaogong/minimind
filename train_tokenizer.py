@@ -104,7 +104,7 @@ def train_tokenizer():
         "tokenizer_class": "PreTrainedTokenizerFast",
         "unk_token": "<unk>",
         "use_default_system_prompt": False,
-        "chat_template": "{% if messages[0]['role'] == 'system' %}{% set system_message = messages[0]['content'] %}{% endif %}{% if system_message is defined %}{{ system_message }}{% endif %}{% for message in messages %}{% set content = message['content'] %}{% if message['role'] == 'user' %}{{ '<s>user\\n' + content + '</s>\\n<s>assistant\\n' }}{% elif message['role'] == 'assistant' %}{{ content + '</s>' + '\\n' }}{% endif %}{% endfor %}"
+        "chat_template": "{% for message in messages %}{% if loop.first and messages[0]['role'] != 'system' %}{{ '<s>system\n你是一个乐于助人的助手</s>\n' }}{% endif %}{{'<s>' + message['role'] + '\n' + message['content'] + '</s>' + '\n'}}{% endfor %}{% if add_generation_prompt %}{{ '<s>assistant\n' }}{% endif %}"
     }
 
     # 保存配置文件
@@ -122,14 +122,23 @@ def eval_tokenizer():
 
     messages = [
         {"role": "system", "content": "你是一个优秀的聊天机器人，总是给我正确的回应！"},
-        {"role": "user", "content": '你来自哪里？'},
-        {"role": "assistant", "content": '我来自地球'}
+        {"role": "user", "content": '你来自哪里？'}
     ]
     new_prompt = tokenizer.apply_chat_template(
         messages,
         tokenize=False
     )
+    add_generation_prompt_messages = [
+        {"role": "user", "content": '你来自哪里？'}
+    ]
+    add_generation_prompt_new_prompt = tokenizer.apply_chat_template(
+        add_generation_prompt_messages,
+        tokenize=False,
+        add_generation_prompt=True
+    )
     print(new_prompt)
+    print("----------")
+    print(add_generation_prompt_new_prompt)
 
     # 获取实际词汇表长度（包括特殊符号）
     actual_vocab_size = len(tokenizer)
