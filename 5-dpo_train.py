@@ -12,8 +12,8 @@ warnings.filterwarnings('ignore')
 def init_model():
     device = 'cuda:0'
     # Do model patching and add fast LoRA weights
-    model_name_or_path = "minimind-v1"
-    tokenizer_name_or_path = "minimind-v1"
+    model_name_or_path = "jingyaogong/minimind-v1"
+    tokenizer_name_or_path = "jingyaogong/minimind-v1"
     model = AutoModelForCausalLM.from_pretrained(model_name_or_path, trust_remote_code=True)
     tokenizer = AutoTokenizer.from_pretrained(tokenizer_name_or_path, trust_remote_code=True, use_fast=False)
     tokenizer.pad_token = tokenizer.eos_token
