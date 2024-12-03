@@ -89,7 +89,6 @@ def train_epoch(epoch, wandb):
                            "epoch_Time": spend_time / (step + 1) * iter_per_epoch // 60 - spend_time // 60})
 
         if (step + 1) % args.save_interval == 0 and (not ddp or dist.get_rank() == 0):
-            model.eval()
             moe_path = '_moe' if lm_config.use_moe else ''
             ckp = f'{args.save_dir}/pretrain_{lm_config.dim}{moe_path}.pth'
 
@@ -99,7 +98,6 @@ def train_epoch(epoch, wandb):
                 state_dict = model.state_dict()
 
             torch.save(state_dict, ckp)
-            model.train()
 
 
 def init_model():
