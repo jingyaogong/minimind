@@ -849,16 +849,12 @@ your model with third-party UIs, such as fastgpt, OpenWebUI, etc.
 
 
 > [!NOTE]
-> An individual's resources, energy, and time are limited, so we encourage everyone to participate and contribute
-> collectively. If you have trained model weights, you are welcome to share them in the Discussions or Issues
-> sections.<br/>
-> These models can be new versions of MiniMind tailored for specific downstream tasks or vertical domains (such as
-> sentiment recognition, healthcare, psychology, finance, legal Q&A, etc.).<br/>
-> They can also be new versions of MiniMind models that have undergone extended training, exploring longer text
-> sequences, larger volumes (such as 0.1B+), or more extensive datasets.<br/>
-> Each contribution is unique, and all attempts are valuable and encouraged.<br/>
-> Any shared contributions will be promptly recognized and compiled in the acknowledgments list. Thank you once again
-> for everyone's support!
+> Many hands make light work.
+> If you have already tried training a new MiniMind model, you are welcome to share your model weights in Discussions or Issues. <br/>
+> This can be a new version of MiniMind for a specific downstream task or vertical domain (e.g., sentiment recognition, healthcare, psychology, finance, legal Q&A, etc.). <br/>
+> It can also be a new version of MiniMind after extended training (e.g., exploring longer text sequences, larger sizes (0.1B+), or larger datasets). <br/>
+> Any contribution is considered unique and valuable, and all attempts are encouraged. <br/>
+> These contributions will be promptly discovered and compiled in the acknowledgment list. Thank you again for all the support!
 
 ## 🤝[Contributors](https://github.com/jingyaogong/minimind/graphs/contributors)
 
