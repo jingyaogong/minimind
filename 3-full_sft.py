@@ -102,7 +102,7 @@ def train_epoch(epoch, wandb):
 
 def init_model():
     tokenizer = AutoTokenizer.from_pretrained('./model/minimind_tokenizer')
-    model_from = 1  # 1从权重，2用transformers
+    model_from = 2  # 1从权重，2用transformers
 
     def count_parameters(model):
         return sum(p.numel() for p in model.parameters() if p.requires_grad)
@@ -110,7 +110,7 @@ def init_model():
     if model_from == 1:
         model = Transformer(lm_config)
         moe_path = '_moe' if lm_config.use_moe else ''
-        ckp = f'./out/pretrain_{lm_config.dim}{moe_path}.pth'
+        ckp = f'./out_dir/pretrain_{lm_config.dim}{moe_path}.pth'
         state_dict = torch.load(ckp, map_location=args.device)
         unwanted_prefix = '_orig_mod.'
         for k, v in list(state_dict.items()):
@@ -118,7 +118,7 @@ def init_model():
                 state_dict[k[len(unwanted_prefix):]] = state_dict.pop(k)
         model.load_state_dict(state_dict, strict=False)
     else:
-        model = AutoModelForCausalLM.from_pretrained('./minimind-v1-small', trust_remote_code=True)
+        model = AutoModelForCausalLM.from_pretrained('/home/jovyan/zlcode/minimind/minimind-v1/snapshots/11074624c68d988bb333b921124e362cfc9a3708', trust_remote_code=True)
 
     Logger(f'LLM总参数量：{count_parameters(model) / 1e6:.3f} 百万')
     model = model.to(args.device)
@@ -141,7 +141,7 @@ def init_distributed_mode():
 if __name__ == "__main__":
     parser = argparse.ArgumentParser(description="MiniMind Full SFT")
     parser.add_argument("--out_dir", type=str, default="out", help="Output directory")
-    parser.add_argument("--epochs", type=int, default=19, help="Number of epochs")
+    parser.add_argument("--epochs", type=int, default=3, help="Number of epochs")
     parser.add_argument("--batch_size", type=int, default=32, help="Batch size")
     parser.add_argument("--learning_rate", type=float, default=1e-4, help="Learning rate")
     parser.add_argument("--device", type=str, default="cuda:0" if torch.cuda.is_available() else "cpu", help="Device to use")
@@ -156,7 +156,8 @@ if __name__ == "__main__":
     parser.add_argument("--log_interval", type=int, default=100, help="Logging interval")
     parser.add_argument("--save_interval", type=int, default=1000, help="Model saving interval")
     parser.add_argument('--local_rank', type=int, default=-1, help='local rank for distributed training')
-
+    parser.add_argument('--dataset', type=str, default='./dataset/sft_data_single.csv', help='dataset')
+    
     args = parser.parse_args()
 
     lm_config = LMConfig()
@@ -185,7 +186,7 @@ if __name__ == "__main__":
 
     model, tokenizer = init_model()
 
-    df = pd.read_csv('./dataset/sft_data_single.csv')
+    df = pd.read_csv(arg.dataset)
     df = df.sample(frac=1.0)
     train_ds = SFTDataset(df, tokenizer, max_length=max_seq_len)
     train_sampler = DistributedSampler(train_ds) if ddp else None
