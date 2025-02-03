@@ -333,7 +333,7 @@ class Transformer(PreTrainedModel):
         self.apply(self._init_weights)
 
         for pn, p in self.named_parameters():
-            if pn.endswith('w3.weight') or pn.endswith('wo.weight'):
+            if pn.endswith('w2.weight') or pn.endswith('wo.weight'):
                 torch.nn.init.normal_(p, mean=0.0, std=0.02 / math.sqrt(2 * params.n_layers))
 
         self.last_loss = None
