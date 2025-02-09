@@ -1,4 +1,4 @@
-datasets==2.16.1
+datasets==2.21.0
 datasketch==1.6.4
 Flask==3.0.3
 Flask_Cors==4.0.0
@@ -9,7 +9,7 @@ matplotlib==3.5.1
 ngrok==1.4.0
 nltk==3.8
 numpy==1.26.4
-openai==1.42.0
+openai==1.59.6
 pandas==1.5.3
 peft==0.7.1
 psutil==5.9.8
@@ -19,10 +19,12 @@ scikit_learn==1.5.1
 sentence_transformers==2.3.1
 simhash==2.1.2
 tiktoken==0.5.1
-torch==2.1.2
-transformers==4.44.0
+transformers==4.48.0
 jinja2==3.1.2
 jsonlines==4.0.0
-trl==0.11.3
+trl==0.13.0
 ujson==5.1.0
 wandb==0.18.3
+streamlit==1.30.0
+torch==2.2.2
+torchvision==0.17.2

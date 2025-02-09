@@ -4,7 +4,7 @@ import inspect
 import time
 
 from .LMConfig import LMConfig
-from typing import Any, Optional, Tuple
+from typing import Any, Optional, Tuple, List
 import numpy as np
 import torch
 import torch.nn.functional as F
@@ -19,15 +19,11 @@ class RMSNorm(torch.nn.Module):
         self.eps = eps
         self.weight = nn.Parameter(torch.ones(dim))
 
-    def _norm(self, x):
-        return x * torch.rsqrt(x.pow(2).mean(-1, keepdim=True) + self.eps)
-
     def forward(self, x):
-        output = self._norm(x.float()).type_as(x)
-        return output * self.weight
+        return self.weight * (x.float() * torch.rsqrt(x.pow(2).mean(-1, keepdim=True) + self.eps)).type_as(x)
 
 
-def precompute_pos_cis(dim: int, end: int, theta: float = 10000.0):
+def precompute_pos_cis(dim: int, end: int, theta: float = 1e4):
     freqs = 1.0 / (theta ** (torch.arange(0, dim, 2)[: (dim // 2)].float() / dim))
     t = torch.arange(end, device=freqs.device)  # type: ignore
     freqs = torch.outer(t, freqs).float()  # type: ignore
@@ -76,71 +72,69 @@ class Attention(nn.Module):
         self.wk = nn.Linear(args.dim, self.n_kv_heads * self.head_dim, bias=False)
         self.wv = nn.Linear(args.dim, self.n_kv_heads * self.head_dim, bias=False)
         self.wo = nn.Linear(args.n_heads * self.head_dim, args.dim, bias=False)
-        self.k_cache, self.v_cache = None, None
         self.attn_dropout = nn.Dropout(args.dropout)
         self.resid_dropout = nn.Dropout(args.dropout)
         self.dropout = args.dropout
         self.flash = hasattr(torch.nn.functional, 'scaled_dot_product_attention') and args.flash_attn
-
         # print("WARNING: using slow attention. Flash Attention requires PyTorch >= 2.0")
         mask = torch.full((1, 1, args.max_seq_len, args.max_seq_len), float("-inf"))
         mask = torch.triu(mask, diagonal=1)
         self.register_buffer("mask", mask, persistent=False)
 
-    def forward(self, x: torch.Tensor, pos_cis: torch.Tensor, kv_cache=False):
-        bsz, seqlen, _ = x.shape
-
+    def forward(self,
+                x: torch.Tensor,
+                pos_cis: torch.Tensor,
+                past_key_value: Optional[Tuple[torch.Tensor, torch.Tensor]] = None,
+                use_cache=False):
+        bsz, seq_len, _ = x.shape
         xq, xk, xv = self.wq(x), self.wk(x), self.wv(x)
-
-        xq = xq.view(bsz, seqlen, self.n_local_heads, self.head_dim)
-        xk = xk.view(bsz, seqlen, self.n_local_kv_heads, self.head_dim)
-        xv = xv.view(bsz, seqlen, self.n_local_kv_heads, self.head_dim)
+        xq = xq.view(bsz, seq_len, self.n_local_heads, self.head_dim)
+        xk = xk.view(bsz, seq_len, self.n_local_kv_heads, self.head_dim)
+        xv = xv.view(bsz, seq_len, self.n_local_kv_heads, self.head_dim)
 
         xq, xk = apply_rotary_emb(xq, xk, pos_cis)
+        # kv_cache实现
+        if past_key_value is not None:
+            xk = torch.cat([past_key_value[0], xk], dim=1)
+            xv = torch.cat([past_key_value[1], xv], dim=1)
+        past_kv = (xk, xv) if use_cache else None
 
-        # 更高效的kv_cache实现
-        if kv_cache and self.eval():
-            if seqlen == 1 and all(cache is not None for cache in (self.k_cache, self.v_cache)):
-                xk = torch.cat((self.k_cache, xk), dim=1)
-                xv = torch.cat((self.v_cache, xv), dim=1)
-            self.k_cache, self.v_cache = xk, xv
-
-        xk = repeat_kv(xk, self.n_rep)  # (bs, seqlen, n_local_heads, head_dim)
-        xv = repeat_kv(xv, self.n_rep)  # (bs, seqlen, n_local_heads, head_dim)
-
-        xq = xq.transpose(1, 2)
-        xk = xk.transpose(1, 2)
-        xv = xv.transpose(1, 2)
-
-        if self.flash and seqlen != 1:
-            output = torch.nn.functional.scaled_dot_product_attention(xq, xk, xv, attn_mask=None,
-                                                                      dropout_p=self.dropout if self.training else 0.0,
-                                                                      is_causal=True)
+        xq, xk, xv = (
+            xq.transpose(1, 2),
+            repeat_kv(xk, self.n_rep).transpose(1, 2),
+            repeat_kv(xv, self.n_rep).transpose(1, 2)
+        )
+        if self.flash and seq_len != 1:
+            dropout_p = self.dropout if self.training else 0.0
+            output = F.scaled_dot_product_attention(
+                xq, xk, xv,
+                attn_mask=None,
+                dropout_p=dropout_p,
+                is_causal=True
+            )
         else:
-            scores = torch.matmul(xq, xk.transpose(2, 3)) / math.sqrt(self.head_dim)
-            scores = scores + self.mask[:, :, :seqlen, :seqlen]  # (bs, n_local_heads, seqlen, cache_len + seqlen)
+            scores = (xq @ xk.transpose(-2, -1)) / math.sqrt(self.head_dim)
+            scores += self.mask[:, :, :seq_len, :seq_len]
             scores = F.softmax(scores.float(), dim=-1).type_as(xq)
             scores = self.attn_dropout(scores)
-            output = torch.matmul(scores, xv)  # (bs, n_local_heads, seqlen, head_dim)
+            output = scores @ xv
 
-        output = output.transpose(1, 2).contiguous().view(bsz, seqlen, -1)
-
-        output = self.wo(output)
-        output = self.resid_dropout(output)
-        return output
+        output = output.transpose(1, 2).reshape(bsz, seq_len, -1)
+        output = self.resid_dropout(self.wo(output))
+        return output, past_kv
 
 
 class FeedForward(nn.Module):
-    def __init__(self, dim: int, hidden_dim: int, multiple_of: int, dropout: float):
+    def __init__(self, config: LMConfig):
         super().__init__()
-        if hidden_dim is None:
-            hidden_dim = 4 * dim
+        if config.hidden_dim is None:
+            hidden_dim = 4 * config.dim
             hidden_dim = int(2 * hidden_dim / 3)
-            hidden_dim = multiple_of * ((hidden_dim + multiple_of - 1) // multiple_of)
-        self.w1 = nn.Linear(dim, hidden_dim, bias=False)
-        self.w2 = nn.Linear(hidden_dim, dim, bias=False)
-        self.w3 = nn.Linear(dim, hidden_dim, bias=False)
-        self.dropout = nn.Dropout(dropout)
+            config.hidden_dim = config.multiple_of * ((hidden_dim + config.multiple_of - 1) // config.multiple_of)
+        self.w1 = nn.Linear(config.dim, config.hidden_dim, bias=False)
+        self.w2 = nn.Linear(config.hidden_dim, config.dim, bias=False)
+        self.w3 = nn.Linear(config.dim, config.hidden_dim, bias=False)
+        self.dropout = nn.Dropout(config.dropout)
 
     def forward(self, x):
         return self.dropout(self.w2(F.silu(self.w1(x)) * self.w3(x)))
@@ -168,7 +162,6 @@ class MoEGate(nn.Module):
 
     def forward(self, hidden_states):
         bsz, seq_len, h = hidden_states.shape
-
         hidden_states = hidden_states.view(-1, h)
         logits = F.linear(hidden_states, self.weight, None)
         if self.scoring_func == 'softmax':
@@ -200,7 +193,7 @@ class MoEGate(nn.Module):
                 fi = ce * self.n_routed_experts
                 aux_loss = (Pi * fi).sum() * self.alpha
         else:
-            aux_loss = None
+            aux_loss = 0
         return topk_idx, topk_weight, aux_loss
 
 
@@ -209,50 +202,35 @@ class MOEFeedForward(nn.Module):
         super().__init__()
         self.config = config
         self.experts = nn.ModuleList([
-            FeedForward(
-                dim=config.dim,
-                hidden_dim=config.hidden_dim,
-                multiple_of=config.multiple_of,
-                dropout=config.dropout,
-            )
+            FeedForward(config)
             for _ in range(config.n_routed_experts)
         ])
-
         self.gate = MoEGate(config)
         if config.n_shared_experts is not None:
-            self.shared_experts = FeedForward(
-                dim=config.dim,
-                hidden_dim=config.hidden_dim,
-                multiple_of=config.multiple_of,
-                dropout=config.dropout,
-            )
+            self.shared_experts = FeedForward(config)
 
     def forward(self, x):
         identity = x
         orig_shape = x.shape
         bsz, seq_len, _ = x.shape
-
         # 使用门控机制选择专家
         topk_idx, topk_weight, aux_loss = self.gate(x)
-
         x = x.view(-1, x.shape[-1])
         flat_topk_idx = topk_idx.view(-1)
-
         if self.training:
             # 训练模式下，重复输入数据
             x = x.repeat_interleave(self.config.num_experts_per_tok, dim=0)
             y = torch.empty_like(x, dtype=torch.float16)
             for i, expert in enumerate(self.experts):
-                y[flat_topk_idx == i] = expert(x[flat_topk_idx == i])
+                y[flat_topk_idx == i] = expert(x[flat_topk_idx == i]).to(y.dtype)  # 确保类型一致
             y = (y.view(*topk_weight.shape, -1) * topk_weight.unsqueeze(-1)).sum(dim=1)
             y = y.view(*orig_shape)
         else:
             # 推理模式下，只选择最优专家
             y = self.moe_infer(x, flat_topk_idx, topk_weight.view(-1, 1)).view(*orig_shape)
-
         if self.config.n_shared_experts is not None:
             y = y + self.shared_experts(identity)
-
+        self.aux_loss = aux_loss
         return y
 
     @torch.no_grad()
@@ -271,7 +249,7 @@ class MOEFeedForward(nn.Module):
             expert = self.experts[i]
             exp_token_idx = token_idxs[start_idx:end_idx]
             expert_tokens = x[exp_token_idx]
-            expert_out = expert(expert_tokens)
+            expert_out = expert(expert_tokens).to(expert_cache.dtype)
             expert_out.mul_(flat_expert_weights[idxs[start_idx:end_idx]])
             # 使用 scatter_add_ 进行 sum 操作
             expert_cache.scatter_add_(0, exp_token_idx.view(-1, 1).repeat(1, x.shape[-1]), expert_out)
@@ -279,148 +257,119 @@ class MOEFeedForward(nn.Module):
         return expert_cache
 
 
-class TransformerBlock(nn.Module):
-    def __init__(self, layer_id: int, args: LMConfig):
+class MiniMindBlock(nn.Module):
+    def __init__(self, layer_id: int, config: LMConfig):
         super().__init__()
-        self.n_heads = args.n_heads
-        self.dim = args.dim
-        self.head_dim = args.dim // args.n_heads
-        self.attention = Attention(args)
+        self.n_heads = config.n_heads
+        self.dim = config.dim
+        self.head_dim = config.dim // config.n_heads
+        self.attention = Attention(config)
 
         self.layer_id = layer_id
-        self.attention_norm = RMSNorm(args.dim, eps=args.norm_eps)
-        self.ffn_norm = RMSNorm(args.dim, eps=args.norm_eps)
+        self.attention_norm = RMSNorm(config.dim, eps=config.norm_eps)
+        self.ffn_norm = RMSNorm(config.dim, eps=config.norm_eps)
+        self.feed_forward = FeedForward(config) if not config.use_moe else MOEFeedForward(config)
 
-        if args.use_moe:
-            self.feed_forward = MOEFeedForward(args)
-        else:
-            self.feed_forward = FeedForward(
-                dim=args.dim,
-                hidden_dim=args.hidden_dim,
-                multiple_of=args.multiple_of,
-                dropout=args.dropout,
-            )
-
-    def forward(self, x, pos_cis, kv_cache=False):
-        h = x + self.attention(self.attention_norm(x), pos_cis, kv_cache)
+    def forward(self, x, pos_cis, past_key_value=None, use_cache=False):
+        h_attn, past_kv = self.attention(
+            self.attention_norm(x),
+            pos_cis,
+            past_key_value=past_key_value,
+            use_cache=use_cache
+        )
+        h = x + h_attn
         out = h + self.feed_forward(self.ffn_norm(h))
-        return out
+        return out, past_kv
 
 
-class Transformer(PreTrainedModel):
+class MiniMindLM(PreTrainedModel):
     config_class = LMConfig
-    last_loss: Optional[torch.Tensor]
 
     def __init__(self, params: LMConfig = None):
-        super().__init__(params)
-        if not params:
-            params = LMConfig()
-        self.params = params
-        self.vocab_size = params.vocab_size
-        self.n_layers = params.n_layers
-
+        self.params = params or LMConfig()
+        super().__init__(self.params)
+        self.vocab_size, self.n_layers = params.vocab_size, params.n_layers
         self.tok_embeddings = nn.Embedding(params.vocab_size, params.dim)
         self.dropout = nn.Dropout(params.dropout)
-        self.layers = torch.nn.ModuleList()
-        for layer_id in range(self.n_layers):
-            self.layers.append(TransformerBlock(layer_id, params))
+        self.layers = nn.ModuleList([MiniMindBlock(l, params) for l in range(self.n_layers)])
         self.norm = RMSNorm(params.dim, eps=params.norm_eps)
         self.output = nn.Linear(params.dim, params.vocab_size, bias=False)
         self.tok_embeddings.weight = self.output.weight
-        pos_cis = precompute_pos_cis(self.params.dim // self.params.n_heads, self.params.max_seq_len)
-        self.register_buffer("pos_cis", pos_cis, persistent=False)
-
-        self.apply(self._init_weights)
-
-        for pn, p in self.named_parameters():
-            if pn.endswith('w3.weight') or pn.endswith('wo.weight'):
-                torch.nn.init.normal_(p, mean=0.0, std=0.02 / math.sqrt(2 * params.n_layers))
-
-        self.last_loss = None
+        self.register_buffer("pos_cis", precompute_pos_cis(params.dim // params.n_heads, params.max_seq_len,
+                                                           theta=params.rope_theta), persistent=False)
         self.OUT = CausalLMOutputWithPast()
-        self._no_split_modules = [name for name, _ in self.named_modules()]
 
-    def _init_weights(self, module):
-        if isinstance(module, nn.Linear):
-            torch.nn.init.normal_(module.weight, mean=0.0, std=0.02)
-            if module.bias is not None:
-                torch.nn.init.zeros_(module.bias)
-        elif isinstance(module, nn.Embedding):
-            torch.nn.init.normal_(module.weight, mean=0.0, std=0.02)
-
-    def forward(self, tokens: Optional[torch.Tensor] = None, targets: Optional[torch.Tensor] = None,
-                kv_cache=False, **keyargs):
-        current_idx = 0
-        if 'input_ids' in keyargs:
-            tokens = keyargs['input_ids']
-        if 'attention_mask' in keyargs:
-            targets = keyargs['attention_mask']
-        if 'current_idx' in keyargs:
-            current_idx = int(keyargs['current_idx'])
-
-        _bsz, seqlen = tokens.shape
-        h = self.tok_embeddings(tokens)
-        h = self.dropout(h)
-        pos_cis = self.pos_cis[current_idx:current_idx + seqlen]
-        for idx, layer in enumerate(self.layers):
-            h = layer(h, pos_cis, kv_cache)
-
-        h = self.norm(h)
-
-        if targets is not None:
-            logits = self.output(h)
-            self.last_loss = F.cross_entropy(logits.view(-1, logits.size(-1)), targets.view(-1),
-                                             ignore_index=0, reduction='none')
-        else:
-            logits = self.output(h[:, [-1], :])
-            self.last_loss = None
-
+    def forward(self,
+                input_ids: Optional[torch.Tensor] = None,
+                past_key_values: Optional[List[Tuple[torch.Tensor, torch.Tensor]]] = None,
+                use_cache: bool = False,
+                **args):
+        past_key_values = past_key_values or [None] * len(self.layers)
+        start_pos = args.get('start_pos', 0)
+        h = self.dropout(self.tok_embeddings(input_ids))
+        pos_cis = self.pos_cis[start_pos:start_pos + input_ids.size(1)]
+        past_kvs = []
+        for l, layer in enumerate(self.layers):
+            h, past_kv = layer(
+                h, pos_cis,
+                past_key_value=past_key_values[l],
+                use_cache=use_cache
+            )
+            past_kvs.append(past_kv)
+        logits = self.output(self.norm(h))
+        aux_loss = sum(l.feed_forward.aux_loss for l in self.layers if isinstance(l.feed_forward, MOEFeedForward))
         self.OUT.__setitem__('logits', logits)
-        self.OUT.__setitem__('last_loss', self.last_loss)
+        self.OUT.__setitem__('aux_loss', aux_loss)
+        self.OUT.__setitem__('past_key_values', past_kvs)
         return self.OUT
 
     @torch.inference_mode()
-    def generate(self, idx, eos, max_new_tokens, temperature=0.7, top_k=8, stream=True, rp=1., kv_cache=True):
-        # rp: repetition_penalty
-        index = idx.shape[1]
-        init_inference = True
-        while idx.shape[1] < max_new_tokens - 1:
-            if init_inference or not kv_cache:
-                inference_res, init_inference = self(idx, kv_cache=kv_cache), False
+    def generate(self, input_ids, eos_token_id=2, max_new_tokens=1024, temperature=0.75, top_p=0.90,
+                 stream=False, rp=1., use_cache=True, pad_token_id=0, **args):
+        # 流式生成
+        if stream:
+            return self._generate_stream(input_ids, eos_token_id, max_new_tokens, temperature, top_p, rp, use_cache)
+
+        # 直接生成
+        generated = []
+        for i in range(input_ids.size(0)):
+            non_pad = input_ids[i][input_ids[i] != pad_token_id].unsqueeze(0)
+            out = self._generate_stream(non_pad, eos_token_id, max_new_tokens, temperature, top_p, rp, use_cache)
+            tokens_list = [tokens[:, -1:] for tokens in out]
+            gen = torch.cat(tokens_list, dim=-1) if tokens_list else non_pad
+            full_sequence = torch.cat([non_pad, gen], dim=-1)
+            generated.append(full_sequence)
+        max_length = max(seq.size(1) for seq in generated)
+        generated = [
+            torch.cat(
+                [seq, torch.full((1, max_length - seq.size(1)), pad_token_id, dtype=seq.dtype, device=seq.device)],
+                dim=-1)
+            for seq in generated
+        ]
+        return torch.cat(generated, dim=0)
+
+    def _generate_stream(self, input_ids, eos_token_id, max_new_tokens, temperature, top_p, rp, use_cache, **args):
+        start, first_seq, past_kvs = input_ids.shape[1], True, None
+        while input_ids.shape[1] < max_new_tokens - 1:
+            if first_seq or not use_cache:
+                out, first_seq = self(input_ids, past_key_values=past_kvs, use_cache=use_cache), False
             else:
-                inference_res = self(idx[:, -1:], kv_cache=kv_cache, current_idx=idx.shape[1] - 1)
-
-            logits = inference_res.logits
-            logits = logits[:, -1, :]
-
-            for token in set(idx.tolist()[0]):
-                logits[:, token] /= rp
-
-            if temperature == 0.0:
-                _, idx_next = torch.topk(logits, k=1, dim=-1)
-            else:
-                logits = logits / temperature
-                if top_k is not None:
-                    v, _ = torch.topk(logits, min(top_k, logits.size(-1)))
-                    logits[logits < v[:, [-1]]] = -float('Inf')
-
-                probs = F.softmax(logits, dim=-1)
-                idx_next = torch.multinomial(probs, num_samples=1, generator=None)
-
-            if idx_next == eos:
+                out = self(input_ids[:, -1:], past_key_values=past_kvs, use_cache=use_cache,
+                           start_pos=input_ids.shape[1] - 1)
+            logits, past_kvs = out.logits[:, -1, :], out.past_key_values
+            logits[:, list(set(input_ids.tolist()[0]))] /= rp
+            logits /= (temperature + 1e-9)
+            if top_p is not None and top_p < 1.0:
+                sorted_logits, sorted_indices = torch.sort(logits, descending=True, dim=-1)
+                sorted_probs = F.softmax(sorted_logits, dim=-1)
+                cumulative_probs = torch.cumsum(sorted_probs, dim=-1)
+                sorted_indices_to_remove = cumulative_probs > top_p
+                sorted_indices_to_remove[:, 1:] = sorted_indices_to_remove[:, :-1].clone()
+                sorted_indices_to_remove[:, 0] = False
+                indices_to_remove = sorted_indices_to_remove.scatter(1, sorted_indices, sorted_indices_to_remove)
+                logits[indices_to_remove] = -float('Inf')
+            input_ids_next = torch.multinomial(F.softmax(logits, dim=-1), num_samples=1)
+            input_ids = torch.cat((input_ids, input_ids_next), dim=1)
+            yield input_ids[:, start:]
+            if input_ids_next.item() == eos_token_id:
                 break
-
-            idx = torch.cat((idx, idx_next), dim=1)
-            if stream:
-                yield idx[:, index:]
-
-        if not stream:
-            yield idx[:, index:]
-
-    @torch.inference_mode()
-    def eval_answer(self, idx):
-        idx_cond = idx if idx.size(1) <= self.params.max_seq_len else idx[:, -self.params.max_seq_len:]
-        inference_res = self(idx_cond)
-        logits = inference_res.logits
-        logits = logits[:, -1, :]
-        return logits
