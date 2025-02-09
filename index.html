@@ -5,7 +5,8 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>MiniMind Project</title>
     <!-- 引入 Bootstrap CSS -->
-    <link href="https://lf6-cdn-tos.bytecdntp.com/cdn/expire-1-M/bootstrap/5.1.3/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://lf6-cdn-tos.bytecdntp.com/cdn/expire-1-M/bootstrap/5.1.3/css/bootstrap.min.css"
+          rel="stylesheet">
     <!-- 可选: 引入自定义样式 -->
     <style>
         .logo {
@@ -85,28 +86,30 @@
     <hr>
 
     <ul>
-        <li>This open-source project aims to train a tiny language model called <strong>MiniMind</strong> from scratch
-            in just 3 hours, with a model size of only 26.88M.
+        <li>The <strong>MiniMind</strong> series is extremely lightweight, with the smallest version being 1/7000 the
+            size of GPT-3, making it possible to train quickly on even the most ordinary personal GPUs.
         </li>
-        <li><strong>MiniMind</strong> is extremely lightweight, with the smallest version being approximately <span
-                style="white-space: nowrap;">1/7000</span> the size of GPT3, making it possible for even an ordinary
-            personal GPU to perform quick inference and even training.
+        <li>The project also open-sources the minimalist structure of the large model, including extensions for shared
+            mixed experts (MoE), dataset cleaning, pretraining, supervised fine-tuning (SFT), LoRA fine-tuning, direct
+            preference optimization (DPO) algorithms, and model distillation algorithms, along with the full code of the
+            process.
         </li>
-        <li><strong>MiniMind</strong> provides the full-stage code for a simplified large model structure, dataset
-            cleaning and preprocessing, supervised pretraining, supervised instruction fine-tuning (SFT), low-rank
-            adaptation (LoRA) fine-tuning, and direct preference alignment with reinforcement learning without rewards
-            (DPO). It also includes code for expanding to sparse models with mixed experts (MoE) and multi-modal vision
-            language models (VLM): <a href="https://github.com/jingyaogong/minimind-v">MiniMind-V</a>.
+        <li><strong>MiniMind</strong> also expands into vision multimodal VLM: <a
+                href="https://github.com/jingyaogong/minimind-v" target="_blank">MiniMind-V</a>.
         </li>
-        <li>This is not just an implementation of an open-source model but also a tutorial for getting started with
-            large language models (LLM).
+        <li>All core algorithm code is reconstructed from scratch using native PyTorch! It does not rely on abstract
+            interfaces provided by third-party libraries.
         </li>
-        <li>We hope this project will serve as an introductory example for researchers, helping them quickly get started
-            and inspiring more exploration and innovation in the LLM field.
+        <li>This is not only a full-stage open-source reproduction of a large language model but also a tutorial for
+            beginners in LLM.
         </li>
-        <li style="color: #aaa;">To avoid misinterpretation, "fastest 3 hours" means you need a machine with hardware
-            configuration superior
-            to mine. Detailed specifications will be provided below.
+        <li>We hope this project will serve as an inspiring example for everyone, helping to enjoy the fun of creation
+            and promoting the progress of the wider AI community!
+        </li>
+
+        <li style="color: #aaa;">To avoid misunderstanding, the "2 hours" test is based on NVIDIA 3090 hardware (single
+            GPU), and the "3
+            RMB" refers to the GPU server rental cost. Details of the specifications can be found below.
         </li>
     </ul>
 
@@ -114,12 +117,13 @@
     <div align="center">
 
         <div class="scroll-container">
-            <img src="./images/streamlit.gif" alt="Streamlit Demo" class="img-fluid mb-4">
+            <img src="./images/minimind2.gif" alt="Streamlit Demo" class="img-fluid mb-4">
             <img src="./images/LLM-structure.png" alt="LLM Structure" class="img-fluid mb-4">
             <img src="./images/LLM-structure-moe.png" alt="LLM Structure MOE" class="img-fluid mb-4">
         </div>
         <br/>
-        <a href="https://www.modelscope.cn/studios/gongjy/minimind">ModelScope Online</a> |
+        <a href="https://www.modelscope.cn/studios/gongjy/MiniMind-Reasoning">Online Demo (Inference Model)</a> |
+        <a href="https://www.modelscope.cn/studios/gongjy/MiniMind">Online Demo (Standard Model)</a> |
         <a href="https://www.bilibili.com/video/BV12dHPeqE72/?share_source=copy_web&vd_source=670c2504f88726f8cf4a21ef6147c0e8">Bilibili
             Video Link</a>
         <br/>
