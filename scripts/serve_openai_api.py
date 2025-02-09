@@ -26,7 +26,7 @@ def init_model(args):
     tokenizer = AutoTokenizer.from_pretrained('../model/minimind_tokenizer')
     if args.load == 0:
         moe_path = '_moe' if args.use_moe else ''
-        modes = {0: 'pretrain', 1: 'full_sft', 2: 'full_dist', 3: 'rlhf'}
+        modes = {0: 'pretrain', 1: 'full_sft', 2: 'rlhf', 3: 'reason'}
         ckp = f'../{args.out_dir}/{modes[args.model_mode]}_{args.dim}{moe_path}.pth'
 
         model = MiniMindLM(LMConfig(
@@ -156,7 +156,7 @@ if __name__ == "__main__":
     parser.add_argument('--max_seq_len', default=8192, type=int)
     parser.add_argument('--use_moe', default=False, type=bool)
     parser.add_argument('--load', default=0, type=int, help="0: 从原生torch权重，1: 利用transformers加载")
-    parser.add_argument('--model_mode', default=1, type=int, help="0: 预训练模型，1: SFT-Chat模型，2: RLHF-Chat模型")
+    parser.add_argument('--model_mode', default=1, type=int, help="0: 预训练模型，1: SFT-Chat模型，2: RLHF-Chat模型，3: Reason模型")
 
     device = 'cuda' if torch.cuda.is_available() else 'cpu'
     model, tokenizer = init_model(parser.parse_args())

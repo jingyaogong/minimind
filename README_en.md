@@ -82,7 +82,7 @@ and to train a very small language model from scratch, not just performing **inf
 With server costs of less than 3 RMB, you can experience the entire process of building a language model from 0 to 1.  
 Let's enjoy the fun of creation together!
 
-> [!TIP]  
+> [!NOTE]  
 > (As of 2025-02-07) The MiniMind series has completed pretraining for multiple models, with the smallest one being only
 > 25.8M (0.02B) and capable of smooth conversation!
 
@@ -191,6 +191,18 @@ We hope this open-source project can help LLM beginners quickly get started!
 
 # 📌 Quick Start
 
+<div align="center" style="font-size: 1.5em; font-weight: bold;">
+  <img src="https://huggingface.co/front/assets/huggingface_logo-noborder.svg" alt="Hugging Face Logo" style="vertical-align: middle; height: 30px;" />
+  Hugging Face
+
+[MiniMind (HuggingFace)](https://huggingface.co/collections/jingyaogong/minimind-66caf8d999f5c7fa64f399e5)
+
+ <img src="https://g.alicdn.com/sail-web/maas/1.15.0/static/modelscopeIcon.cd89353f.svg" alt="Hugging Face Logo" style="vertical-align: middle; height: 30px;" />
+
+[MiniMind (ModelScope)](https://www.modelscope.cn/profile/gongjy)
+
+</div>
+
 <details>
 <summary>Sharing My Hardware and Software Configuration (For Reference Only)</summary>
 
@@ -211,18 +223,6 @@ git clone https://github.com/jingyaogong/minimind.git
 ```
 
 ## Ⅰ Test Pre-trained Model
-
-<div align="center" style="font-size: 1.5em; font-weight: bold;">
-  <img src="https://huggingface.co/front/assets/huggingface_logo-noborder.svg" alt="Hugging Face Logo" style="vertical-align: middle; height: 30px;" />
-  Hugging Face
-
-[MiniMind (HuggingFace)](https://huggingface.co/collections/jingyaogong/minimind-66caf8d999f5c7fa64f399e5)
-
- <img src="https://g.alicdn.com/sail-web/maas/1.15.0/static/modelscopeIcon.cd89353f.svg" alt="Hugging Face Logo" style="vertical-align: middle; height: 30px;" />
-
-[MiniMind (ModelScope)](https://www.modelscope.cn/profile/gongjy)
-
-</div>
 
 ### 1. Download the Model
 
@@ -276,7 +276,7 @@ Download the necessary data files from the [Dataset Download Link](#数据集下
 directory.
 
 > **Note**: The recommended fastest way to replicate the Zero Chat model is by
-> downloading `pretrain_data.csv` + `sft_mini_512.jsonl`.
+> downloading `pretrain_hq.jsonl` + `sft_mini_512.jsonl`.
 
 > **Note**: You can freely choose from multiple dataset options below based on your training needs and GPU resources.
 
@@ -492,7 +492,8 @@ Big respect!
 
 ## Ⅷ Dataset Download
 
-> **TIP**: After `2025-02-05`, MiniMind’s open-source datasets for final training are provided, so there is no need for
+> [!NOTE]
+> After `2025-02-05`, MiniMind’s open-source datasets for final training are provided, so there is no need for
 > you to preprocess large datasets by yourself anymore. This helps avoid redundant work.
 
 MiniMind Training Datasets are available for download from:
@@ -617,7 +618,7 @@ Reference model parameter versions are shown in the table below:
 <br/>Single card 3090 (1 epoch) + 2.1 hours + cost 2.73 RMB  
 <br/>Can train the MiniMind-Zero-0.025B model from scratch!!!
 
-> MiniMind2~Small Parameters
+> MiniMind2-Small Parameters
 >> `pretrain_hq.jsonl` + `sft_512.jsonl` + `sft_2048.jsonl` + `dpo.jsonl` dataset  
 <br/>Single card 3090 (2 epochs) + approx. 38.16 hours + cost 49.61 RMB  
 <br/>Can train the MiniMind2-Small-0.025B model from scratch!!!
@@ -1030,7 +1031,7 @@ For reference, the parameter settings for GPT-3 are shown in the table below:
 
 ## Ⅰ RLHF vs SFT Comparison
 
-> [!TIP]
+> [!NOTE]
 > The test is based on comparing `MiniMind2 series` models with "full_sft" and "rlhf". The random seed is fixed at `42`.
 
 <details>
@@ -1089,7 +1090,7 @@ rather than using the PPO method where the reward model acts as a "coach" to cor
 
 ## Ⅱ Subjective Sample Evaluation
 
-> [!TIP]
+> [!NOTE]
 > The following tests were completed on February 9, 2025. New models released after this date will not be included in
 > the tests unless there is a special need.
 
@@ -1102,8 +1103,6 @@ rather than using the PPO method where the reward model acts as a "coach" to cor
 [F] [minimind-v1(0.1B)](https://pan.baidu.com/s/1p713loS7EfwHQf3G9eYI3Q?pwd=6666)<br/>
 [G] [baby-llama2-chinese(0.2B)](https://github.com/DLLXW/baby-llama2-chinese)<br/>
 [H] [chatlm-mini-chinese(0.2B)](https://github.com/charent/ChatLM-mini-Chinese)<br/>
-
-
 
 ```text
 [Q]: Do you know about the Yangtze River?
@@ -1376,7 +1375,7 @@ is mainly for fun, so take the results lightly:
 
 # 📌 Acknowledge
 
-> [!TIP]
+> [!NOTE]
 > If you find the `MiniMind series` helpful, feel free to give it a ⭐ on GitHub.<br/>
 > Due to the length of the content, mistakes are inevitable; please feel free to report issues or submit a PR to improve
 > the project.<br/>

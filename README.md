@@ -69,7 +69,7 @@
 最低只需3块钱不到的服务器成本，就能亲身体验从0到1构建一个语言模型的全过程。
 一起感受创造的乐趣吧！
 
-> [!TIP]
+> [!NOTE]
 > （截至2025-02-07）MiniMind系列已完成多个型号模型的预训练，最小仅需25.8M（0.02B），即可具备流畅对话能力！
 
 <details>
@@ -172,6 +172,18 @@
 
 # 📌 快速开始
 
+<div align="center" style="font-size: 1.5em; font-weight: bold;">
+  <img src="https://huggingface.co/front/assets/huggingface_logo-noborder.svg" alt="Hugging Face Logo" style="vertical-align: middle; height: 30px;" />
+  Hugging Face
+
+[MiniMind (HuggingFace)](https://huggingface.co/collections/jingyaogong/minimind-66caf8d999f5c7fa64f399e5)
+
+ <img src="https://g.alicdn.com/sail-web/maas/1.15.0/static/modelscopeIcon.cd89353f.svg" alt="Hugging Face Logo" style="vertical-align: middle; height: 30px;" />
+
+[MiniMind (ModelScope)](https://www.modelscope.cn/profile/gongjy)
+
+</div>
+
 <details>
 <summary>分享本人的软硬件配置（仅供参考）</summary>
 
@@ -192,18 +204,6 @@ git clone https://github.com/jingyaogong/minimind.git
 ```
 
 ## Ⅰ 测试已有模型效果
-
-<div align="center" style="font-size: 1.5em; font-weight: bold;">
-  <img src="https://huggingface.co/front/assets/huggingface_logo-noborder.svg" alt="Hugging Face Logo" style="vertical-align: middle; height: 30px;" />
-  Hugging Face
-
-[MiniMind (HuggingFace)](https://huggingface.co/collections/jingyaogong/minimind-66caf8d999f5c7fa64f399e5)
-
- <img src="https://g.alicdn.com/sail-web/maas/1.15.0/static/modelscopeIcon.cd89353f.svg" alt="Hugging Face Logo" style="vertical-align: middle; height: 30px;" />
-
-[MiniMind (ModelScope)](https://www.modelscope.cn/profile/gongjy)
-
-</div>
 
 ### 1.下载模型
 
@@ -254,7 +254,7 @@ streamlit run web_demo.py
 
 从下文的[数据集下载链接](#数据集下载)下载需要的数据文件放到`./dataset`目录下
 
-> 【注】默认推荐下载`pretrain_data.csv` + `sft_mini_512.jsonl`最快速度复现Zero聊天模型。
+> 【注】默认推荐下载`pretrain_hq.jsonl` + `sft_mini_512.jsonl`最快速度复现Zero聊天模型。
 
 > 【注】数据文件可自由选择，下文提供了多种搭配方案，可根据自己手头的训练需求和GPU资源进行适当组合。
 
@@ -448,7 +448,7 @@ quality（当然也还不算high，提升数据质量无止尽）。
 
 ## Ⅷ 数据集下载
 
-> [!TIP]
+> [!NOTE]
 > 2025-02-05后，开源MiniMind最终训练所用的所有数据集，因此无需再自行预处理大规模数据集，避免重复性的数据处理工作。
 
 MiniMind训练数据集
@@ -559,7 +559,7 @@ MiniMind的整体结构一致，只是在RoPE计算、推理函数和FFN层的�
 <br/>单卡3090 (1 epoch) + 2.1小时 + 花费2.73元人民币
 <br/>即可从0训练出MiniMind-Zero-0.025B模型!!!
 
-> MiniMind2~Small参数
+> MiniMind2-Small参数
 >> `pretrain_hq.jsonl`+`sft_512.jsonl`+`sft_2048.jsonl`+`dpo.jsonl`数据集
 <br/>单卡3090 (2 epochs) + 大约38.16小时 + 花费49.61元人民币
 <br/>即可从0训练出MiniMind2-Small-0.025B模型!!!
@@ -877,9 +877,8 @@ MobileLLM提出架构的深度比宽度更重要，「深而窄」的「瘦长�
 
 #### Transformers模型
 
-*
-
-MiniMind系列 [(ModelScope)](https://www.modelscope.cn/profile/gongjy) | [HuggingFace](https://huggingface.co/collections/jingyaogong/minimind-66caf8d999f5c7fa64f399e5)
+* MiniMind系列 [(ModelScope)](https://www.modelscope.cn/profile/gongjy)
+  | [HuggingFace](https://huggingface.co/collections/jingyaogong/minimind-66caf8d999f5c7fa64f399e5)
 
 <details>
 <summary>Torch文件命名对照（展开）</summary>
@@ -905,7 +904,7 @@ MiniMind系列 [(ModelScope)](https://www.modelscope.cn/profile/gongjy) | [Huggi
 
 ## Ⅰ RLHF对比SFT篇
 
-> [!TIP]
+> [!NOTE]
 > 测试基于「full_sft」和「rlhf」的`MiniMind2系列`模型对比，测试随机种子固定为`42`
 
 <details>
@@ -943,7 +942,7 @@ DPO和在线PPO的区别在于reject和chosen都是离线准备的，和minimind
 
 ## Ⅱ 主观样例测评
 
-> [!TIP]
+> [!NOTE]
 > 以下测试于2025-02-09完成，此日期后发布的新模型，无特殊需要时将不加入测试。
 
 [A] [MiniMind2 (0.1B)](https://www.modelscope.cn/models/gongjy/MiniMind2-PyTorch)<br/>
@@ -1218,7 +1217,7 @@ MiniMind模型本身预训练数据集小的可怜，也没有针对性的对测
 
 # 📌 Acknowledge
 
-> [!TIP]
+> [!NOTE]
 > 如果觉得`MiniMind系列`对您有所帮助，可以在 GitHub 上加一个⭐<br/>
 > 篇幅超长水平有限难免纰漏，欢迎在Issues交流指正或提交PR改进项目<br/>
 > 您的小小支持就是持续改进此项目的动力！
