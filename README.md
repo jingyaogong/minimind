@@ -527,14 +527,14 @@ MiniMind的整体结构一致，只是在RoPE计算、推理函数和FFN层的�
 修改模型配置见[./model/LMConfig.py](./model/LMConfig.py)。
 参考模型参数版本见下表：
 
-| Model Name        | params | len_vocab | n_layers | d_model | kv_heads | q_heads | share+route |
-|-------------------|--------|-----------|----------|---------|----------|---------|-------------|
-| MiniMind2-Small   | 26M    | 6400      | 8        | 512     | 2        | 8       | -           |
-| MiniMind2-MoE     | 145M   | 6400      | 8        | 640     | 2        | 8       | 1+4         |
-| MiniMind2         | 104M   | 6400      | 16       | 768     | 2        | 8       | -           |
-| minimind-v1-small | 26M    | 6400      | 8        | 512     | 8        | 16      | -           |
-| minimind-v1-moe   | 4×26M  | 6400      | 8        | 512     | 8        | 16      | 1+4         |
-| minimind-v1       | 108M   | 6400      | 16       | 768     | 8        | 16      | -           |
+| Model Name        | params | len_vocab | rope_theta | n_layers | d_model | kv_heads | q_heads | share+route |
+|-------------------|--------|-----------|------------|----------|---------|----------|---------|-------------|
+| MiniMind2-Small   | 26M    | 6400      | 1e6        | 8        | 512     | 2        | 8       | -           |
+| MiniMind2-MoE     | 145M   | 6400      | 1e6        | 8        | 640     | 2        | 8       | 1+4         |
+| MiniMind2         | 104M   | 6400      | 1e6        | 16       | 768     | 2        | 8       | -           |
+| minimind-v1-small | 26M    | 6400      | 1e4        | 8        | 512     | 8        | 16      | -           |
+| minimind-v1-moe   | 4×26M  | 6400      | 1e4        | 8        | 512     | 8        | 16      | 1+4         |
+| minimind-v1       | 108M   | 6400      | 1e4        | 16       | 768     | 8        | 16      | -           |
 
 # 📌 Experiment
 
