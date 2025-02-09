@@ -50,7 +50,7 @@
 
 ![minimind2](./images/minimind2.gif)
 
-[Online Demo (Inference Model)](https://www.modelscope.cn/studios/gongjy/minimind-resoning) | [Online Demo (Standard Model)](https://www.modelscope.cn/studios/gongjy/minimind) | [Bilibili Introduction](https://www.bilibili.com/video/BV12dHPeqE72/?share_source=copy_web&vd_source=670c2504f88726f8cf4a21ef6147c0e8)
+[Online Demo (Inference Model)](https://www.modelscope.cn/studios/gongjy/MiniMind-Reasoning) | [Online Demo (Standard Model)](https://www.modelscope.cn/studios/gongjy/MiniMind) | [Bilibili Introduction](https://www.bilibili.com/video/BV12dHPeqE72/?share_source=copy_web&vd_source=670c2504f88726f8cf4a21ef6147c0e8)
 
 ---
 
