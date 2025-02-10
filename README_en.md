@@ -270,7 +270,7 @@ for guidance.
 ### 2. Data Download
 
 Download the required data files from
-the [dataset download link](https://www.modelscope.cn/datasets/gongjy/minimind-dataset/files) and place them in
+the [dataset download link](https://www.modelscope.cn/datasets/gongjy/minimind_dataset/files) and place them in
 the `./dataset` directory.
 
 <details style="color:rgb(128,128,128)">
@@ -516,7 +516,7 @@ Big respect!
 
 MiniMind Training Datasets are available for download from:
 
-Dataset ([ModelScope](https://www.modelscope.cn/datasets/gongjy/minimind-dataset/files) | [HuggingFace](https://huggingface.co/datasets/jingyaogong/minimind_dataset/tree/main))
+Dataset ([ModelScope](https://www.modelscope.cn/datasets/gongjy/minimind_dataset/files) | [HuggingFace](https://huggingface.co/datasets/jingyaogong/minimind_dataset/tree/main))
 
 > You don’t need to clone everything, just download the necessary files.
 

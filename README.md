@@ -255,7 +255,7 @@ print(torch.cuda.is_available())
 
 ### 2.数据下载
 
-从下文提供的[数据集下载链接](https://www.modelscope.cn/datasets/gongjy/minimind-dataset/files)
+从下文提供的[数据集下载链接](https://www.modelscope.cn/datasets/gongjy/minimind_dataset/files)
 下载需要的数据文件放到`./dataset`目录下
 
 <details style="color:rgb(128,128,128)">
@@ -476,7 +476,7 @@ quality（当然也还不算high，提升数据质量无止尽）。
 > [!NOTE]
 > 2025-02-05后，开源MiniMind最终训练所用的所有数据集，因此无需再自行预处理大规模数据集，避免重复性的数据处理工作。
 
-MiniMind训练数据集 ([ModelScope](https://www.modelscope.cn/datasets/gongjy/minimind-dataset/files) | [HuggingFace](https://huggingface.co/datasets/jingyaogong/minimind_dataset/tree/main))
+MiniMind训练数据集 ([ModelScope](https://www.modelscope.cn/datasets/gongjy/minimind_dataset/files) | [HuggingFace](https://huggingface.co/datasets/jingyaogong/minimind_dataset/tree/main))
 
 > 无需全部clone，可单独下载所需的文件
 
