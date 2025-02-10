@@ -50,23 +50,31 @@
 
 ---
 
-<div style="font-size: 1.5em; font-weight: bold; display: flex; justify-content: center; align-items: center; width: 100%;">
-  <a href="https://jingyaogong.github.io/minimind" style="text-decoration: none; display: flex; align-items: center; margin-right: 20px;">
-    <img src="./images/logo2.png" alt="MiniMind Logo" style="vertical-align: middle; height: 50px;" />
-  </a>
-  <img src="./images/multi.png" alt="Multi Icon" style="vertical-align: middle; height: 20px;" />
-  &nbsp;&nbsp;
-  
-  <a href="https://huggingface.co/collections/jingyaogong/minimind-66caf8d999f5c7fa64f399e5" style="text-decoration: none; display: flex; align-items: center; margin-right: 20px;">
-    <img src="https://huggingface.co/front/assets/huggingface_logo-noborder.svg" alt="Hugging Face Logo" style="vertical-align: middle; height: 50px;" />
-  </a>
-  
-  <img src="./images/multi.png" alt="Multi Icon" style="vertical-align: middle; height: 20px;" />
-  
-  <a href="https://www.modelscope.cn/profile/gongjy" style="text-decoration: none; display: flex; align-items: center; margin-left: 20px;">
-    <img src="https://g.alicdn.com/sail-web/maas/1.15.0/static/modelscopeIcon.cd89353f.svg" alt="ModelScope Logo" style="vertical-align: middle; height: 50px;" />
-  </a>
-</div>
+<table style="width: 100%; text-align: center; border: none; border-collapse: collapse;">
+  <tr>
+    <td style="text-align: center; border: none;">
+      <a href="https://jingyaogong.github.io/minimind" style="text-decoration: none;">
+        <img src="./images/logo2.png" alt="MiniMind Logo" style="height: 50px;" />
+      </a>
+    </td>
+    <td style="text-align: center; border: none;">
+      <img src="./images/multi.png" alt="Multi Icon" style="height: 20px;" />
+    </td>
+    <td style="text-align: center; border: none;">
+      <a href="https://huggingface.co/collections/jingyaogong/minimind-66caf8d999f5c7fa64f399e5" style="text-decoration: none;">
+        <img src="https://huggingface.co/front/assets/huggingface_logo-noborder.svg" alt="Hugging Face Logo" style="height: 50px;" />
+      </a>
+    </td>
+    <td style="text-align: center; border: none;">
+      <img src="./images/multi.png" alt="Multi Icon" style="height: 20px;" />
+    </td>
+    <td style="text-align: center; border: none;">
+      <a href="https://www.modelscope.cn/profile/gongjy" style="text-decoration: none;">
+        <img src="https://g.alicdn.com/sail-web/maas/1.15.0/static/modelscopeIcon.cd89353f.svg" alt="ModelScope Logo" style="height: 50px;" />
+      </a>
+    </td>
+  </tr>
+</table>
 
 ---
 
