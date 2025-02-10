@@ -50,6 +50,26 @@
 
 ---
 
+<div style="font-size: 1.5em; font-weight: bold; display: flex; justify-content: center; align-items: center; width: 100%;">
+  <a href="https://jingyaogong.github.io/minimind" style="text-decoration: none; display: flex; align-items: center; margin-right: 20px;">
+    <img src="./images/logo2.png" alt="MiniMind Logo" style="vertical-align: middle; height: 50px;" />
+  </a>
+  <img src="./images/multi.png" alt="Multi Icon" style="vertical-align: middle; height: 20px;" />
+  &nbsp;&nbsp;
+  
+  <a href="https://huggingface.co/collections/jingyaogong/minimind-66caf8d999f5c7fa64f399e5" style="text-decoration: none; display: flex; align-items: center; margin-right: 20px;">
+    <img src="https://huggingface.co/front/assets/huggingface_logo-noborder.svg" alt="Hugging Face Logo" style="vertical-align: middle; height: 50px;" />
+  </a>
+  
+  <img src="./images/multi.png" alt="Multi Icon" style="vertical-align: middle; height: 20px;" />
+  
+  <a href="https://www.modelscope.cn/profile/gongjy" style="text-decoration: none; display: flex; align-items: center; margin-left: 20px;">
+    <img src="https://g.alicdn.com/sail-web/maas/1.15.0/static/modelscopeIcon.cd89353f.svg" alt="ModelScope Logo" style="vertical-align: middle; height: 50px;" />
+  </a>
+</div>
+
+---
+
 </div>
 
 # 📌 Introduction
@@ -173,28 +193,6 @@
 
 # 📌 快速开始
 
----
-
-<div align="center" style="font-size: 1.5em; font-weight: bold; display: flex; align-items: center;">
-  <a href="https://jingyaogong.github.io/minimind" style="text-decoration: none; display: flex; align-items: center; margin-right: 20px;">
-    <img src="./images/logo2.png" alt="MiniMind Logo" style="vertical-align: middle; height: 30px;" />
-    <span style="margin-left: 10px;color:#0877e5;font-style: italic">MiniMind Series</span>
-  </a>
-  <span style="color: #aaa; font-size: 1.2em; margin: 0 10px;">×</span>
-  &nbsp;
-  <a href="https://huggingface.co/collections/jingyaogong/minimind-66caf8d999f5c7fa64f399e5" style="text-decoration: none; display: flex; align-items: center; margin-right: 20px;">
-    <img src="https://huggingface.co/front/assets/huggingface_logo-noborder.svg" alt="Hugging Face Logo" style="vertical-align: middle; height: 30px;" />
-    <span style="margin-left: 10px;color:#d56100;font-style: italic">Hugging Face</span>
-  </a>
-  <span style="color: #aaa; font-size: 1.2em; margin: 0 10px;">&</span>
-  <a href="https://www.modelscope.cn/profile/gongjy" style="text-decoration: none; display: flex; align-items: center; margin-left: 20px;">
-    <img src="https://g.alicdn.com/sail-web/maas/1.15.0/static/modelscopeIcon.cd89353f.svg" alt="ModelScope Logo" style="vertical-align: middle; height: 30px;" />
-  </a>
-</div>
-
----
-
-
 <details style="color:rgb(128,128,128)">
 <summary>分享本人的软硬件配置（仅供参考）</summary>
 
@@ -282,9 +280,7 @@ print(torch.cuda.is_available())
 python train_pretrain.py
 ```
 
-<span style="color:rgb(128,128,128)">
 > 执行预训练，得到 `pretrain_*.pth` 作为预训练的输出权重（其中*为模型的dimension，默认为512）
-</span>
 
 
 **3.2 监督微调（学对话方式）**
@@ -293,9 +289,8 @@ python train_pretrain.py
 python train_full_sft.py
 ```
 
-<span style="color:rgb(128,128,128);">
 > 执行监督微调，得到 `full_sft_*.pth` 作为指令微调的输出权重（其中`full`即为全参数微调）
-</span>
+
 
 ---
 
@@ -489,7 +484,7 @@ quality（当然也还不算high，提升数据质量无止尽）。
 
 MiniMind训练数据集 ([ModelScope](https://www.modelscope.cn/datasets/gongjy/minimind-dataset/files) | [HuggingFace](https://huggingface.co/datasets/jingyaogong))
 
-<span style="color:rgb(128,128,128)">> 无需全部clone，可单独下载所需的文件</span>
+> 无需全部clone，可单独下载所需的文件
 
 将下载的数据集文件放到`./dataset/`目录下（✨为推荐的必须项）
 
@@ -614,17 +609,15 @@ MiniMind的整体结构一致，只是在RoPE计算、推理函数和FFN层的�
 
 
 
-✨<span style="color:rgb(0,147,64)">
-基于单卡NVIDIA 3090的`MiniMind-Zero`从0训练仅需`2小时` + `3块钱`，实现ChatBot效果！
-</span>
+✨基于单卡NVIDIA 3090的`MiniMind-Zero`从0训练仅需`2小时` + `3块钱`，实现ChatBot效果！
+
 
 ✨PS：若采用8卡4090训练，总用时甚至可以压缩到10分钟以内！（由于时间更短，花费同样3元左右，与单卡成本相当）
 
 ✨以极低极低的门槛，实现人人可玩的大模型自由！这正是MiniMind系列的诞生初衷！
 
-✨<span style="color:rgb(0,147,64)">
-仅价值`3块钱`成本的`MiniMind-Zero`并不是噱头！Chat测试：
-</span>
+✨仅价值`3块钱`成本的`MiniMind-Zero`并不是噱头！Chat测试：
+
 
 ```textmate
 👶: 请介绍一下自己。
@@ -640,9 +633,7 @@ MiniMind的整体结构一致，只是在RoPE计算、推理函数和FFN层的�
 🤖️: 您提到的“Introok's the believeations of theument." 这个名字来源于中国古代的"groty of of the change."
 ```
 
-<span style="color:rgb(0,147,64)">
 极速且初具效果，甚至仍然可以进一步压缩获取更小更优质的训练数据。
-</span>
 Zero模型权重保存为 `full_sft_512_zero.pth`（见下文MiniMind模型文件链接），如有兴趣可下载检验此模型效果。
 
 
@@ -663,10 +654,8 @@ torchrun --nproc_per_node 1 train_pretrain.py # 1即为单卡训练，可根据�
 python train_pretrain.py
 ```
 
-<span style="color:rgb(128,128,128)">
 > 训练后的模型权重文件默认每隔`100步`保存为: `pretrain_*.pth`（*
 为模型具体dimension，每次保存时新文件会覆盖旧文件）
-</span>
 
 ### **2. 有监督微调(Supervised Fine-Tuning)**:
 
@@ -684,8 +673,8 @@ torchrun --nproc_per_node 1 train_full_sft.py
 python train_full_sft.py
 ```
 
-<span style="color:rgb(128,128,128)">> 训练后的模型权重文件默认每隔`100步`保存为: `full_sft_*.pth`（*
-为模型具体dimension，每次保存时新文件会覆盖旧文件）</span>
+> 训练后的模型权重文件默认每隔`100步`保存为: `full_sft_*.pth`（*
+为模型具体dimension，每次保存时新文件会覆盖旧文件）
 
 ## Ⅲ 其它训练步骤
 
@@ -699,9 +688,9 @@ python train_full_sft.py
 DPO通过推导PPO奖励模型的显式解，把在线奖励模型换成离线数据，Ref模型输出可以提前保存。
 DPO性能几乎不变，只用跑 actor_model 和 ref_model 两个模型，大大节省显存开销和增加训练稳定性。
 
-<span style="color:rgb(128,128,128)">
-注：RLHF训练步骤**并非必须**，此步骤难以提升模型“智力”而通常仅用于提升模型的“礼貌”，有利（符合偏好、减少有害内容）也有弊（样本收集昂贵、反馈偏差、多样性损失）。
-</span>
+
+> 注：RLHF训练步骤**并非必须**，此步骤难以提升模型“智力”而通常仅用于提升模型的“礼貌”，有利（符合偏好、减少有害内容）也有弊（样本收集昂贵、反馈偏差、多样性损失）。
+
 
 ```bash
 torchrun --nproc_per_node 1 train_dpo.py
@@ -709,8 +698,8 @@ torchrun --nproc_per_node 1 train_dpo.py
 python train_dpo.py
 ```
 
-<span style="color:rgb(128,128,128)">> 训练后的模型权重文件默认每隔`100步`保存为: `rlhf_*.pth`（*
-为模型具体dimension，每次保存时新文件会覆盖旧文件）</span>
+> 训练后的模型权重文件默认每隔`100步`保存为: `rlhf_*.pth`（*
+为模型具体dimension，每次保存时新文件会覆盖旧文件）
 
 ### **4. 知识蒸馏(Knowledge Distillation, KD)**
 
@@ -737,8 +726,7 @@ torchrun --nproc_per_node 1 train_full_sft.py
 python train_full_sft.py
 ```
 
-<span style="color:rgb(128,128,128)">> 训练后的模型权重文件默认每隔`100步`同样保存为: `full_sft_*.pth`（*
-为模型具体dimension，每次保存时新文件会覆盖旧文件）</span>
+> 训练后的模型权重文件默认每隔`100步`同样保存为: `full_sft_*.pth`（*为模型具体dimension，每次保存时新文件会覆盖旧文件）
 
 此处应当着重介绍MiniMind实现的白盒蒸馏代码`train_distillation.py`，由于MiniMind同系列本身并不存在强大的教师模型，因此白盒蒸馏代码仅作为学习参考。
 
@@ -761,10 +749,10 @@ torchrun --nproc_per_node 1 train_lora.py
 python train_lora.py
 ```
 
-<span style="color:rgb(128,128,128)">
+
 > 训练后的模型权重文件默认每隔`100步`保存为: `lora_xxx_*.pth`（*
 为模型具体dimension，每次保存时新文件会覆盖旧文件）
-</span>
+
 
 非常多的人困惑，如何使模型学会自己私有领域的知识？如何准备数据集？如何迁移通用领域模型打造垂域模型？
 这里举几个例子，对于通用模型，医学领域知识欠缺，可以尝试在原有模型基础上加入领域知识，以获得更好的性能。
@@ -864,8 +852,7 @@ torchrun --nproc_per_node 1 train_distill_reason.py
 python train_distill_reason.py
 ```
 
-<span style="color:rgb(128,128,128)">> 训练后的模型权重文件默认每隔`100步`保存为: `reason_*.pth`（*
-为模型具体dimension，每次保存时新文件会覆盖旧文件）</span>
+> 训练后的模型权重文件默认每隔`100步`保存为: `reason_*.pth`（*为模型具体dimension，每次保存时新文件会覆盖旧文件）
 
 测试一下：
 
@@ -922,9 +909,9 @@ MobileLLM提出架构的深度比宽度更重要，「深而窄」的「瘦长�
 
 ## Ⅴ 训练结果
 
-<span style="color:rgb(128,128,128)"> 
+
 MiniMind2 模型训练损失走势（由于数据集在训练后又更新清洗多次，因此Loss仅供参考）
-</span>
+
 
 | models          | pretrain (length-512)                              | sft (length-512)                                   |
 |-----------------|----------------------------------------------------|----------------------------------------------------|
@@ -933,9 +920,9 @@ MiniMind2 模型训练损失走势（由于数据集在训练后又更新清洗�
 
 ### 训练完成-模型合集
 
-<span style="color:rgb(128,128,128)">
+
 > 考虑到多人反应百度网盘速度慢，MiniMind2及以后全部使用ModelScope/HuggingFace托管。
-</span>
+
 
 #### PyTorch原生模型
 
@@ -1010,9 +997,7 @@ DPO和在线PPO的区别在于reject和chosen都是离线准备的，和minimind
 
 ## Ⅱ 主观样例测评
 
-<span style="color:rgb(128,128,128)">
 🏃以下测试于2025-02-09完成，此日期后发布的新模型，无特殊需要时将不加入测试。
-</span>
 
 
 [A] [MiniMind2 (0.1B)](https://www.modelscope.cn/models/gongjy/MiniMind2-PyTorch)<br/>
@@ -1104,11 +1089,7 @@ DPO和在线PPO的区别在于reject和chosen都是离线准备的，和minimind
 
 ---
 
-<span style="color:rgb(128,128,128)">
 🙋‍直接把以上所有问题和模型的回答丢给DeepSeek-R1，让它帮忙点评和排名打分：
-</span>
-
----
 
 
 <details style="color:rgb(128,128,128)">
@@ -1190,9 +1171,7 @@ DPO和在线PPO的区别在于reject和chosen都是离线准备的，和minimind
 
 ### 👉主观效果总结
 
-<span style="color:rgb(229,111,8)">
 个人主观评价与DeepSeek-R1基本相符，其中：
-</span>
 
 * MiniMind系列的排序非常符合直觉，参数越大+训练数据越充分评分越高，幻觉和错误都会比小模型肉眼可见的好。
 

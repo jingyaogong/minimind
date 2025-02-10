@@ -54,6 +54,27 @@
 
 ---
 
+<div style="font-size: 1.5em; font-weight: bold; display: flex; justify-content: center; align-items: center; width: 100%;">
+  <a href="https://jingyaogong.github.io/minimind" style="text-decoration: none; display: flex; align-items: center; margin-right: 20px;">
+    <img src="./images/logo2.png" alt="MiniMind Logo" style="vertical-align: middle; height: 50px;" />
+  </a>
+  <img src="./images/multi.png" alt="Multi Icon" style="vertical-align: middle; height: 20px;" />
+  &nbsp;&nbsp;
+  
+  <a href="https://huggingface.co/collections/jingyaogong/minimind-66caf8d999f5c7fa64f399e5" style="text-decoration: none; display: flex; align-items: center; margin-right: 20px;">
+    <img src="https://huggingface.co/front/assets/huggingface_logo-noborder.svg" alt="Hugging Face Logo" style="vertical-align: middle; height: 50px;" />
+  </a>
+  
+  <img src="./images/multi.png" alt="Multi Icon" style="vertical-align: middle; height: 20px;" />
+  
+  <a href="https://www.modelscope.cn/profile/gongjy" style="text-decoration: none; display: flex; align-items: center; margin-left: 20px;">
+    <img src="https://g.alicdn.com/sail-web/maas/1.15.0/static/modelscopeIcon.cd89353f.svg" alt="ModelScope Logo" style="vertical-align: middle; height: 50px;" />
+  </a>
+</div>
+
+---
+
+
 </div>
 
 # 📌 Introduction
@@ -184,26 +205,6 @@ We hope this open-source project can help LLM beginners quickly get started!
 
 # 📌 Quick Start
 
----
-
-<div align="center" style="font-size: 1.5em; font-weight: bold; display: flex; align-items: center;">
-  <a href="https://jingyaogong.github.io/minimind" style="text-decoration: none; display: flex; align-items: center; margin-right: 20px;">
-    <img src="./images/logo2.png" alt="MiniMind Logo" style="vertical-align: middle; height: 30px;" />
-    <span style="margin-left: 10px;color:#0877e5;font-style: italic">MiniMind Series</span>
-  </a>
-  <span style="color: #aaa; font-size: 1.2em; margin: 0 10px;">×</span>
-  &nbsp;
-  <a href="https://huggingface.co/collections/jingyaogong/minimind-66caf8d999f5c7fa64f399e5" style="text-decoration: none; display: flex; align-items: center; margin-right: 20px;">
-    <img src="https://huggingface.co/front/assets/huggingface_logo-noborder.svg" alt="Hugging Face Logo" style="vertical-align: middle; height: 30px;" />
-    <span style="margin-left: 10px;color:#d56100;font-style: italic">Hugging Face</span>
-  </a>
-  <span style="color: #aaa; font-size: 1.2em; margin: 0 10px;">&</span>
-  <a href="https://www.modelscope.cn/profile/gongjy" style="text-decoration: none; display: flex; align-items: center; margin-left: 20px;">
-    <img src="https://g.alicdn.com/sail-web/maas/1.15.0/static/modelscopeIcon.cd89353f.svg" alt="ModelScope Logo" style="vertical-align: middle; height: 30px;" />
-  </a>
-</div>
-
----
 
 <details style="color:rgb(128,128,128)">
 <summary>Sharing My Hardware and Software Configuration (For Reference Only)</summary>
@@ -297,9 +298,8 @@ needs and GPU resources.
 python train_pretrain.py
 ```
 
-<span style="color:rgb(128,128,128)">
 > Execute pretraining to get `pretrain_*.pth` as the output weights for pretraining (where * represents the model dimension, default is 512).
-</span>
+
 
 **3.2 Supervised Fine-Tuning (Learning Dialogue Style)**
 
@@ -307,9 +307,8 @@ python train_pretrain.py
 python train_full_sft.py
 ```
 
-<span style="color:rgb(128,128,128);">
 > Execute supervised fine-tuning to get `full_sft_*.pth` as the output weights for instruction fine-tuning (where `full` represents full parameter fine-tuning).
-</span>
+
 
 ---
 
@@ -660,10 +659,8 @@ Reference model parameter versions are shown in the table below:
 </details>
 
 
-✨<span style="color:rgb(0,147,64)">
-With a single NVIDIA 3090 GPU, you can train `MiniMind-Zero` from scratch in just `2 hours` and for a cost of
+✨With a single NVIDIA 3090 GPU, you can train `MiniMind-Zero` from scratch in just `2 hours` and for a cost of
 only `3 RMB`, achieving ChatBot functionality!
-</span>
 
 ✨PS: If training on 8 GPUs with 4090s, the total time can be compressed to under 10 minutes! (Despite the shorter time,
 the cost is still around 3 RMB, which is comparable to the single GPU cost.)
@@ -671,9 +668,7 @@ the cost is still around 3 RMB, which is comparable to the single GPU cost.)
 ✨This enables ultra-low barriers to entry, making it possible for everyone to experiment with large models! This is the
 original purpose behind the creation of the MiniMind series!
 
-✨<span style="color:rgb(0,147,64)">
-The `MiniMind-Zero` model, which costs only `3 RMB`, is not a gimmick! Chat test results:
-</span>
+✨The `MiniMind-Zero` model, which costs only `3 RMB`, is not a gimmick! Chat test results:
 
 ```textmate
 👶: Please introduce yourself.
@@ -689,9 +684,7 @@ The `MiniMind-Zero` model, which costs only `3 RMB`, is not a gimmick! Chat test
 🤖️: You mentioned "Introok's the believeations of theument." This name originates from the ancient Chinese "groty of of the change."
 ```
 
-<span style="color:rgb(0,147,64)">
 Fast and effective, it is still possible to further compress the training process by obtaining smaller and higher-quality datasets.
-</span>
 The Zero model weights are saved as `full_sft_512_zero.pth` (see the MiniMind model file link below). Feel free to download and test the model's performance.
 
 ## Ⅱ Main Training Steps
@@ -713,10 +706,9 @@ torchrun --nproc_per_node 1 train_pretrain.py # 1 represents single-card trainin
 python train_pretrain.py
 ```
 
-<span style="color:rgb(128,128,128)">
 > The trained model weights are saved every `100 steps` by default as: `pretrain_*.pth` (the * represents the specific
 model dimension, and each new save will overwrite the previous one).
-</span>
+
 
 ### **2. Supervised Fine-Tuning (SFT)**:
 
@@ -741,10 +733,8 @@ torchrun --nproc_per_node 1 train_full_sft.py
 python train_full_sft.py
 ```
 
-<span style="color:rgb(128,128,128)">
 > The trained model weights are saved every `100 steps` by default as: `full_sft_*.pth` (the * represents the specific
 model dimension, and each new save will overwrite the previous one).
-</span>
 
 ## Ⅲ Other Training Steps
 
@@ -772,10 +762,8 @@ torchrun --nproc_per_node 1 train_dpo.py
 python train_dpo.py
 ```
 
-<span style="color:rgb(128,128,128)">
 > The trained model weights are saved every `100 steps` by default as: `rlhf_*.pth` (the * represents the specific model
 dimension, and each new save will overwrite the previous one).
-</span>
 
 ### **4. Knowledge Distillation (KD)**
 
@@ -810,10 +798,8 @@ torchrun --nproc_per_node 1 train_full_sft.py
 python train_full_sft.py
 ```
 
-<span style="color:rgb(128,128,128)">
 > The trained model weights are saved every `100 steps` by default as: `full_sft_*.pth` (the * represents the specific
 model dimension, and each new save will overwrite the previous one).
-</span>
 
 This section emphasizes MiniMind’s white-box distillation code `train_distillation.py`. Since MiniMind doesn’t have a
 powerful teacher model within the same series, the white-box distillation code serves as a learning reference.
@@ -840,10 +826,8 @@ torchrun --nproc_per_node 1 train_lora.py
 python train_lora.py
 ```
 
-<span style="color:rgb(128,128,128)">
 > The trained model weights are saved every `100 steps` by default as: `lora_xxx_*.pth` (the * represents the specific
 model dimension, and each new save will overwrite the previous one).
-</span>
 
 Many people are puzzled: how can a model learn private domain knowledge? How should datasets be prepared? How to
 transfer general models into specialized domain models?  
@@ -964,10 +948,8 @@ torchrun --nproc_per_node 1 train_distill_reason.py
 python train_distill_reason.py
 ```
 
-<span style="color:rgb(128,128,128)">
 > The trained model weights are saved every `100 steps` by default as: `reason_*.pth` (* being the specific dimension of
 the model; each time a new file is saved, it will overwrite the old one).
-</span>
 
 Test it:
 
@@ -1043,9 +1025,7 @@ For reference, the parameter settings for GPT-3 are shown in the table below:
 
 ### Training Completed - Model Collection
 
-<span style="color:rgb(128,128,128)">
 > Considering that many people have reported slow speeds with Baidu Cloud, all MiniMind2 models and beyond will be hosted on ModelScope/HuggingFace.
-</span>
 
 #### Native PyTorch Models
 
@@ -1141,11 +1121,7 @@ rather than using the PPO method where the reward model acts as a "coach" to cor
 
 ## Ⅱ Subjective Sample Evaluation
 
-<span style="color:rgb(128,128,128)">
 🏃The following tests were completed on February 9, 2025. New models released after this date will not be included in the tests unless there is a special need.
-</span>
-
-
 
 [A] [MiniMind2 (0.1B)](https://www.modelscope.cn/models/gongjy/MiniMind2-PyTorch)<br/>
 [B] [MiniMind2-MoE (0.15B)](https://www.modelscope.cn/models/gongjy/MiniMind2-PyTorch)<br/>
@@ -1230,11 +1206,8 @@ rather than using the PPO method where the reward model acts as a "coach" to cor
 
 ---
 
-<span style="color:rgb(128,128,128)">
 🙋‍Directly give all the questions and the model's answers above to DeepSeek-R1, let it help comment and rank with scores:
-</span>
 
----
 
 <details style="color:rgb(128,128,128)">
 <summary>Specific comments</summary>
@@ -1323,9 +1296,7 @@ rather than using the PPO method where the reward model acts as a "coach" to cor
 
 ### 👉 Subjective Effect Summary
 
-<span style="color:rgb(229,111,8)">
-> My personal evaluation aligns with DeepSeek-R1's results，and：
-</span>
+My personal evaluation aligns with DeepSeek-R1's results，and：
 
 * The ranking of the MiniMind series is very intuitive. The larger the parameters and the more training data, the higher
   the score, and hallucinations and errors are less noticeable than with smaller models.
