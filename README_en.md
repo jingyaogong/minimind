@@ -54,31 +54,22 @@
 
 ---
 
-<table style="width: 100%; text-align: center; border: none; border-collapse: collapse;">
-  <tr>
-    <td style="text-align: center; border: none;">
-      <a href="https://jingyaogong.github.io/minimind" style="text-decoration: none;">
-        <img src="./images/logo2.png" alt="MiniMind Logo" style="height: 50px;" />
-      </a>
-    </td>
-    <td style="text-align: center; border: none;">
-      <img src="./images/multi.png" alt="Multi Icon" style="height: 20px;" />
-    </td>
-    <td style="text-align: center; border: none;">
-      <a href="https://huggingface.co/collections/jingyaogong/minimind-66caf8d999f5c7fa64f399e5" style="text-decoration: none;">
-        <img src="https://huggingface.co/front/assets/huggingface_logo-noborder.svg" alt="Hugging Face Logo" style="height: 50px;" />
-      </a>
-    </td>
-    <td style="text-align: center; border: none;">
-      <img src="./images/multi.png" alt="Multi Icon" style="height: 20px;" />
-    </td>
-    <td style="text-align: center; border: none;">
-      <a href="https://www.modelscope.cn/profile/gongjy" style="text-decoration: none;">
-        <img src="https://g.alicdn.com/sail-web/maas/1.15.0/static/modelscopeIcon.cd89353f.svg" alt="ModelScope Logo" style="height: 50px;" />
-      </a>
-    </td>
-  </tr>
-</table>
+<div align="center">
+  <table>
+    <tr>
+      <td align="center">
+        <a href="https://huggingface.co/collections/jingyaogong/minimind-66caf8d999f5c7fa64f399e5" style="text-decoration: none;">
+          <img src="./images/and_huggingface.png" alt="Hugging Face Logo" style="vertical-align: middle; width: auto; max-width: 100%;" />
+        </a>
+      </td>
+      <td align="center">
+        <a href="https://www.modelscope.cn/profile/gongjy" style="text-decoration: none;">
+          <img src="./images/and_modelscope.png" alt="ModelScope Logo" style="vertical-align: middle; width: auto; max-width: 100%;" />
+        </a>
+      </td>
+    </tr>
+  </table>
+</div>
 
 ---
 
@@ -213,7 +204,6 @@ We hope this open-source project can help LLM beginners quickly get started!
 
 # 📌 Quick Start
 
-
 <details style="color:rgb(128,128,128)">
 <summary>Sharing My Hardware and Software Configuration (For Reference Only)</summary>
 
@@ -306,7 +296,8 @@ needs and GPU resources.
 python train_pretrain.py
 ```
 
-> Execute pretraining to get `pretrain_*.pth` as the output weights for pretraining (where * represents the model dimension, default is 512).
+> Execute pretraining to get `pretrain_*.pth` as the output weights for pretraining (where * represents the model
+> dimension, default is 512).
 
 
 **3.2 Supervised Fine-Tuning (Learning Dialogue Style)**
@@ -315,7 +306,8 @@ python train_pretrain.py
 python train_full_sft.py
 ```
 
-> Execute supervised fine-tuning to get `full_sft_*.pth` as the output weights for instruction fine-tuning (where `full` represents full parameter fine-tuning).
+> Execute supervised fine-tuning to get `full_sft_*.pth` as the output weights for instruction fine-tuning (where `full`
+> represents full parameter fine-tuning).
 
 
 ---
@@ -692,8 +684,10 @@ original purpose behind the creation of the MiniMind series!
 🤖️: You mentioned "Introok's the believeations of theument." This name originates from the ancient Chinese "groty of of the change."
 ```
 
-Fast and effective, it is still possible to further compress the training process by obtaining smaller and higher-quality datasets.
-The Zero model weights are saved as `full_sft_512_zero.pth` (see the MiniMind model file link below). Feel free to download and test the model's performance.
+Fast and effective, it is still possible to further compress the training process by obtaining smaller and
+higher-quality datasets.
+The Zero model weights are saved as `full_sft_512_zero.pth` (see the MiniMind model file link below). Feel free to
+download and test the model's performance.
 
 ## Ⅱ Main Training Steps
 
@@ -715,8 +709,7 @@ python train_pretrain.py
 ```
 
 > The trained model weights are saved every `100 steps` by default as: `pretrain_*.pth` (the * represents the specific
-model dimension, and each new save will overwrite the previous one).
-
+> model dimension, and each new save will overwrite the previous one).
 
 ### **2. Supervised Fine-Tuning (SFT)**:
 
@@ -742,7 +735,7 @@ python train_full_sft.py
 ```
 
 > The trained model weights are saved every `100 steps` by default as: `full_sft_*.pth` (the * represents the specific
-model dimension, and each new save will overwrite the previous one).
+> model dimension, and each new save will overwrite the previous one).
 
 ## Ⅲ Other Training Steps
 
@@ -771,7 +764,7 @@ python train_dpo.py
 ```
 
 > The trained model weights are saved every `100 steps` by default as: `rlhf_*.pth` (the * represents the specific model
-dimension, and each new save will overwrite the previous one).
+> dimension, and each new save will overwrite the previous one).
 
 ### **4. Knowledge Distillation (KD)**
 
@@ -807,7 +800,7 @@ python train_full_sft.py
 ```
 
 > The trained model weights are saved every `100 steps` by default as: `full_sft_*.pth` (the * represents the specific
-model dimension, and each new save will overwrite the previous one).
+> model dimension, and each new save will overwrite the previous one).
 
 This section emphasizes MiniMind’s white-box distillation code `train_distillation.py`. Since MiniMind doesn’t have a
 powerful teacher model within the same series, the white-box distillation code serves as a learning reference.
@@ -835,7 +828,7 @@ python train_lora.py
 ```
 
 > The trained model weights are saved every `100 steps` by default as: `lora_xxx_*.pth` (the * represents the specific
-model dimension, and each new save will overwrite the previous one).
+> model dimension, and each new save will overwrite the previous one).
 
 Many people are puzzled: how can a model learn private domain knowledge? How should datasets be prepared? How to
 transfer general models into specialized domain models?  
@@ -957,7 +950,7 @@ python train_distill_reason.py
 ```
 
 > The trained model weights are saved every `100 steps` by default as: `reason_*.pth` (* being the specific dimension of
-the model; each time a new file is saved, it will overwrite the old one).
+> the model; each time a new file is saved, it will overwrite the old one).
 
 Test it:
 
@@ -1033,7 +1026,8 @@ For reference, the parameter settings for GPT-3 are shown in the table below:
 
 ### Training Completed - Model Collection
 
-> Considering that many people have reported slow speeds with Baidu Cloud, all MiniMind2 models and beyond will be hosted on ModelScope/HuggingFace.
+> Considering that many people have reported slow speeds with Baidu Cloud, all MiniMind2 models and beyond will be
+> hosted on ModelScope/HuggingFace.
 
 #### Native PyTorch Models
 
@@ -1129,7 +1123,8 @@ rather than using the PPO method where the reward model acts as a "coach" to cor
 
 ## Ⅱ Subjective Sample Evaluation
 
-🏃The following tests were completed on February 9, 2025. New models released after this date will not be included in the tests unless there is a special need.
+🏃The following tests were completed on February 9, 2025. New models released after this date will not be included in the
+tests unless there is a special need.
 
 [A] [MiniMind2 (0.1B)](https://www.modelscope.cn/models/gongjy/MiniMind2-PyTorch)<br/>
 [B] [MiniMind2-MoE (0.15B)](https://www.modelscope.cn/models/gongjy/MiniMind2-PyTorch)<br/>
@@ -1214,7 +1209,8 @@ rather than using the PPO method where the reward model acts as a "coach" to cor
 
 ---
 
-🙋‍Directly give all the questions and the model's answers above to DeepSeek-R1, let it help comment and rank with scores:
+🙋‍Directly give all the questions and the model's answers above to DeepSeek-R1, let it help comment and rank with
+scores:
 
 
 <details style="color:rgb(128,128,128)">

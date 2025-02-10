@@ -50,31 +50,22 @@
 
 ---
 
-<table style="width: 100%; text-align: center; border: none; border-collapse: collapse;">
-  <tr>
-    <td style="text-align: center; border: none;">
-      <a href="https://jingyaogong.github.io/minimind" style="text-decoration: none;">
-        <img src="./images/logo2.png" alt="MiniMind Logo" style="height: 50px;" />
-      </a>
-    </td>
-    <td style="text-align: center; border: none;">
-      <img src="./images/multi.png" alt="Multi Icon" style="height: 20px;" />
-    </td>
-    <td style="text-align: center; border: none;">
-      <a href="https://huggingface.co/collections/jingyaogong/minimind-66caf8d999f5c7fa64f399e5" style="text-decoration: none;">
-        <img src="https://huggingface.co/front/assets/huggingface_logo-noborder.svg" alt="Hugging Face Logo" style="height: 50px;" />
-      </a>
-    </td>
-    <td style="text-align: center; border: none;">
-      <img src="./images/multi.png" alt="Multi Icon" style="height: 20px;" />
-    </td>
-    <td style="text-align: center; border: none;">
-      <a href="https://www.modelscope.cn/profile/gongjy" style="text-decoration: none;">
-        <img src="https://g.alicdn.com/sail-web/maas/1.15.0/static/modelscopeIcon.cd89353f.svg" alt="ModelScope Logo" style="height: 50px;" />
-      </a>
-    </td>
-  </tr>
-</table>
+<div align="center">
+  <table>
+    <tr>
+      <td align="center">
+        <a href="https://huggingface.co/collections/jingyaogong/minimind-66caf8d999f5c7fa64f399e5" style="text-decoration: none;">
+          <img src="./images/and_huggingface.png" alt="Hugging Face Logo" style="vertical-align: middle; width: auto; max-width: 100%;" />
+        </a>
+      </td>
+      <td align="center">
+        <a href="https://www.modelscope.cn/profile/gongjy" style="text-decoration: none;">
+          <img src="./images/and_modelscope.png" alt="ModelScope Logo" style="vertical-align: middle; width: auto; max-width: 100%;" />
+        </a>
+      </td>
+    </tr>
+  </table>
+</div>
 
 ---
 
