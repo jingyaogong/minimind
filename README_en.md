@@ -52,7 +52,6 @@
 
 [Online Demo (Inference Model)](https://www.modelscope.cn/studios/gongjy/MiniMind-Reasoning) | [Online Demo (Standard Model)](https://www.modelscope.cn/studios/gongjy/MiniMind) | [Bilibili Introduction](https://www.bilibili.com/video/BV12dHPeqE72/?share_source=copy_web&vd_source=670c2504f88726f8cf4a21ef6147c0e8)
 
----
 
 <div align="center">
   <table>
@@ -70,8 +69,6 @@
     </tr>
   </table>
 </div>
-
----
 
 
 </div>
