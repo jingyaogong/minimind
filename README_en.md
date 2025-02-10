@@ -50,8 +50,7 @@
 
 ![minimind2](./images/minimind2.gif)
 
-[Online Demo (Inference Model)](https://www.modelscope.cn/studios/gongjy/MiniMind-Reasoning) | [Online Demo (Standard Model)](https://www.modelscope.cn/studios/gongjy/MiniMind) | [Bilibili Introduction](https://www.bilibili.com/video/BV12dHPeqE72/?share_source=copy_web&vd_source=670c2504f88726f8cf4a21ef6147c0e8)
-
+[🔗🍓Reason Model](https://www.modelscope.cn/studios/gongjy/MiniMind-Reasoning) | [🔗🤖Standard Model](https://www.modelscope.cn/studios/gongjy/MiniMind) | [🔗🎞️Video Introduction](https://www.bilibili.com/video/BV12dHPeqE72/?share_source=copy_web&vd_source=670c2504f88726f8cf4a21ef6147c0e8)
 
 <div align="center">
   <table>
@@ -307,8 +306,6 @@ python train_full_sft.py
 > represents full parameter fine-tuning).
 
 
----
-
 <details style="color:rgb(128,128,128)">
 <summary>Note: Training Information</summary>
 
@@ -320,6 +317,8 @@ reinforcement learning, fine-tuning inference, etc.), refer to the detailed expl
 below.
 
 </details>
+
+---
 
 ### 4. Testing Model Performance
 
@@ -517,9 +516,9 @@ Big respect!
 
 MiniMind Training Datasets are available for download from:
 
-- [ModelScope](https://www.modelscope.cn/datasets/gongjy/minimind-dataset/files)
-- [HuggingFace](https://huggingface.co/datasets/jingyaogong)
-  (You don’t need to clone everything, just download the necessary files).
+Dataset ([ModelScope](https://www.modelscope.cn/datasets/gongjy/minimind-dataset/files) | [HuggingFace](https://huggingface.co/datasets/jingyaogong/minimind_dataset/tree/main))
+
+> You don’t need to clone everything, just download the necessary files.
 
 Place the downloaded dataset files in the `./dataset/` directory (✨ required files are marked):
 
@@ -1026,11 +1025,14 @@ For reference, the parameter settings for GPT-3 are shown in the table below:
 > Considering that many people have reported slow speeds with Baidu Cloud, all MiniMind2 models and beyond will be
 > hosted on ModelScope/HuggingFace.
 
-#### Native PyTorch Models
+---
 
-* [MiniMind2 Series (ModelScope)](https://www.modelscope.cn/models/gongjy/MiniMind2-PyTorch)
+#### ① Native PyTorch Models
 
-* [MiniMind-V1 Series (Baidu Cloud)](https://pan.baidu.com/s/1KUfSzEkSXYbCCBj0Pw-9fA?pwd=6666)
+MiniMind2 model
+weights ([ModelScope](https://www.modelscope.cn/models/gongjy/MiniMind2-PyTorch) | [HuggingFace](https://huggingface.co/jingyaogong/MiniMind2-Pytorch))
+
+MiniMind-V1 model weights ([Baidu Pan](https://pan.baidu.com/s/1KUfSzEkSXYbCCBj0Pw-9fA?pwd=6666))
 
 <details style="color:rgb(128,128,128)">
 <summary>Torch File Naming Reference</summary>
@@ -1041,7 +1043,7 @@ For reference, the parameter settings for GPT-3 are shown in the table below:
 | MiniMind2-MoE   | 145M   | `pretrain_640_moe.pth` | `full_sft_640_moe.pth` | `rlhf_640_moe.pth` | -                | -                  |
 | MiniMind2       | 104M   | `pretrain_768.pth`     | `full_sft_768.pth`     | `rlhf_768.pth`     | `reason_768.pth` | `lora_xxx_768.pth` |
 
-| Model Name        | params | pretrain_model         | Single-turn Chat sft               | Multi-turn Chat sft               | rl_model     |
+| Model Name        | params | pretrain_model         | Single-turn Dialogue SFT           | Multi-turn Dialogue SFT           | rl_model     |
 |-------------------|--------|------------------------|------------------------------------|-----------------------------------|--------------|
 | minimind-v1-small | 26M    | `pretrain_512.pth`     | `single_chat/full_sft_512.pth`     | `multi_chat/full_sft_512.pth`     | `rl_512.pth` |
 | minimind-v1-moe   | 4×26M  | `pretrain_512_moe.pth` | `single_chat/full_sft_512_moe.pth` | `multi_chat/full_sft_512_moe.pth` | -            |
@@ -1049,10 +1051,11 @@ For reference, the parameter settings for GPT-3 are shown in the table below:
 
 </details>
 
-#### Transformers Models
+#### ② Transformers Models
 
-* MiniMind
-  Series ([ModelScope](https://www.modelscope.cn/profile/gongjy) | [HuggingFace](https://huggingface.co/collections/jingyaogong/minimind-66caf8d999f5c7fa64f399e5))
+MiniMind
+Series ([ModelScope](https://www.modelscope.cn/collections/MiniMind-b72f4cfeb74b47) | [HuggingFace](https://huggingface.co/collections/jingyaogong/minimind-66caf8d999f5c7fa64f399e5))
+
 
 ---
 
