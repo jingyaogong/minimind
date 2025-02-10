@@ -34,7 +34,8 @@
 * 这不仅是大语言模型的全阶段开源复现，也是一个入门LLM的教程。
 * 希望此项目能为所有人提供一个抛砖引玉的示例，一起感受创造的乐趣！推动更广泛AI社区的进步！
 
-  > 为防止误解，“2小时” 基于NVIDIA 3090硬件设备（单卡）测试，“3块钱” 指GPU服务器租用成本，具体规格详情见下文。
+> 为防止误解，“2小时” 基于NVIDIA 3090硬件设备（单卡）测试，“3块钱”
+> 指GPU服务器租用成本，具体规格详情见下文。
 
 ---
 
@@ -72,7 +73,7 @@
 > [!NOTE]
 > （截至2025-02-07）MiniMind系列已完成多个型号模型的预训练，最小仅需25.8M（0.02B），即可具备流畅对话能力！
 
-<details>
+<details style="color:rgb(128,128,128)">
 <summary>Models List</summary>
 
 | 模型 (大小)                 | 推理占用 (约) | Release    | 
@@ -172,19 +173,29 @@
 
 # 📌 快速开始
 
-<div align="center" style="font-size: 1.5em; font-weight: bold;">
-  <img src="https://huggingface.co/front/assets/huggingface_logo-noborder.svg" alt="Hugging Face Logo" style="vertical-align: middle; height: 30px;" />
-  Hugging Face
+---
 
-[MiniMind (HuggingFace)](https://huggingface.co/collections/jingyaogong/minimind-66caf8d999f5c7fa64f399e5)
-
- <img src="https://g.alicdn.com/sail-web/maas/1.15.0/static/modelscopeIcon.cd89353f.svg" alt="Hugging Face Logo" style="vertical-align: middle; height: 30px;" />
-
-[MiniMind (ModelScope)](https://www.modelscope.cn/profile/gongjy)
-
+<div align="center" style="font-size: 1.5em; font-weight: bold; display: flex; align-items: center;">
+  <a href="https://jingyaogong.github.io/minimind" style="text-decoration: none; display: flex; align-items: center; margin-right: 20px;">
+    <img src="./images/logo2.png" alt="MiniMind Logo" style="vertical-align: middle; height: 30px;" />
+    <span style="margin-left: 10px;color:#0877e5;font-style: italic">MiniMind Series</span>
+  </a>
+  <span style="color: #aaa; font-size: 1.2em; margin: 0 10px;">×</span>
+  &nbsp;
+  <a href="https://huggingface.co/collections/jingyaogong/minimind-66caf8d999f5c7fa64f399e5" style="text-decoration: none; display: flex; align-items: center; margin-right: 20px;">
+    <img src="https://huggingface.co/front/assets/huggingface_logo-noborder.svg" alt="Hugging Face Logo" style="vertical-align: middle; height: 30px;" />
+    <span style="margin-left: 10px;color:#d56100;font-style: italic">Hugging Face</span>
+  </a>
+  <span style="color: #aaa; font-size: 1.2em; margin: 0 10px;">&</span>
+  <a href="https://www.modelscope.cn/profile/gongjy" style="text-decoration: none; display: flex; align-items: center; margin-left: 20px;">
+    <img src="https://g.alicdn.com/sail-web/maas/1.15.0/static/modelscopeIcon.cd89353f.svg" alt="ModelScope Logo" style="vertical-align: middle; height: 30px;" />
+  </a>
 </div>
 
-<details>
+---
+
+
+<details style="color:rgb(128,128,128)">
 <summary>分享本人的软硬件配置（仅供参考）</summary>
 
 * CPU: Intel(R) Core(TM) i9-10980XE CPU @ 3.00GHz
@@ -222,9 +233,8 @@ python eval_model.py --load 1
 
 ### 3.或启动WebUI
 
-> 「注意」可能需要`python>=3.10` 安装 `pip install streamlit`
-
 ```bash
+# 可能需要`python>=3.10` 安装 `pip install streamlit`
 # cd scripts
 streamlit run web_demo.py
 ```
@@ -233,63 +243,88 @@ streamlit run web_demo.py
 
 ### 1.环境准备
 
-  ```bash
-  pip install -r requirements.txt -i https://pypi.tuna.tsinghua.edu.cn/simple
-  ```
+```bash
+pip install -r requirements.txt -i https://pypi.tuna.tsinghua.edu.cn/simple
+```
 
-  <details>
-    <summary>测试Torch是否可用cuda（展开）</summary>
+<details style="color:rgb(128,128,128)">
+<summary>注：提前测试Torch是否可用cuda</summary>
 
-    ```bash
-    import torch
-    print(torch.cuda.is_available())
-    ```
+```bash
+import torch
+print(torch.cuda.is_available())
+```
 
 如果不可用，请自行去[torch_stable](https://download.pytorch.org/whl/torch_stable.html)
 下载whl文件安装。参考[链接](https://blog.csdn.net/weixin_45456738/article/details/141029610?ops_request_misc=&request_id=&biz_id=102&utm_term=%E5%AE%89%E8%A3%85torch&utm_medium=distribute.pc_search_result.none-task-blog-2~all~sobaiduweb~default-2-141029610.nonecase&spm=1018.2226.3001.4187)
 
-  </details>
+</details>
 
 ### 2.数据下载
 
-从下文的[数据集下载链接](#数据集下载)下载需要的数据文件放到`./dataset`目录下
+从下文提供的[数据集下载链接](https://www.modelscope.cn/datasets/gongjy/minimind-dataset/files)
+下载需要的数据文件放到`./dataset`目录下
 
-> 【注】默认推荐下载`pretrain_hq.jsonl` + `sft_mini_512.jsonl`最快速度复现Zero聊天模型。
+<details style="color:rgb(128,128,128)">
+<summary>注：数据集须知</summary>
 
-> 【注】数据文件可自由选择，下文提供了多种搭配方案，可根据自己手头的训练需求和GPU资源进行适当组合。
+默认推荐下载`pretrain_hq.jsonl` + `sft_mini_512.jsonl`最快速度复现Zero聊天模型。
+
+数据文件可自由选择，下文提供了多种搭配方案，可根据自己手头的训练需求和GPU资源进行适当组合。
+
+</details>
 
 ### 3.开始训练
 
-**预训练（学知识）**
+**3.1 预训练（学知识）**
 
-  ```bash
-  python train_pretrain.py
-  ```
+```bash
+python train_pretrain.py
+```
 
-执行预训练，得到 `pretrain_*.pth` 作为预训练的输出权重（其中*为模型的dimension，默认为512）
+<span style="color:rgb(128,128,128)">
+> 执行预训练，得到 `pretrain_*.pth` 作为预训练的输出权重（其中*为模型的dimension，默认为512）
+</span>
 
-**监督微调（学对话方式）**
 
-  ```bash
-  python train_full_sft.py
-  ```
+**3.2 监督微调（学对话方式）**
 
-执行监督微调，得到 `full_sft_*.pth` 作为指令微调的输出权重（其中`full`即为全参数微调）
+```bash
+python train_full_sft.py
+```
 
-> 【注】所有训练过程默认每隔100步保存1次参数到文件`./out/***.pth`（每次会覆盖掉旧权重文件）。
+<span style="color:rgb(128,128,128);">
+> 执行监督微调，得到 `full_sft_*.pth` 作为指令微调的输出权重（其中`full`即为全参数微调）
+</span>
 
-> 【注】简单起见，此处只写明两个阶段训练过程。如需其它训练 (LoRA, 蒸馏, 强化学习, 微调推理等) 可参考下文【实验】小节的详细说明。
+---
+
+
+<details style="color:rgb(128,128,128)">
+<summary>注：训练须知</summary>
+
+所有训练过程默认每隔100步保存1次参数到文件`./out/***.pth`（每次会覆盖掉旧权重文件）。
+
+简单起见，此处只写明两个阶段训练过程。如需其它训练 (LoRA, 蒸馏, 强化学习, 微调推理等) 可参考下文【实验】小节的详细说明。
+
+</details>
 
 ### 4.测试模型效果
 
 确保需要测试的模型`*.pth`文件位于`./out/`目录下。
 也可以直接去[此处](https://www.modelscope.cn/models/gongjy/MiniMind2-PyTorch/files)下载使用我训练的`*.pth`文件。
 
-  ```bash
-  python eval_model.py --model_mode 1 # 默认为0：测试pretrain模型效果，设置为1：测试full_sft模型效果
-  ```
+```bash
+python eval_model.py --model_mode 1 # 默认为0：测试pretrain模型效果，设置为1：测试full_sft模型效果
+```
 
-> 【注】详情查看`eval_model.py`脚本代码即可。model_mode分为 0: 预训练模型，1: SFT-Chat模型，2: RLHF-Chat模型，3: Reason模型
+<details style="color:rgb(128,128,128)">
+<summary>注：测试须知</summary>
+
+如需详情，查看`eval_model.py`脚本代码即可。model_mode分为 0: 预训练模型，1: SFT-Chat模型，2: RLHF-Chat模型，3: Reason模型
+
+</details>
+
 
 ---
 
@@ -302,8 +337,8 @@ streamlit run web_demo.py
 torchrun --nproc_per_node 3 train_xxx.py
 ```
 
-<details>
-<summary>其它（展开）</summary>
+<details style="color:rgb(128,128,128)">
+<summary>注：其它须知</summary>
 
 * 单机N卡启动训练 (DeepSpeed)
   ```bash
@@ -334,8 +369,9 @@ torchrun --nproc_per_node 3 train_xxx.py
 五个独立的token），且生僻词难以覆盖。
 “词典”的选择固然很重要，LLM的输出本质上是SoftMax到词典N个词的多分类问题，然后通过“词典”解码到自然语言。
 因为MiniMind体积需要严格控制，为了避免模型头重脚轻（词嵌入embedding层参数在LLM占比太高），所以词表长度短短益善。
-<details>
-<summary>Tokenizer介绍（展开）</summary>
+
+<details style="color:rgb(128,128,128)">
+<summary>Tokenizer介绍</summary>
 
 第三方强大的开源模型例如Yi、qwen、chatglm、mistral、Llama3的tokenizer词表长度如下：
 
@@ -451,11 +487,9 @@ quality（当然也还不算high，提升数据质量无止尽）。
 > [!NOTE]
 > 2025-02-05后，开源MiniMind最终训练所用的所有数据集，因此无需再自行预处理大规模数据集，避免重复性的数据处理工作。
 
-MiniMind训练数据集
-[ModelScope](https://www.modelscope.cn/datasets/gongjy/minimind-dataset/files)
-|
-[HuggingFace](https://huggingface.co/datasets/jingyaogong)
-（无需全部clone，可单独下载所需的文件）
+MiniMind训练数据集 ([ModelScope](https://www.modelscope.cn/datasets/gongjy/minimind-dataset/files) | [HuggingFace](https://huggingface.co/datasets/jingyaogong))
+
+<span style="color:rgb(128,128,128)">> 无需全部clone，可单独下载所需的文件</span>
 
 将下载的数据集文件放到`./dataset/`目录下（✨为推荐的必须项）
 
@@ -473,8 +507,8 @@ MiniMind训练数据集
 └── tokenizer_train.jsonl (1GB)
 ```
 
-<details>
-  <summary>各数据集简介（展开）</summary>
+<details style="color:rgb(128,128,128)">
+<summary>注：各数据集简介</summary>
 
 * `dpo.jsonl` --RLHF阶段数据集
 * `lora_identity.jsonl` --自我认知数据集（例如：你是谁？我是minimind...），推荐用于lora训练（亦可用于全参SFT，勿被名字局限）
@@ -492,7 +526,8 @@ MiniMind训练数据集
 
 ![dataset](./images/dataset.jpg)
 
-**说明**
+<details style="color:rgb(128,128,128)">
+<summary>说明 & 推荐训练方案</summary>
 
 * MiniMind2 Series均经过共约20GB语料训练，大约4B tokens，即对应上面的数据组合训练结果（开销：💰💰💰💰💰💰💰💰，效果：😊😊😊😊😊😊）
 
@@ -501,6 +536,8 @@ MiniMind训练数据集
 * 推荐具备一定算力资源或更在意效果的朋友可以考虑前者完整复现MiniMind2；仅有单卡GPU或在乎短时间快速复现的朋友强烈推荐后者；
 
 * 【折中方案】亦可选择例如`sft_mini_512.jsonl`、`sft_1024.jsonl`中等规模数据进行自由组合训练（开销：💰💰💰，效果：😊😊😊😊）。
+
+</details>
 
 # 📌 Model Structure
 
@@ -541,7 +578,7 @@ MiniMind的整体结构一致，只是在RoPE计算、推理函数和FFN层的�
 ## Ⅰ 训练开销
 
 - **时间单位**：小时 (h)。
-- **成本单位**：人民币 (￥)；美元 ($)；7￥ ≈ 1$。
+- **成本单位**：人民币 (￥)；7￥ ≈ 1美元。
 - **3090 租卡单价**：≈1.3￥/h（可自行参考实时市价）。
 - **参考标准**：表格仅实测 `pretrain` 和 `sft_mini_512` 两个数据集的训练时间，其它耗时根据数据集大小估算（可能存在些许出入）。
 
@@ -554,28 +591,40 @@ MiniMind的整体结构一致，只是在RoPE计算、推理函数和FFN层的�
 
 ---
 
+<details style="color:rgb(128,128,128)">
+<summary>训练开销总结&预测</summary>
+
+
 > MiniMind2-Small参数
->> `pretrain_hq.jsonl`+`sft_mini_512.jsonl`数据集
+>> `pretrain_hq`+`sft_mini_512`数据集
 <br/>单卡3090 (1 epoch) + 2.1小时 + 花费2.73元人民币
 <br/>即可从0训练出MiniMind-Zero-0.025B模型!!!
 
 > MiniMind2-Small参数
->> `pretrain_hq.jsonl`+`sft_512.jsonl`+`sft_2048.jsonl`+`dpo.jsonl`数据集
+>> `pretrain_hq`+`sft_512`+`sft_2048`+`dpo`数据集
 <br/>单卡3090 (2 epochs) + 大约38.16小时 + 花费49.61元人民币
 <br/>即可从0训练出MiniMind2-Small-0.025B模型!!!
 
 > MiniMind2参数
->> `pretrain_hq.jsonl`+`sft_512.jsonl`+`sft_2048.jsonl`+`dpo.jsonl`数据集
+>> `pretrain_hq`+`sft_512`+`sft_2048`+`dpo`数据集
 <br/>单卡3090 (2 epochs) + 大约122小时 + 花费158.6元人民币
 <br/>即可从0训练出MiniMind2-0.1B模型!!!
 
-✨基于单卡NVIDIA 3090的`MiniMind-Zero`从0训练仅需`2小时` + `3块钱`，实现ChatBot效果！
+</details>
+
+
+
+✨<span style="color:rgb(0,147,64)">
+基于单卡NVIDIA 3090的`MiniMind-Zero`从0训练仅需`2小时` + `3块钱`，实现ChatBot效果！
+</span>
 
 ✨PS：若采用8卡4090训练，总用时甚至可以压缩到10分钟以内！（由于时间更短，花费同样3元左右，与单卡成本相当）
 
 ✨以极低极低的门槛，实现人人可玩的大模型自由！这正是MiniMind系列的诞生初衷！
 
-✨仅价值`3块钱`成本的`MiniMind-Zero`并不只是噱头！Chat测试：
+✨<span style="color:rgb(0,147,64)">
+仅价值`3块钱`成本的`MiniMind-Zero`并不是噱头！Chat测试：
+</span>
 
 ```textmate
 👶: 请介绍一下自己。
@@ -591,9 +640,11 @@ MiniMind的整体结构一致，只是在RoPE计算、推理函数和FFN层的�
 🤖️: 您提到的“Introok's the believeations of theument." 这个名字来源于中国古代的"groty of of the change."
 ```
 
+<span style="color:rgb(0,147,64)">
 极速且初具效果，甚至仍然可以进一步压缩获取更小更优质的训练数据。
-
+</span>
 Zero模型权重保存为 `full_sft_512_zero.pth`（见下文MiniMind模型文件链接），如有兴趣可下载检验此模型效果。
+
 
 ---
 
@@ -612,7 +663,10 @@ torchrun --nproc_per_node 1 train_pretrain.py # 1即为单卡训练，可根据�
 python train_pretrain.py
 ```
 
-训练后的模型权重文件默认每隔`100步`保存为: `pretrain_*.pth`（*为模型具体dimension，每次保存时新文件会覆盖旧文件）。
+<span style="color:rgb(128,128,128)">
+> 训练后的模型权重文件默认每隔`100步`保存为: `pretrain_*.pth`（*
+为模型具体dimension，每次保存时新文件会覆盖旧文件）
+</span>
 
 ### **2. 有监督微调(Supervised Fine-Tuning)**:
 
@@ -630,7 +684,8 @@ torchrun --nproc_per_node 1 train_full_sft.py
 python train_full_sft.py
 ```
 
-训练后的模型权重文件默认每隔`100步`保存为: `full_sft_*.pth`（*为模型具体dimension，每次保存时新文件会覆盖旧文件）。
+<span style="color:rgb(128,128,128)">> 训练后的模型权重文件默认每隔`100步`保存为: `full_sft_*.pth`（*
+为模型具体dimension，每次保存时新文件会覆盖旧文件）</span>
 
 ## Ⅲ 其它训练步骤
 
@@ -643,7 +698,10 @@ python train_full_sft.py
 与PPO(Proximal Policy Optimization)这种需要奖励模型、价值模型的RL算法不同；
 DPO通过推导PPO奖励模型的显式解，把在线奖励模型换成离线数据，Ref模型输出可以提前保存。
 DPO性能几乎不变，只用跑 actor_model 和 ref_model 两个模型，大大节省显存开销和增加训练稳定性。
-> 【注】RLHF训练步骤**并非必须**，此步骤难以提升模型“智力”而通常仅用于提升模型的“礼貌”，有利（符合偏好、减少有害内容）也有弊（样本收集昂贵、反馈偏差、多样性损失）。
+
+<span style="color:rgb(128,128,128)">
+注：RLHF训练步骤**并非必须**，此步骤难以提升模型“智力”而通常仅用于提升模型的“礼貌”，有利（符合偏好、减少有害内容）也有弊（样本收集昂贵、反馈偏差、多样性损失）。
+</span>
 
 ```bash
 torchrun --nproc_per_node 1 train_dpo.py
@@ -651,7 +709,8 @@ torchrun --nproc_per_node 1 train_dpo.py
 python train_dpo.py
 ```
 
-训练后的模型权重文件默认每隔`100步`保存为: `rlhf_*.pth`（*为模型具体dimension，每次保存时新文件会覆盖旧文件）。
+<span style="color:rgb(128,128,128)">> 训练后的模型权重文件默认每隔`100步`保存为: `rlhf_*.pth`（*
+为模型具体dimension，每次保存时新文件会覆盖旧文件）</span>
 
 ### **4. 知识蒸馏(Knowledge Distillation, KD)**
 
@@ -678,7 +737,8 @@ torchrun --nproc_per_node 1 train_full_sft.py
 python train_full_sft.py
 ```
 
-训练后的模型权重文件默认每隔`100步`同样保存为: `full_sft_*.pth`（*为模型具体dimension，每次保存时新文件会覆盖旧文件）。
+<span style="color:rgb(128,128,128)">> 训练后的模型权重文件默认每隔`100步`同样保存为: `full_sft_*.pth`（*
+为模型具体dimension，每次保存时新文件会覆盖旧文件）</span>
 
 此处应当着重介绍MiniMind实现的白盒蒸馏代码`train_distillation.py`，由于MiniMind同系列本身并不存在强大的教师模型，因此白盒蒸馏代码仅作为学习参考。
 
@@ -701,7 +761,10 @@ torchrun --nproc_per_node 1 train_lora.py
 python train_lora.py
 ```
 
-训练后的模型权重文件默认每隔`100步`保存为: `lora_xxx_*.pth`（*为模型具体dimension，每次保存时新文件会覆盖旧文件）。
+<span style="color:rgb(128,128,128)">
+> 训练后的模型权重文件默认每隔`100步`保存为: `lora_xxx_*.pth`（*
+为模型具体dimension，每次保存时新文件会覆盖旧文件）
+</span>
 
 非常多的人困惑，如何使模型学会自己私有领域的知识？如何准备数据集？如何迁移通用领域模型打造垂域模型？
 这里举几个例子，对于通用模型，医学领域知识欠缺，可以尝试在原有模型基础上加入领域知识，以获得更好的性能。
@@ -801,7 +864,8 @@ torchrun --nproc_per_node 1 train_distill_reason.py
 python train_distill_reason.py
 ```
 
-训练后的模型权重文件默认每隔`100步`保存为: `reason_*.pth`（*为模型具体dimension，每次保存时新文件会覆盖旧文件）。
+<span style="color:rgb(128,128,128)">> 训练后的模型权重文件默认每隔`100步`保存为: `reason_*.pth`（*
+为模型具体dimension，每次保存时新文件会覆盖旧文件）</span>
 
 测试一下：
 
@@ -858,16 +922,20 @@ MobileLLM提出架构的深度比宽度更重要，「深而窄」的「瘦长�
 
 ## Ⅴ 训练结果
 
-> `MiniMind2` 模型训练损失走势（由于数据集在训练后又更新清洗多次，因此Loss仅供参考）
+<span style="color:rgb(128,128,128)"> 
+MiniMind2 模型训练损失走势（由于数据集在训练后又更新清洗多次，因此Loss仅供参考）
+</span>
 
 | models          | pretrain (length-512)                              | sft (length-512)                                   |
 |-----------------|----------------------------------------------------|----------------------------------------------------|
 | MiniMind2-Small | <img src="./images/pre_512_loss.png" width="100%"> | <img src="./images/sft_512_loss.png" width="100%"> |
 | MiniMind2       | <img src="./images/pre_768_loss.png" width="100%"> | <img src="./images/sft_768_loss.png" width="100%"> |
 
-### 【训练完成】模型CheckPoint合集
+### 训练完成-模型合集
 
+<span style="color:rgb(128,128,128)">
 > 考虑到多人反应百度网盘速度慢，MiniMind2及以后全部使用ModelScope/HuggingFace托管。
+</span>
 
 #### PyTorch原生模型
 
@@ -875,17 +943,12 @@ MobileLLM提出架构的深度比宽度更重要，「深而窄」的「瘦长�
 
 * [MiniMind-V1系列 (百度网盘)](https://pan.baidu.com/s/1KUfSzEkSXYbCCBj0Pw-9fA?pwd=6666)
 
-#### Transformers模型
-
-* MiniMind系列 [(ModelScope)](https://www.modelscope.cn/profile/gongjy)
-  | [HuggingFace](https://huggingface.co/collections/jingyaogong/minimind-66caf8d999f5c7fa64f399e5)
-
-<details>
-<summary>Torch文件命名对照（展开）</summary>
+<details style="color:rgb(128,128,128)">
+<summary>Torch文件命名对照</summary>
 
 | Model Name      | params | pretrain_model         | sft_model              | rl_model           | reason_model     | lora_model         |
 |-----------------|--------|------------------------|------------------------|--------------------|------------------|--------------------|
-| MiniMind2-small | 26M    | `pretrain_512.pth`     | `full_sft_512.pth`     | `rlhf_512.pth`     | -                | `lora_xxx_512.pth` |
+| MiniMind2-small | 26M    | `pretrain_512.pth`     | `full_sft_512.pth`     | `rlhf_512.pth`     | `reason_512.pth` | `lora_xxx_512.pth` |
 | MiniMind2-MoE   | 145M   | `pretrain_640_moe.pth` | `full_sft_640_moe.pth` | `rlhf_640_moe.pth` | -                | -                  |
 | MiniMind2       | 104M   | `pretrain_768.pth`     | `full_sft_768.pth`     | `rlhf_768.pth`     | `reason_768.pth` | `lora_xxx_768.pth` |
 
@@ -897,6 +960,10 @@ MobileLLM提出架构的深度比宽度更重要，「深而窄」的「瘦长�
 
 </details>
 
+#### Transformers模型
+
+* MiniMind系列 ([ModelScope](https://www.modelscope.cn/profile/gongjy)
+  | [HuggingFace](https://huggingface.co/collections/jingyaogong/minimind-66caf8d999f5c7fa64f399e5))
 
 ---
 
@@ -904,13 +971,14 @@ MobileLLM提出架构的深度比宽度更重要，「深而窄」的「瘦长�
 
 ## Ⅰ RLHF对比SFT篇
 
-> [!NOTE]
-> 测试基于「full_sft」和「rlhf」的`MiniMind2系列`模型对比，测试随机种子固定为`42`
+测试基于`full_sft`和`rlhf`的`MiniMind2系列`模型对比，测试随机种子均固定
 
-<details>
-  <summary>问答实测（展开）</summary>
+<details style="color:rgb(128,128,128)">
+<summary>问答实测</summary>
 
-[A0]: full_sft_640, [A1]: rlhf_640
+[A0] MiniMind2：full_sft_640
+
+[A1] MiniMind2：rlhf_640
 
   ```text
   [Q]: 你叫什么名字？
@@ -942,8 +1010,10 @@ DPO和在线PPO的区别在于reject和chosen都是离线准备的，和minimind
 
 ## Ⅱ 主观样例测评
 
-> [!NOTE]
-> 以下测试于2025-02-09完成，此日期后发布的新模型，无特殊需要时将不加入测试。
+<span style="color:rgb(128,128,128)">
+🏃以下测试于2025-02-09完成，此日期后发布的新模型，无特殊需要时将不加入测试。
+</span>
+
 
 [A] [MiniMind2 (0.1B)](https://www.modelscope.cn/models/gongjy/MiniMind2-PyTorch)<br/>
 [B] [MiniMind2-MoE (0.15B)](https://www.modelscope.cn/models/gongjy/MiniMind2-PyTorch)<br/>
@@ -1032,13 +1102,17 @@ DPO和在线PPO的区别在于reject和chosen都是离线准备的，和minimind
 [H]: 我是一个参数很少的AI模型🥺，知识库较少，无法直接回答您的问题，换个问题试试吧👋
 ```
 
-> [!NOTE]
-> 🙋‍♂️直接把上述模型的回答丢给DeepSeek-R1，让它帮忙打个分：
+---
+
+<span style="color:rgb(128,128,128)">
+🙋‍直接把以上所有问题和模型的回答丢给DeepSeek-R1，让它帮忙点评和排名打分：
+</span>
 
 ---
 
-<details>
-  <summary>点评（展开）</summary>
+
+<details style="color:rgb(128,128,128)">
+<summary>具体点评</summary>
 
 ### 评分标准：
 
@@ -1116,11 +1190,16 @@ DPO和在线PPO的区别在于reject和chosen都是离线准备的，和minimind
 
 ### 👉主观效果总结
 
-> 🙋‍♂️个人主观评价与DeepSeek-R1相符
+<span style="color:rgb(229,111,8)">
+个人主观评价与DeepSeek-R1基本相符，其中：
+</span>
 
 * MiniMind系列的排序非常符合直觉，参数越大+训练数据越充分评分越高，幻觉和错误都会比小模型肉眼可见的好。
+
 * H模型的回答肉眼看起来是不错的，尽管存在些许幻觉瞎编的情况。
+
 * G模型可能训练数据不够完备，给出的权重经过测试效果不佳。
+
 * 再复诵一遍经久不衰的Scaling Law: 参数越大，训练数据越多模型的性能越强。
 
 ## Ⅲ Objective Benchmark
@@ -1130,8 +1209,8 @@ DPO和在线PPO的区别在于reject和chosen都是离线准备的，和minimind
 测试集选择C-Eval、CMMLU、A-CLUE、TMMLU+这几个纯中文语言榜单。
 
 
-<details>
-<summary>测评框架（展开）</summary>
+<details style="color:rgb(128,128,128)">
+<summary>测评框架</summary>
 
 测评框架选择[lm-evaluation](https://github.com/EleutherAI/lm-evaluation-harness)，
 安装后启动测试非常方便：

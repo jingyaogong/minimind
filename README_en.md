@@ -58,35 +58,28 @@
 
 # 📌 Introduction
 
-The emergence of Large Language Models (LLMs) has sparked unprecedented global attention on AI.  
-Whether it's ChatGPT, DeepSeek, or Qwen, their stunning performance leaves people in awe.  
-However, the massive scale of hundreds of billions of parameters makes it not only difficult to train them on personal
-devices, but also almost impossible to deploy them.  
-Opening the "black box" of large models and exploring their inner workings is exhilarating!  
-Sadly, 99% of explorations can only stop at fine-tuning existing large models with techniques like LoRA, learning a few
-new commands or tasks.  
-It's like teaching Newton how to use a 21st-century smartphone—though interesting, it completely deviates from the
-original goal of understanding the essence of physics.  
-Meanwhile, third-party large model frameworks and toolkits, such as transformers+trl, almost only expose highly abstract
-interfaces.  
-With just 10 lines of code, you can complete the entire training process of "loading model + loading dataset +
-inference + reinforcement learning".  
-While this efficient encapsulation is convenient, it's like a high-speed spaceship, isolating us from the underlying
-implementation and hindering our opportunity to dive deep into the core code of LLMs.  
-However, "building a plane with Legos is far more exciting than flying first-class!"  
-What's worse, the internet is flooded with paid courses and marketing accounts, selling AI tutorials with flawed and
-half-understood content.  
-Therefore, the goal of this project is to lower the learning threshold for LLMs, allowing everyone to start by
-understanding each line of code,  
-and to train a very small language model from scratch, not just performing **inference**!  
-With server costs of less than 3 RMB, you can experience the entire process of building a language model from 0 to 1.  
-Let's enjoy the fun of creation together!
+The emergence of Large Language Models (LLMs) has sparked unprecedented global attention on AI. Whether it's ChatGPT,
+DeepSeek, or Qwen, their stunning performance leaves people in awe. However, the massive scale of hundreds of billions
+of parameters makes it not only difficult to train them on personal devices, but also almost impossible to deploy them.
+Opening the "black box" of large models and exploring their inner workings is exhilarating! Sadly, 99% of explorations
+can only stop at fine-tuning existing large models with techniques like LoRA, learning a few new commands or tasks. It's
+like teaching Newton how to use a 21st-century smartphone—though interesting, it completely deviates from the original
+goal of understanding the essence of physics. Meanwhile, third-party large model frameworks and toolkits, such as
+transformers+trl, almost only expose highly abstract interfaces. With just 10 lines of code, you can complete the entire
+training process of "loading model + loading dataset + inference + reinforcement learning". While this efficient
+encapsulation is convenient, it's like a high-speed spaceship, isolating us from the underlying implementation and
+hindering our opportunity to dive deep into the core code of LLMs. However, "building a plane with Legos is far more
+exciting than flying first-class!" What's worse, the internet is flooded with paid courses and marketing accounts,
+selling AI tutorials with flawed and half-understood content. Therefore, the goal of this project is to lower the
+learning threshold for LLMs, allowing everyone to start by understanding each line of code, and to train a very small
+language model from scratch, not just performing **inference**! With server costs of less than 3 RMB, you can experience
+the entire process of building a language model from 0 to 1. Let's enjoy the fun of creation together!
 
 > [!NOTE]  
 > (As of 2025-02-07) The MiniMind series has completed pretraining for multiple models, with the smallest one being only
 > 25.8M (0.02B) and capable of smooth conversation!
 
-<details>
+<details style="color:rgb(128,128,128)">
 <summary>Models List</summary>
 
 | Model (Size)            | Inference Usage (Approx.) | Release    | 
@@ -120,7 +113,7 @@ Let's enjoy the fun of creation together!
 
 We hope this open-source project can help LLM beginners quickly get started!
 
-### 👉**Changelog**
+### 👉**Update log**
 
 <details close> 
 <summary> <b>2025-02-09 (newest 🎉🎉🎉)</b> </summary>
@@ -191,19 +184,28 @@ We hope this open-source project can help LLM beginners quickly get started!
 
 # 📌 Quick Start
 
-<div align="center" style="font-size: 1.5em; font-weight: bold;">
-  <img src="https://huggingface.co/front/assets/huggingface_logo-noborder.svg" alt="Hugging Face Logo" style="vertical-align: middle; height: 30px;" />
-  Hugging Face
+---
 
-[MiniMind (HuggingFace)](https://huggingface.co/collections/jingyaogong/minimind-66caf8d999f5c7fa64f399e5)
-
- <img src="https://g.alicdn.com/sail-web/maas/1.15.0/static/modelscopeIcon.cd89353f.svg" alt="Hugging Face Logo" style="vertical-align: middle; height: 30px;" />
-
-[MiniMind (ModelScope)](https://www.modelscope.cn/profile/gongjy)
-
+<div align="center" style="font-size: 1.5em; font-weight: bold; display: flex; align-items: center;">
+  <a href="https://jingyaogong.github.io/minimind" style="text-decoration: none; display: flex; align-items: center; margin-right: 20px;">
+    <img src="./images/logo2.png" alt="MiniMind Logo" style="vertical-align: middle; height: 30px;" />
+    <span style="margin-left: 10px;color:#0877e5;font-style: italic">MiniMind Series</span>
+  </a>
+  <span style="color: #aaa; font-size: 1.2em; margin: 0 10px;">×</span>
+  &nbsp;
+  <a href="https://huggingface.co/collections/jingyaogong/minimind-66caf8d999f5c7fa64f399e5" style="text-decoration: none; display: flex; align-items: center; margin-right: 20px;">
+    <img src="https://huggingface.co/front/assets/huggingface_logo-noborder.svg" alt="Hugging Face Logo" style="vertical-align: middle; height: 30px;" />
+    <span style="margin-left: 10px;color:#d56100;font-style: italic">Hugging Face</span>
+  </a>
+  <span style="color: #aaa; font-size: 1.2em; margin: 0 10px;">&</span>
+  <a href="https://www.modelscope.cn/profile/gongjy" style="text-decoration: none; display: flex; align-items: center; margin-left: 20px;">
+    <img src="https://g.alicdn.com/sail-web/maas/1.15.0/static/modelscopeIcon.cd89353f.svg" alt="ModelScope Logo" style="vertical-align: middle; height: 30px;" />
+  </a>
 </div>
 
-<details>
+---
+
+<details style="color:rgb(128,128,128)">
 <summary>Sharing My Hardware and Software Configuration (For Reference Only)</summary>
 
 * CPU: Intel(R) Core(TM) i9-10980XE CPU @ 3.00GHz
@@ -241,84 +243,105 @@ python eval_model.py --load 1
 
 ### 3. Or Start WebUI
 
-> **Note**: You may need `python>=3.10` and install `pip install streamlit`.
-
 ```bash
+# You may need `python>=3.10` and install `pip install streamlit`.
 # cd scripts
 streamlit run web_demo.py
 ```
 
-## Ⅱ Train From Scratch
+## Ⅱ Training from Scratch
 
 ### 1. Environment Setup
 
-  ```bash
-  pip install -r requirements.txt -i https://pypi.tuna.tsinghua.edu.cn/simple
-  ```
+```bash
+pip install -r requirements.txt -i https://pypi.tuna.tsinghua.edu.cn/simple
+```
 
-  <details>
-    <summary>Test if Torch Can Use CUDA (Expand)</summary>
+<details style="color:rgb(128,128,128)">
+<summary>Note: Test if Torch can use CUDA</summary>
 
-    ```bash
-    import torch
-    print(torch.cuda.is_available())
-    ```
+```bash
+import torch
+print(torch.cuda.is_available())
+```
 
-If CUDA is unavailable, please manually download the `.whl` file
-from [torch_stable](https://download.pytorch.org/whl/torch_stable.html) and install it. See
-the [link](https://blog.csdn.net/weixin_45456738/article/details/141029610) for instructions.
+If CUDA is not available, please download the `.whl` file
+from [torch_stable](https://download.pytorch.org/whl/torch_stable.html) and install it. Refer to
+this [link](https://blog.csdn.net/weixin_45456738/article/details/141029610?ops_request_misc=&request_id=&biz_id=102&utm_term=%E5%AE%89%E8%A3%85torch&utm_medium=distribute.pc_search_result.none-task-blog-2~all~sobaiduweb~default-2-141029610.nonecase&spm=1018.2226.3001.4187)
+for guidance.
 
-  </details>
+</details>
 
 ### 2. Data Download
 
-Download the necessary data files from the [Dataset Download Link](#数据集下载) and place them in the `./dataset`
-directory.
+Download the required data files from
+the [dataset download link](https://www.modelscope.cn/datasets/gongjy/minimind-dataset/files) and place them in
+the `./dataset` directory.
 
-> **Note**: The recommended fastest way to replicate the Zero Chat model is by
-> downloading `pretrain_hq.jsonl` + `sft_mini_512.jsonl`.
+<details style="color:rgb(128,128,128)">
+<summary>Note: Dataset Information</summary>
 
-> **Note**: You can freely choose from multiple dataset options below based on your training needs and GPU resources.
+By default, it is recommended to download `pretrain_hq.jsonl` + `sft_mini_512.jsonl` for the fastest Zero-chat model
+reproduction.
+
+You can freely choose data files. Various combinations are provided below, and you can select according to your training
+needs and GPU resources.
+
+</details>
 
 ### 3. Start Training
 
-**Pretraining (Learning Knowledge)**
+**3.1 Pretraining (Learning Knowledge)**
 
-  ```bash
-  python train_pretrain.py
-  ```
+```bash
+python train_pretrain.py
+```
 
-Run pretraining to get `pretrain_*.pth` as the output weight file (where * represents the model dimension, default is
-512).
+<span style="color:rgb(128,128,128)">
+> Execute pretraining to get `pretrain_*.pth` as the output weights for pretraining (where * represents the model dimension, default is 512).
+</span>
 
-**Supervised Fine-tuning (Learning Dialogue Style)**
+**3.2 Supervised Fine-Tuning (Learning Dialogue Style)**
 
-  ```bash
-  python train_full_sft.py
-  ```
+```bash
+python train_full_sft.py
+```
 
-Run supervised fine-tuning to get `full_sft_*.pth` as the output weight file (where `full` represents full parameter
-fine-tuning).
+<span style="color:rgb(128,128,128);">
+> Execute supervised fine-tuning to get `full_sft_*.pth` as the output weights for instruction fine-tuning (where `full` represents full parameter fine-tuning).
+</span>
 
-> **Note**: During training, every 100 steps, the model parameters will be saved to the `./out/***.pth` file (each time
-> overwriting the old weight file).
+---
 
-> **Note**: For simplicity, only two stages of training are mentioned here. For other training processes (LoRA,
-> distillation, reinforcement learning, fine-tuning inference, etc.), please refer to the **Experiments** section for
-> detailed instructions.
+<details style="color:rgb(128,128,128)">
+<summary>Note: Training Information</summary>
 
-### 4. Test the Model
+By default, during training, the model parameters are saved every 100 steps to `./out/***.pth` (each time overwriting
+the old weight file).
 
-Ensure the model `*.pth` file is in the `./out/` directory.
-You can also directly download my pre-trained `*.pth` files
+For simplicity, only the two training stages are listed here. For other training methods (LoRA, distillation,
+reinforcement learning, fine-tuning inference, etc.), refer to the detailed explanation in the [Experiments] section
+below.
+
+</details>
+
+### 4. Testing Model Performance
+
+Ensure that the model `*.pth` file you want to test is located in the `./out/` directory.
+Alternatively, you can download and use the `*.pth` files I trained
 from [here](https://www.modelscope.cn/models/gongjy/MiniMind2-PyTorch/files).
 
-  ```bash
-  python eval_model.py --model_mode 1 # Default is 0: test pretrain model, set to 1: test full_sft model
-  ```
+```bash
+python eval_model.py --model_mode 1 # Default is 0: Test pretrain model, set to 1: Test full_sft model
+```
 
-> **Note**: For more details, refer to the `eval_model.py` script. `model_mode` options are: 0: Pretrained Model, 1:
-> SFT-Chat Model, 2: RLHF-Chat Model, 3: Reasoning Model.
+<details style="color:rgb(128,128,128)">
+<summary>Note: Testing Information</summary>
+
+For more details, you can check the `eval_model.py` script code. The model_mode options are 0: Pretraining model, 1:
+SFT-Chat model, 2: RLHF-Chat model, 3: Reason model.
+
+</details>
 
 ---
 
@@ -332,8 +355,8 @@ Start training with N GPUs on a single machine (DDP, supports multi-node, multi-
 torchrun --nproc_per_node 3 train_xxx.py
 ```
 
-<details>
-<summary>Others (Expand)</summary>
+<details style="color:rgb(128,128,128)">
+<summary>Note: Others</summary>
 
 * Start training with N GPUs on a single machine (DeepSpeed):
   ```bash
@@ -373,8 +396,8 @@ vocabulary, with the model decoding the final output into natural language. Sinc
 strictly controlled, the vocabulary length should be kept short to avoid the embedding layer dominating the model's
 overall parameters. Thus, a smaller vocabulary size is beneficial.
 
-<details>
-<summary>Tokenizer Details (Expand)</summary>
+<details style="color:rgb(128,128,128)">
+<summary>Tokenizer Details</summary>
 
 Here are the vocabulary sizes of several popular open-source models:
 
@@ -518,8 +541,8 @@ Place the downloaded dataset files in the `./dataset/` directory (✨ required f
 └── tokenizer_train.jsonl (1GB)
 ```
 
-<details>
-  <summary>Dataset Descriptions (Expand)</summary>
+<details style="color:rgb(128,128,128)">
+  <summary>Dataset Descriptions</summary>
 
 * `dpo.jsonl` -- RLHF dataset
 * `lora_identity.jsonl` -- Self-identity dataset (e.g., "Who are you? I'm MiniMind..."), recommended for LoRA training (
@@ -538,21 +561,24 @@ Place the downloaded dataset files in the `./dataset/` directory (✨ required f
 
 ![dataset](./images/dataset.jpg)
 
-**Explanation**
+<details style="color:rgb(128,128,128)">
+<summary>Explanation & Recommended Training Plans</summary>
 
-* MiniMind2 Series has been trained on approximately 20GB of corpus, around 4B tokens, corresponding to the above data
-  combination training results (Cost: 💰💰💰💰💰💰💰💰, Effect: 😊😊😊😊😊😊)
+* The MiniMind2 Series has been trained on approximately 20GB of corpus, or about 4B tokens, corresponding to the data
+  combination results above (Cost: 💰💰💰💰💰💰💰💰, Effect: 😊😊😊😊😊😊).
 
-* For the fastest way to implement the Zero model from scratch, it is recommended to use the data combination
-  of `pretrain_hq.jsonl` + `sft_mini_512.jsonl`. Specific costs and effects can be seen in the table below (Cost: 💰,
-  Effect: 😊😊)
+* For the fastest Zero-model implementation from scratch, it is recommended to use the data combination
+  of `pretrain_hq.jsonl` + `sft_mini_512.jsonl`. The specific costs and effects can be seen in the table below (Cost:
+  💰, Effect: 😊😊).
 
-* For those with sufficient computational resources or who care more about performance, it is recommended to fully
-  reproduce MiniMind2. If you only have a single GPU card or need to reproduce quickly in a short time, the latter is
-  strongly recommended.
+* For those with sufficient computational resources or more focus on results, it is advisable to fully reproduce
+  MiniMind2 with the first option; if you only have a single GPU or prefer a quick reproduction within a short time, the
+  second option is strongly recommended.
 
-* [Compromise solution] You can also choose medium-sized data such as `sft_mini_512.jsonl` and `sft_1024.jsonl` for
-  flexible combinations (Cost: 💰💰💰, Effect: 😊😊😊😊).
+* [Compromise Plan] You can also freely combine medium-sized data like `sft_mini_512.jsonl`, `sft_1024.jsonl` for
+  training (Cost: 💰💰💰, Effect: 😊😊😊😊).
+
+</details>
 
 # 📌 Model Structure
 
@@ -599,7 +625,7 @@ Reference model parameter versions are shown in the table below:
 ## Ⅰ Training Cost
 
 - **Time Unit**: Hours (h).
-- **Cost Unit**: RMB (￥); USD ($); 7￥ ≈ 1$.
+- **Cost Unit**: RMB (￥); 7￥ ≈ 1 USD.
 - **3090 Rental Unit Price**: ≈ 1.3￥/h (subject to real-time market rates).
 - **Reference Standard**: The table only shows the actual training time for the `pretrain` and `sft_mini_512` datasets.
   Other times are estimated based on dataset size (there may be some discrepancies).
@@ -613,50 +639,60 @@ Reference model parameter versions are shown in the table below:
 
 ---
 
-> MiniMind2-Small Parameters
->> `pretrain_hq.jsonl` + `sft_mini_512.jsonl` dataset  
-<br/>Single card 3090 (1 epoch) + 2.1 hours + cost 2.73 RMB  
-<br/>Can train the MiniMind-Zero-0.025B model from scratch!!!
+<details style="color:rgb(128,128,128)">
+<summary>Training Cost Summary & Prediction</summary>
 
 > MiniMind2-Small Parameters
->> `pretrain_hq.jsonl` + `sft_512.jsonl` + `sft_2048.jsonl` + `dpo.jsonl` dataset  
-<br/>Single card 3090 (2 epochs) + approx. 38.16 hours + cost 49.61 RMB  
-<br/>Can train the MiniMind2-Small-0.025B model from scratch!!!
+>> `pretrain_hq` + `sft_mini_512` dataset  
+<br/>Single 3090 GPU (1 epoch) + 2.1 hours + Cost: 2.73 RMB  
+<br/>You can train the MiniMind-Zero-0.025B model from scratch!!!
+
+> MiniMind2-Small Parameters
+>> `pretrain_hq` + `sft_512` + `sft_2048` + `dpo` dataset  
+<br/>Single 3090 GPU (2 epochs) + approximately 38.16 hours + Cost: 49.61 RMB  
+<br/>You can train the MiniMind2-Small-0.025B model from scratch!!!
 
 > MiniMind2 Parameters
->> `pretrain_hq.jsonl` + `sft_512.jsonl` + `sft_2048.jsonl` + `dpo.jsonl` dataset  
-<br/>Single card 3090 (2 epochs) + approx. 122 hours + cost 158.6 RMB  
-<br/>Can train the MiniMind2-0.1B model from scratch!!!
+>> `pretrain_hq` + `sft_512` + `sft_2048` + `dpo` dataset  
+<br/>Single 3090 GPU (2 epochs) + approximately 122 hours + Cost: 158.6 RMB  
+<br/>You can train the MiniMind2-0.1B model from scratch!!!
 
-✨With a single card NVIDIA 3090, training `MiniMind-Zero` from scratch takes only `2 hours` + `3 RMB`, achieving ChatBot
-functionality!
+</details>
 
-✨PS: If 8 cards of 4090 are used, total training time can be compressed to under 10 minutes! (Due to the shorter time,
-the cost remains around 3 RMB, similar to the single card cost)
 
-✨Achieving large model accessibility with an extremely low entry barrier! This is the core intention behind the creation
-of the MiniMind series!
+✨<span style="color:rgb(0,147,64)">
+With a single NVIDIA 3090 GPU, you can train `MiniMind-Zero` from scratch in just `2 hours` and for a cost of
+only `3 RMB`, achieving ChatBot functionality!
+</span>
 
-✨The `MiniMind-Zero`, costing only `3 RMB`, is not just a gimmick! Chat test:
+✨PS: If training on 8 GPUs with 4090s, the total time can be compressed to under 10 minutes! (Despite the shorter time,
+the cost is still around 3 RMB, which is comparable to the single GPU cost.)
+
+✨This enables ultra-low barriers to entry, making it possible for everyone to experiment with large models! This is the
+original purpose behind the creation of the MiniMind series!
+
+✨<span style="color:rgb(0,147,64)">
+The `MiniMind-Zero` model, which costs only `3 RMB`, is not a gimmick! Chat test results:
+</span>
 
 ```textmate
-👶: Introduce yourself.
-🤖️: As an AI, I don’t have a real life or self-awareness, so I don’t have a life of my own. I was designed to help users answer questions, provide information, engage in conversation, etc. My design and functions are based on computer science, machine learning, AI technologies, and algorithms, implemented through programming and algorithms.
+👶: Please introduce yourself.
+🤖️: As an artificial intelligence, I don't have a real life or self-awareness, so I don't have my own life. I am designed to help users answer questions, provide information, engage in conversations, etc. My design and functionality are built using computer science, machine learning, artificial intelligence technologies, and algorithms, which I implement through programming and algorithms.
 
-👶: Recommend some famous dishes from Hangzhou.
-🤖️: Hangzhou has many delicious local dishes, such as chicken skewers, eel heads, boiled fish, tofu pudding, etc. These dishes are very tasty and have unique flavors and textures, definitely worth trying.
+👶: Recommend some local specialties from Hangzhou.
+🤖️: Hangzhou has many delicious local specialties, such as chicken skewers, eel heads, water-boiled fish, tofu pudding, etc. These foods are all very tasty, with unique flavors and textures, definitely worth trying.
 
-👶: Explain the concept of "large language models."
-🤖️: A large language model is an AI technology that uses a large amount of text data to train the model, continuously optimizing it through iterations. Its goal is to generate text based on input data that meets specific needs. This text can be on any topic of interest.
+👶: Please explain the concept of "large language models".
+🤖️: A large language model is an AI technology that uses large amounts of text data to train the model, and then continuously optimizes the model through iterations. Its goal is to generate text based on the input data to meet specific needs, and the text can be about any topic you are interested in.
 
 👶: Introduce the history of the United States, please.
-🤖️: The term "Introok's the believeations of theument." originates from the ancient Chinese "groty of of the change."
+🤖️: You mentioned "Introok's the believeations of theument." This name originates from the ancient Chinese "groty of of the change."
 ```
 
-Fast and effective, it can even be further optimized to reduce and improve training data quality.
-
-Zero model weights are saved as `full_sft_512_zero.pth` (see the MiniMind model file links below), feel free to download
-and test this model’s performance.
+<span style="color:rgb(0,147,64)">
+Fast and effective, it is still possible to further compress the training process by obtaining smaller and higher-quality datasets.
+</span>
+The Zero model weights are saved as `full_sft_512_zero.pth` (see the MiniMind model file link below). Feel free to download and test the model's performance.
 
 ## Ⅱ Main Training Steps
 
@@ -677,8 +713,10 @@ torchrun --nproc_per_node 1 train_pretrain.py # 1 represents single-card trainin
 python train_pretrain.py
 ```
 
-The trained model weights are saved every `100 steps` by default as: `pretrain_*.pth` (the * represents the specific
+<span style="color:rgb(128,128,128)">
+> The trained model weights are saved every `100 steps` by default as: `pretrain_*.pth` (the * represents the specific
 model dimension, and each new save will overwrite the previous one).
+</span>
 
 ### **2. Supervised Fine-Tuning (SFT)**:
 
@@ -703,8 +741,10 @@ torchrun --nproc_per_node 1 train_full_sft.py
 python train_full_sft.py
 ```
 
-The trained model weights are saved every `100 steps` by default as: `full_sft_*.pth` (the * represents the specific
+<span style="color:rgb(128,128,128)">
+> The trained model weights are saved every `100 steps` by default as: `full_sft_*.pth` (the * represents the specific
 model dimension, and each new save will overwrite the previous one).
+</span>
 
 ## Ⅲ Other Training Steps
 
@@ -732,8 +772,10 @@ torchrun --nproc_per_node 1 train_dpo.py
 python train_dpo.py
 ```
 
-The trained model weights are saved every `100 steps` by default as: `rlhf_*.pth` (the * represents the specific model
+<span style="color:rgb(128,128,128)">
+> The trained model weights are saved every `100 steps` by default as: `rlhf_*.pth` (the * represents the specific model
 dimension, and each new save will overwrite the previous one).
+</span>
 
 ### **4. Knowledge Distillation (KD)**
 
@@ -768,8 +810,10 @@ torchrun --nproc_per_node 1 train_full_sft.py
 python train_full_sft.py
 ```
 
-The trained model weights are saved every `100 steps` by default as: `full_sft_*.pth` (the * represents the specific
+<span style="color:rgb(128,128,128)">
+> The trained model weights are saved every `100 steps` by default as: `full_sft_*.pth` (the * represents the specific
 model dimension, and each new save will overwrite the previous one).
+</span>
 
 This section emphasizes MiniMind’s white-box distillation code `train_distillation.py`. Since MiniMind doesn’t have a
 powerful teacher model within the same series, the white-box distillation code serves as a learning reference.
@@ -796,8 +840,10 @@ torchrun --nproc_per_node 1 train_lora.py
 python train_lora.py
 ```
 
-The trained model weights are saved every `100 steps` by default as: `lora_xxx_*.pth` (the * represents the specific
+<span style="color:rgb(128,128,128)">
+> The trained model weights are saved every `100 steps` by default as: `lora_xxx_*.pth` (the * represents the specific
 model dimension, and each new save will overwrite the previous one).
+</span>
 
 Many people are puzzled: how can a model learn private domain knowledge? How should datasets be prepared? How to
 transfer general models into specialized domain models?  
@@ -918,8 +964,10 @@ torchrun --nproc_per_node 1 train_distill_reason.py
 python train_distill_reason.py
 ```
 
-The trained model weights are saved every `100 steps` by default as: `reason_*.pth` (* being the specific dimension of
+<span style="color:rgb(128,128,128)">
+> The trained model weights are saved every `100 steps` by default as: `reason_*.pth` (* being the specific dimension of
 the model; each time a new file is saved, it will overwrite the old one).
+</span>
 
 Test it:
 
@@ -993,31 +1041,28 @@ For reference, the parameter settings for GPT-3 are shown in the table below:
 | MiniMind2-Small | <img src="./images/pre_512_loss.png" width="100%"> | <img src="./images/sft_512_loss.png" width="100%"> |
 | MiniMind2       | <img src="./images/pre_768_loss.png" width="100%"> | <img src="./images/sft_768_loss.png" width="100%"> |
 
-### 【Training Complete】Model CheckPoint Collection
+### Training Completed - Model Collection
 
-> Considering feedback on slow speeds on Baidu NetDisk, MiniMind2 and subsequent models will be hosted on
-> ModelScope/HuggingFace.
+<span style="color:rgb(128,128,128)">
+> Considering that many people have reported slow speeds with Baidu Cloud, all MiniMind2 models and beyond will be hosted on ModelScope/HuggingFace.
+</span>
 
-#### PyTorch Native Models
+#### Native PyTorch Models
 
 * [MiniMind2 Series (ModelScope)](https://www.modelscope.cn/models/gongjy/MiniMind2-PyTorch)
-* [MiniMind-V1 Series (Baidu NetDisk)](https://pan.baidu.com/s/1KUfSzEkSXYbCCBj0Pw-9fA?pwd=6666)
 
-#### Transformers Models
+* [MiniMind-V1 Series (Baidu Cloud)](https://pan.baidu.com/s/1KUfSzEkSXYbCCBj0Pw-9fA?pwd=6666)
 
-* MiniMind
-  Series [(ModelScope)](https://www.modelscope.cn/profile/gongjy) | [HuggingFace](https://huggingface.co/collections/jingyaogong/minimind-66caf8d999f5c7fa64f399e5)
+<details style="color:rgb(128,128,128)">
+<summary>Torch File Naming Reference</summary>
 
-<details>
-<summary>Torch File Naming Correspondence (Expand)</summary>
-
-| Model Name      | Params | Pretrain Model         | SFT Model              | RL Model           | Reason Model     | Lora Model         |
+| Model Name      | params | pretrain_model         | sft_model              | rl_model           | reason_model     | lora_model         |
 |-----------------|--------|------------------------|------------------------|--------------------|------------------|--------------------|
-| MiniMind2-Small | 26M    | `pretrain_512.pth`     | `full_sft_512.pth`     | `rlhf_512.pth`     | -                | `lora_xxx_512.pth` |
+| MiniMind2-small | 26M    | `pretrain_512.pth`     | `full_sft_512.pth`     | `rlhf_512.pth`     | `reason_512.pth` | `lora_xxx_512.pth` |
 | MiniMind2-MoE   | 145M   | `pretrain_640_moe.pth` | `full_sft_640_moe.pth` | `rlhf_640_moe.pth` | -                | -                  |
 | MiniMind2       | 104M   | `pretrain_768.pth`     | `full_sft_768.pth`     | `rlhf_768.pth`     | `reason_768.pth` | `lora_xxx_768.pth` |
 
-| Model Name        | Params | Pretrain Model         | Single-turn SFT                    | Multi-turn SFT                    | RL Model     |
+| Model Name        | params | pretrain_model         | Single-turn Chat sft               | Multi-turn Chat sft               | rl_model     |
 |-------------------|--------|------------------------|------------------------------------|-----------------------------------|--------------|
 | minimind-v1-small | 26M    | `pretrain_512.pth`     | `single_chat/full_sft_512.pth`     | `multi_chat/full_sft_512.pth`     | `rl_512.pth` |
 | minimind-v1-moe   | 4×26M  | `pretrain_512_moe.pth` | `single_chat/full_sft_512_moe.pth` | `multi_chat/full_sft_512_moe.pth` | -            |
@@ -1025,19 +1070,25 @@ For reference, the parameter settings for GPT-3 are shown in the table below:
 
 </details>
 
+#### Transformers Models
+
+* MiniMind
+  Series ([ModelScope](https://www.modelscope.cn/profile/gongjy) | [HuggingFace](https://huggingface.co/collections/jingyaogong/minimind-66caf8d999f5c7fa64f399e5))
+
 ---
 
 # 📌 Eval
 
 ## Ⅰ RLHF vs SFT Comparison
 
-> [!NOTE]
-> The test is based on comparing `MiniMind2 series` models with "full_sft" and "rlhf". The random seed is fixed at `42`.
+The test is based on comparing `MiniMind2 series` models with "full_sft" and "rlhf". The random seed is fixed.
 
-<details>
-  <summary>Q&A Test (Expand)</summary>
+<details style="color:rgb(128,128,128)">
+<summary>Q&A Test</summary>
 
-[A0]: full_sft_640, [A1]: rlhf_640
+[A0] MiniMind2：full_sft_640
+
+[A1] MiniMind2：rlhf_640
 
   ```text
   [Q]: What is your name?
@@ -1090,9 +1141,10 @@ rather than using the PPO method where the reward model acts as a "coach" to cor
 
 ## Ⅱ Subjective Sample Evaluation
 
-> [!NOTE]
-> The following tests were completed on February 9, 2025. New models released after this date will not be included in
-> the tests unless there is a special need.
+<span style="color:rgb(128,128,128)">
+🏃The following tests were completed on February 9, 2025. New models released after this date will not be included in the tests unless there is a special need.
+</span>
+
 
 
 [A] [MiniMind2 (0.1B)](https://www.modelscope.cn/models/gongjy/MiniMind2-PyTorch)<br/>
@@ -1176,13 +1228,16 @@ rather than using the PPO method where the reward model acts as a "coach" to cor
 [H]: I am a small-parameter AI model 🥺, with limited knowledge, unable to directly answer your question. Try another question 👋
 ```
 
-> [!NOTE]
-> 🙋‍♂️Directly give the model's answer to DeepSeek-R1 for scoring:
+---
+
+<span style="color:rgb(128,128,128)">
+🙋‍Directly give all the questions and the model's answers above to DeepSeek-R1, let it help comment and rank with scores:
+</span>
 
 ---
 
-<details>
-  <summary>Review (Expand)</summary>
+<details style="color:rgb(128,128,128)">
+<summary>Specific comments</summary>
 
 ### Scoring Criteria:
 
@@ -1268,7 +1323,9 @@ rather than using the PPO method where the reward model acts as a "coach" to cor
 
 ### 👉 Subjective Effect Summary
 
-> 🙋‍♂️My personal evaluation aligns with DeepSeek-R1's results
+<span style="color:rgb(229,111,8)">
+> My personal evaluation aligns with DeepSeek-R1's results，and：
+</span>
 
 * The ranking of the MiniMind series is very intuitive. The larger the parameters and the more training data, the higher
   the score, and hallucinations and errors are less noticeable than with smaller models.
@@ -1284,8 +1341,8 @@ Chinese models.
 Instead, we'll focus on a selection of <1B micro-models for a comparative analysis.
 The test sets chosen include C-Eval, CMMLU, A-CLUE, and TMMLU+, which are pure Chinese language leaderboards.
 
-<details>
-<summary>Evaluation Framework (Click to Expand)</summary>
+<details style="color:rgb(128,128,128)">
+<summary>Evaluation Framework</summary>
 
 The evaluation framework chosen is [lm-evaluation](https://github.com/EleutherAI/lm-evaluation-harness),
 which is very easy to set up and run after installation:
