@@ -270,8 +270,8 @@ for guidance.
 ### 2. Data Download
 
 Download the required data files from
-the [dataset download link](https://www.modelscope.cn/datasets/gongjy/minimind_dataset/files) and place them in
-the `./dataset` directory.
+the [dataset download link](https://www.modelscope.cn/datasets/gongjy/minimind_dataset/files) 
+(please `mkdir dataset`) and place them in the `./dataset` directory.
 
 <details style="color:rgb(128,128,128)">
 <summary>Note: Dataset Information</summary>

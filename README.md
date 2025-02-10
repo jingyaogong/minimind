@@ -256,7 +256,7 @@ print(torch.cuda.is_available())
 ### 2.数据下载
 
 从下文提供的[数据集下载链接](https://www.modelscope.cn/datasets/gongjy/minimind_dataset/files)
-下载需要的数据文件放到`./dataset`目录下
+下载需要的数据文件（创建`./dataset`目录）并放到`./dataset`下
 
 <details style="color:rgb(128,128,128)">
 <summary>注：数据集须知</summary>
