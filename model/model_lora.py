@@ -1,5 +1,5 @@
 import torch
-from torch import optim, nn
+from torch import nn, optim
 
 
 # 定义Lora网络结构
@@ -20,9 +20,14 @@ class LoRA(nn.Module):
 
 def apply_lora(model, rank=16):
     for name, module in model.named_modules():
-        if isinstance(module, nn.Linear) and module.weight.shape[0] == module.weight.shape[1]:
-            lora = LoRA(module.weight.shape[0], module.weight.shape[1], rank=rank).to(model.device)
-            setattr(module, "lora", lora)
+        if (
+            isinstance(module, nn.Linear)
+            and module.weight.shape[0] == module.weight.shape[1]
+        ):
+            lora = LoRA(
+                module.weight.shape[0], module.weight.shape[1], rank=rank
+            ).to(model.device)
+            setattr(module, 'lora', lora)
             original_forward = module.forward
 
             # 显式绑定
@@ -36,7 +41,11 @@ def load_lora(model, path):
     state_dict = torch.load(path, map_location=model.device)
     for name, module in model.named_modules():
         if hasattr(module, 'lora'):
-            lora_state = {k.replace(f'{name}.lora.', ''): v for k, v in state_dict.items() if f'{name}.lora.' in k}
+            lora_state = {
+                k.replace(f'{name}.lora.', ''): v
+                for k, v in state_dict.items()
+                if f'{name}.lora.' in k
+            }
             module.lora.load_state_dict(lora_state)
 
 
@@ -44,6 +53,9 @@ def save_lora(model, path):
     state_dict = {}
     for name, module in model.named_modules():
         if hasattr(module, 'lora'):
-            lora_state = {f'{name}.lora.{k}': v for k, v in module.lora.state_dict().items()}
+            lora_state = {
+                f'{name}.lora.{k}': v
+                for k, v in module.lora.state_dict().items()
+            }
             state_dict.update(lora_state)
     torch.save(state_dict, path)

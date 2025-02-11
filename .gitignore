@@ -1,3 +1,9 @@
 /model/__pycache__
 /dataset
 /out
+
+# 下载的模型参数
+/MiniMind2
+
+# Pycharm 的配置文件
+/.idea

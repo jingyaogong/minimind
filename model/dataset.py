@@ -1,16 +1,16 @@
+import ast
 import json
+import os
 import random
 import re
 
-import pandas as pd
 import numpy as np
-from torch.utils.data import Dataset, DataLoader
+import pandas as pd
 import torch
 from sklearn.model_selection import train_test_split
-import os
-import ast
+from torch.utils.data import DataLoader, Dataset
 
-os.environ["TOKENIZERS_PARALLELISM"] = "false"
+os.environ['TOKENIZERS_PARALLELISM'] = 'false'
 
 
 class PretrainDataset(Dataset):
@@ -41,10 +41,10 @@ class PretrainDataset(Dataset):
             max_length=self.max_length,
             padding='max_length',
             truncation=True,
-            return_tensors='pt'
+            return_tensors='pt',
         )
         input_ids = encoding.input_ids.squeeze()
-        loss_mask = (input_ids != self.tokenizer.pad_token_id)
+        loss_mask = input_ids != self.tokenizer.pad_token_id
 
         X = torch.tensor(input_ids[:-1], dtype=torch.long)
         Y = torch.tensor(input_ids[1:], dtype=torch.long)
@@ -58,7 +58,9 @@ class SFTDataset(Dataset):
         self.tokenizer = tokenizer
         self.max_length = max_length
         self.samples = self.load_data(jsonl_path)
-        self.bos_id = tokenizer('<s>assistant\n', add_special_tokens=False).input_ids
+        self.bos_id = tokenizer(
+            '<s>assistant\n', add_special_tokens=False
+        ).input_ids
         self.eos_id = tokenizer('</s>\n', add_special_tokens=False).input_ids
 
     def __len__(self):
@@ -77,27 +79,31 @@ class SFTDataset(Dataset):
         messages = []
         for i, turn in enumerate(conversations):
             role = 'user' if i % 2 == 0 else 'assistant'
-            messages.append({"role": role, "content": turn['content']})
+            messages.append({'role': role, 'content': turn['content']})
         return self.tokenizer.apply_chat_template(
-            messages,
-            tokenize=False,
-            add_generation_prompt=False
+            messages, tokenize=False, add_generation_prompt=False
         )
 
     def _generate_loss_mask(self, input_ids):
         loss_mask = [0] * len(input_ids)
         i = 0
         while i < len(input_ids):
-            if input_ids[i:i + len(self.bos_id)] == self.bos_id:
+            if input_ids[i : i + len(self.bos_id)] == self.bos_id:
                 start = i + len(self.bos_id)
                 end = start
                 while end < len(input_ids):
-                    if input_ids[end:end + len(self.eos_id)] == self.eos_id:
+                    if input_ids[end : end + len(self.eos_id)] == self.eos_id:
                         break
                     end += 1
-                for j in range(start + 1, min(end + len(self.eos_id) + 1, self.max_length)):
+                for j in range(
+                    start + 1, min(end + len(self.eos_id) + 1, self.max_length)
+                ):
                     loss_mask[j] = 1
-                i = end + len(self.eos_id) if end < len(input_ids) else len(input_ids)
+                i = (
+                    end + len(self.eos_id)
+                    if end < len(input_ids)
+                    else len(input_ids)
+                )
             else:
                 i += 1
         return loss_mask
@@ -106,8 +112,10 @@ class SFTDataset(Dataset):
         sample = self.samples[index]
         # 构建对话提示
         prompt = self._create_chat_prompt(sample['conversations'])
-        input_ids = self.tokenizer(prompt).input_ids[:self.max_length]
-        input_ids += [self.tokenizer.pad_token_id] * (self.max_length - len(input_ids))
+        input_ids = self.tokenizer(prompt).input_ids[: self.max_length]
+        input_ids += [self.tokenizer.pad_token_id] * (
+            self.max_length - len(input_ids)
+        )
 
         # 生成动态损失掩码
         loss_mask = self._generate_loss_mask(input_ids)
@@ -125,8 +133,12 @@ class DPODataset(Dataset):
         super().__init__()
         self.tokenizer = tokenizer
         self.max_length = max_length
-        self.padding = tokenizer.pad_token_id if tokenizer.pad_token_id is not None else 0
-        self.bos_id = tokenizer('<s>assistant\n', add_special_tokens=False).input_ids
+        self.padding = (
+            tokenizer.pad_token_id if tokenizer.pad_token_id is not None else 0
+        )
+        self.bos_id = tokenizer(
+            '<s>assistant\n', add_special_tokens=False
+        ).input_ids
         self.eos_id = tokenizer('</s>\n', add_special_tokens=False).input_ids
         with open(file_path, 'r', encoding='utf-8') as f:
             self.data = []
@@ -150,10 +162,16 @@ class DPODataset(Dataset):
             rejected, tokenize=False, add_generation_prompt=False
         )
         chosen_encoding = self.tokenizer(
-            chosen_prompt, truncation=True, max_length=self.max_length, padding='max_length'
+            chosen_prompt,
+            truncation=True,
+            max_length=self.max_length,
+            padding='max_length',
         )
         rejected_encoding = self.tokenizer(
-            rejected_prompt, truncation=True, max_length=self.max_length, padding='max_length'
+            rejected_prompt,
+            truncation=True,
+            max_length=self.max_length,
+            padding='max_length',
         )
 
         chosen_input_ids = chosen_encoding['input_ids']
@@ -174,27 +192,33 @@ class DPODataset(Dataset):
             'mask_chosen': mask_chosen,
             'x_rejected': x_rejected,
             'y_rejected': y_rejected,
-            'mask_rejected': mask_rejected
+            'mask_rejected': mask_rejected,
         }
 
     def _generate_loss_mask(self, input_ids):
         loss_mask = [0] * len(input_ids)
         i = 0
         while i < len(input_ids):
-            if input_ids[i:i + len(self.bos_id)] == self.bos_id:
+            if input_ids[i : i + len(self.bos_id)] == self.bos_id:
                 start = i + len(self.bos_id)
                 end = start
                 while end < len(input_ids):
-                    if input_ids[end:end + len(self.eos_id)] == self.eos_id:
+                    if input_ids[end : end + len(self.eos_id)] == self.eos_id:
                         break
                     end += 1
-                for j in range(start + 1, min(end + len(self.eos_id) + 1, self.max_length)):
+                for j in range(
+                    start + 1, min(end + len(self.eos_id) + 1, self.max_length)
+                ):
                     loss_mask[j] = 1
-                i = end + len(self.eos_id) if end < len(input_ids) else len(input_ids)
+                i = (
+                    end + len(self.eos_id)
+                    if end < len(input_ids)
+                    else len(input_ids)
+                )
             else:
                 i += 1
         return loss_mask
 
 
-if __name__ == "__main__":
+if __name__ == '__main__':
     pass

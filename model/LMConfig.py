@@ -1,38 +1,39 @@
-from transformers import PretrainedConfig
 from typing import List
+
+from transformers import PretrainedConfig
 
 
 class LMConfig(PretrainedConfig):
-    model_type = "minimind"
+    model_type = 'minimind'
 
     def __init__(
-            self,
-            dim: int = 512,
-            n_layers: int = 8,
-            n_heads: int = 8,
-            n_kv_heads: int = 2,
-            vocab_size: int = 6400,
-            hidden_dim: int = None,
-            multiple_of: int = 64,
-            norm_eps: float = 1e-5,
-            max_seq_len: int = 8192,
-            rope_theta: int = 1e6,
-            dropout: float = 0.0,
-            flash_attn: bool = True,
-            ####################################################
-            # Here are the specific configurations of MOE
-            # When use_moe is false, the following is invalid
-            ####################################################
-            use_moe: bool = False,
-            ####################################################
-            num_experts_per_tok: int = 2,
-            n_routed_experts: int = 4,
-            n_shared_experts: bool = True,
-            scoring_func: str = 'softmax',
-            aux_loss_alpha: float = 0.1,
-            seq_aux: bool = True,
-            norm_topk_prob: bool = True,
-            **kwargs,
+        self,
+        dim: int = 512,
+        n_layers: int = 8,
+        n_heads: int = 8,
+        n_kv_heads: int = 2,
+        vocab_size: int = 6400,
+        hidden_dim: int = None,
+        multiple_of: int = 64,
+        norm_eps: float = 1e-5,
+        max_seq_len: int = 8192,
+        rope_theta: int = 1e6,
+        dropout: float = 0.0,
+        flash_attn: bool = True,
+        ####################################################
+        # Here are the specific configurations of MOE
+        # When use_moe is false, the following is invalid
+        ####################################################
+        use_moe: bool = False,
+        ####################################################
+        num_experts_per_tok: int = 2,
+        n_routed_experts: int = 4,
+        n_shared_experts: bool = True,
+        scoring_func: str = 'softmax',
+        aux_loss_alpha: float = 0.1,
+        seq_aux: bool = True,
+        norm_topk_prob: bool = True,
+        **kwargs,
     ):
         self.dim = dim
         self.n_layers = n_layers
