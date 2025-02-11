@@ -221,22 +221,28 @@ git clone https://github.com/jingyaogong/minimind.git
 
 ## Ⅰ Test Pre-trained Model
 
-### 1. Download the Model
+
+### 1. Environment Setup
 
 ```bash
-# step 1
+pip install -r requirements.txt -i https://pypi.tuna.tsinghua.edu.cn/simple
+```
+
+
+### 2. Download the Model
+
+```bash
 git clone https://huggingface.co/jingyaogong/MiniMind2
 ```
 
-### 2. Command-line Q&A
+### 3. Command-line Q&A
 
 ```bash
-# step 2
-# load=1: load from transformers-hf model
+# load=0: load from pytorch model, load=1: load from transformers-hf model
 python eval_model.py --load 1
 ```
 
-### 3. Or Start WebUI
+### 4. Or Start WebUI
 
 ```bash
 # You may need `python>=3.10` and install `pip install streamlit`.
@@ -347,27 +353,30 @@ SFT-Chat model, 2: RLHF-Chat model, 3: Reason model.
 Start training with N GPUs on a single machine (DDP, supports multi-node, multi-GPU clusters):
 
 ```bash
-torchrun --nproc_per_node 3 train_xxx.py
+torchrun --nproc_per_node N train_xxx.py
 ```
 
 <details style="color:rgb(128,128,128)">
 <summary>Note: Others</summary>
 
-* Start training with N GPUs on a single machine (DeepSpeed):
-  ```bash
-  deepspeed --master_port 29500 --num_gpus=N train_xxx.py
-  ```
+Start training with N GPUs on a single machine (DeepSpeed):
 
-* Enable wandb to record the training process if needed:
-    ```bash
-    # Need to log in: wandb login
-    torchrun --nproc_per_node N train_xxx.py --use_wandb
-    # and
-    python train_xxx.py --use_wandb
-    ```
-  By adding the `--use_wandb` parameter, the training process will be recorded, and after training, you can view the
-  process on the wandb website. Modify the `wandb_project` and `wandb_run_name` parameters to specify project and run
-  names.
+```bash
+deepspeed --master_port 29500 --num_gpus=N train_xxx.py
+```
+
+Enable wandb to record the training process if needed:
+
+```bash
+# Need to log in: wandb login
+torchrun --nproc_per_node N train_xxx.py --use_wandb
+# and
+python train_xxx.py --use_wandb
+```
+
+By adding the `--use_wandb` parameter, the training process will be recorded, and after training, you can view the
+process on the wandb website. Modify the `wandb_project` and `wandb_run_name` parameters to specify project and run
+names.
 
 </details>
 

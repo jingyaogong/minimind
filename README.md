@@ -209,22 +209,26 @@ git clone https://github.com/jingyaogong/minimind.git
 
 ## Ⅰ 测试已有模型效果
 
-### 1.下载模型
+### 1.环境准备
 
 ```bash
-# step 1
+pip install -r requirements.txt -i https://pypi.tuna.tsinghua.edu.cn/simple
+```
+
+### 2.下载模型
+
+```bash
 git clone https://huggingface.co/jingyaogong/MiniMind2
 ```
 
-### 2.命令行问答
+### 3.命令行问答
 
 ```bash
-# step 2
-# load=1: load from transformers-hf model
+# load=0: load from pytorch model, load=1: load from transformers-hf model
 python eval_model.py --load 1
 ```
 
-### 3.或启动WebUI
+### 4.或启动WebUI
 
 ```bash
 # 可能需要`python>=3.10` 安装 `pip install streamlit`
@@ -323,26 +327,29 @@ python eval_model.py --model_mode 1 # 默认为0：测试pretrain模型效果，
 单机N卡启动训练方式 (DDP, 支持多机多卡集群)
 
 ```bash
-torchrun --nproc_per_node 3 train_xxx.py
+torchrun --nproc_per_node N train_xxx.py
 ```
 
 <details style="color:rgb(128,128,128)">
 <summary>注：其它须知</summary>
 
-* 单机N卡启动训练 (DeepSpeed)
-  ```bash
-  deepspeed --master_port 29500 --num_gpus=N train_xxx.py
-  ```
+单机N卡启动训练 (DeepSpeed)
 
-* 可根据需要开启wandb记录训练过程
-    ```bash
-    # 需要登录: wandb login
-    torchrun --nproc_per_node N train_xxx.py --use_wandb
-    # and
-    python train_xxx.py --use_wandb
-    ```
-  通过添加`--use_wandb`参数，可以记录训练过程，训练完成后，可以在wandb网站上查看训练过程。通过修改`wandb_project`
-  和`wandb_run_name`参数，可以指定项目名称和运行名称。
+```bash
+deepspeed --master_port 29500 --num_gpus=N train_xxx.py
+```
+
+可根据需要开启wandb记录训练过程
+
+```bash
+# 需要登录: wandb login
+torchrun --nproc_per_node N train_xxx.py --use_wandb
+# and
+python train_xxx.py --use_wandb
+```
+
+通过添加`--use_wandb`参数，可以记录训练过程，训练完成后，可以在wandb网站上查看训练过程。通过修改`wandb_project`
+和`wandb_run_name`参数，可以指定项目名称和运行名称。
 
 </details>
 
