@@ -239,7 +239,7 @@ git clone https://huggingface.co/jingyaogong/MiniMind2
 
 ```bash
 # load=0: load from pytorch model, load=1: load from transformers-hf model
-python eval_model.py --load 1
+python eval_model.py --load 1 --model_mode 2
 ```
 
 ### 4. Or Start WebUI

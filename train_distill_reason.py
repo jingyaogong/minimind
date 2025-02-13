@@ -35,7 +35,7 @@ def train_epoch(epoch, wandb):
     # 思考标签占位符
     start_of_think_ids = tokenizer('<think>').input_ids
     end_of_think_ids = tokenizer('</think>').input_ids
-    start_of_answer_ids = tokenizer('</answer>').input_ids
+    start_of_answer_ids = tokenizer('<answer>').input_ids
     end_of_answer_ids = tokenizer('</answer>').input_ids
     loss_fct = nn.CrossEntropyLoss(reduction='none')
     start_time = time.time()

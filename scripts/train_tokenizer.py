@@ -25,7 +25,7 @@ def train_tokenizer():
                 data = json.loads(line)
                 yield data['text']
 
-    data_path = '../dataset/tokenizer_train.jsonl'
+    data_path = '../dataset/pretrain_hq.jsonl'
 
     # 初始化tokenizer
     tokenizer = Tokenizer(models.BPE())
@@ -139,12 +139,12 @@ def eval_tokenizer():
     print('encoder长度：', len(model_inputs['input_ids']))
 
     input_ids = model_inputs['input_ids']
-    response = tokenizer.decode(input_ids, skip_special_tokens=True)
+    response = tokenizer.decode(input_ids, skip_special_tokens=False)
     print('decoder和原始文本是否一致：', response == new_prompt)
 
 
 def main():
-    # train_tokenizer()
+    train_tokenizer()
     eval_tokenizer()
 
 
