@@ -166,13 +166,14 @@ st.session_state.temperature = st.sidebar.slider("Temperature", 0.6, 1.2, 0.85, 
 
 # 模型路径映射
 MODEL_PATHS = {
-    "MiniMind2-Pro-R1 (0.1B)": ["../MiniMind2-Pro-R1", "MiniMind2-Pro-R1"],
-    "MiniMind2-R1 (0.05B)": ["../MiniMind2-R1", "MiniMind2-R1"],
-    "MiniMind2-Pro (0.1B)": ["../MiniMind2-Pro", "MiniMind2-Pro"],
-    "MiniMind2 (0.05B)": ["../MiniMind2", "MiniMind2"],
+    "MiniMind2-R1 (0.1B)": ["../MiniMind2-R1", "MiniMind2-R1"],
+    "MiniMind2-Small-R1 (0.02B)": ["../MiniMind2-Small-R1", "MiniMind2-Small-R1"],
+    "MiniMind2 (0.1B)": ["../MiniMind2", "MiniMind2"],
+    "MiniMind2-MoE (0.15B)": ["../MiniMind2-MoE", "MiniMind2-MoE"],
     "MiniMind2-Small (0.02B)": ["../MiniMind2-Small", "MiniMind2-Small"],
     "MiniMind-V1 (0.1B)": ["../minimind-v1", "MiniMind-V1"],
-    "MiniMind-V1-Small (0.02B)": ["../minimind-v1-small", "MiniMind-V1 Small"],
+    "MiniMind-V1-MoE (0.1B)": ["../minimind-v1-moe", "MiniMind-V1-MoE"],
+    "MiniMind-V1-Small (0.02B)": ["../minimind-v1-small", "MiniMind-V1-Small"],
 }
 
 selected_model = st.sidebar.selectbox('Models', list(MODEL_PATHS.keys()), index=0)  # 默认选择 MiniMind2
