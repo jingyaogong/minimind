@@ -176,7 +176,7 @@ MODEL_PATHS = {
     "MiniMind-V1-Small (0.02B)": ["../minimind-v1-small", "MiniMind-V1-Small"],
 }
 
-selected_model = st.sidebar.selectbox('Models', list(MODEL_PATHS.keys()), index=0)  # 默认选择 MiniMind2
+selected_model = st.sidebar.selectbox('Models', list(MODEL_PATHS.keys()), index=2)  # 默认选择 MiniMind2
 model_path = MODEL_PATHS[selected_model][0]
 
 slogan = f"Hi, I'm {MODEL_PATHS[selected_model][1]}"
