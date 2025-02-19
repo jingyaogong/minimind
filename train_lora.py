@@ -85,10 +85,10 @@ def train_epoch(epoch, wandb):
 
 
 def init_model(lm_config):
-    tokenizer = AutoTokenizer.from_pretrained('./model/minimind_tokenizer')
+    tokenizer = AutoTokenizer.from_pretrained(args.tokenizer_path)
     model = MiniMindLM(lm_config)
     moe_path = '_moe' if lm_config.use_moe else ''
-    ckp = f'./out/rlhf_{lm_config.dim}{moe_path}.pth'
+    ckp = f'{args.ckp_dir}/rlhf_{lm_config.dim}{moe_path}.pth'
     state_dict = torch.load(ckp, map_location=args.device)
     model.load_state_dict(state_dict, strict=False)
     return model.to(args.device), tokenizer
@@ -109,6 +109,8 @@ def init_distributed_mode():
 if __name__ == "__main__":
     parser = argparse.ArgumentParser(description="MiniMind SFT with LoRA")
     parser.add_argument("--out_dir", type=str, default="out")
+    parser.add_argument("--ckp_dir", type=str, default="out", help="Directory to save/load checkpoints")
+    parser.add_argument("--tokenizer_path", type=str, default="./model/minimind_tokenizer", help="Path to the tokenizer")
     parser.add_argument("--epochs", type=int, default=50)
     parser.add_argument("--batch_size", type=int, default=16)
     parser.add_argument("--learning_rate", type=float, default=5e-5)
