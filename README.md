@@ -1158,7 +1158,6 @@ DPO和在线PPO的区别在于reject和chosen都是离线准备的，和minimind
 | 7  | E  | 22        | 23        | 15        | 14         | 74        |
 | 8  | G  | 10        | 12        | 10        | 10         | 42        |
 
----
 
 ### 👉主观效果总结
 
@@ -1171,6 +1170,8 @@ DPO和在线PPO的区别在于reject和chosen都是离线准备的，和minimind
 * G模型可能训练数据不够完备，给出的权重经过测试效果不佳。
 
 * 再复诵一遍经久不衰的Scaling Law: 参数越大，训练数据越多模型的性能越强。
+
+---
 
 ## Ⅲ Objective Benchmark
 
