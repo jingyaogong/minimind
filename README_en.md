@@ -1305,7 +1305,6 @@ scores:
 | 7    | E     | 22                   | 23                       | 15                | 14                       | 74                 |
 | 8    | G     | 10                   | 12                       | 10                | 10                       | 42                 |
 
----
 
 ### 👉 Subjective Effect Summary
 
@@ -1317,6 +1316,8 @@ My personal evaluation aligns with DeepSeek-R1's results，and：
 * Model G may have incomplete training data, and the performance based on tested weights is poor.
 * Repeating the timeless Scaling Law: The larger the parameters and the more training data, the stronger the model's
   performance.
+
+---
 
 ## Ⅲ Objective Benchmark
 
