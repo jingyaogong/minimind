@@ -80,7 +80,7 @@ def train_epoch(epoch, wandb):
         if (step + 1) % args.save_interval == 0 and (not ddp or dist.get_rank() == 0):
             model.eval()
             # 【区别1】只保存lora权重即可
-            save_lora(model, f'{args.save_dir}/lora/{args.lora_name}_{lm_config.dim}.pth')
+            save_lora(model, f'{args.save_dir}/{args.lora_name}_{lm_config.dim}.pth')
             model.train()
 
 
