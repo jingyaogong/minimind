@@ -33,10 +33,9 @@ def init_model(args):
             apply_lora(model)
             load_lora(model, f'./{args.out_dir}/lora/{args.lora_name}_{args.dim}.pth')
     else:
-        model = AutoModelForCausalLM.from_pretrained(
-            './MiniMind2',
-            trust_remote_code=True
-        )
+        transformers_model_path = './MiniMind2'
+        tokenizer = AutoTokenizer.from_pretrained(transformers_model_path)
+        model = AutoModelForCausalLM.from_pretrained(transformers_model_path, trust_remote_code=True)
     print(f'MiniMind模型参数量: {sum(p.numel() for p in model.parameters() if p.requires_grad) / 1e6:.2f}M(illion)')
     return model.eval().to(args.device), tokenizer
 
