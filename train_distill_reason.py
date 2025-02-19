@@ -35,7 +35,7 @@ def train_epoch(epoch, wandb):
     # 思考标签占位符
     start_of_think_ids = tokenizer('<think>').input_ids
     end_of_think_ids = tokenizer('</think>').input_ids
-    start_of_answer_ids = tokenizer('<answer>').input_ids
+    start_of_answer_ids = tokenizer('</answer>').input_ids
     end_of_answer_ids = tokenizer('</answer>').input_ids
     loss_fct = nn.CrossEntropyLoss(reduction='none')
     start_time = time.time()
@@ -109,10 +109,10 @@ def train_epoch(epoch, wandb):
 
 
 def init_model(lm_config):
-    tokenizer = AutoTokenizer.from_pretrained('./model/minimind_tokenizer')
+    tokenizer = AutoTokenizer.from_pretrained(args.tokenizer_path)
     model = MiniMindLM(lm_config)
     moe_path = '_moe' if lm_config.use_moe else ''
-    ckp = f'./out/rlhf_{lm_config.dim}{moe_path}.pth'
+    ckp = f'{args.ckp_dir}/rlhf_{lm_config.dim}{moe_path}.pth'
     state_dict = torch.load(ckp, map_location=args.device)
     model.load_state_dict(state_dict, strict=False)
     Logger(f'LLM总参数量：{sum(p.numel() for p in model.parameters() if p.requires_grad) / 1e6:.3f} 百万')
@@ -135,6 +135,8 @@ def init_distributed_mode():
 if __name__ == "__main__":
     parser = argparse.ArgumentParser(description="MiniMind Distill Reasoning")
     parser.add_argument("--out_dir", type=str, default="out")
+    parser.add_argument("--ckp_dir", type=str, default="out", help="Directory to save/load checkpoints")
+    parser.add_argument("--tokenizer_path", type=str, default="./model/minimind_tokenizer", help="Path to the tokenizer")
     parser.add_argument("--epochs", type=int, default=1)
     parser.add_argument("--batch_size", type=int, default=8)
     parser.add_argument("--learning_rate", type=float, default=1e-6)
