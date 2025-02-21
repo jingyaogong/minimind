@@ -53,7 +53,11 @@ def train_epoch(epoch, wandb):
             loss += res.aux_loss
             loss = loss / args.accumulation_steps
 
-        scaler.scale(loss).backward()
+        if (step + 1) % args.accumulation_steps != 0:
+            with model.no_sync():  # Disable DDP gradient synchronization
+                scaler.scale(loss).backward()
+        else:
+            scaler.scale(loss).backward()
 
         if (step + 1) % args.accumulation_steps == 0:
             scaler.unscale_(optimizer)
