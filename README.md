@@ -1306,6 +1306,10 @@ MiniMind模型本身预训练数据集小的可怜，也没有针对性的对测
 <a href="https://github.com/RyanSunn"><b>@RyanSunn</b></a>:
 <a href="https://github.com/jingyaogong/minimind/issues/75">🔗推理过程学习记录</a>
 
+<a href="https://github.com/Nijikadesu"><b>@Nijikadesu</b></a>:
+<a href="https://github.com/jingyaogong/minimind/issues/213">🔗以交互笔记本方式分解项目代码</a>
+
+
 <details close> 
 <summary> <b>参考链接 & 感谢以下优秀的论文或项目</b> </summary>
 

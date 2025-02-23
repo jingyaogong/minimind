@@ -1457,6 +1457,9 @@ is mainly for fun, so take the results lightly:
 <a href="https://github.com/RyanSunn"><b>@RyanSunn</b></a>:
 <a href="https://github.com/jingyaogong/minimind/issues/75">🔗Inference process learning record</a>
 
+<a href="https://github.com/Nijikadesu"><b>@Nijikadesu</b></a>:
+<a href="https://github.com/jingyaogong/minimind/issues/213">🔗Decompose project code in an interactive notebook format</a>
+
 <details close> 
 <summary> <b>Reference Links & Thanks to the following excellent papers or projects</b> </summary>
 
