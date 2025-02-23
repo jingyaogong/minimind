@@ -13,7 +13,7 @@ warnings.filterwarnings('ignore')
 
 
 def init_model(args):
-    tokenizer = AutoTokenizer.from_pretrained('./model/minimind_tokenizer')
+    tokenizer = AutoTokenizer.from_pretrained(args.tokenizer_path)
     if args.load == 0:
         moe_path = '_moe' if args.use_moe else ''
         modes = {0: 'pretrain', 1: 'full_sft', 2: 'rlhf', 3: 'reason'}
@@ -31,7 +31,7 @@ def init_model(args):
 
         if args.lora_name != 'None':
             apply_lora(model)
-            load_lora(model, f'./{args.out_dir}/lora/{args.lora_name}_{args.dim}.pth')
+            load_lora(model, f'./{args.out_dir}/{args.lora_name}_{args.dim}.pth')
     else:
         transformers_model_path = './MiniMind2'
         tokenizer = AutoTokenizer.from_pretrained(transformers_model_path)
@@ -105,6 +105,7 @@ def main():
     parser = argparse.ArgumentParser(description="Chat with MiniMind")
     parser.add_argument('--lora_name', default='None', type=str)
     parser.add_argument('--out_dir', default='out', type=str)
+    parser.add_argument("--tokenizer_path", type=str, default="./model/minimind_tokenizer", help="Path to the tokenizer")
     parser.add_argument('--temperature', default=0.85, type=float)
     parser.add_argument('--top_p', default=0.85, type=float)
     parser.add_argument('--device', default='cuda' if torch.cuda.is_available() else 'cpu', type=str)
@@ -122,7 +123,7 @@ def main():
     parser.add_argument('--history_cnt', default=0, type=int)
     parser.add_argument('--stream', default=True, type=bool)
     parser.add_argument('--load', default=0, type=int, help="0: 原生torch权重，1: transformers加载")
-    parser.add_argument('--model_mode', default=1, type=int,
+    parser.add_argument('--model_mode', default=0, type=int,
                         help="0: 预训练模型，1: SFT-Chat模型，2: RLHF-Chat模型，3: Reason模型")
     args = parser.parse_args()
 
@@ -132,8 +133,6 @@ def main():
     test_mode = int(input('[0] 自动测试\n[1] 手动输入\n'))
     messages = []
     for idx, prompt in enumerate(prompts if test_mode == 0 else iter(lambda: input('👶: '), '')):
-        setup_seed(random.randint(0, 2048))
-        # setup_seed(2025)  # 如需固定每次输出则换成【固定】的随机种子
         if test_mode == 0: print(f'👶: {prompt}')
 
         messages = messages[-args.history_cnt:] if args.history_cnt else []
@@ -178,4 +177,6 @@ def main():
 
 
 if __name__ == "__main__":
+    torch.backends.cudnn.deterministic = True
+    random.seed(random.randint(0, 2048))
     main()

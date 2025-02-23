@@ -131,10 +131,10 @@ def train_epoch(epoch, wandb):
 
 
 def init_model(lm_config):
-    tokenizer = AutoTokenizer.from_pretrained('./model/minimind_tokenizer')
+    tokenizer = AutoTokenizer.from_pretrained(args.tokenizer_path)
     model = MiniMindLM(lm_config)
     moe_path = '_moe' if lm_config.use_moe else ''
-    ckp = f'./out/full_sft_{lm_config.dim}{moe_path}.pth'
+    ckp = f'{args.ckp_dir}/full_sft_{lm_config.dim}{moe_path}.pth'
     state_dict = torch.load(ckp, map_location=args.device)
     model.load_state_dict(state_dict, strict=False)
     # 初始化参考模型
@@ -165,6 +165,8 @@ def init_distributed_mode():
 if __name__ == "__main__":
     parser = argparse.ArgumentParser(description="MiniMind RLHF")
     parser.add_argument("--out_dir", type=str, default="out")
+    parser.add_argument("--ckp_dir", type=str, default="out", help="Directory to save/load checkpoints")
+    parser.add_argument("--tokenizer_path", type=str, default="./model/minimind_tokenizer", help="Path to the tokenizer")
     parser.add_argument("--epochs", type=int, default=2)
     parser.add_argument("--batch_size", type=int, default=8)
     # sft阶段学习率为 「5e-6」->「5e-7」长度512，建议离线正负样本「概率」偏好对齐阶段lr <=「1e-8」长度3000，否则很容易遗忘训坏
