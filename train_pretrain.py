@@ -59,15 +59,16 @@ def train_epoch(epoch, wandb):
     total_steps = iter_per_epoch * args.epochs
     warmup_steps = int(total_steps * 0.005)
     decay_steps = int(total_steps * 0.9)
+
+    if epoch == 0:
+        for param_group in optimizer.param_groups:  # 在此处设置学习率
+            param_group['lr'] = 5e-6
+
     start_time = time.time()
     for step, (X, Y, loss_mask) in enumerate(train_loader):
         X = X.to(args.device)
         Y = Y.to(args.device)
         loss_mask = loss_mask.to(args.device)
-
-        lr = get_dynamic_lr(step_base + step, warmup_steps, decay_steps, args.learning_rate)
-        for param_group in optimizer.param_groups:
-            param_group['lr'] = lr
 
         with ctx:
             res = model(X)
@@ -82,6 +83,11 @@ def train_epoch(epoch, wandb):
         scaler.scale(loss).backward()
 
         if (step + 1) % args.accumulation_steps == 0:
+            current_step = step_base + step  # 计算当前总步数
+            lr = get_dynamic_lr(current_step, warmup_steps, decay_steps, args.learning_rate)
+            for param_group in optimizer.param_groups:  # 在此处设置学习率
+                param_group['lr'] = lr
+
             scaler.unscale_(optimizer)
             torch.nn.utils.clip_grad_norm_(model.parameters(), args.grad_clip)
 
@@ -140,25 +146,6 @@ def save_checkpoint(buffer: io.BytesIO, path):
         f.write(buffer.getvalue())
 
 
-def init_model(cli_args):
-    lm_config = LMConfig(
-        dim=cli_args.dim,
-        n_layers=cli_args.n_layers,
-        n_heads=cli_args.n_heads,
-        n_kv_heads=cli_args.n_kv_heads,
-        max_seq_len=cli_args.max_seq_len,
-        use_moe=cli_args.use_moe,
-        use_mla=cli_args.use_mla,
-        torch_dtype=cli_args.dtype,
-    )
-    tokenizer = AutoTokenizer.from_pretrained(f'./model/{cli_args.vocab}_tokenizer')
-    # tokenizer = AutoTokenizer.from_pretrained('./deepseek_v3_tokenizer')
-    lm_config.vocab_size = tokenizer.vocab_size
-    model = MiniMindLM(lm_config)
-    Logger(f'LLM总参数量：{sum(p.numel() for p in model.parameters() if p.requires_grad) / 1e6:.3f} 百万')
-    return model, tokenizer
-
-
 def init_distributed_mode():
     if not ddp: return
     global ddp_local_rank, DEVICE
@@ -173,6 +160,9 @@ def init_distributed_mode():
 
 # torchrun --nproc_per_node 2 1-pretrain.py
 if __name__ == "__main__":
+    # 启用动态显存段扩展
+    os.environ["PYTORCH_CUDA_ALLOC_CONF"] = "expandable_segments:True"
+
     parser = argparse.ArgumentParser(description="MiniMind Pretraining")
     parser.add_argument("--save_dir", type=str, default="out")
     # 若要以最快速度实现zero则epochs设置为1轮；否则应当利用有限的数据训练2~6个epochs。
@@ -233,7 +223,21 @@ if __name__ == "__main__":
     else:
         wandb = None
 
-    model, tokenizer = init_model(args)
+    lm_config = LMConfig(
+        dim=args.dim,
+        n_layers=args.n_layers,
+        n_heads=args.n_heads,
+        n_kv_heads=args.n_kv_heads,
+        max_seq_len=args.max_seq_len,
+        use_moe=args.use_moe,
+        use_mla=args.use_mla,
+        torch_dtype=args.dtype,
+    )
+    tokenizer = AutoTokenizer.from_pretrained(f'./model/{args.vocab}_tokenizer')
+    lm_config.vocab_size = tokenizer.vocab_size
+    model = MiniMindLM(lm_config)
+    Logger(f'LLM总参数量：{sum(p.numel() for p in model.parameters() if p.requires_grad) / 1e6:.3f} 百万')
+
     if args.ckpt_path is not None:
         # 接着训练
         state_dict = torch.load(args.ckpt_path, map_location=args.device)
