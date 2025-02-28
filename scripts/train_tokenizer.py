@@ -16,6 +16,12 @@ import os
 
 random.seed(42)
 
+base_dir = os.path.abspath(os.path.join(os.path.dirname(__file__), ".."))
+
+print(base_dir)
+
+tokenizer_dir = f"{base_dir}/model/my_tokenizer"
+
 
 def train_tokenizer():
     # 读取JSONL文件并提取文本数据
@@ -25,7 +31,7 @@ def train_tokenizer():
                 data = json.loads(line)
                 yield data['text']
 
-    data_path = '../dataset/pretrain_hq.jsonl'
+    data_path = f'{base_dir}/dataset/pretrain_hq_s.jsonl'
 
     # 初始化tokenizer
     tokenizer = Tokenizer(models.BPE())
@@ -57,10 +63,9 @@ def train_tokenizer():
     assert tokenizer.token_to_id("</s>") == 2
 
     # 保存tokenizer
-    tokenizer_dir = "../model/minimind_tokenizer"
     os.makedirs(tokenizer_dir, exist_ok=True)
     tokenizer.save(os.path.join(tokenizer_dir, "tokenizer.json"))
-    tokenizer.model.save("../model/minimind_tokenizer")
+    tokenizer.model.save(tokenizer_dir)
 
     # 手动创建配置文件
     config = {
@@ -118,7 +123,7 @@ def eval_tokenizer():
     from transformers import AutoTokenizer
 
     # 加载预训练的tokenizer
-    tokenizer = AutoTokenizer.from_pretrained("../model/minimind_tokenizer")
+    tokenizer = AutoTokenizer.from_pretrained(tokenizer_dir)
 
     messages = [
         {"role": "system", "content": "你是一个优秀的聊天机器人，总是给我正确的回应！"},
