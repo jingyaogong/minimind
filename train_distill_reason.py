@@ -27,11 +27,27 @@ def Logger(content):
         print(content)
 
 
+def init_tracker(args):
+    if args.report_to == "wandb":
+        import wandb
+
+        wandb.init(project=args.project_name, run_name=args.run_name)
+        tracker = wandb
+    if args.report_to == "swanlab":
+        import swanlab
+    
+        swanlab.init(project=args.project_name, run_name=args.run_name, config=args)
+        tracker = swanlab
+    else:
+        tracker = None
+    return tracker
+
+
 def get_lr(current_step, total_steps, lr):
     return lr / 10 + 0.5 * lr * (1 + math.cos(math.pi * current_step / total_steps))
 
 
-def train_epoch(epoch, wandb):
+def train_epoch(epoch, tracker):
     # 思考标签占位符
     start_of_think_ids = tokenizer('<think>').input_ids
     end_of_think_ids = tokenizer('</think>').input_ids
@@ -40,9 +56,9 @@ def train_epoch(epoch, wandb):
     loss_fct = nn.CrossEntropyLoss(reduction='none')
     start_time = time.time()
     for step, (X, Y, loss_mask) in enumerate(train_loader):
-        X = X.to(args.device)
-        Y = Y.to(args.device)
-        loss_mask = loss_mask.to(args.device)
+        X = X.to(DEVICE)
+        Y = Y.to(DEVICE)
+        loss_mask = loss_mask.to(DEVICE)
         lr = get_lr(epoch * iter_per_epoch + step, args.epochs * iter_per_epoch, args.learning_rate)
         for param_group in optimizer.param_groups:
             param_group['lr'] = lr
@@ -56,7 +72,7 @@ def train_epoch(epoch, wandb):
             sp_ids = torch.isin(Y.view(-1),
                                 torch.tensor(start_of_think_ids + end_of_think_ids
                                              + start_of_answer_ids + end_of_answer_ids
-                                             ).to(args.device))
+                                             ).to(DEVICE))
             # 在 sp_ids 对应的位置增加额外的惩罚
             loss_mask = loss_mask.view(-1)
             loss_mask_sum = loss_mask.sum()
@@ -89,8 +105,8 @@ def train_epoch(epoch, wandb):
                     optimizer.param_groups[-1]['lr'],
                     spend_time / (step + 1) * iter_per_epoch // 60 - spend_time // 60))
 
-            if (wandb is not None) and (not ddp or dist.get_rank() == 0):
-                wandb.log({"loss": loss,
+            if (tracker is not None) and (not ddp or dist.get_rank() == 0):
+                tracker.log({"loss": loss,
                            "lr": optimizer.param_groups[-1]['lr'],
                            "epoch_Time": spend_time / (step + 1) * iter_per_epoch // 60 - spend_time // 60})
 
@@ -113,10 +129,10 @@ def init_model(lm_config):
     model = MiniMindLM(lm_config)
     moe_path = '_moe' if lm_config.use_moe else ''
     ckp = f'./out/rlhf_{lm_config.dim}{moe_path}.pth'
-    state_dict = torch.load(ckp, map_location=args.device)
+    state_dict = torch.load(ckp, map_location=DEVICE)
     model.load_state_dict(state_dict, strict=False)
     Logger(f'LLM总参数量：{sum(p.numel() for p in model.parameters() if p.requires_grad) / 1e6:.3f} 百万')
-    model = model.to(args.device)
+    model = model.to(DEVICE)
     return model, tokenizer
 
 
@@ -140,8 +156,8 @@ if __name__ == "__main__":
     parser.add_argument("--learning_rate", type=float, default=1e-6)
     parser.add_argument("--device", type=str, default="cuda:0" if torch.cuda.is_available() else "cpu")
     parser.add_argument("--dtype", type=str, default="bfloat16")
-    parser.add_argument("--use_wandb", action="store_true")
-    parser.add_argument("--wandb_project", type=str, default="MiniMind-Full-SFT")
+    parser.add_argument("--report_to", type=str, default="")
+    parser.add_argument("--project_name", type=str, default="MiniMind-Full-SFT")
     parser.add_argument("--num_workers", type=int, default=1)
     parser.add_argument("--ddp", action="store_true")
     parser.add_argument("--accumulation_steps", type=int, default=1)
@@ -166,21 +182,19 @@ if __name__ == "__main__":
     torch.manual_seed(1337)
     device_type = "cuda" if "cuda" in args.device else "cpu"
 
-    args.wandb_run_name = f"MiniMind-Distill-Reasoning-Epoch-{args.epochs}-BatchSize-{args.batch_size}-LearningRate-{args.learning_rate}"
+    args.run_name = f"MiniMind-Distill-Reasoning-Epoch-{args.epochs}-BatchSize-{args.batch_size}-LearningRate-{args.learning_rate}"
 
     ctx = nullcontext() if device_type == "cpu" else torch.cuda.amp.autocast()
     ddp = int(os.environ.get("RANK", -1)) != -1  # is this a ddp run?
     ddp_local_rank, DEVICE = 0, "cuda:0"
     if ddp:
         init_distributed_mode()
-        args.device = torch.device(DEVICE)
+        args.device = DEVICE
 
-    if args.use_wandb and (not ddp or ddp_local_rank == 0):
-        import wandb
-
-        wandb.init(project=args.wandb_project, name=args.wandb_run_name)
+    if not ddp or ddp_local_rank == 0:
+        tracker = init_tracker(args)
     else:
-        wandb = None
+        tracker = None
 
     model, tokenizer = init_model(lm_config)
 
@@ -205,4 +219,4 @@ if __name__ == "__main__":
 
     iter_per_epoch = len(train_loader)
     for epoch in range(args.epochs):
-        train_epoch(epoch, wandb)
+        train_epoch(epoch, tracker)
