@@ -110,7 +110,9 @@
 - 收集、蒸馏、整理并清洗去重所有阶段的高质量数据集，且全部开源。
 - 从0实现预训练、指令微调、LoRA、DPO强化学习，白盒模型蒸馏。关键算法几乎不依赖第三方封装的框架，且全部开源。
 - 同时兼容`transformers`、`trl`、`peft`等第三方主流框架。
-- 训练支持单机单卡、单机多卡(DDP、DeepSpeed)训练，支持wandb可视化训练流程。支持动态启停训练。
+
+* 训练支持单机单卡、单机多卡(DDP、DeepSpeed)训练，支持wandb、swanlab可视化训练流程。支持动态启停训练。
+
 - 在第三方测评榜（C-Eval、C-MMLU、OpenBookQA等）进行模型测试。
 - 实现Openai-Api协议的极简服务端，便于集成到第三方ChatUI使用（FastGPT、Open-WebUI等）。
 - 基于streamlit实现最简聊天WebUI前端。
@@ -339,17 +341,20 @@ torchrun --nproc_per_node N train_xxx.py
 deepspeed --master_port 29500 --num_gpus=N train_xxx.py
 ```
 
-可根据需要开启wandb记录训练过程
+可根据需要开启wandb或者swanlab记录训练过程
 
 ```bash
-# 需要登录: wandb login
-torchrun --nproc_per_node N train_xxx.py --use_wandb
+# 以wandb为例，需要登录: wandb login
+torchrun --nproc_per_node N train_xxx.py --report_to wandb
 # and
-python train_xxx.py --use_wandb
+python train_xxx.py --report_to wandb
 ```
 
-通过添加`--use_wandb`参数，可以记录训练过程，训练完成后，可以在wandb网站上查看训练过程。通过修改`wandb_project`
-和`wandb_run_name`参数，可以指定项目名称和运行名称。
+通过添加`--report_to <wandb或者swanlab>`参数，可以使用在线跟踪工具记录训练过程，训练完成后，可以在[wandb网站](https://wandb.ai)或者
+[swanlab网站](https://swanlab.cn)上查看训练过程。通过添加`--project_name <项目名称>`和`--run_name <实验名称>`参数，可以指定项目名称和运行名称。
+
+如果训练服务器无法访问外网，你可以通过添加参数`--report_to swanlab`并根据引导选择3开启离线日志看板模式。在终端使用命令
+`swanlab watch -h 0.0.0.0 -p 8080` 启动SwanLab离线仪表板。
 
 </details>
 

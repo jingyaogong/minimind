@@ -369,14 +369,19 @@ Enable wandb to record the training process if needed:
 
 ```bash
 # Need to log in: wandb login
-torchrun --nproc_per_node N train_xxx.py --use_wandb
+torchrun --nproc_per_node N train_xxx.py --report_to wandb
 # and
-python train_xxx.py --use_wandb
+python train_xxx.py --report_to wandb
 ```
 
-By adding the `--use_wandb` parameter, the training process will be recorded, and after training, you can view the
-process on the wandb website. Modify the `wandb_project` and `wandb_run_name` parameters to specify project and run
-names.
+By adding the `--report_to wandb` parameter, the training process will be recorded, and after training, you can view the
+process on the [wandb](https://wandb.ai) website. Modify the `--project_name <PROJECT NAME>` and `--run_name <RUN NAME>` parameters
+to specify project and run names.
+
+If you prefer using SwanLab or if the server cannot access the internet, you are welcome to use SwanLab and its
+[offline mode](https://docs.swanlab.cn/en/guide_cloud/self_host/offline-board.html) by adding the parameter `--report_to swanlab` and
+following the instruct in terminal. Then open the terminal and use `swanlab watch -h 0.0.0.0 -p 8080` command to start a SwanLab
+offline dashboard.
 
 </details>
 
