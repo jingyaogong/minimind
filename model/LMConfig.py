@@ -19,6 +19,14 @@ class LMConfig(PretrainedConfig):
             rope_theta: int = 1e6,
             dropout: float = 0.0,
             flash_attn: bool = True,
+            # MLA相关配置
+            use_mla: bool = False,
+            q_lora_rank: int = 720,  # query压缩的维度
+            kv_lora_rank: int = 14,
+            qk_nope_head_dim: int = 38,
+            qk_rope_head_dim: int = 32,
+            v_head_dim: int = 64,
+            original_seq_len = 512,
             ####################################################
             # Here are the specific configurations of MOE
             # When use_moe is false, the following is invalid
@@ -32,6 +40,7 @@ class LMConfig(PretrainedConfig):
             aux_loss_alpha: float = 0.1,
             seq_aux: bool = True,
             norm_topk_prob: bool = True,
+            use_cache: bool = False,
             **kwargs,
     ):
         self.dim = dim
@@ -46,6 +55,17 @@ class LMConfig(PretrainedConfig):
         self.rope_theta = rope_theta
         self.dropout = dropout
         self.flash_attn = flash_attn
+
+        self.use_mla = use_mla
+        self.q_lora_rank = q_lora_rank
+        self.kv_lora_rank = kv_lora_rank
+        self.qk_nope_head_dim = qk_nope_head_dim
+        self.qk_rope_head_dim = qk_rope_head_dim
+        self.v_head_dim = v_head_dim
+        self.original_seq_len = original_seq_len
+        self.mscale: float = 1.
+        self.rope_factor = 20
+        self.max_batch_size = 1
         ####################################################
         # Here are the specific configurations of MOE
         # When use_moe is false, the following is invalid
@@ -58,4 +78,5 @@ class LMConfig(PretrainedConfig):
         self.aux_loss_alpha = aux_loss_alpha  # 辅助损失的alpha参数
         self.seq_aux = seq_aux  # 是否在序列级别上计算辅助损失
         self.norm_topk_prob = norm_topk_prob  # 是否标准化top-k概率
+        self.use_cache = use_cache
         super().__init__(**kwargs)

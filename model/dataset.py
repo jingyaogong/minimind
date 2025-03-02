@@ -1,31 +1,87 @@
 import json
-import random
-import re
+import subprocess
+from typing import List, Dict
 
-import pandas as pd
 import numpy as np
-from torch.utils.data import Dataset, DataLoader
+from torch.utils.data import Dataset
 import torch
-from sklearn.model_selection import train_test_split
 import os
-import ast
 
 os.environ["TOKENIZERS_PARALLELISM"] = "false"
 
 
+def count_lines(file_name):
+    out = subprocess.getoutput("wc -l %s" % file_name)
+    return int(out.split()[0])
+
+
+def texts_to_bin(input_path, tokenizer, content_key="content"):
+    max_buffered_length = 1 * 1024 * 1024
+    output_path = f'{input_path}.bin'
+    with open(input_path, "r", encoding="utf-8") as reader:
+        with open(output_path, "wb") as writer:
+            buffered_ids = []
+            i = 0
+            while True:
+                line = reader.readline()
+                if not line:
+                    break
+                content = json.loads(line).get(content_key, "")
+                if not content:
+                    continue
+                
+                # 将数据序列化为二进制格式
+                tokenized = tokenizer(content)
+                buffered_ids += tokenized["input_ids"]
+                if len(buffered_ids) >= max_buffered_length:
+                    arr = np.array(buffered_ids, dtype=np.uint16)
+                    writer.write(arr.tobytes())
+                    buffered_ids.clear()
+                    i += 1
+                    print(f"write {i}m bytes") if i % 100 == 0 else None
+            # 处理最后一段不满max_buffer_length的token序列
+            if len(buffered_ids) > 0:
+                arr = np.array(buffered_ids, dtype=np.uint16)
+                writer.write(arr.tobytes())
+                print(f"write arr: {len(arr)}")
+    return output_path
+
+
+class PretrainBinDataset(Dataset):
+    def __init__(self, data_path, max_tokens):
+        with open(data_path) as f:
+            f.seek(0, 2)
+            self.total_tokens = f.tell() // np.dtype("uint16").itemsize
+            print(f"total_tokens: {self.total_tokens}")
+
+        self.data = np.memmap(data_path, dtype=np.uint16, shape=(self.total_tokens//max_tokens, max_tokens))
+
+    def __len__(self):
+        return self.data.shape[0]
+
+    def __getitem__(self, index):
+        assert isinstance(index, int)
+        item = self.data[index]
+        input = item[:-1].astype(np.int64)
+        target = item[1:].astype(np.int64)  # 在计算交叉熵损失时要求目标输出为长整型
+        return torch.from_numpy(input), torch.from_numpy(target)
+
+
 class PretrainDataset(Dataset):
-    def __init__(self, data_path, tokenizer, max_length=512):
+    def __init__(self, data_paths, tokenizer, max_length=512):
         super().__init__()
         self.tokenizer = tokenizer
         self.max_length = max_length
-        self.samples = self.load_data(data_path)
+        self.samples = self.load_data(data_paths)
 
-    def load_data(self, path):
+    @staticmethod
+    def load_data(paths) -> List[Dict]:
         samples = []
-        with open(path, 'r', encoding='utf-8') as f:
-            for line_num, line in enumerate(f, 1):
-                data = json.loads(line.strip())
-                samples.append(data)
+        for path in paths:
+            with open(path, 'r', encoding='utf-8') as f:
+                for line in f:
+                    data = json.loads(line.strip())
+                    samples.append(data)
         return samples
 
     def __len__(self):
@@ -35,21 +91,16 @@ class PretrainDataset(Dataset):
         sample = self.samples[index]
 
         # 构建输入文本
-        text = f"{self.tokenizer.bos_token}{str(sample['text'])}{self.tokenizer.eos_token}"
+        text = sample['text']
         encoding = self.tokenizer(
             text,
             max_length=self.max_length,
-            padding='max_length',
+            padding=False,
             truncation=True,
             return_tensors='pt'
         )
         input_ids = encoding.input_ids.squeeze()
-        loss_mask = (input_ids != self.tokenizer.pad_token_id)
-
-        X = torch.tensor(input_ids[:-1], dtype=torch.long)
-        Y = torch.tensor(input_ids[1:], dtype=torch.long)
-        loss_mask = torch.tensor(loss_mask[1:], dtype=torch.long)
-        return X, Y, loss_mask
+        return torch.tensor(input_ids, dtype=torch.long)
 
 
 class SFTDataset(Dataset):
@@ -196,5 +247,6 @@ class DPODataset(Dataset):
         return loss_mask
 
 
-if __name__ == "__main__":
-    pass
+if __name__ == '__main__':
+    c = count_lines("test")
+    print(c)

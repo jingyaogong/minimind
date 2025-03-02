@@ -13,17 +13,24 @@ warnings.filterwarnings('ignore')
 
 
 def init_model(args):
-    tokenizer = AutoTokenizer.from_pretrained('./model/minimind_tokenizer')
     if args.load == 0:
+        tokenizer = AutoTokenizer.from_pretrained(f'./model/{args.vocab}_tokenizer')
         moe_path = '_moe' if args.use_moe else ''
         modes = {0: 'pretrain', 1: 'full_sft', 2: 'rlhf', 3: 'reason'}
-        ckp = f'./{args.out_dir}/{modes[args.model_mode]}_{args.dim}{moe_path}.pth'
+        suffix = f'_{args.model_suffix}' if args.model_suffix else ''
+        ckp = f'./{args.out_dir}/{modes[args.model_mode]}_{args.dim}{moe_path}{suffix}.pth'
 
         model = MiniMindLM(LMConfig(
             dim=args.dim,
             n_layers=args.n_layers,
+            n_heads=args.n_heads,
+            n_kv_heads=args.n_kv_heads,
             max_seq_len=args.max_seq_len,
-            use_moe=args.use_moe
+            use_moe=args.use_moe,
+            vocab_size=tokenizer.vocab_size,
+            use_mla=args.use_mla,
+            use_cache=True,
+            torch_dtype=args.dtype,
         ))
 
         state_dict = torch.load(ckp, map_location=args.device)
@@ -105,8 +112,11 @@ def main():
     parser = argparse.ArgumentParser(description="Chat with MiniMind")
     parser.add_argument('--lora_name', default='None', type=str)
     parser.add_argument('--out_dir', default='out', type=str)
+    parser.add_argument('--model_suffix', default='', type=str)
     parser.add_argument('--temperature', default=0.85, type=float)
     parser.add_argument('--top_p', default=0.85, type=float)
+    parser.add_argument('--rp', default=1., type=float)
+    parser.add_argument('--dtype', default='bfloat16', type=str)
     parser.add_argument('--device', default='cuda' if torch.cuda.is_available() else 'cpu', type=str)
     # 此处max_seq_len（最大允许输入长度）并不意味模型具有对应的长文本的性能，仅防止QA出现被截断的问题
     # MiniMind2-moe (145M)：(dim=640, n_layers=8, use_moe=True)
@@ -114,38 +124,50 @@ def main():
     # MiniMind2 (104M)：(dim=768, n_layers=16)
     parser.add_argument('--dim', default=512, type=int)
     parser.add_argument('--n_layers', default=8, type=int)
+    parser.add_argument('--n_heads', default=8, type=int)
+    parser.add_argument('--n_kv_heads', default=2, type=int)
     parser.add_argument('--max_seq_len', default=8192, type=int)
     parser.add_argument('--use_moe', default=False, type=bool)
+    parser.add_argument('--vocab', default='minimind', type=str)
+    parser.add_argument('--use_mla', default=False, action='store_true')
     # 携带历史对话上下文条数
     # history_cnt需要设为偶数，即【用户问题, 模型回答】为1组；设置为0时，即当前query不携带历史上文
     # 模型未经过外推微调时，在更长的上下文的chat_template时难免出现性能的明显退化，因此需要注意此处设置
     parser.add_argument('--history_cnt', default=0, type=int)
     parser.add_argument('--stream', default=True, type=bool)
     parser.add_argument('--load', default=0, type=int, help="0: 原生torch权重，1: transformers加载")
-    parser.add_argument('--model_mode', default=1, type=int,
+    parser.add_argument('--model_mode', default=0, type=int,
                         help="0: 预训练模型，1: SFT-Chat模型，2: RLHF-Chat模型，3: Reason模型")
+    parser.add_argument('--test_mode', default=0, type=int, choices=[0, 1], help="测试模式；0：自动测试，1：手动测试")
     args = parser.parse_args()
 
+    if args.device == 'cpu':
+        # intel i5 12490f 发现 bfloat16 速度明显慢于 float32
+        args.dtype = 'float32'
     model, tokenizer = init_model(args)
 
     prompts = get_prompt_datas(args)
-    test_mode = int(input('[0] 自动测试\n[1] 手动输入\n'))
+    test_mode = args.test_mode
     messages = []
     for idx, prompt in enumerate(prompts if test_mode == 0 else iter(lambda: input('👶: '), '')):
         setup_seed(random.randint(0, 2048))
         # setup_seed(2025)  # 如需固定每次输出则换成【固定】的随机种子
         if test_mode == 0: print(f'👶: {prompt}')
 
-        messages = messages[-args.history_cnt:] if args.history_cnt else []
-        messages.append({"role": "user", "content": prompt})
+        if args.model_mode == 0:
+            new_prompt = tokenizer.bos_token + prompt
+        else:
+            messages = messages[-args.history_cnt:] if args.history_cnt else []
+            messages.append({"role": "user", "content": prompt})
 
-        new_prompt = tokenizer.apply_chat_template(
-            messages,
-            tokenize=False,
-            add_generation_prompt=True
-        )[-args.max_seq_len + 1:] if args.model_mode != 0 else (tokenizer.bos_token + prompt)
+            new_prompt = tokenizer.apply_chat_template(
+                messages,
+                tokenize=False,
+                add_generation_prompt=True
+            )[-args.max_seq_len + 1:]
 
         answer = new_prompt
+
         with torch.no_grad():
             x = torch.tensor(tokenizer(new_prompt)['input_ids'], device=args.device).unsqueeze(0)
             outputs = model.generate(
@@ -154,22 +176,25 @@ def main():
                 max_new_tokens=args.max_seq_len,
                 temperature=args.temperature,
                 top_p=args.top_p,
-                stream=True,
+                rp=args.rp,
+                stream=args.stream,
                 pad_token_id=tokenizer.pad_token_id
             )
 
             print('🤖️: ', end='')
             try:
-                if not args.stream:
-                    print(tokenizer.decode(outputs.squeeze()[x.shape[1]:].tolist(), skip_special_tokens=True), end='')
-                else:
+                if args.stream:
                     history_idx = 0
                     for y in outputs:
-                        answer = tokenizer.decode(y[0].tolist(), skip_special_tokens=True)
+                        lis = y[0].tolist()
+                        answer = tokenizer.decode(lis, skip_special_tokens=True)
                         if (answer and answer[-1] == '�') or not answer:
                             continue
-                        print(answer[history_idx:], end='', flush=True)
+                        # 此处兼容自定义的按字分词表的多余空格
+                        print(answer[history_idx + 1 if args.vocab == 'char' and history_idx > 0 else history_idx:], end='', flush=True)
                         history_idx = len(answer)
+                else:
+                    print(tokenizer.decode(outputs.squeeze()[x.shape[1]:].tolist(), skip_special_tokens=True), end='')
             except StopIteration:
                 print("No answer")
             print('\n')

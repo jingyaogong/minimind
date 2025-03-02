@@ -1,3 +1,9 @@
-/model/__pycache__
+.idea/
+
+__pycache__
+
 /dataset
 /out
+/logs
+
+/MiniMind2
