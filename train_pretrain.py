@@ -139,6 +139,7 @@ if __name__ == "__main__":
     parser.add_argument('--max_seq_len', default=512, type=int)
     parser.add_argument('--use_moe', default=False, type=bool)
     parser.add_argument("--data_path", type=str, default="./dataset/pretrain_hq.jsonl")
+    parser.add_argument("--load_ckpt", type=str, default=None, help="Path to a pretrained .pth file to load")
     args = parser.parse_args()
 
     lm_config = LMConfig(dim=args.dim, n_layers=args.n_layers, max_seq_len=args.max_seq_len, use_moe=args.use_moe)
@@ -168,6 +169,14 @@ if __name__ == "__main__":
         wandb = None
 
     model, tokenizer = init_model(lm_config)
+    if args.load_ckpt is not None:
+        Logger(f"Loading checkpoint from {args.load_ckpt}")
+        state_dict = torch.load(args.load_ckpt, map_location=args.device)
+
+        if isinstance(model, torch.nn.parallel.DistributedDataParallel):
+            model.module.load_state_dict(state_dict)
+        else:
+            model.load_state_dict(state_dict)
     train_ds = PretrainDataset(args.data_path, tokenizer, max_length=lm_config.max_seq_len)
     train_sampler = DistributedSampler(train_ds) if ddp else None
     train_loader = DataLoader(
