@@ -146,7 +146,6 @@ if __name__ == "__main__":
     os.makedirs(args.save_dir, exist_ok=True)
     os.makedirs(args.out_dir, exist_ok=True)
     tokens_per_iter = args.batch_size * lm_config.max_seq_len
-    torch.manual_seed(1337)
     device_type = "cuda" if "cuda" in args.device else "cpu"
 
     args.wandb_run_name = f"MiniMind-Pretrain-Epoch-{args.epochs}-BatchSize-{args.batch_size}-LearningRate-{args.learning_rate}"
@@ -156,9 +155,17 @@ if __name__ == "__main__":
     ddp = int(os.environ.get("RANK", -1)) != -1  # is this a ddp run?
     ddp_local_rank, DEVICE = 0, "cuda:0"
 
+    base_seed = 1337
+    torch.manual_seed(base_seed)
+    torch.cuda.manual_seed(base_seed)
+
     if ddp:
         init_distributed_mode()
         args.device = torch.device(DEVICE)
+        rank = dist.get_rank()
+        torch.manual_seed(base_seed + rank)
+        # 同时设置 CUDA 的随机种子
+        torch.cuda.manual_seed(base_seed + rank)
 
     if args.use_wandb and (not ddp or ddp_local_rank == 0):
         import wandb
