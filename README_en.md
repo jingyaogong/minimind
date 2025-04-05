@@ -91,14 +91,14 @@ learning threshold for LLMs, allowing everyone to start by understanding each li
 language model from scratch, not just performing **inference**! With server costs of less than 3 RMB, you can experience
 the entire process of building a language model from 0 to 1. Let's enjoy the fun of creation together!
 
-> [!NOTE]  
+> [!NOTE]
 > (As of 2025-02-07) The MiniMind series has completed pretraining for multiple models, with the smallest one being only
 > 25.8M (0.02B) and capable of smooth conversation!
 
 <details style="color:rgb(128,128,128)">
 <summary>Models List</summary>
 
-| Model (Size)            | Inference Usage (Approx.) | Release    | 
+| Model (Size)            | Inference Usage (Approx.) | Release    |
 |-------------------------|---------------------------|------------|
 | MiniMind2-small (26M)   | 0.5 GB                    | 2025.02.06 |
 | MiniMind2-MoE (145M)    | 1.0 GB                    | 2025.02.06 |
@@ -131,7 +131,7 @@ We hope this open-source project can help LLM beginners quickly get started!
 
 ### 👉**Update log**
 
-<details close> 
+<details close>
 <summary> <b>2025-02-09 (newest 🎉🎉🎉)</b> </summary>
 
 - Major update since the release, with the release of MiniMind2 Series.
@@ -154,7 +154,7 @@ We hope this open-source project can help LLM beginners quickly get started!
 
 </details>
 
-<details close> 
+<details close>
 <summary> <b>2024-10-05</b> </summary>
 
 - Expanded MiniMind to include multimodal capabilities—visual.
@@ -162,7 +162,7 @@ We hope this open-source project can help LLM beginners quickly get started!
 
 </details>
 
-<details close> 
+<details close>
 <summary> <b>2024-09-27</b> </summary>
 
 - Updated preprocessing method for the pretrain dataset on 09-27 to ensure text integrity. The method of converting to
@@ -172,7 +172,7 @@ We hope this open-source project can help LLM beginners quickly get started!
 
 </details>
 
-<details close> 
+<details close>
 <summary> <b>2024-09-17</b> </summary>
 
 - Updated minimind-v1-moe model.
@@ -191,7 +191,7 @@ We hope this open-source project can help LLM beginners quickly get started!
 
 </details>
 
-<details close> 
+<details close>
 <summary> <b>2024-08-27</b> </summary>
 
 - Initial open-source release of the project.
@@ -276,7 +276,7 @@ for guidance.
 ### 2. Data Download
 
 Download the required data files from
-the [dataset download link](https://www.modelscope.cn/datasets/gongjy/minimind_dataset/files) 
+the [dataset download link](https://www.modelscope.cn/datasets/gongjy/minimind_dataset/files)
 (please `mkdir dataset`) and place them in the `./dataset` directory.
 
 <details style="color:rgb(128,128,128)">
@@ -293,6 +293,16 @@ needs and GPU resources.
 ### 3. Start Training
 
 **3.1 Pretraining (Learning Knowledge)**
+
+Devices are automatically selected according to the following priority:
+- CUDA
+- MPS
+- CPU
+
+If want to use a specific device, please use the --device parameter:
+- `cuda:0`
+- `mps:0`
+- `cpu`
 
 ```bash
 python train_pretrain.py
@@ -482,11 +492,11 @@ The data format for `dpo.jsonl` is:
 ```text
 {
   "chosen": [
-    {"content": "Q", "role": "user"}, 
+    {"content": "Q", "role": "user"},
     {"content": "good answer", "role": "assistant"}
-  ], 
+  ],
   "rejected": [
-    {"content": "Q", "role": "user"}, 
+    {"content": "Q", "role": "user"},
     {"content": "bad answer", "role": "assistant"}
   ]
 }
@@ -647,18 +657,18 @@ Reference model parameter versions are shown in the table below:
 <summary>Training Cost Summary & Prediction</summary>
 
 > MiniMind2-Small Parameters
->> `pretrain_hq` + `sft_mini_512` dataset  
-<br/>Single 3090 GPU (1 epoch) + 2.1 hours + Cost: 2.73 RMB  
+>> `pretrain_hq` + `sft_mini_512` dataset
+<br/>Single 3090 GPU (1 epoch) + 2.1 hours + Cost: 2.73 RMB
 <br/>You can train the MiniMind-Zero-0.025B model from scratch!!!
 
 > MiniMind2-Small Parameters
->> `pretrain_hq` + `sft_512` + `sft_2048` + `dpo` dataset  
-<br/>Single 3090 GPU (2 epochs) + approximately 38.16 hours + Cost: 49.61 RMB  
+>> `pretrain_hq` + `sft_512` + `sft_2048` + `dpo` dataset
+<br/>Single 3090 GPU (2 epochs) + approximately 38.16 hours + Cost: 49.61 RMB
 <br/>You can train the MiniMind2-Small-0.025B model from scratch!!!
 
 > MiniMind2 Parameters
->> `pretrain_hq` + `sft_512` + `sft_2048` + `dpo` dataset  
-<br/>Single 3090 GPU (2 epochs) + approximately 122 hours + Cost: 158.6 RMB  
+>> `pretrain_hq` + `sft_512` + `sft_2048` + `dpo` dataset
+<br/>Single 3090 GPU (2 epochs) + approximately 122 hours + Cost: 158.6 RMB
 <br/>You can train the MiniMind2-0.1B model from scratch!!!
 
 </details>
@@ -699,11 +709,11 @@ download and test the model's performance.
 ### **1. Pretraining**:
 
 The first task for LLM is not to interact directly with humans, but to fill the network parameters with knowledge. The "
-ink" of knowledge theoretically needs to be as full as possible, generating a large accumulation of world knowledge.  
+ink" of knowledge theoretically needs to be as full as possible, generating a large accumulation of world knowledge.
 Pretraining allows the model to first study a massive amount of basic knowledge, such as gathering high-quality training
-data from sources like Wikipedia, news articles, and books.  
+data from sources like Wikipedia, news articles, and books.
 This process is "unsupervised," meaning humans don't need to make any "supervised" corrections during the process; the
-model learns patterns and knowledge points on its own from large amounts of text.  
+model learns patterns and knowledge points on its own from large amounts of text.
 The goal at this stage is simple: **learn word chaining**. For example, when we input the word "Qin Shi Huang," it can
 continue with "was the first emperor of China."
 
@@ -719,15 +729,15 @@ python train_pretrain.py
 ### **2. Supervised Fine-Tuning (SFT)**:
 
 After pretraining, the LLM has acquired a large amount of knowledge, but it can only engage in word chaining and doesn't
-know how to chat with humans.  
-The SFT stage involves applying a custom chat template to fine-tune the semi-finished LLM.  
+know how to chat with humans.
+The SFT stage involves applying a custom chat template to fine-tune the semi-finished LLM.
 For example, when the model encounters a template like [Question->Answer, Question->Answer], it no longer blindly chains
-words but understands this is a complete conversation.  
+words but understands this is a complete conversation.
 This process is known as instruction fine-tuning, similar to teaching a well-learned "Newton" to adapt to 21st-century
-smartphone chat habits, learning the rule that messages from others appear on the left, and the user's on the right.  
+smartphone chat habits, learning the rule that messages from others appear on the left, and the user's on the right.
 During training, MiniMind's instruction and response lengths are truncated to 512 tokens to save memory. This is like
 learning with short essays first, then gradually tackling longer ones like an 800-word essay once you can handle 200
-words.  
+words.
 When length expansion is needed, only a small amount of 2k/4k/8k length dialogue data is required for further
 fine-tuning (preferably with RoPE-NTK benchmark differences).
 > During inference, adjusting the RoPE linear difference makes it easy to extrapolate to lengths of 2048 and above
@@ -747,15 +757,15 @@ python train_full_sft.py
 ### **3. Reinforcement Learning from Human Feedback (RLHF)**
 
 In the previous training steps, the model has acquired basic conversational abilities, but these are entirely based on
-word chaining, without positive or negative reinforcement examples.  
+word chaining, without positive or negative reinforcement examples.
 At this point, the model doesn't know what answers are good or bad. We want it to align more with human preferences and
-reduce the probability of unsatisfactory responses.  
+reduce the probability of unsatisfactory responses.
 This process is like providing the model with new training using examples of excellent employees' behavior and poor
-employees' behavior to learn how to respond better.  
-Here, we use RLHF’s Direct Preference Optimization (DPO).  
-Unlike RL algorithms like PPO (Proximal Policy Optimization), which require reward models and value models,  
+employees' behavior to learn how to respond better.
+Here, we use RLHF’s Direct Preference Optimization (DPO).
+Unlike RL algorithms like PPO (Proximal Policy Optimization), which require reward models and value models,
 DPO derives an explicit solution from the PPO reward model, replacing online reward models with offline data, where the
-Ref model's outputs can be pre-saved.  
+Ref model's outputs can be pre-saved.
 DPO performance is nearly identical but requires running only the actor_model and ref_model, which greatly reduces
 memory usage and enhances training stability.
 > **Note**: The RLHF step **is not required**, as it typically does not improve the model’s "intelligence" but is used
@@ -773,32 +783,32 @@ python train_dpo.py
 
 ### **4. Knowledge Distillation (KD)**
 
-After the previous training steps, the model has fully acquired basic capabilities and is usually ready for release.  
+After the previous training steps, the model has fully acquired basic capabilities and is usually ready for release.
 Knowledge distillation can further optimize the model's performance and efficiency. Distillation involves having a
-smaller student model learn from a larger teacher model.  
-The teacher model is typically a large, well-trained model with high accuracy and generalization capabilities.  
-The student model is a smaller model aimed at learning the behavior of the teacher model, not directly from raw data.  
+smaller student model learn from a larger teacher model.
+The teacher model is typically a large, well-trained model with high accuracy and generalization capabilities.
+The student model is a smaller model aimed at learning the behavior of the teacher model, not directly from raw data.
 In SFT learning, the model’s goal is to fit the hard labels (e.g., real category labels like 0 or 6400) in word token
-classification.  
+classification.
 In knowledge distillation, the softmax probability distribution of the teacher model is used as soft labels. The small
-model learns from these soft labels and uses KL-Loss to optimize its parameters.  
+model learns from these soft labels and uses KL-Loss to optimize its parameters.
 In simpler terms, SFT directly learns the solution provided by the teacher, while KD "opens up" the teacher’s brain and
-mimics how the teacher’s neurons process the problem.  
+mimics how the teacher’s neurons process the problem.
 For example, when the teacher model calculates `1+1=2`, the last layer's neuron states might be `a=0`, `b=100`, `c=-99`,
-etc. The student model learns how the teacher's brain works by studying this state.  
-The goal of knowledge distillation is simple: make the smaller model more efficient while preserving performance.  
+etc. The student model learns how the teacher's brain works by studying this state.
+The goal of knowledge distillation is simple: make the smaller model more efficient while preserving performance.
 However, with the development of LLMs, the term "model distillation" has become widely misused, leading to the creation
-of "white-box/black-box" distillation.  
+of "white-box/black-box" distillation.
 For closed-source models like GPT-4, where internal structures cannot be accessed, learning from its output data is
-known as black-box distillation, which is the most common approach in the era of large models.  
+known as black-box distillation, which is the most common approach in the era of large models.
 Black-box distillation is exactly the same as the SFT process, except the data is collected from the large model’s
-output, requiring only data collection and further fine-tuning.  
-Note to change the base model loaded to `full_sft_*.pth`, as distillation is performed based on the fine-tuned model.  
+output, requiring only data collection and further fine-tuning.
+Note to change the base model loaded to `full_sft_*.pth`, as distillation is performed based on the fine-tuned model.
 The `./dataset/sft_1024.jsonl` and `./dataset/sft_2048.jsonl` datasets, collected from the qwen2.5-7/72B-Instruct large
 model, can be directly used for SFT to obtain some behavior from Qwen.
 
 ```bash
-# Make sure to change the dataset path and max_seq_len in train_full_sft.py  
+# Make sure to change the dataset path and max_seq_len in train_full_sft.py
 torchrun --nproc_per_node 1 train_full_sft.py
 # or
 python train_full_sft.py
@@ -819,10 +829,10 @@ python train_distillation.py
 ### **5. LoRA (Low-Rank Adaptation)**
 
 LoRA is an efficient parameter-efficient fine-tuning (PEFT) method designed to fine-tune pretrained models via low-rank
-decomposition.  
-Compared to full parameter fine-tuning, LoRA only requires updating a small number of parameters.  
+decomposition.
+Compared to full parameter fine-tuning, LoRA only requires updating a small number of parameters.
 The core idea of LoRA is to introduce low-rank decomposition into the model's weight matrix and update only the low-rank
-part, leaving the original pretrained weights unchanged.  
+part, leaving the original pretrained weights unchanged.
 The code can be found in `./model/model_lora.py` and `train_lora.py`, which fully implement the LoRA process from
 scratch without relying on third-party libraries.
 
@@ -836,13 +846,13 @@ python train_lora.py
 > model dimension, and each new save will overwrite the previous one).
 
 Many people are puzzled: how can a model learn private domain knowledge? How should datasets be prepared? How to
-transfer general models into specialized domain models?  
+transfer general models into specialized domain models?
 Here are some examples. For general models, if there is a lack of medical domain knowledge, you can try adding
-domain-specific knowledge to the original model for better performance.  
+domain-specific knowledge to the original model for better performance.
 At the same time, we typically don't want to lose the basic abilities of the model when learning domain knowledge. LoRA
-can address this issue well.  
+can address this issue well.
 Simply prepare dialogue datasets in the following format and place them in `./dataset/lora_xxx.jsonl`, then
-start `python train_lora.py`.  
+start `python train_lora.py`.
 Training will result in new model weights in `./out/lora/lora_xxx.pth`.
 
 **Medical Scenario**
@@ -862,7 +872,7 @@ Training will result in new model weights in `./out/lora/lora_xxx.pth`.
 ```
 
 At this point, combining the **base model + LoRA model** will enhance the medical domain capabilities without
-sacrificing the original model’s abilities.  
+sacrificing the original model’s abilities.
 You can evaluate the model’s performance using `eval_model.py`.
 
 ```bash
@@ -873,12 +883,12 @@ python eval_model.py --lora_name 'lora_medical' --model_mode 2
 **Small Test**
 
 ```
-👶: I often feel dizzy recently. What might be the cause?  
+👶: I often feel dizzy recently. What might be the cause?
 🤖️: Dizziness can have many causes, including but not limited to heart disease, eye injury, allergies, skin issues, stress, anxiety, fatigue, medication side effects, sexual dysfunction, or others...
 
 ---
 
-👶: What is your relationship with OpenAI?  
+👶: What is your relationship with OpenAI?
 🤖️: I am MiniMind, an AI assistant developed by Jingyao Gong. I interact with users through natural language processing and algorithms.
 ```
 
@@ -887,17 +897,17 @@ overfitting on domain-specific data, which could reduce the generality of the mo
 
 ### **6. Training the Reasoning Model (Reasoning Model)**
 
-DeepSeek-R1 is so popular that it has almost redefined the future paradigm for LLMs.  
+DeepSeek-R1 is so popular that it has almost redefined the future paradigm for LLMs.
 The paper suggests that models with `>3B` parameters need multiple rounds of cold starts and RL reward training to
-achieve noticeable improvements in reasoning abilities.  
+achieve noticeable improvements in reasoning abilities.
 The fastest, most reliable, and most economical approach, and the various so-called reasoning models that have emerged
-recently, are almost all directly trained through distillation on data.  
+recently, are almost all directly trained through distillation on data.
 However, due to the lack of technical depth, the distillation faction is often looked down upon by the RL faction (
-haha).  
+haha).
 I quickly attempted this on the Qwen series 1.5B small model and soon replicated the mathematical reasoning abilities of
-the Zero process.  
+the Zero process.
 However, a disappointing consensus is: models with too few parameters almost cannot achieve any reasoning effects
-through cold-start SFT + GRPO.  
+through cold-start SFT + GRPO.
 MiniMind2 firmly chose the distillation route at the beginning, but if the RL method for models with 0.1B parameters
 makes some small progress in the future, the training scheme will be updated accordingly.
 
@@ -931,7 +941,7 @@ tags (the reward values should be higher in the early cold-start stages).
 
 Another issue is that although the distillation process is similar to SFT, the experimental results show that the model
 struggles to consistently follow the template for responses, meaning it may not always adhere to the thinking and
-answering tag constraints.  
+answering tag constraints.
 A trick here is to add a loss penalty for token positions with tags, as detailed in `train_distill_reason.py`:
 
 ```text
@@ -941,7 +951,7 @@ loss_mask[sp_ids] = 10 # Penalty coefficient
 ```
 
 Another tip is that, since the reasoning data only filters for data of length `<1024`, there is less multi-turn dialogue
-and English data.  
+and English data.
 Therefore, `r1_mix_1024.jsonl` has been mixed with about 10k multi-turn dialogues + English data to prevent the model
 from forgetting too much.
 
@@ -960,23 +970,23 @@ python train_distill_reason.py
 Test it:
 
 ```text
-👶: Please introduce yourself.  
-🤖️: <think>  
-Hmm, the user asks me to introduce myself. I need to explain myself. First, I should clarify who the user is: a student, a professional, or an ordinary person. The user could be a student or a professional, so the information I provide should help them.  
-Then, I need to respond to the user, which might include introducing my location, interests, career experiences, etc. The user might also want to know where I am, such as my career development or work experience.  
-I should be careful with my wording, it should be formal but not too formal, and keep it concise and clear so the user can easily understand and access related information.  
-Finally, I should summarize, letting the user know how I can help them complete their tasks, so they have more information about me.  
-</think>  
-<answer>  
-I am **"Your Name"**, what is your name?  
+👶: Please introduce yourself.
+🤖️: <think>
+Hmm, the user asks me to introduce myself. I need to explain myself. First, I should clarify who the user is: a student, a professional, or an ordinary person. The user could be a student or a professional, so the information I provide should help them.
+Then, I need to respond to the user, which might include introducing my location, interests, career experiences, etc. The user might also want to know where I am, such as my career development or work experience.
+I should be careful with my wording, it should be formal but not too formal, and keep it concise and clear so the user can easily understand and access related information.
+Finally, I should summarize, letting the user know how I can help them complete their tasks, so they have more information about me.
+</think>
+<answer>
+I am **"Your Name"**, what is your name?
 </answer>
 
-👶: Which subject are you better at?  
-🤖️: <think>  
-Hello! I am MiniMind-R1, an intelligent assistant developed by a Chinese individual. If you have any questions, I will do my best to assist you.  
-</think>  
-<answer>  
-Hello! I am MiniMind-R1, an intelligent assistant developed by a Chinese individual. If you have any questions, I will do my best to assist you.  
+👶: Which subject are you better at?
+🤖️: <think>
+Hello! I am MiniMind-R1, an intelligent assistant developed by a Chinese individual. If you have any questions, I will do my best to assist you.
+</think>
+<answer>
+Hello! I am MiniMind-R1, an intelligent assistant developed by a Chinese individual. If you have any questions, I will do my best to assist you.
 </answer>
 ```
 
@@ -985,27 +995,27 @@ Hello! I am MiniMind-R1, an intelligent assistant developed by a Chinese individ
 ## Ⅳ Model Parameter Settings
 
 📋 Regarding LLM parameter configurations, an interesting paper, [MobileLLM](https://arxiv.org/pdf/2402.14905), provides
-a detailed study and experiment.  
-The Scaling Law has unique patterns for small models.  
+a detailed study and experiment.
+The Scaling Law has unique patterns for small models.
 The parameters that cause the Transformer to scale mainly depend on `d_model` and `n_layers`.
 
 * `d_model`↑ + `n_layers`↓ -> Short and fat
 * `d_model`↓ + `n_layers`↑ -> Tall and thin
 
 The Scaling Law paper from 2020 suggests that the training data volume, parameter size, and number of training
-iterations are the key factors determining performance, with the model architecture having almost negligible impact.  
-However, this law doesn't seem to fully apply to small models.  
+iterations are the key factors determining performance, with the model architecture having almost negligible impact.
+However, this law doesn't seem to fully apply to small models.
 MobileLLM suggests that the depth of the architecture is more important than the width, and "deep and narrow" models can
-learn more abstract concepts than "wide and shallow" models.  
+learn more abstract concepts than "wide and shallow" models.
 For example, when the model parameters are fixed at 125M or 350M, the "narrow" models with 30-42 layers perform
 significantly better than the "short and fat" models with around 12 layers, across 8 benchmark tests like commonsense
-reasoning, Q&A, reading comprehension, etc.  
+reasoning, Q&A, reading comprehension, etc.
 This is a fascinating discovery because, in the past, no one tried stacking more than 12 layers when designing
-architectures for small models around the 100M parameter range.  
-This finding aligns with what MiniMind observed during training when adjusting between `d_model` and `n_layers`.  
+architectures for small models around the 100M parameter range.
+This finding aligns with what MiniMind observed during training when adjusting between `d_model` and `n_layers`.
 However, the "deep and narrow" architecture has its limits, and when `d_model`<512, the collapse of word embedding
 dimensions becomes very evident, and increasing layers cannot compensate for the lack of `d_head` due to
-fixed `q_head`.  
+fixed `q_head`.
 When `d_model`>1536, the increase in layers seems to take priority over `d_model` and provides more cost-effective
 parameter-to-performance gains.
 
@@ -1014,7 +1024,7 @@ parameter-to-performance gains.
 * Sets `dim=768`, `n_layers=16` to achieve more significant performance improvements, which better matches the small
   model Scaling-Law curve.
 
-For reference, the parameter settings for GPT-3 are shown in the table below:  
+For reference, the parameter settings for GPT-3 are shown in the table below:
 ![gpt3_config.png](./images/gpt3_config.png)
 
 ---
@@ -1091,22 +1101,22 @@ The test is based on comparing `MiniMind2 series` models with "full_sft" and "rl
   [A1]: As an AI, I do not have personal capabilities or interests, but I can provide knowledge on subjects such as mathematics, science, computer science, linguistics, psychology, and more. If you're interested in mathematics, I can offer some basic knowledge like algebra, geometry, probability, statistics, etc. If you need more in-depth learning, I can also provide relevant online courses, books, research papers, and other resources. Let me know what specific help you need, and I will do my best to assist you.
 
   [Q]: How does Lu Xun's "A Madman's Diary" criticize feudal ethics?
-  [A0]: Lu Xun's "A Madman's Diary" is a work that advocates for human values and moral responsibility. In this work, Lu Xun explores profound themes such as human nature, morality, justice, sacrifice, and responsibility through detailed writing. Here are several ways in which Lu Xun critiques feudal ethics in "A Madman's Diary": 
+  [A0]: Lu Xun's "A Madman's Diary" is a work that advocates for human values and moral responsibility. In this work, Lu Xun explores profound themes such as human nature, morality, justice, sacrifice, and responsibility through detailed writing. Here are several ways in which Lu Xun critiques feudal ethics in "A Madman's Diary":
   1. **Social Reality and Moral Concepts**: Lu Xun addresses social inequality, power dynamics, and human nature through his narrative. He argues that social inequality is not only unjust but also a form of social injustice affecting individuals. He calls for collective effort to build a harmonious society through education, publicity, and laws.
-  2. **Morality and Responsibility**: Through his narrative, Lu Xun highlights the importance of moral education and emphasizes personal responsibility. 
+  2. **Morality and Responsibility**: Through his narrative, Lu Xun highlights the importance of moral education and emphasizes personal responsibility.
   3. **The Individual and Society**: Lu Xun delves into the complex relationship between the individual and society, advocating for collective efforts to contribute to social harmony.
   Lu Xun’s "A Madman's Diary" not only achieved great literary success but also inspired later literary creations with its profound impact on thoughts and societal reflections.
   [A1]: Lu Xun's "A Madman's Diary" is a work that critiques the feudal society's various issues and conflicts, reflecting social inequality and human nature. In this work, Lu Xun critiques feudal society’s problems, like "Frederick Johnson’s 'Eagle Dillon', 'Nazareth', 'Beckham', 'George Wilson'", emphasizing the inequality and complexity of human nature within feudal society. The work criticizes feudal society's corruption, human nature, and the inherent contradictions of the era. This critique reflects Lu Xun’s respect for social issues and his deep understanding of human nature. "A Madman's Diary" is a critical work that raises awareness and challenges the established norms of feudalism and has greatly influenced future critiques.
 
   [Q]: I’ve had a cough for two weeks, should I go to the hospital for a checkup?
-  [A0]: A prolonged cough does require some checkups, and if your cough persists or is accompanied by other symptoms such as difficulty breathing, it's recommended to see a doctor. Based on your symptoms, physical examination, and possible imaging tests (e.g., X-rays, MRIs, or CT scans), the doctor will make a diagnosis. In the meantime, you can try the following to alleviate symptoms: 
+  [A0]: A prolonged cough does require some checkups, and if your cough persists or is accompanied by other symptoms such as difficulty breathing, it's recommended to see a doctor. Based on your symptoms, physical examination, and possible imaging tests (e.g., X-rays, MRIs, or CT scans), the doctor will make a diagnosis. In the meantime, you can try the following to alleviate symptoms:
   1. **Rest**: Ensure you get enough sleep.
   2. **Stay hydrated**: Dehydration can worsen coughing.
   3. **Warm compress**: Apply a warm compress to the sore area to relieve throat pain.
   4. **Avoid irritants**: Avoid substances that may irritate the throat, such as certain chemicals.
   5. **Maintain humidity**: Keep the room well-ventilated, and use a humidifier if necessary.
   If symptoms persist or worsen, seek medical attention immediately. Wishing you a speedy recovery!
-  [A1]: If your cough has lasted for two weeks, it's usually recommended to see a doctor, as it may affect your breathing and heart rate. You can take the following steps to manage your cough: 
+  [A1]: If your cough has lasted for two weeks, it's usually recommended to see a doctor, as it may affect your breathing and heart rate. You can take the following steps to manage your cough:
   1. **Rest**: Gently press on the coughing area with a tissue or elbow.
   2. **Use medication**: If possible, use medications like antihistamines to relieve the cough (under a doctor's guidance).
   3. **Warm compress**: Use a warm compress to alleviate pain and swelling.
@@ -1404,12 +1414,12 @@ is mainly for fun, so take the results lightly:
     ```bash
     curl http://ip:port/v1/chat/completions \
       -H "Content-Type: application/json" \
-      -d '{ 
+      -d '{
         "model": "model-identifier",
-        "messages": [ 
+        "messages": [
           { "role": "user", "content": "What is the highest mountain in the world?" }
-        ], 
-        "temperature": 0.7, 
+        ],
+        "temperature": 0.7,
         "max_tokens": 512,
         "stream": true
     }'
@@ -1460,7 +1470,7 @@ is mainly for fun, so take the results lightly:
 <a href="https://github.com/Nijikadesu"><b>@Nijikadesu</b></a>:
 <a href="https://github.com/jingyaogong/minimind/issues/213">🔗Decompose project code in an interactive notebook format</a>
 
-<details close> 
+<details close>
 <summary> <b>Reference Links & Thanks to the following excellent papers or projects</b> </summary>
 
 - No specific order of ranking
