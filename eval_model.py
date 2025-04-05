@@ -120,7 +120,7 @@ def main():
     # history_cnt需要设为偶数，即【用户问题, 模型回答】为1组；设置为0时，即当前query不携带历史上文
     # 模型未经过外推微调时，在更长的上下文的chat_template时难免出现性能的明显退化，因此需要注意此处设置
     parser.add_argument('--history_cnt', default=0, type=int)
-    parser.add_argument('--stream', default=True, type=bool)
+    parser.add_argument('--stream', default=False, type=bool)
     parser.add_argument('--load', default=0, type=int, help="0: 原生torch权重，1: transformers加载")
     parser.add_argument('--model_mode', default=1, type=int,
                         help="0: 预训练模型，1: SFT-Chat模型，2: RLHF-Chat模型，3: Reason模型")
@@ -154,7 +154,7 @@ def main():
                 max_new_tokens=args.max_seq_len,
                 temperature=args.temperature,
                 top_p=args.top_p,
-                stream=True,
+                stream=args.stream,
                 pad_token_id=tokenizer.pad_token_id
             )
 
