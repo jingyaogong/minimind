@@ -116,13 +116,21 @@ def init_distributed_mode():
 
 # torchrun --nproc_per_node 2 1-pretrain.py
 if __name__ == "__main__":
+    # Determine default device
+    if torch.cuda.is_available():
+        default_device = "cuda:0"
+    elif torch.backends.mps.is_available():
+        default_device = "mps:0"
+    else:
+        default_device = "cpu"
+
     parser = argparse.ArgumentParser(description="MiniMind Pretraining")
     parser.add_argument("--out_dir", type=str, default="out")
     # 若要以最快速度实现zero则epochs设置为1轮；否则应当利用有限的数据训练2~6个epochs。
     parser.add_argument("--epochs", type=int, default=1)
     parser.add_argument("--batch_size", type=int, default=32)
     parser.add_argument("--learning_rate", type=float, default=5e-4)
-    parser.add_argument("--device", type=str, default="cuda:0" if torch.cuda.is_available() else "cpu")
+    parser.add_argument("--device", type=str, default=default_device)
     parser.add_argument("--dtype", type=str, default="bfloat16")
     parser.add_argument("--use_wandb", action="store_true")
     parser.add_argument("--wandb_project", type=str, default="MiniMind-Pretrain")
@@ -146,7 +154,7 @@ if __name__ == "__main__":
     os.makedirs(args.save_dir, exist_ok=True)
     os.makedirs(args.out_dir, exist_ok=True)
     tokens_per_iter = args.batch_size * lm_config.max_seq_len
-    device_type = "cuda" if "cuda" in args.device else "cpu"
+    device_type = "cuda" if "cuda" in args.device else ("mps" if "mps" in args.device else "cpu")
 
     args.wandb_run_name = f"MiniMind-Pretrain-Epoch-{args.epochs}-BatchSize-{args.batch_size}-LearningRate-{args.learning_rate}"
 
@@ -157,7 +165,10 @@ if __name__ == "__main__":
 
     base_seed = 1337
     torch.manual_seed(base_seed)
-    torch.cuda.manual_seed(base_seed)
+    if device_type == "cuda":
+        torch.cuda.manual_seed(base_seed)
+    elif device_type == "mps":
+        torch.mps.manual_seed(base_seed)
 
     if ddp:
         init_distributed_mode()
