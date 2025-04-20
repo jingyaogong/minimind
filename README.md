@@ -219,7 +219,12 @@ pip install -r requirements.txt -i https://pypi.tuna.tsinghua.edu.cn/simple
 
 ```bash
 git clone https://huggingface.co/jingyaogong/MiniMind2
+cd MiniMind2
+git lfs install
+git lfs pull
 ```
+
+**重要**：完成上面指令后，移动 MiniMind2 目录到 minimind 的根目录下，否则执行下面的步骤会找不到模型。
 
 ### 3.命令行问答
 
