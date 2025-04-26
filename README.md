@@ -130,7 +130,6 @@
 - generate方式重构，继承自GenerationMixin类。
 - 🔥支持llama.cpp、vllm、ollama等热门三方生态。
 - 规范代码和目录结构。
-- 🔥更新：从0实现PPO、GRPO的训练代码。 
 - 改动词表`<s></s>`->`<|im_start|><|im_end|>`
 ```text
 为兼容第三方推理框架llama.cpp、vllm，本次更新需付出一些可观代价。
@@ -510,12 +509,12 @@ quality（当然也还不算high，提升数据质量无止尽）。
 
 ---
 
-## Ⅷ 数据集下载
+## Ⅷ MiniMind训练数据集
 
 > [!NOTE]
 > 2025-02-05后，开源MiniMind最终训练所用的所有数据集，因此无需再自行预处理大规模数据集，避免重复性的数据处理工作。
 
-MiniMind训练数据集 ([ModelScope](https://www.modelscope.cn/datasets/gongjy/minimind_dataset/files) | [HuggingFace](https://huggingface.co/datasets/jingyaogong/minimind_dataset/tree/main))
+MiniMind训练数据集下载地址： [HuggingFace](https://huggingface.co/datasets/jingyaogong/minimind_dataset/tree/main)
 
 > 无需全部clone，可单独下载所需的文件
 

@@ -145,9 +145,7 @@ We hope this open-source project can help LLM beginners quickly get started!
 
 • 🔥 Support for popular third-party ecosystems like llama.cpp, vllm, and ollama.  
 
-• Standardized code and directory structure.  
-
-• 🔥 New: Added training code for PPO and GRPO from scratch.  
+• Standardized code and directory structure.   
 
 • Updated vocabulary tokens: `<s></s>` → `<|im_start|><|im_end|>`.  
 
@@ -559,7 +557,7 @@ Big respect!
 
 ---
 
-## Ⅷ Dataset Download
+## Ⅷ MiniMind Dataset Download
 
 > [!NOTE]
 > After `2025-02-05`, MiniMind’s open-source datasets for final training are provided, so there is no need for
@@ -567,7 +565,7 @@ Big respect!
 
 MiniMind Training Datasets are available for download from:
 
-Dataset ([ModelScope](https://www.modelscope.cn/datasets/gongjy/minimind_dataset/files) | [HuggingFace](https://huggingface.co/datasets/jingyaogong/minimind_dataset/tree/main))
+MiniMind Dataset ([HuggingFace](https://huggingface.co/datasets/jingyaogong/minimind_dataset/tree/main))
 
 > You don’t need to clone everything, just download the necessary files.
 
