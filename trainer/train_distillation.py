@@ -1,22 +1,23 @@
 import os
+import sys
+
+__package__ = "trainer"
+sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), '..')))
 import argparse
 import time
 import math
 import warnings
 
-import pandas as pd
 import torch
 import torch.nn.functional as F
 import torch.distributed as dist
 from contextlib import nullcontext
-
-from torch import optim, nn
+from torch import optim
 from torch.nn.parallel import DistributedDataParallel
 from torch.utils.data import DataLoader, DistributedSampler
 from transformers import AutoTokenizer, AutoModelForCausalLM
-from model.model import MiniMindLM
-from model.LMConfig import LMConfig
-from model.dataset import SFTDataset
+from model.model_minimind import MiniMindConfig, MiniMindForCausalLM
+from dataset.lm_dataset import SFTDataset
 
 warnings.filterwarnings('ignore')
 
@@ -32,9 +33,9 @@ def get_lr(current_step, total_steps, lr):
 
 def distillation_loss_fn(student_logits, teacher_logits, temperature=1.0, reduction='batchmean'):
     with torch.no_grad():
-        teacher_probs = F.softmax(teacher_logits / temperature, dim=-1).detach()
+        teacher_probs = F.softmax(teacher_logits / temperature, hidden_size=-1).detach()
 
-    student_log_probs = F.log_softmax(student_logits / temperature, dim=-1)
+    student_log_probs = F.log_softmax(student_logits / temperature, hidden_size=-1)
 
     kl = F.kl_div(
         student_log_probs,
@@ -98,7 +99,7 @@ def train_epoch(epoch, wandb, alpha=0.0, temperature=1.0):
             distill_loss = torch.tensor(0.0, device=args.device)
 
         # 3) 总损失 = alpha * CE + (1-alpha) * Distill
-        loss = alpha * ce_loss + (1 - alpha) * distill_loss
+        loss = (alpha * ce_loss + (1 - alpha) * distill_loss) / args.accumulation_steps
 
         scaler.scale(loss).backward()
 
@@ -135,20 +136,21 @@ def train_epoch(epoch, wandb, alpha=0.0, temperature=1.0):
         if (step + 1) % args.save_interval == 0 and (not ddp or dist.get_rank() == 0):
             model.eval()
             moe_path = '_moe' if lm_config_student.use_moe else ''
-            ckp = f'{args.save_dir}/full_dist_{lm_config_student.dim}{moe_path}.pth'
+            ckp = f'{args.save_dir}/full_dist_{lm_config_student.hidden_size}{moe_path}.pth'
             if isinstance(model, torch.nn.parallel.DistributedDataParallel):
                 state_dict = model.module.state_dict()
             else:
                 state_dict = model.state_dict()
+            state_dict = {k: v.half() for k, v in state_dict.items()}  # 半精度保存
             torch.save(state_dict, ckp)
             model.train()
 
 
 def init_student_model(lm_config):
-    tokenizer = AutoTokenizer.from_pretrained('./model/minimind_tokenizer')
-    model = MiniMindLM(lm_config)
+    tokenizer = AutoTokenizer.from_pretrained('../model/')
+    model = MiniMindForCausalLM(lm_config)
     moe_path = '_moe' if lm_config.use_moe else ''
-    ckp = f'./out/full_sft_{lm_config.dim}{moe_path}.pth'
+    ckp = f'{args.save_dir}/full_sft_{lm_config.hidden_size}{moe_path}.pth'
     state_dict = torch.load(ckp, map_location=args.device)
     model.load_state_dict(state_dict, strict=False)
     Logger(f'学生模型(LLM)总参数量：{sum(p.numel() for p in model.parameters() if p.requires_grad) / 1e6:.3f} 百万')
@@ -158,9 +160,9 @@ def init_student_model(lm_config):
 
 
 def init_teacher_model(lm_config):
-    model = MiniMindLM(lm_config)
+    model = MiniMindForCausalLM(lm_config)
     moe_path = '_moe' if lm_config.use_moe else ''
-    ckp = f'./out/full_sft_{lm_config.dim}{moe_path}.pth'
+    ckp = f'{args.save_dir}/full_sft_{lm_config.hidden_size}{moe_path}.pth'
     state_dict = torch.load(ckp, map_location=args.device)
     model.load_state_dict(state_dict, strict=False)
     Logger(f'教师模型(LLM)总参数量：{sum(p.numel() for p in model.parameters() if p.requires_grad) / 1e6:.3f} 百万')
@@ -182,7 +184,7 @@ def init_distributed_mode():
 
 if __name__ == "__main__":
     parser = argparse.ArgumentParser(description="MiniMind Full SFT")
-    parser.add_argument("--out_dir", type=str, default="out")
+    parser.add_argument("--out_dir", type=str, default="../out")
     parser.add_argument("--epochs", type=int, default=6)
     parser.add_argument("--batch_size", type=int, default=32)
     parser.add_argument("--learning_rate", type=float, default=5e-6)
@@ -197,18 +199,18 @@ if __name__ == "__main__":
     parser.add_argument("--warmup_iters", type=int, default=0)
     parser.add_argument("--log_interval", type=int, default=100)
     parser.add_argument("--save_interval", type=int, default=100)
+    parser.add_argument("--max_seq_len", type=int, default=512)
     parser.add_argument('--local_rank', type=int, default=-1)
-    parser.add_argument("--data_path", type=str, default="./dataset/sft_data.jsonl")
+    parser.add_argument("--data_path", type=str, default="../dataset/sft_xxx.jsonl")
 
     args = parser.parse_args()
     # 定义学生模型和教师模型
-    lm_config_student = LMConfig(dim=512, n_layers=8, max_seq_len=512)
-    lm_config_teacher = LMConfig(dim=768, n_layers=16, max_seq_len=512)
-    max_seq_len = lm_config_student.max_seq_len
+    lm_config_student = MiniMindConfig(hidden_size=512, num_hidden_layers=8)
+    lm_config_teacher = MiniMindConfig(hidden_size=768, num_hidden_layers=16)
     args.save_dir = os.path.join(args.out_dir)
     os.makedirs(args.save_dir, exist_ok=True)
     os.makedirs(args.out_dir, exist_ok=True)
-    tokens_per_iter = args.batch_size * max_seq_len
+    tokens_per_iter = args.batch_size * args.max_seq_len
     device_type = "cuda" if "cuda" in args.device else "cpu"
 
     args.wandb_run_name = f"MiniMind-Dist-SFT-Epoch-{args.epochs}-BatchSize-{args.batch_size}-LearningRate-{args.learning_rate}"
@@ -239,7 +241,7 @@ if __name__ == "__main__":
     model, tokenizer = init_student_model(lm_config_student)
     teacher_model = init_teacher_model(lm_config_teacher)
 
-    train_ds = SFTDataset(args.data_path, tokenizer, max_length=max_seq_len)
+    train_ds = SFTDataset(args.data_path, tokenizer, max_length=args.max_seq_len)
     train_sampler = DistributedSampler(train_ds) if ddp else None
     train_loader = DataLoader(
         train_ds,

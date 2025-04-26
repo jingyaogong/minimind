@@ -1,23 +1,26 @@
 import os
-import platform
+import sys
+
+__package__ = "trainer"
+sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), '..')))
+
 import argparse
-import random
 import time
 import math
 import warnings
+import torch
 import torch.distributed as dist
 from contextlib import nullcontext
+from torch import optim, nn
+from torch.nn.parallel import DistributedDataParallel
 from torch.utils.data import DataLoader, DistributedSampler
 from transformers import AutoTokenizer, AutoModelForCausalLM
-from model.model import MiniMindLM
-from model.LMConfig import LMConfig
-from model.dataset import SFTDataset
-from model.model_lora import *
+from model.model_minimind import MiniMindConfig, MiniMindForCausalLM
+from dataset.lm_dataset import SFTDataset
 
 warnings.filterwarnings('ignore')
 
 
-# Logger function
 def Logger(content):
     if not ddp or dist.get_rank() == 0:
         print(content)
@@ -27,8 +30,12 @@ def get_lr(current_step, total_steps, lr):
     return lr / 10 + 0.5 * lr * (1 + math.cos(math.pi * current_step / total_steps))
 
 
-# 代码和full_sft「几乎」一致
 def train_epoch(epoch, wandb):
+    # 思考标签占位符
+    start_of_think_ids = tokenizer('<think>').input_ids
+    end_of_think_ids = tokenizer('</think>').input_ids
+    start_of_answer_ids = tokenizer('<answer>').input_ids
+    end_of_answer_ids = tokenizer('</answer>').input_ids
     loss_fct = nn.CrossEntropyLoss(reduction='none')
     start_time = time.time()
     for step, (X, Y, loss_mask) in enumerate(train_loader):
@@ -45,7 +52,16 @@ def train_epoch(epoch, wandb):
                 res.logits.view(-1, res.logits.size(-1)),
                 Y.view(-1)
             ).view(Y.size())
-            loss = (loss * loss_mask).sum() / loss_mask.sum()
+            sp_ids = torch.isin(Y.view(-1),
+                                torch.tensor(start_of_think_ids + end_of_think_ids
+                                             + start_of_answer_ids + end_of_answer_ids
+                                             ).to(args.device))
+            # 在 sp_ids 对应的位置增加额外的惩罚
+            loss_mask = loss_mask.view(-1)
+            loss_mask_sum = loss_mask.sum()
+            loss_mask[sp_ids] = 10
+            loss_mask = loss_mask.view(Y.size())
+            loss = (loss * loss_mask).sum() / loss_mask_sum
             loss += res.aux_loss
             loss = loss / args.accumulation_steps
 
@@ -53,7 +69,7 @@ def train_epoch(epoch, wandb):
 
         if (step + 1) % args.accumulation_steps == 0:
             scaler.unscale_(optimizer)
-            torch.nn.utils.clip_grad_norm_(lora_params, args.grad_clip)
+            torch.nn.utils.clip_grad_norm_(model.parameters(), args.grad_clip)
 
             scaler.step(optimizer)
             scaler.update()
@@ -68,30 +84,40 @@ def train_epoch(epoch, wandb):
                     args.epochs,
                     step,
                     iter_per_epoch,
-                    loss.item(),
+                    loss.item() * args.accumulation_steps,
                     optimizer.param_groups[-1]['lr'],
                     spend_time / (step + 1) * iter_per_epoch // 60 - spend_time // 60))
 
             if (wandb is not None) and (not ddp or dist.get_rank() == 0):
-                wandb.log({"loss": loss,
+                wandb.log({"loss": loss * args.accumulation_steps,
                            "lr": optimizer.param_groups[-1]['lr'],
                            "epoch_Time": spend_time / (step + 1) * iter_per_epoch // 60 - spend_time // 60})
 
         if (step + 1) % args.save_interval == 0 and (not ddp or dist.get_rank() == 0):
             model.eval()
-            # 【区别1】只保存lora权重即可
-            save_lora(model, f'{args.save_dir}/lora/{args.lora_name}_{lm_config.dim}.pth')
+            moe_path = '_moe' if lm_config.use_moe else ''
+            ckp = f'{args.save_dir}/reason_{lm_config.hidden_size}{moe_path}.pth'
+
+            if isinstance(model, torch.nn.parallel.DistributedDataParallel):
+                state_dict = model.module.state_dict()
+            else:
+                state_dict = model.state_dict()
+
+            state_dict = {k: v.half() for k, v in state_dict.items()}  # 半精度保存
+            torch.save(state_dict, ckp)
             model.train()
 
 
 def init_model(lm_config):
-    tokenizer = AutoTokenizer.from_pretrained('./model/minimind_tokenizer')
-    model = MiniMindLM(lm_config)
+    tokenizer = AutoTokenizer.from_pretrained('../model')
+    model = MiniMindForCausalLM(lm_config)
     moe_path = '_moe' if lm_config.use_moe else ''
-    ckp = f'./out/rlhf_{lm_config.dim}{moe_path}.pth'
+    ckp = f'{args.save_dir}/rlhf_{lm_config.hidden_size}{moe_path}.pth'
     state_dict = torch.load(ckp, map_location=args.device)
     model.load_state_dict(state_dict, strict=False)
-    return model.to(args.device), tokenizer
+    Logger(f'LLM总参数量：{sum(p.numel() for p in model.parameters() if p.requires_grad) / 1e6:.3f} 百万')
+    model = model.to(args.device)
+    return model, tokenizer
 
 
 def init_distributed_mode():
@@ -107,37 +133,40 @@ def init_distributed_mode():
 
 
 if __name__ == "__main__":
-    parser = argparse.ArgumentParser(description="MiniMind SFT with LoRA")
-    parser.add_argument("--out_dir", type=str, default="out")
-    parser.add_argument("--epochs", type=int, default=50)
-    parser.add_argument("--batch_size", type=int, default=16)
-    parser.add_argument("--learning_rate", type=float, default=5e-5)
+    parser = argparse.ArgumentParser(description="MiniMind Distill Reasoning")
+    parser.add_argument("--out_dir", type=str, default="../out")
+    parser.add_argument("--epochs", type=int, default=1)
+    parser.add_argument("--batch_size", type=int, default=8)
+    parser.add_argument("--learning_rate", type=float, default=1e-6)
     parser.add_argument("--device", type=str, default="cuda:0" if torch.cuda.is_available() else "cpu")
     parser.add_argument("--dtype", type=str, default="bfloat16")
     parser.add_argument("--use_wandb", action="store_true")
-    parser.add_argument("--wandb_project", type=str, default="MiniMind-LoRA-SFT")
+    parser.add_argument("--wandb_project", type=str, default="MiniMind-Full-SFT")
     parser.add_argument("--num_workers", type=int, default=1)
     parser.add_argument("--ddp", action="store_true")
     parser.add_argument("--accumulation_steps", type=int, default=1)
     parser.add_argument("--grad_clip", type=float, default=1.0)
     parser.add_argument("--warmup_iters", type=int, default=0)
-    parser.add_argument("--log_interval", type=int, default=100)
-    parser.add_argument("--save_interval", type=int, default=1)
+    parser.add_argument("--log_interval", type=int, default=1)
+    parser.add_argument("--save_interval", type=int, default=50)
     parser.add_argument('--local_rank', type=int, default=-1)
-    parser.add_argument('--dim', default=512, type=int)
-    parser.add_argument('--n_layers', default=8, type=int)
-    parser.add_argument('--max_seq_len', default=512, type=int)
+    parser.add_argument('--hidden_size', default=512, type=int)
+    parser.add_argument('--num_hidden_layers', default=8, type=int)
+    parser.add_argument('--max_seq_len', default=1024, type=int)
     parser.add_argument('--use_moe', default=False, type=bool)
-    parser.add_argument("--data_path", type=str, default="./dataset/lora_identity.jsonl")
-    parser.add_argument("--lora_name", type=str, default="lora_identity", help="根据任务保存成lora_(英文/医学/心理...)")
+    parser.add_argument("--data_path", type=str, default="../dataset/r1_mix_1024.jsonl")
+
     args = parser.parse_args()
 
-    lm_config = LMConfig(dim=args.dim, n_layers=args.n_layers, max_seq_len=args.max_seq_len, use_moe=args.use_moe)
+    lm_config = MiniMindConfig(hidden_size=args.hidden_size, num_hidden_layers=args.num_hidden_layers,
+                         use_moe=args.use_moe)
     args.save_dir = os.path.join(args.out_dir)
     os.makedirs(args.save_dir, exist_ok=True)
     os.makedirs(args.out_dir, exist_ok=True)
-    tokens_per_iter = args.batch_size * lm_config.max_seq_len
+    tokens_per_iter = args.batch_size * args.max_seq_len
     device_type = "cuda" if "cuda" in args.device else "cpu"
+
+    args.wandb_run_name = f"MiniMind-Distill-Reasoning-Epoch-{args.epochs}-BatchSize-{args.batch_size}-LearningRate-{args.learning_rate}"
 
     ctx = nullcontext() if device_type == "cpu" else torch.cuda.amp.autocast()
     ddp = int(os.environ.get("RANK", -1)) != -1  # is this a ddp run?
@@ -154,7 +183,6 @@ if __name__ == "__main__":
         # 同时设置 CUDA 的随机种子
         torch.cuda.manual_seed(base_seed + rank)
 
-    args.wandb_run_name = f"MiniMind-Lora-SFT-Epoch-{args.epochs}-BatchSize-{args.batch_size}-LearningRate-{args.learning_rate}"
     if args.use_wandb and (not ddp or ddp_local_rank == 0):
         import wandb
 
@@ -163,26 +191,8 @@ if __name__ == "__main__":
         wandb = None
 
     model, tokenizer = init_model(lm_config)
-    apply_lora(model)
 
-    total_params = sum(p.numel() for p in model.parameters())  # 总参数数量
-    lora_params_count = sum(p.numel() for name, p in model.named_parameters() if 'lora' in name)  # LoRA 参数数量
-    if not ddp or dist.get_rank() == 0:
-        print(f"LLM 总参数量: {total_params}")
-        print(f"LoRA 参数量: {lora_params_count}")
-        print(f"LoRA 参数占比: {lora_params_count / total_params * 100:.2f}%")
-
-    for name, param in model.named_parameters():
-        if 'lora' not in name:
-            param.requires_grad = False
-    lora_params = []
-    for name, param in model.named_parameters():
-        if 'lora' in name:
-            lora_params.append(param)
-
-    # 只对 LoRA 参数进行优化
-    optimizer = optim.AdamW(lora_params, lr=args.learning_rate)
-    train_ds = SFTDataset(args.data_path, tokenizer, max_length=lm_config.max_seq_len)
+    train_ds = SFTDataset(args.data_path, tokenizer, max_length=args.max_seq_len)
     train_sampler = DistributedSampler(train_ds) if ddp else None
     train_loader = DataLoader(
         train_ds,
@@ -195,7 +205,12 @@ if __name__ == "__main__":
     )
 
     scaler = torch.cuda.amp.GradScaler(enabled=(args.dtype in ['float16', 'bfloat16']))
-    iter_per_epoch = len(train_loader)
+    optimizer = optim.AdamW(model.parameters(), lr=args.learning_rate)
 
+    if ddp:
+        model._ddp_params_and_buffers_to_ignore = {"pos_cis"}
+        model = DistributedDataParallel(model, device_ids=[ddp_local_rank])
+
+    iter_per_epoch = len(train_loader)
     for epoch in range(args.epochs):
         train_epoch(epoch, wandb)

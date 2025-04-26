@@ -93,9 +93,9 @@
 
 | 模型 (大小)                 | 推理占用 (约) | Release    | 
 |-------------------------|----------|------------|
-| MiniMind2-small (26M)   | 0.5 GB   | 2025.02.06 |
-| MiniMind2-MoE (145M)    | 1.0 GB   | 2025.02.06 |
-| MiniMind2 (104M)        | 1.0 GB   | 2025.02.06 |
+| MiniMind2-small (26M)   | 0.5 GB   | 2025.04.26 |
+| MiniMind2-MoE (145M)    | 1.0 GB   | 2025.04.26 |
+| MiniMind2 (104M)        | 1.0 GB   | 2025.04.26 |
 | minimind-v1-small (26M) | 0.5 GB   | 2024.08.28 |
 | minimind-v1-moe (4×26M) | 1.0 GB   | 2024.09.17 |
 | minimind-v1 (108M)      | 1.0 GB   | 2024.09.01 |
@@ -114,6 +114,7 @@
 - 在第三方测评榜（C-Eval、C-MMLU、OpenBookQA等）进行模型测试。
 - 实现Openai-Api协议的极简服务端，便于集成到第三方ChatUI使用（FastGPT、Open-WebUI等）。
 - 基于streamlit实现最简聊天WebUI前端。
+- 全面兼容社区热门`llama.cpp`、`vllm`、`ollama`推理引擎或`Llama-Factory`训练框架。
 - 复现(蒸馏/RL)大型推理模型DeepSeek-R1的MiniMind-Reason模型，**数据+模型**全部开源！
 
 希望此开源项目可以帮助LLM初学者快速入门！
@@ -121,7 +122,27 @@
 ### 👉**更新日志**
 
 <details close> 
-<summary> <b>2025-02-09 (newest 🎉🎉🎉)</b> </summary>
+<summary> <b>2025-04-26 (newest 🎉🎉🎉)</b> </summary>
+
+- 重要更新
+- 如有兼容性需要，可访问[🔗旧仓库内容🔗](https://github.com/jingyaogong/minimind/tree/7da201a944a90ed49daef8a0265c959288dff83a)。
+- MiniMind模型参数完全改名，对齐Transformers库模型（统一命名）。
+- generate方式重构，继承自GenerationMixin类。
+- 🔥支持llama.cpp、vllm、ollama等热门三方生态。
+- 规范代码和目录结构。
+- 🔥更新：从0实现PPO、GRPO的训练代码。 
+- 改动词表`<s></s>`->`<|im_start|><|im_end|>`
+```text
+为兼容第三方推理框架llama.cpp、vllm，本次更新需付出一些可观代价。
+本次更新不再支持「直接」加载25-04-26以前的旧模型进行推理。
+由于Llama位置编码方式与minimind存在区别，导致映射Llama模型后QK值存在差异
+MiniMind2系列旧模型均经过权重映射+（微调训练）QKVO线性层校准恢复而来。
+本次更新后将放弃对`minimind-v1`全系列的维护，并在仓库中下线。
+```
+</details>
+
+<details close> 
+<summary> <b>2025-02-09</b> </summary>
 
 - 迎来发布以来重大更新，Release MiniMind2 Series。
 - 代码几乎全部重构，使用更简洁明了的统一结构。
@@ -216,24 +237,33 @@ pip install -r requirements.txt -i https://pypi.tuna.tsinghua.edu.cn/simple
 ```
 
 ### 2.下载模型
-
+到项目根目录
 ```bash
 git clone https://huggingface.co/jingyaogong/MiniMind2
 ```
 
-### 3.命令行问答
+### （可选）命令行问答
 
 ```bash
 # load=0: load from pytorch model, load=1: load from transformers-hf model
 python eval_model.py --load 1 --model_mode 2
 ```
 
-### 4.或启动WebUI
+### （可选）启动WebUI
 
 ```bash
 # 可能需要`python>=3.10` 安装 `pip install streamlit`
 # cd scripts
 streamlit run web_demo.py
+```
+
+### （可选）第三方推理框架
+
+```bash
+# ollama
+ollama run jingyaogong/minimind2
+# vllm
+vllm serve ./MiniMind2/ --served-model-name "minimind"
 ```
 
 ## Ⅱ 从0开始自己训练
@@ -272,6 +302,8 @@ print(torch.cuda.is_available())
 </details>
 
 ### 3.开始训练
+
+目录位于`trainer`
 
 **3.1 预训练（学知识）**
 
@@ -640,6 +672,8 @@ Zero模型权重保存为 `full_sft_512_zero.pth`（见下文MiniMind模型文�
 
 ## Ⅱ 主要训练步骤
 
+> 所有训练脚本均 `cd ./trainer` 目录执行
+
 ### **1. 预训练(Pretrain)**:
 
 LLM首先要学习的并非直接与人交流，而是让网络参数中充满知识的墨水，“墨水” 理论上喝的越饱越好，产生大量的对世界的知识积累。
@@ -676,6 +710,8 @@ python train_full_sft.py
 > 为模型具体dimension，每次保存时新文件会覆盖旧文件）
 
 ## Ⅲ 其它训练步骤
+
+> 所有训练脚本均 `cd ./trainer` 目录执行
 
 ### **3. 人类反馈强化学习(Reinforcement Learning from Human Feedback, RLHF)**
 
@@ -1214,16 +1250,13 @@ MiniMind模型本身预训练数据集小的可怜，也没有针对性的对测
 
 # 📌 其它 (Others)
 
-### 推理与导出
+## 模型转换
 
-* [./scripts/convert_model.py](./scripts/convert_model.py)可以将torch/transformers模型互相转换。
-
-* MiniMind的HuggingFace集合地址：
-  [MiniMind](https://huggingface.co/collections/jingyaogong/minimind-66caf8d999f5c7fa64f399e5)
+* [./scripts/convert_model.py](./scripts/convert_model.py)可以实现`torch模型/transformers`模型之间的转换
 
 ---
 
-### 基于MiniMind-API服务接口
+## 基于MiniMind-API服务接口
 
 * [./scripts/serve_openai_api.py](./scripts/serve_openai_api.py)完成了兼容openai-api的最简聊天接口，方便将自己的模型接入第三方UI
   例如FastGPT、OpenWebUI、Dify等等。
@@ -1264,6 +1297,74 @@ MiniMind模型本身预训练数据集小的可怜，也没有针对性的对测
         "stream": true
     }'
     ```
+
+## VLLM模型推理（服务）
+
+[vLLM](https://github.com/vllm-project/vllm)是极其流行的高效推理框架，支持大模型快速部署，优化显存利用与吞吐量。
+
+```bash
+vllm serve ./MiniMind2/ --model-impl transformers --served-model-name "minimind"
+```
+
+服务将以openai api协议启动，端口默认为8000。
+
+更多用法请参考官方说明～
+
+## llama.cpp
+[llama.cpp](https://github.com/ggerganov/llama.cpp)是一个C++库，
+可以在命令行下直接使用，支持多线程推理，支持GPU加速。
+
+参考官方仓库安装后，在`convert_hf_to_gguf.py` ～760行插入
+```text
+# 添加MiniMind2 tokenizer支持
+if res is None:
+    res = "smollm"
+```
+
+转换自定义训练的minimind模型 -> gguf
+```bash
+python convert_hf_to_gguf.py ../minimind/MiniMind2/
+```
+
+量化模型
+```bash
+./build/bin/llama-quantize ../minimind/MiniMind2/MiniMind2-109M-F16.gguf ../minimind/MiniMind2/Q4-MiniMind2.gguf Q4_K_M
+```
+
+命令行推理
+```bash
+./build/bin/llama-cli -m ../minimind/MiniMind2/MiniMind2-109M-F16.gguf --chat-template chatml
+```
+
+更多用法请参考官方说明～
+
+## ollama
+
+[ollama](https://ollama.ai/)是本地运行大模型的工具，支持多种开源LLM，简单易用。
+
+通过ollama加载自定义的gguf模型，新建minimind.modelfile：
+```text
+FROM ./MiniMind2-109M-F16.gguf
+TEMPLATE """{{ if .System }}<|im_start|>system
+{{ .System }}<|im_end|>
+{{ end }}{{ if .Prompt }}<|im_start|>user
+{{ .Prompt }}<|im_end|>
+{{ end }}<|im_start|>assistant
+"""
+```
+
+加载模型并命名为`minimind2`
+```bash
+ollama create -f minimind.modelfile minimind2
+```
+
+启动推理
+```text
+ollama run minimind2
+> 你好，我是MiniMind2，一个基于xxxxxxxx
+```
+
+更多用法请参考官方说明～
 
 # 📌 Acknowledge
 
