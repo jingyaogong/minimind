@@ -107,10 +107,10 @@ def main():
     # MiniMind2-moe (145M)：(hidden_size=640, num_hidden_layers=8, use_moe=True)
     # MiniMind2-Small (26M)：(hidden_size=512, num_hidden_layers=8)
     # MiniMind2 (104M)：(hidden_size=768, num_hidden_layers=16)
-    parser.add_argument('--hidden_size', default=640, type=int)
+    parser.add_argument('--hidden_size', default=512, type=int)
     parser.add_argument('--num_hidden_layers', default=8, type=int)
     parser.add_argument('--max_seq_len', default=8192, type=int)
-    parser.add_argument('--use_moe', default=True, type=bool)
+    parser.add_argument('--use_moe', action='store_true', help="Enable MOE")
     # 携带历史对话上下文条数
     # history_cnt需要设为偶数，即【用户问题, 模型回答】为1组；设置为0时，即当前query不携带历史上文
     # 模型未经过外推微调时，在更长的上下文的chat_template时难免出现性能的明显退化，因此需要注意此处设置
