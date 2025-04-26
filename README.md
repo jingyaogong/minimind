@@ -514,7 +514,7 @@ quality（当然也还不算high，提升数据质量无止尽）。
 > [!NOTE]
 > 2025-02-05后，开源MiniMind最终训练所用的所有数据集，因此无需再自行预处理大规模数据集，避免重复性的数据处理工作。
 
-MiniMind训练数据集下载地址： [HuggingFace](https://huggingface.co/datasets/jingyaogong/minimind_dataset/tree/main)
+MiniMind训练数据集下载地址： [ModelScope](https://www.modelscope.cn/datasets/gongjy/minimind_dataset/files) | [HuggingFace](https://huggingface.co/datasets/jingyaogong/minimind_dataset/tree/main)
 
 > 无需全部clone，可单独下载所需的文件
 

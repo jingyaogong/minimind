@@ -563,9 +563,8 @@ Big respect!
 > After `2025-02-05`, MiniMind’s open-source datasets for final training are provided, so there is no need for
 > you to preprocess large datasets by yourself anymore. This helps avoid redundant work.
 
-MiniMind Training Datasets are available for download from:
-
-MiniMind Dataset ([HuggingFace](https://huggingface.co/datasets/jingyaogong/minimind_dataset/tree/main))
+Available for download from:
+[ModelScope](https://www.modelscope.cn/datasets/gongjy/minimind_dataset/files) | [HuggingFace](https://huggingface.co/datasets/jingyaogong/minimind_dataset/tree/main)
 
 > You don’t need to clone everything, just download the necessary files.
 
