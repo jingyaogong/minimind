@@ -97,18 +97,9 @@ def init_model(lm_config):
     tokenizer = AutoTokenizer.from_pretrained('../model')
     model = MiniMindForCausalLM(lm_config)
     moe_path = '_moe' if lm_config.use_moe else ''
-    ckp = f'{args.save_dir}/full_sft_{lm_config.hidden_size}{moe_path}.pth'
+    ckp = f'{args.save_dir}/pretrain_{lm_config.hidden_size}{moe_path}.pth'
     state_dict = torch.load(ckp, map_location=args.device)
     model.load_state_dict(state_dict, strict=False)
-
-    # 冻结所有参数
-    for param in model.parameters():
-        param.requires_grad = False
-
-    # 只解冻注意力机制中的投影层参数
-    for name, param in model.named_parameters():
-        if any(proj in name for proj in ['q_proj', 'k_proj', 'v_proj', 'o_proj']):
-            param.requires_grad = True
 
     Logger(f'LLM可训练总参数量：{sum(p.numel() for p in model.parameters() if p.requires_grad) / 1e6:.3f} 百万')
     model = model.to(args.device)
