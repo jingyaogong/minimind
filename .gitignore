@@ -1,6 +1,7 @@
 /model/__pycache__
 /dataset
 /out
-.idea
 .DS_Store
+.idea/
 MiniMind2/
+__pycache__/

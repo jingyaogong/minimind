@@ -4,7 +4,7 @@
   "add_prefix_space": false,
   "added_tokens_decoder": {
     "0": {
-      "content": "<unk>",
+      "content": "<|endoftext|>",
       "lstrip": false,
       "normalized": false,
       "rstrip": false,
@@ -12,7 +12,7 @@
       "special": true
     },
     "1": {
-      "content": "<s>",
+      "content": "<|im_start|>",
       "lstrip": false,
       "normalized": false,
       "rstrip": false,
@@ -20,7 +20,7 @@
       "special": true
     },
     "2": {
-      "content": "</s>",
+      "content": "<|im_end|>",
       "lstrip": false,
       "normalized": false,
       "rstrip": false,
@@ -29,15 +29,15 @@
     }
   },
   "additional_special_tokens": [],
-  "bos_token": "<s>",
+  "bos_token": "<|im_start|>",
   "clean_up_tokenization_spaces": false,
-  "eos_token": "</s>",
+  "eos_token": "<|im_end|>",
   "legacy": true,
   "model_max_length": 32768,
-  "pad_token": "<unk>",
+  "pad_token": "<|endoftext|>",
   "sp_model_kwargs": {},
   "spaces_between_special_tokens": false,
   "tokenizer_class": "PreTrainedTokenizerFast",
-  "unk_token": "<unk>",
-  "chat_template": "{% if messages[0]['role'] == 'system' %}{% set system_message = messages[0]['content'] %}{{ '<s>system\\n' + system_message + '</s>\\n' }}{% else %}{{ '<s>system\\n你是 MiniMind，是一个有用的人工智能助手。</s>\\n' }}{% endif %}{% for message in messages %}{% set content = message['content'] %}{% if message['role'] == 'user' %}{{ '<s>user\\n' + content + '</s>\\n<s>assistant\\n' }}{% elif message['role'] == 'assistant' %}{{ content + '</s>' + '\\n' }}{% endif %}{% endfor %}"
+  "unk_token": "<|endoftext|>",
+  "chat_template": "{% if messages[0]['role'] == 'system' %}{% set system_message = messages[0]['content'] %}{{ '<|im_start|>system\\n' + system_message + '<|im_end|>\\n' }}{% else %}{{ '<|im_start|>system\\nYou are a helpful assistant<|im_end|>\\n' }}{% endif %}{% for message in messages %}{% set content = message['content'] %}{% if message['role'] == 'user' %}{{ '<|im_start|>user\\n' + content + '<|im_end|>\\n<|im_start|>assistant\\n' }}{% elif message['role'] == 'assistant' %}{{ content + '<|im_end|>' + '\\n' }}{% endif %}{% endfor %}"
 }
