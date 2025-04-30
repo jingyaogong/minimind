@@ -165,9 +165,9 @@ if __name__ == "__main__":
     parser = argparse.ArgumentParser(description="Server for MiniMind")
     parser.add_argument('--out_dir', default='out', type=str)
     parser.add_argument('--lora_name', default='None', type=str)
-    parser.add_argument('--hidden_size', default=768, type=int)
-    parser.add_argument('--num_hidden_layers', default=16, type=int)
-    parser.add_argument('--max_seq_len', default=8192, type=int)
+    parser.add_argument('--hidden_size', default=512, type=int)
+    parser.add_argument('--num_hidden_layers', default=8, type=int)
+    parser.add_argument('--max_seq_len', default=512, type=int)
     parser.add_argument('--use_moe', default=False, type=bool)
     parser.add_argument('--load', default=0, type=int, help="0: 从原生torch权重，1: 利用transformers加载")
     parser.add_argument('--model_mode', default=1, type=int,
