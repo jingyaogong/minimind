@@ -136,11 +136,11 @@ if __name__ == "__main__":
     parser.add_argument("--log_interval", type=int, default=100)
     parser.add_argument("--save_interval", type=int, default=100)
     parser.add_argument('--local_rank', type=int, default=-1)
-    parser.add_argument('--hidden_size', default=768, type=int)
-    parser.add_argument('--num_hidden_layers', default=16, type=int)
+    parser.add_argument('--hidden_size', default=512, type=int)
+    parser.add_argument('--num_hidden_layers', default=8, type=int)
     parser.add_argument('--max_seq_len', default=512, type=int)
     parser.add_argument('--use_moe', default=False, type=bool)
-    parser.add_argument("--data_path", type=str, default="../dataset/sft_512.jsonl")
+    parser.add_argument("--data_path", type=str, default="../dataset/sft_mini_512.jsonl")
 
     args = parser.parse_args()
 
