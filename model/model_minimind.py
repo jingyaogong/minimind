@@ -398,10 +398,22 @@ class MOEFeedForward(nn.Module):
 
     @torch.no_grad()
     def moe_infer(self, x, flat_expert_indices, flat_expert_weights):
-        expert_cache = torch.zeros_like(x)
-        idxs = flat_expert_indices.argsort()
-        tokens_per_expert = flat_expert_indices.bincount().cpu().numpy().cumsum(0)
-        token_idxs = idxs // self.config.num_experts_per_tok
+        """推理阶段的混合专家前向计算
+        
+        为了提高推理效率，将相同专家处理的token批量处理，避免重复计算
+        
+        Args:
+            x: 输入张量
+            flat_expert_indices: 每个token对应的专家索引
+            flat_expert_weights: 每个token对应的专家权重
+        
+        Returns:
+            expert_cache: 专家处理后的输出
+        """
+        expert_cache = torch.zeros_like(x)  # 初始化输出缓存
+        idxs = flat_expert_indices.argsort()  # 对专家索引排序，便于批量处理
+        tokens_per_expert = flat_expert_indices.bincount().cpu().numpy().cumsum(0)  # 计算每个专家处理的token数量
+        token_idxs = idxs // self.config.num_experts_per_tok  # 计算token在原序列中的位置
         # 当tokens_per_expert = [6, 15, 20, 26]，tokens_per_expert.shape[0]即为专家数量（此时为4）
         # 且token_idxs = [3, 7, 19, 21, 24, 25,  4,  5,  6, 10, 11, 12...] 时
         # 意味token_idxs[:6] -> [3, 7, 19, 21, 24, 25]这6个位置属于专家0处理的token（每个token有可能被多个专家处理，这取决于num_experts_per_tok）
@@ -421,26 +433,63 @@ class MOEFeedForward(nn.Module):
 
 
 class MiniMindBlock(nn.Module):
+    """MiniMind模型的基本构建块
+    
+    每个Block包含以下组件：
+    1. 多头注意力层（支持GQA优化）
+    2. 前馈网络层（可选MoE或标准FFN）
+    3. 两个RMSNorm归一化层
+    4. 残差连接
+    """
     def __init__(self, layer_id: int, config: MiniMindConfig):
         super().__init__()
+        # 注意力相关配置
         self.num_attention_heads = config.num_attention_heads
         self.hidden_size = config.hidden_size
         self.head_dim = config.hidden_size // config.num_attention_heads
-        self.self_attn = Attention(config)
+        self.self_attn = Attention(config)  # 多头注意力层
 
-        self.layer_id = layer_id
+        self.layer_id = layer_id  # 层的索引号
+        # 两个RMSNorm层，用于注意力层的输入和输出
         self.input_layernorm = RMSNorm(config.hidden_size, eps=config.rms_norm_eps)
         self.post_attention_layernorm = RMSNorm(config.hidden_size, eps=config.rms_norm_eps)
+        # 根据配置选择使用标准前馈网络还是混合专家网络
         self.mlp = FeedForward(config) if not config.use_moe else MOEFeedForward(config)
 
     def forward(self, hidden_states, position_embeddings, past_key_value=None, use_cache=False, attention_mask=None):
+        """Block的前向传播函数
+        
+        实现了Pre-LN Transformer的标准流程：
+        1. 对输入进行归一化后送入注意力层
+        2. 添加第一个残差连接
+        3. 对注意力输出进行归一化后送入前馈网络
+        4. 添加第二个残差连接
+        
+        Args:
+            hidden_states: 输入的隐藏状态
+            position_embeddings: 位置编码（cos和sin值）
+            past_key_value: KV缓存，用于加速自回归生成
+            use_cache: 是否使用KV缓存
+            attention_mask: 注意力掩码
+        
+        Returns:
+            hidden_states: 处理后的隐藏状态
+            present_key_value: 当前层的KV缓存
+        """
+        # 第一个残差分支：注意力层
         residual = hidden_states
         hidden_states, present_key_value = self.self_attn(
-            self.input_layernorm(hidden_states), position_embeddings,
-            past_key_value, use_cache, attention_mask
+            self.input_layernorm(hidden_states),  # Pre-LN：先归一化再送入注意力层
+            position_embeddings,
+            past_key_value,
+            use_cache,
+            attention_mask
         )
-        hidden_states += residual
-        hidden_states = hidden_states + self.mlp(self.post_attention_layernorm(hidden_states))
+        hidden_states += residual  # 第一个残差连接
+        
+        # 第二个残差分支：前馈网络（标准FFN或MoE）
+        hidden_states = hidden_states + self.mlp(self.post_attention_layernorm(hidden_states))  # Pre-LN + 残差连接
+        
         return hidden_states, present_key_value
 
 
@@ -513,14 +562,27 @@ class MiniMindModel(nn.Module):
 
 
 class MiniMindForCausalLM(PreTrainedModel, GenerationMixin):
-    config_class = MiniMindConfig
+    """基于MiniMind架构的因果语言模型
+    
+    继承自HuggingFace的PreTrainedModel和GenerationMixin，实现了完整的自回归语言模型功能
+    支持KV缓存、混合专家机制等特性
+    """
+    config_class = MiniMindConfig  # 指定配置类，用于模型加载和保存
 
     def __init__(self, config: MiniMindConfig = None):
-        self.config = config or MiniMindConfig()
-        super().__init__(self.config)
-        self.model = MiniMindModel(self.config)
+        """初始化因果语言模型
+        
+        Args:
+            config: 模型配置，如果为None则使用默认配置
+        """
+        self.config = config or MiniMindConfig()  # 使用传入配置或创建默认配置
+        super().__init__(self.config)  # 调用父类初始化
+        self.model = MiniMindModel(self.config)  # 创建模型主体
+        # 语言模型头，将隐藏状态映射到词表空间
         self.lm_head = nn.Linear(self.config.hidden_size, self.config.vocab_size, bias=False)
+        # 共享输入输出嵌入权重，提升训练稳定性
         self.model.embed_tokens.weight = self.lm_head.weight
+        # 预初始化输出容器，用于存储forward方法的计算结果
         self.OUT = CausalLMOutputWithPast()
 
     def forward(self,
@@ -530,6 +592,24 @@ class MiniMindForCausalLM(PreTrainedModel, GenerationMixin):
                 use_cache: bool = False,
                 logits_to_keep: Union[int, torch.Tensor] = 0,
                 **args):
+        """前向传播方法
+        
+        Args:
+            input_ids: 输入token IDs，形状为[batch_size, seq_len]
+            attention_mask: 注意力掩码，形状与input_ids相同
+            past_key_values: 缓存的KV对，用于加速自回归生成
+            use_cache: 是否使用KV缓存
+            logits_to_keep: 控制输出哪些位置的logits，可以是整数或张量
+            **args: 其他可选参数
+            
+        Returns:
+            CausalLMOutputWithPast: 包含以下字段的输出对象:
+                - last_hidden_state: 最后一层的隐藏状态
+                - logits: 语言模型头的输出
+                - aux_loss: 混合专家机制的辅助损失
+                - past_key_values: 更新的KV缓存
+        """
+        # 通过模型主体计算隐藏状态、KV缓存和辅助损失
         h, past_kvs, aux_loss = self.model(
             input_ids=input_ids,
             attention_mask=attention_mask,
@@ -537,8 +617,11 @@ class MiniMindForCausalLM(PreTrainedModel, GenerationMixin):
             use_cache=use_cache,
             **args
         )
+        # 根据logits_to_keep参数确定需要保留的logits位置
         slice_indices = slice(-logits_to_keep, None) if isinstance(logits_to_keep, int) else logits_to_keep
+        # 计算语言模型头的输出
         logits = self.lm_head(h[:, slice_indices, :])
+        # 将结果存入输出容器
         self.OUT.__setitem__('last_hidden_state', h)
         self.OUT.__setitem__('logits', logits)
         self.OUT.__setitem__('aux_loss', aux_loss)

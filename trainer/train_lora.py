@@ -21,17 +21,19 @@ from model.model_lora import load_lora, save_lora, apply_lora
 warnings.filterwarnings('ignore')
 
 
-# Logger function
+# 日志打印函数，在分布式训练时只在主进程上打印
 def Logger(content):
     if not ddp or dist.get_rank() == 0:
         print(content)
 
 
+# 余弦学习率调度器
 def get_lr(current_step, total_steps, lr):
+    # 在训练过程中逐渐降低学习率，最终降到初始值的1/10
     return lr / 10 + 0.5 * lr * (1 + math.cos(math.pi * current_step / total_steps))
 
 
-# 代码和full_sft「几乎」一致
+# 训练一个epoch，使用LoRA方法进行参数高效微调
 def train_epoch(epoch, wandb):
     loss_fct = nn.CrossEntropyLoss(reduction='none')
     start_time = time.time()
@@ -90,51 +92,72 @@ def train_epoch(epoch, wandb):
             model.train()
 
 
+# 初始化模型和分词器
 def init_model(lm_config):
+    # 加载预训练的分词器
     tokenizer = AutoTokenizer.from_pretrained('../model/')
+    # 初始化因果语言模型
     model = MiniMindForCausalLM(lm_config)
+    # 根据是否使用MoE设置权重路径
     moe_path = '_moe' if lm_config.use_moe else ''
     ckp = f'{args.save_dir}/full_sft_{lm_config.hidden_size}{moe_path}.pth'
+    # 加载预训练权重
     state_dict = torch.load(ckp, map_location=args.device)
     model.load_state_dict(state_dict, strict=False)
     return model.to(args.device), tokenizer
 
 
+# 初始化分布式训练环境
 def init_distributed_mode():
     if not ddp: return
     global ddp_local_rank, DEVICE
 
+    # 初始化分布式进程组
     dist.init_process_group(backend="nccl")
-    ddp_rank = int(os.environ["RANK"])
-    ddp_local_rank = int(os.environ["LOCAL_RANK"])
-    ddp_world_size = int(os.environ["WORLD_SIZE"])
+    # 获取分布式训练的相关参数
+    ddp_rank = int(os.environ["RANK"])  # 全局进程编号
+    ddp_local_rank = int(os.environ["LOCAL_RANK"])  # 本地进程编号
+    ddp_world_size = int(os.environ["WORLD_SIZE"])  # 总进程数
+    # 设置当前进程使用的GPU
     DEVICE = f"cuda:{ddp_local_rank}"
     torch.cuda.set_device(DEVICE)
 
 
 if __name__ == "__main__":
+    # 配置命令行参数
     parser = argparse.ArgumentParser(description="MiniMind SFT with LoRA")
-    parser.add_argument("--out_dir", type=str, default="../out")
-    parser.add_argument("--epochs", type=int, default=10)
-    parser.add_argument("--batch_size", type=int, default=32)
-    parser.add_argument("--learning_rate", type=float, default=1e-4)
-    parser.add_argument("--device", type=str, default="cuda:0" if torch.cuda.is_available() else "cpu")
-    parser.add_argument("--dtype", type=str, default="bfloat16")
-    parser.add_argument("--use_wandb", action="store_true")
-    parser.add_argument("--wandb_project", type=str, default="MiniMind-LoRA-SFT")
-    parser.add_argument("--num_workers", type=int, default=1)
-    parser.add_argument("--ddp", action="store_true")
-    parser.add_argument("--accumulation_steps", type=int, default=1)
-    parser.add_argument("--grad_clip", type=float, default=1.0)
-    parser.add_argument("--warmup_iters", type=int, default=0)
-    parser.add_argument("--log_interval", type=int, default=100)
-    parser.add_argument("--save_interval", type=int, default=100)
-    parser.add_argument('--local_rank', type=int, default=-1)
-    parser.add_argument('--hidden_size', default=512, type=int)
-    parser.add_argument('--num_hidden_layers', default=8, type=int)
-    parser.add_argument('--max_seq_len', default=512, type=int)
-    parser.add_argument('--use_moe', default=False, type=bool)
-    parser.add_argument("--data_path", type=str, default="../dataset/lora_medical.jsonl")
+    # 基础训练参数
+    parser.add_argument("--out_dir", type=str, default="../out", help="输出目录")
+    parser.add_argument("--epochs", type=int, default=10, help="训练轮数")
+    parser.add_argument("--batch_size", type=int, default=32, help="批次大小")
+    parser.add_argument("--learning_rate", type=float, default=1e-4, help="学习率")
+    parser.add_argument("--device", type=str, default="cuda:0" if torch.cuda.is_available() else "cpu", help="训练设备")
+    parser.add_argument("--dtype", type=str, default="bfloat16", help="训练精度")
+    
+    # 日志和监控参数
+    parser.add_argument("--use_wandb", action="store_true", help="是否使用wandb记录训练过程")
+    parser.add_argument("--wandb_project", type=str, default="MiniMind-LoRA-SFT", help="wandb项目名称")
+    parser.add_argument("--log_interval", type=int, default=100, help="日志打印间隔")
+    parser.add_argument("--save_interval", type=int, default=100, help="模型保存间隔")
+    
+    # 分布式训练参数
+    parser.add_argument("--num_workers", type=int, default=1, help="数据加载进程数")
+    parser.add_argument("--ddp", action="store_true", help="是否使用分布式训练")
+    parser.add_argument('--local_rank', type=int, default=-1, help="分布式训练的本地进程编号")
+    
+    # 优化器参数
+    parser.add_argument("--accumulation_steps", type=int, default=1, help="梯度累积步数")
+    parser.add_argument("--grad_clip", type=float, default=1.0, help="梯度裁剪阈值")
+    parser.add_argument("--warmup_iters", type=int, default=0, help="学习率预热迭代次数")
+    
+    # 模型参数
+    parser.add_argument('--hidden_size', default=512, type=int, help="隐藏层维度")
+    parser.add_argument('--num_hidden_layers', default=8, type=int, help="Transformer层数")
+    parser.add_argument('--max_seq_len', default=512, type=int, help="最大序列长度")
+    parser.add_argument('--use_moe', default=False, type=bool, help="是否使用MoE")
+    
+    # 数据和LoRA参数
+    parser.add_argument("--data_path", type=str, default="../dataset/lora_medical.jsonl", help="训练数据路径")
     parser.add_argument("--lora_name", type=str, default="lora_medical", help="根据任务保存成lora_(英文/医学/心理...)")
     args = parser.parse_args()
 
@@ -169,9 +192,12 @@ if __name__ == "__main__":
     else:
         wandb = None
 
+    # 初始化模型和分词器
     model, tokenizer = init_model(lm_config)
+    # 应用LoRA参数高效微调方法
     apply_lora(model)
 
+    # 统计模型参数量
     total_params = sum(p.numel() for p in model.parameters())  # 总参数数量
     lora_params_count = sum(p.numel() for name, p in model.named_parameters() if 'lora' in name)  # LoRA 参数数量
     if not ddp or dist.get_rank() == 0:
@@ -179,15 +205,17 @@ if __name__ == "__main__":
         print(f"LoRA 参数量: {lora_params_count}")
         print(f"LoRA 参数占比: {lora_params_count / total_params * 100:.2f}%")
 
+    # 冻结非LoRA参数
     for name, param in model.named_parameters():
         if 'lora' not in name:
             param.requires_grad = False
+    # 收集需要优化的LoRA参数
     lora_params = []
     for name, param in model.named_parameters():
         if 'lora' in name:
             lora_params.append(param)
 
-    # 只对 LoRA 参数进行优化
+    # 初始化优化器，只更新LoRA参数
     optimizer = optim.AdamW(lora_params, lr=args.learning_rate)
     train_ds = SFTDataset(args.data_path, tokenizer, max_length=args.max_seq_len)
     train_sampler = DistributedSampler(train_ds) if ddp else None

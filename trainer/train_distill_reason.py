@@ -1,6 +1,8 @@
+# 导入必要的系统库
 import os
 import sys
 
+# 设置包名和添加项目根目录到系统路径
 __package__ = "trainer"
 sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), '..')))
 
@@ -22,16 +24,34 @@ warnings.filterwarnings('ignore')
 
 
 def Logger(content):
+    """日志打印函数，在分布式训练时只在主进程上打印
+    Args:
+        content: 需要打印的内容
+    """
     if not ddp or dist.get_rank() == 0:
         print(content)
 
 
 def get_lr(current_step, total_steps, lr):
+    """使用余弦退火策略计算学习率
+    Args:
+        current_step: 当前训练步数
+        total_steps: 总训练步数
+        lr: 基础学习率
+    Returns:
+        当前步数对应的学习率
+    """
     return lr / 10 + 0.5 * lr * (1 + math.cos(math.pi * current_step / total_steps))
 
 
 def train_epoch(epoch, wandb):
-    # 思考标签占位符
+    """训练一个epoch
+    Args:
+        epoch: 当前训练轮数
+        wandb: wandb日志记录器
+    """
+    # 获取特殊标记的token ID
+    # 用于标记模型思考和回答的开始结束位置
     start_of_think_ids = tokenizer('<think>').input_ids
     end_of_think_ids = tokenizer('</think>').input_ids
     start_of_answer_ids = tokenizer('<answer>').input_ids
@@ -109,51 +129,94 @@ def train_epoch(epoch, wandb):
 
 
 def init_model(lm_config):
+    """初始化模型和分词器
+    Args:
+        lm_config: 模型配置参数
+    Returns:
+        model: 初始化好的模型
+        tokenizer: 分词器
+    """
+    # 加载分词器
     tokenizer = AutoTokenizer.from_pretrained('../model')
+    # 初始化模型
     model = MiniMindForCausalLM(lm_config)
+    # 根据是否使用MoE设置检查点路径
     moe_path = '_moe' if lm_config.use_moe else ''
     ckp = f'{args.save_dir}/rlhf_{lm_config.hidden_size}{moe_path}.pth'
+    # 加载预训练权重
     state_dict = torch.load(ckp, map_location=args.device)
     model.load_state_dict(state_dict, strict=False)
+    # 打印模型参数量
     Logger(f'LLM总参数量：{sum(p.numel() for p in model.parameters() if p.requires_grad) / 1e6:.3f} 百万')
+    # 将模型移动到指定设备
     model = model.to(args.device)
     return model, tokenizer
 
 
 def init_distributed_mode():
+    """初始化分布式训练环境
+    设置分布式训练的各项参数，包括进程组、设备等
+    """
     if not ddp: return
     global ddp_local_rank, DEVICE
 
+    # 初始化分布式进程组，使用NCCL后端
     dist.init_process_group(backend="nccl")
+    # 获取当前进程的全局排名
     ddp_rank = int(os.environ["RANK"])
+    # 获取当前进程在本机的局部排名
     ddp_local_rank = int(os.environ["LOCAL_RANK"])
+    # 获取总进程数
     ddp_world_size = int(os.environ["WORLD_SIZE"])
+    # 设置当前进程使用的GPU设备
     DEVICE = f"cuda:{ddp_local_rank}"
     torch.cuda.set_device(DEVICE)
 
 
 if __name__ == "__main__":
+    # 解析命令行参数
     parser = argparse.ArgumentParser(description="MiniMind Distill Reasoning")
+    # 输出目录，用于保存模型检查点和日志
     parser.add_argument("--out_dir", type=str, default="../out")
+    # 训练轮数
     parser.add_argument("--epochs", type=int, default=1)
+    # 训练批次大小
     parser.add_argument("--batch_size", type=int, default=8)
+    # 基础学习率
     parser.add_argument("--learning_rate", type=float, default=1e-6)
+    # 训练设备，默认使用GPU
     parser.add_argument("--device", type=str, default="cuda:0" if torch.cuda.is_available() else "cpu")
+    # 训练精度，支持float16和bfloat16
     parser.add_argument("--dtype", type=str, default="bfloat16")
+    # 是否使用wandb记录训练日志
     parser.add_argument("--use_wandb", action="store_true")
+    # wandb项目名称
     parser.add_argument("--wandb_project", type=str, default="MiniMind-Full-SFT")
+    # 数据加载进程数
     parser.add_argument("--num_workers", type=int, default=1)
+    # 是否使用分布式训练
     parser.add_argument("--ddp", action="store_true")
+    # 梯度累积步数
     parser.add_argument("--accumulation_steps", type=int, default=1)
+    # 梯度裁剪阈值
     parser.add_argument("--grad_clip", type=float, default=1.0)
+    # 预热迭代次数
     parser.add_argument("--warmup_iters", type=int, default=0)
+    # 日志打印间隔
     parser.add_argument("--log_interval", type=int, default=1)
+    # 模型保存间隔
     parser.add_argument("--save_interval", type=int, default=50)
+    # 分布式训练的局部进程号
     parser.add_argument('--local_rank', type=int, default=-1)
+    # 模型隐藏层维度
     parser.add_argument('--hidden_size', default=512, type=int)
+    # Transformer层数
     parser.add_argument('--num_hidden_layers', default=8, type=int)
+    # 最大序列长度
     parser.add_argument('--max_seq_len', default=1024, type=int)
+    # 是否使用MoE(混合专家)架构
     parser.add_argument('--use_moe', default=False, type=bool)
+    # 训练数据路径
     parser.add_argument("--data_path", type=str, default="../dataset/r1_mix_1024.jsonl")
 
     args = parser.parse_args()

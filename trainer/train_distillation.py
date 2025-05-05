@@ -1,7 +1,9 @@
+# 导入必要的库
 import os
 import sys
 
-__package__ = "trainer"
+__package__ = "trainer"  # 设置包名
+# 将项目根目录添加到系统路径
 sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), '..')))
 import argparse
 import time
@@ -22,16 +24,23 @@ from dataset.lm_dataset import SFTDataset
 warnings.filterwarnings('ignore')
 
 
+# 日志打印函数
+# 在分布式训练时只在主进程(rank=0)上打印日志
 def Logger(content):
     if not ddp or dist.get_rank() == 0:
         print(content)
 
 
+# 余弦学习率调度器
+# 在训练过程中逐渐降低学习率，最终降到初始值的1/10
 def get_lr(current_step, total_steps, lr):
     return lr / 10 + 0.5 * lr * (1 + math.cos(math.pi * current_step / total_steps))
 
 
+# 知识蒸馏损失函数
+# 通过KL散度计算学生模型和教师模型输出分布之间的差异
 def distillation_loss_fn(student_logits, teacher_logits, temperature=1.0, reduction='batchmean'):
+    # 计算教师模型的概率分布（停止梯度传播）
     with torch.no_grad():
         teacher_probs = F.softmax(teacher_logits / temperature, hidden_size=-1).detach()
 
@@ -45,9 +54,13 @@ def distillation_loss_fn(student_logits, teacher_logits, temperature=1.0, reduct
     return (temperature ** 2) * kl
 
 
+# 训练一个epoch
+# alpha: 用于平衡蒸馏损失和交叉熵损失的权重
+# temperature: 软目标的温度系数，用于控制知识蒸馏中概率分布的平滑程度
 def train_epoch(epoch, wandb, alpha=0.0, temperature=1.0):
     start_time = time.time()
 
+    # 确保教师模型处于评估模式且参数冻结
     if teacher_model is not None:
         teacher_model.eval()
         teacher_model.requires_grad_(False)
@@ -146,26 +159,41 @@ def train_epoch(epoch, wandb, alpha=0.0, temperature=1.0):
             model.train()
 
 
+# 初始化学生模型
+# 学生模型通常比教师模型更小，但需要保持相同的任务能力
 def init_student_model(lm_config):
+    # 加载预训练的分词器
     tokenizer = AutoTokenizer.from_pretrained('../model/')
+    # 初始化学生模型
     model = MiniMindForCausalLM(lm_config)
+    # 根据是否使用MoE设置权重路径
     moe_path = '_moe' if lm_config.use_moe else ''
     ckp = f'{args.save_dir}/full_sft_{lm_config.hidden_size}{moe_path}.pth'
+    # 加载预训练权重
     state_dict = torch.load(ckp, map_location=args.device)
     model.load_state_dict(state_dict, strict=False)
+    # 打印模型可训练参数总量
     Logger(f'学生模型(LLM)总参数量：{sum(p.numel() for p in model.parameters() if p.requires_grad) / 1e6:.3f} 百万')
+    # 将模型移动到指定设备
     model = model.to(args.device)
 
     return model, tokenizer
 
 
+# 初始化教师模型
+# 教师模型通常是一个更大、性能更好的预训练模型
 def init_teacher_model(lm_config):
+    # 初始化教师模型
     model = MiniMindForCausalLM(lm_config)
+    # 根据是否使用MoE设置权重路径
     moe_path = '_moe' if lm_config.use_moe else ''
     ckp = f'{args.save_dir}/full_sft_{lm_config.hidden_size}{moe_path}.pth'
+    # 加载预训练权重
     state_dict = torch.load(ckp, map_location=args.device)
     model.load_state_dict(state_dict, strict=False)
+    # 打印模型可训练参数总量
     Logger(f'教师模型(LLM)总参数量：{sum(p.numel() for p in model.parameters() if p.requires_grad) / 1e6:.3f} 百万')
+    # 将模型移动到指定设备
     model = model.to(args.device)
     return model
 

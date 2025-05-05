@@ -1,6 +1,8 @@
+# 导入必要的库
 import os
 import sys
-__package__ = "trainer"
+__package__ = "trainer"  # 设置包名
+# 将项目根目录添加到系统路径
 sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), '..')))
 
 import argparse
@@ -20,16 +22,22 @@ from dataset.lm_dataset import PretrainDataset
 warnings.filterwarnings('ignore')
 
 
+# 日志打印函数
+# 在分布式训练时只在主进程(rank=0)上打印日志
 def Logger(content):
     if not ddp or dist.get_rank() == 0:
         print(content)
 
 
+# 余弦学习率调度器
+# 在训练过程中逐渐降低学习率，最终降到初始值的1/10
 def get_lr(current_step, total_steps, lr):
     return lr / 10 + 0.5 * lr * (1 + math.cos(math.pi * current_step / total_steps))
 
 
+# 训练一个epoch
 def train_epoch(epoch, wandb):
+    # 使用交叉熵损失函数，reduction='none'以便后续通过mask处理填充token
     loss_fct = nn.CrossEntropyLoss(reduction='none')
     start_time = time.time()
     for step, (X, Y, loss_mask) in enumerate(train_loader):
@@ -94,21 +102,29 @@ def train_epoch(epoch, wandb):
             model.train()
 
 
+# 初始化模型和分词器
 def init_model(lm_config):
+    # 加载预训练的分词器
     tokenizer = AutoTokenizer.from_pretrained('../model/')
+    # 初始化因果语言模型并移动到指定设备
     model = MiniMindForCausalLM(lm_config).to(args.device)
+    # 打印模型可训练参数总量
     Logger(f'LLM可训练总参数量：{sum(p.numel() for p in model.parameters() if p.requires_grad) / 1e6:.3f} 百万')
     return model, tokenizer
 
 
+# 初始化分布式训练环境
 def init_distributed_mode():
     if not ddp: return
     global ddp_local_rank, DEVICE
 
+    # 初始化分布式进程组，使用NCCL后端
     dist.init_process_group(backend="nccl")
-    ddp_rank = int(os.environ["RANK"])
-    ddp_local_rank = int(os.environ["LOCAL_RANK"])
-    ddp_world_size = int(os.environ["WORLD_SIZE"])
+    # 获取分布式训练的相关参数
+    ddp_rank = int(os.environ["RANK"])  # 全局进程编号
+    ddp_local_rank = int(os.environ["LOCAL_RANK"])  # 本地进程编号
+    ddp_world_size = int(os.environ["WORLD_SIZE"])  # 总进程数
+    # 设置当前进程使用的GPU
     DEVICE = f"cuda:{ddp_local_rank}"
     torch.cuda.set_device(DEVICE)
 
