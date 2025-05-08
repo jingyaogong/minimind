@@ -1,3 +1,12 @@
 /model/__pycache__
 /dataset
 /out
+# Python 缓存文件
+__pycache__/
+*.pyc
+*.pyo
+*.pyd
+# macOS 系统文件
+.DS_Store
+# Jupyter Notebook 检查点
+.ipynb_checkpoints/
