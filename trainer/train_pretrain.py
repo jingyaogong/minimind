@@ -154,6 +154,7 @@ if __name__ == "__main__":
     parser.add_argument('--max_seq_len', default=512, type=int)
     parser.add_argument('--use_moe', default=False, type=bool)
     parser.add_argument("--data_path", type=str, default="../dataset/pretrain_hq.jsonl")
+    parser.add_argument("--wandb_api_key", type=str, default=None, help="WandB API Key，用于无交互环境自动登录")
     args = parser.parse_args()
 
     lm_config = MiniMindConfig(hidden_size=args.hidden_size, num_hidden_layers=args.num_hidden_layers, use_moe=args.use_moe)
@@ -184,7 +185,12 @@ if __name__ == "__main__":
 
     if args.use_wandb and (not ddp or ddp_local_rank == 0):
         import wandb
-
+        # 优先使用命令行参数，其次环境变量
+        api_key = args.wandb_api_key or os.environ.get("WANDB_API_KEY", None)
+        if api_key is not None:
+            # 自动登录，适用于无交互环境
+            wandb.login(key=api_key)
+        # 初始化 wandb 任务
         wandb.init(project=args.wandb_project, name=args.wandb_run_name)
     else:
         wandb = None

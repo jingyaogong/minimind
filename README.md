@@ -308,6 +308,10 @@ print(torch.cuda.is_available())
 
 ```bash
 python train_pretrain.py
+
+# or
+nohup torchrun --nproc_per_node=8 train_pretrain.py --use_wandb --wandb_api_key=你的key --ddp --batch_size=32 > train_pretrain.log 2>&1
+
 ```
 
 > 执行预训练，得到 `pretrain_*.pth` 作为预训练的输出权重（其中*为模型的dimension，默认为512）
@@ -342,6 +346,13 @@ python train_full_sft.py
 python eval_model.py --model_mode 1 # 默认为0：测试pretrain模型效果，设置为1：测试full_sft模型效果
 ```
 
+例如，如果你想加载`./out/pretrain_512_moe.pth`，应该这样写：
+```bash
+python eval_model.py --model_mode 0 --out_dir out --hidden_size 512 --use_moe True
+```
+这样脚本会自动拼出`./out/pretrain_512_moe.pth`这个路径。
+
+
 <details style="color:rgb(128,128,128)">
 <summary>注：测试须知</summary>
 
@@ -375,6 +386,10 @@ deepspeed --master_port 29500 --num_gpus=N train_xxx.py
 ```bash
 # 需要登录: wandb login
 torchrun --nproc_per_node N train_xxx.py --use_wandb
+
+# 通过py 脚本登录wandb
+nohup torchrun --nproc_per_node=8 train_pretrain.py --use_wandb --wandb_api_key=你的key --ddp --batch_size=32 > train_pretrain.log 2>&1
+
 # and
 python train_xxx.py --use_wandb
 ```

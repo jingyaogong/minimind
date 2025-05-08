@@ -159,6 +159,7 @@ if __name__ == "__main__":
     # 数据和LoRA参数
     parser.add_argument("--data_path", type=str, default="../dataset/lora_medical.jsonl", help="训练数据路径")
     parser.add_argument("--lora_name", type=str, default="lora_medical", help="根据任务保存成lora_(英文/医学/心理...)")
+    parser.add_argument("--wandb_api_key", type=str, default=None, help="WandB API Key，用于无交互环境自动登录")
     args = parser.parse_args()
 
     lm_config = MiniMindConfig(hidden_size=args.hidden_size, num_hidden_layers=args.num_hidden_layers,
@@ -187,7 +188,12 @@ if __name__ == "__main__":
     args.wandb_run_name = f"MiniMind-Lora-SFT-Epoch-{args.epochs}-BatchSize-{args.batch_size}-LearningRate-{args.learning_rate}"
     if args.use_wandb and (not ddp or ddp_local_rank == 0):
         import wandb
-
+        # 优先使用命令行参数，其次环境变量
+        api_key = args.wandb_api_key or os.environ.get("WANDB_API_KEY", None)
+        if api_key is not None:
+            # 自动登录，适用于无交互环境
+            wandb.login(key=api_key)
+        # 初始化 wandb 任务
         wandb.init(project=args.wandb_project, name=args.wandb_run_name)
     else:
         wandb = None
