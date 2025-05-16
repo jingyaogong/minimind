@@ -18,7 +18,9 @@ from torch.utils.data import DataLoader, DistributedSampler
 from transformers import AutoTokenizer, AutoModelForCausalLM
 from model.model_minimind import MiniMindConfig, MiniMindForCausalLM
 from dataset.lm_dataset import SFTDataset
-
+import torch_npu
+from torch_npu.npu import amp # 导入AMP模块
+from torch_npu.contrib import transfer_to_npu # 使能自动迁移
 warnings.filterwarnings('ignore')
 
 
@@ -33,9 +35,9 @@ def get_lr(current_step, total_steps, lr):
 
 def distillation_loss_fn(student_logits, teacher_logits, temperature=1.0, reduction='batchmean'):
     with torch.no_grad():
-        teacher_probs = F.softmax(teacher_logits / temperature, hidden_size=-1).detach()
+        teacher_probs = F.softmax(teacher_logits / temperature).detach()
 
-    student_log_probs = F.log_softmax(student_logits / temperature, hidden_size=-1)
+    student_log_probs = F.log_softmax(student_logits / temperature)
 
     kl = F.kl_div(
         student_log_probs,
@@ -201,7 +203,7 @@ if __name__ == "__main__":
     parser.add_argument("--save_interval", type=int, default=100)
     parser.add_argument("--max_seq_len", type=int, default=512)
     parser.add_argument('--local_rank', type=int, default=-1)
-    parser.add_argument("--data_path", type=str, default="../dataset/sft_xxx.jsonl")
+    parser.add_argument("--data_path", type=str, default="../dataset/sft_mini_512.jsonl")
 
     args = parser.parse_args()
     # 定义学生模型和教师模型
