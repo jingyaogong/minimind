@@ -79,7 +79,9 @@ from typing import Optional, Tuple, List, Union
 import torch.nn.functional as F
 from transformers import PreTrainedModel, GenerationMixin, PretrainedConfig
 from transformers.modeling_outputs import CausalLMOutputWithPast
-
+import torch_npu
+from torch_npu.npu import amp # 导入AMP模块
+from torch_npu.contrib import transfer_to_npu # 使能自动迁移
 
 class RMSNorm(torch.nn.Module):
     def __init__(self, dim: int, eps: float = 1e-5):
@@ -176,8 +178,22 @@ class Attention(nn.Module):
             if attention_mask is not None:
                 attn_mask = attention_mask.view(bsz, 1, 1, -1).expand(bsz, self.n_local_heads, seq_len, -1)
                 attn_mask = attn_mask.bool() if attention_mask is not None else None
-
-            output = F.scaled_dot_product_attention(xq, xk, xv, attn_mask=attn_mask, dropout_p=dropout_p, is_causal=True)
+            
+            try:
+                output = F.scaled_dot_product_attention(xq, xk, xv, attn_mask=attn_mask, dropout_p=dropout_p, is_causal=True)
+            except:
+                atten_mask_npu= torch.triu(torch.ones([2048, 2048]), diagonal=1).bool().to("npu")
+                head_num = xq.shape[1]
+                output = torch_npu.npu_fusion_attention(
+                    xq, xk, xv, head_num, input_layout="BNSD", 
+                    pse=None,
+                    atten_mask=atten_mask_npu,
+                    scale=1.0 / math.sqrt(xq.shape[-1]),
+                    pre_tockens=2147483647,
+                    next_tockens=2147483647,
+                    keep_prob=1,
+                    sparse_mode=2
+                )[0]
         else:
             scores = (xq @ xk.transpose(-2, -1)) / math.sqrt(self.head_dim)
             scores = scores + torch.triu(
