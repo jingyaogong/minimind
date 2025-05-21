@@ -422,7 +422,17 @@ class MiniMindForCausalLM(PreTrainedModel, GenerationMixin):
         self.lm_head = nn.Linear(self.config.hidden_size, self.config.vocab_size, bias=False)
         self.model.embed_tokens.weight = self.lm_head.weight
         self.OUT = CausalLMOutputWithPast()
-
+        
+    def load_state_dict(self, state_dict, strict: bool = True):
+        new_state = {}
+        for k, v in state_dict.items():
+            if k.startswith("_orig_mod."):
+                new_key = k[len("_orig_mod."):]
+            else:
+                new_key = k
+            new_state[new_key] = v
+        return super().load_state_dict(new_state, strict=strict)
+    
     def forward(self,
                 input_ids: Optional[torch.Tensor] = None,
                 attention_mask: Optional[torch.Tensor] = None,

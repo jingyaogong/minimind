@@ -146,7 +146,12 @@ if __name__ == "__main__":
     tokens_per_iter = args.batch_size * args.max_seq_len
     device_type = "cuda" if "cuda" in args.device else "cpu"
 
-    ctx = nullcontext() if device_type == "cpu" else torch.cuda.amp.autocast()
+    if device_type == "cpu":
+        ctx = nullcontext()
+    else:
+        amp_dtype = torch.bfloat16 if args.dtype == "bfloat16" else torch.float16
+        ctx = torch.amp.autocast(device_type=device_type, dtype=amp_dtype)
+        
     ddp = int(os.environ.get("RANK", -1)) != -1  # is this a ddp run?
     ddp_local_rank, DEVICE = 0, "cuda:0"
     base_seed = 1337
@@ -170,6 +175,7 @@ if __name__ == "__main__":
         wandb = None
 
     model, tokenizer = init_model(lm_config)
+    model = torch.compile(model)
     apply_lora(model)
 
     total_params = sum(p.numel() for p in model.parameters())  # 总参数数量
@@ -201,7 +207,7 @@ if __name__ == "__main__":
         sampler=train_sampler
     )
 
-    scaler = torch.cuda.amp.GradScaler(enabled=(args.dtype in ['float16', 'bfloat16']))
+    scaler = torch.amp.GradScaler(enabled=(args.dtype in ['float16', 'bfloat16']))
     iter_per_epoch = len(train_loader)
 
     for epoch in range(args.epochs):

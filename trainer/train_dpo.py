@@ -198,7 +198,12 @@ if __name__ == "__main__":
 
     args.wandb_run_name = f"MiniMind-Full-DPO-Epoch-{args.epochs}-BatchSize-{args.batch_size}-LearningRate-{args.learning_rate}"
 
-    ctx = nullcontext() if device_type == "cpu" else torch.cuda.amp.autocast()
+    if device_type == "cpu":
+        ctx = nullcontext()
+    else:
+        amp_dtype = torch.bfloat16 if args.dtype == "bfloat16" else torch.float16
+        ctx = torch.amp.autocast(device_type=device_type, dtype=amp_dtype)
+        
     ddp = int(os.environ.get("RANK", -1)) != -1  # is this a ddp run?
     ddp_local_rank, DEVICE = 0, "cuda:0"
     base_seed = 1337
@@ -221,7 +226,9 @@ if __name__ == "__main__":
         wandb = None
 
     model, ref_model, tokenizer = init_model(lm_config)
-
+    model = torch.compile(model)
+    ref_model = torch.compile(ref_model)
+    
     train_ds = DPODataset(args.data_path, tokenizer, max_length=args.max_seq_len)
     train_sampler = DistributedSampler(train_ds) if ddp else None
     train_loader = DataLoader(
@@ -234,7 +241,7 @@ if __name__ == "__main__":
         sampler=train_sampler
     )
 
-    scaler = torch.cuda.amp.GradScaler(enabled=(args.dtype in ['float16', 'bfloat16']))
+    scaler = torch.amp.GradScaler(enabled=(args.dtype in ['float16', 'bfloat16']))
     optimizer = optim.AdamW(model.parameters(), lr=args.learning_rate)
 
     if ddp:
