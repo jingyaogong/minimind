@@ -235,6 +235,18 @@ git clone https://github.com/jingyaogong/minimind.git
 pip install -r requirements.txt -i https://pypi.tuna.tsinghua.edu.cn/simple
 ```
 
+因为需要的库较多，建议使用虚拟环境来安装：
+```bash
+python -m venv .venv
+```
+
+再下载库：
+
+```bash
+pip install -r requirements.txt
+```
+
+
 ### 2.下载模型
 到项目根目录
 ```bash
@@ -243,9 +255,19 @@ git clone https://huggingface.co/jingyaogong/MiniMind2
 
 ### （可选）命令行问答
 
+如果在第1步中安装了虚拟环境，需要在使用命令行激活虚拟环境：
+```bash
+.venv/Scripts/activate
+```
+
 ```bash
 # load=0: load from pytorch model, load=1: load from transformers-hf model
 python eval_model.py --load 1 --model_mode 2
+```
+
+或者使用
+```bash
+python model_chat.py
 ```
 
 ### （可选）启动WebUI
