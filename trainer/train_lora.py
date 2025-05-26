@@ -1,6 +1,8 @@
 import os
 import sys
 
+from sympy import true
+
 __package__ = "trainer"
 sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), '..')))
 
@@ -13,10 +15,11 @@ from torch import optim, nn
 import torch.distributed as dist
 from contextlib import nullcontext
 from torch.utils.data import DataLoader, DistributedSampler
-from transformers import AutoTokenizer, AutoModelForCausalLM
+from transformers import AutoTokenizer
 from model.model_minimind import MiniMindConfig, MiniMindForCausalLM
 from dataset.lm_dataset import SFTDataset
 from model.model_lora import load_lora, save_lora, apply_lora
+import safesentors.torch
 
 warnings.filterwarnings('ignore')
 
@@ -91,8 +94,15 @@ def train_epoch(epoch, wandb):
 
 
 def init_model(lm_config):
-    tokenizer = AutoTokenizer.from_pretrained('../model/')
+    current_dir = os.path.dirname(os.path.abspath(__file__))
+    model_path = os.path.join(current_dir, '..', 'model')
+    tokenizer = AutoTokenizer.from_pretrained(model_path)
     model = MiniMindForCausalLM(lm_config)
+    if args.minimind2:
+        model_data_path = os.path.join(current_dir, '..', 'MiniMind2')
+        state_dict = safetensors.torch.load_file("model.safetensors", device=args.device)
+        model.load_state_dict(state_dict, strict= True)
+        return model.to(args.device), tokenizer
     moe_path = '_moe' if lm_config.use_moe else ''
     ckp = f'{args.save_dir}/full_sft_{lm_config.hidden_size}{moe_path}.pth'
     state_dict = torch.load(ckp, map_location=args.device)
@@ -105,9 +115,7 @@ def init_distributed_mode():
     global ddp_local_rank, DEVICE
 
     dist.init_process_group(backend="nccl")
-    ddp_rank = int(os.environ["RANK"])
     ddp_local_rank = int(os.environ["LOCAL_RANK"])
-    ddp_world_size = int(os.environ["WORLD_SIZE"])
     DEVICE = f"cuda:{ddp_local_rank}"
     torch.cuda.set_device(DEVICE)
 
@@ -136,7 +144,15 @@ if __name__ == "__main__":
     parser.add_argument('--use_moe', default=False, type=bool)
     parser.add_argument("--data_path", type=str, default="../dataset/lora_medical.jsonl")
     parser.add_argument("--lora_name", type=str, default="lora_medical", help="根据任务保存成lora_(英文/医学/心理...)")
+    parser.add_argument("--minimind2", type=bool, default=true, help="是否使用从huggingface下载下来的MiniMind2模型")
     args = parser.parse_args()
+
+    if args.minimind2 == true:
+        args.hidden_size = 768
+        args.num_hidden_layers=16
+        current_dir = os.path.dirname(os.path.abspath(__file__))
+        args.data_path = os.path.join(current_dir, "../dataset/lora_medical.jsonl")
+        
 
     lm_config = MiniMindConfig(hidden_size=args.hidden_size, num_hidden_layers=args.num_hidden_layers,
                                use_moe=args.use_moe)
@@ -201,7 +217,7 @@ if __name__ == "__main__":
         sampler=train_sampler
     )
 
-    scaler = torch.cuda.amp.GradScaler(enabled=(args.dtype in ['float16', 'bfloat16']))
+    scaler = torch.cuda.amp.GradScaler("cuda", enabled=(args.dtype in ['float16', 'bfloat16']))
     iter_per_epoch = len(train_loader)
 
     for epoch in range(args.epochs):

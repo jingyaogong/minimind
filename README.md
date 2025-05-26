@@ -235,6 +235,18 @@ git clone https://github.com/jingyaogong/minimind.git
 pip install -r requirements.txt -i https://pypi.tuna.tsinghua.edu.cn/simple
 ```
 
+因为需要的库较多，建议使用虚拟环境来安装：
+```bash
+python -m venv .venv
+```
+
+再下载库：
+
+```bash
+pip install -r requirements.txt
+```
+
+
 ### 2.下载模型
 到项目根目录
 ```bash
@@ -243,9 +255,19 @@ git clone https://huggingface.co/jingyaogong/MiniMind2
 
 ### （可选）命令行问答
 
+如果在第1步中安装了虚拟环境，需要在使用命令行激活虚拟环境：
+```bash
+.venv/Scripts/activate
+```
+
 ```bash
 # load=0: load from pytorch model, load=1: load from transformers-hf model
 python eval_model.py --load 1 --model_mode 2
+```
+
+或者使用
+```bash
+python model_chat.py
 ```
 
 ### （可选）启动WebUI
@@ -451,7 +473,7 @@ quality（当然也还不算high，提升数据质量无止尽）。
 导出文件为`sft_512.jsonl`(~7.5GB)。
 
 [Magpie-SFT数据集](https://www.modelscope.cn/organization/Magpie-Align)
-收集了~1M条来自Qwen2/2.5的高质量对话，我将这部分数据进一步清洗，把总长度`<2048`的部分导出为`sft_2048.jsonl`(~9GB)。
+收集了大约1M条来自Qwen2/2.5的高质量对话，我将这部分数据进一步清洗，把总长度`<2048`的部分导出为`sft_2048.jsonl`(~9GB)。
 长度`<1024`的部分导出为`sft_1024.jsonl`(~5.5GB)，用大模型对话数据直接进行sft就属于“黑盒蒸馏”的范畴。
 
 进一步清洗前两步sft的数据（只保留中文字符占比高的内容），筛选长度`<512`的对话，得到`sft_mini_512.jsonl`(~1.2GB)。

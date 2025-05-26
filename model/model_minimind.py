@@ -290,7 +290,6 @@ class MOEFeedForward(nn.Module):
     def forward(self, x):
         identity = x
         orig_shape = x.shape
-        bsz, seq_len, _ = x.shape
         # 使用门控机制选择专家
         topk_idx, topk_weight, aux_loss = self.gate(x)
         x = x.view(-1, x.shape[-1])
