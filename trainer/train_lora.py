@@ -19,6 +19,7 @@ from transformers import AutoTokenizer
 from model.model_minimind import MiniMindConfig, MiniMindForCausalLM
 from dataset.lm_dataset import SFTDataset
 from model.model_lora import load_lora, save_lora, apply_lora
+import safesentors.torch
 
 warnings.filterwarnings('ignore')
 
@@ -99,7 +100,8 @@ def init_model(lm_config):
     model = MiniMindForCausalLM(lm_config)
     if args.minimind2:
         model_data_path = os.path.join(current_dir, '..', 'MiniMind2')
-        model.from_pretrained(model_data_path)
+        state_dict = safetensors.torch.load_file("model.safetensors", device=args.device)
+        model.load_state_dict(state_dict, strict= True)
         return model.to(args.device), tokenizer
     moe_path = '_moe' if lm_config.use_moe else ''
     ckp = f'{args.save_dir}/full_sft_{lm_config.hidden_size}{moe_path}.pth'
