@@ -30,10 +30,12 @@ def get_lr(current_step, total_steps, lr):
     return lr / 10 + 0.5 * lr * (1 + math.cos(math.pi * current_step / total_steps))
 
 
-def train_epoch(epoch, wandb):
+def train_epoch(epoch, wandb, start_step=0):
     loss_fct = nn.CrossEntropyLoss(reduction='none')
     start_time = time.time()
     for step, (X, Y, loss_mask) in enumerate(train_loader):
+        if step < start_step:
+            continue
         X = X.to(args.device)
         Y = Y.to(args.device)
         loss_mask = loss_mask.to(args.device)
@@ -90,6 +92,15 @@ def train_epoch(epoch, wandb):
                 state_dict = model.state_dict()
             state_dict = {k: v.half() for k, v in state_dict.items()}  # 半精度保存
             torch.save(state_dict, ckp)
+
+            # 保存优化器状态、当前epoch和step
+            checkpoint = {
+                'epoch': epoch,
+                'step': step + 1,
+                'optimizer_state_dict': optimizer.state_dict(),
+                'scaler_state_dict': scaler.state_dict()
+            }
+            torch.save(checkpoint, f'{args.save_dir}/checkpoint.pth')
             model.train()
 
 
@@ -141,6 +152,7 @@ if __name__ == "__main__":
     parser.add_argument('--max_seq_len', default=512, type=int)
     parser.add_argument('--use_moe', default=False, type=bool)
     parser.add_argument("--data_path", type=str, default="../dataset/sft_mini_512.jsonl")
+    parser.add_argument("--resume", action="store_true", help="Resume training from checkpoint")
 
     args = parser.parse_args()
 
@@ -198,5 +210,20 @@ if __name__ == "__main__":
         model = DistributedDataParallel(model, device_ids=[ddp_local_rank])
 
     iter_per_epoch = len(train_loader)
-    for epoch in range(args.epochs):
-        train_epoch(epoch, wandb)
+
+    start_epoch = 0
+    start_step = 0
+    if args.resume:
+        checkpoint_path = f'{args.save_dir}/checkpoint.pth'
+        if os.path.exists(checkpoint_path):
+            checkpoint = torch.load(checkpoint_path)
+            start_epoch = checkpoint['epoch']
+            start_step = checkpoint['step']
+            optimizer.load_state_dict(checkpoint['optimizer_state_dict'])
+            scaler.load_state_dict(checkpoint['scaler_state_dict'])
+            Logger(f"Resuming training from epoch {start_epoch + 1}, step {start_step}")
+        else:
+            Logger("Checkpoint not found, starting training from scratch.")
+
+    for epoch in range(start_epoch, args.epochs):
+        train_epoch(epoch, wandb, start_step if epoch == start_epoch else 0)
