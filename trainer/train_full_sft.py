@@ -103,6 +103,15 @@ def init_model(lm_config):
 
     Logger(f'LLM可训练总参数量：{sum(p.numel() for p in model.parameters() if p.requires_grad) / 1e6:.3f} 百万')
     model = model.to(args.device)
+
+    # 使用 torch.compile 优化模型以提升速度 (需要 PyTorch 2.0+)
+    try:
+        # 使用 "reduce-overhead" 模式来降低编译时的内存消耗
+        model = torch.compile(model, mode="reduce-overhead")
+        Logger("Model compiled with torch.compile() for optimization.")
+    except Exception as e:
+        Logger(f"torch.compile() failed: {e}")
+
     return model, tokenizer
 
 
@@ -130,7 +139,7 @@ if __name__ == "__main__":
     parser.add_argument("--wandb_project", type=str, default="MiniMind-Full-SFT")
     parser.add_argument("--num_workers", type=int, default=1)
     parser.add_argument("--ddp", action="store_true")
-    parser.add_argument("--accumulation_steps", type=int, default=1)
+    parser.add_argument("--accumulation_steps", type=int, default=2)
     parser.add_argument("--grad_clip", type=float, default=1.0)
     parser.add_argument("--warmup_iters", type=int, default=0)
     parser.add_argument("--log_interval", type=int, default=100)
@@ -191,7 +200,8 @@ if __name__ == "__main__":
     )
 
     scaler = torch.cuda.amp.GradScaler(enabled=(args.dtype in ['float16', 'bfloat16']))
-    optimizer = optim.AdamW(model.parameters(), lr=args.learning_rate)
+    # 在 CUDA 上使用 fused AdamW 以获得潜在的速度提升
+    optimizer = optim.AdamW(model.parameters(), lr=args.learning_rate, fused=(device_type == 'cuda'))
 
     if ddp:
         model._ddp_params_and_buffers_to_ignore = {"pos_cis"}

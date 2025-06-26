@@ -21,7 +21,8 @@ def init_model(args):
             num_hidden_layers=args.num_hidden_layers,
             use_moe=args.use_moe
         ))
-
+        model = torch.compile(model)
+        
         model.load_state_dict(torch.load(ckp, map_location=args.device), strict=True)
 
         if args.lora_name != 'None':

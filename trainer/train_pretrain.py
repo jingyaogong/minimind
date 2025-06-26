@@ -18,6 +18,7 @@ from model.model_minimind import MiniMindConfig, MiniMindForCausalLM
 from dataset.lm_dataset import PretrainDataset
 
 warnings.filterwarnings('ignore')
+torch.set_float32_matmul_precision('high') # <--- 添加此行
 
 
 def Logger(content):
@@ -118,8 +119,8 @@ if __name__ == "__main__":
     parser = argparse.ArgumentParser(description="MiniMind Pretraining")
     parser.add_argument("--out_dir", type=str, default="../out")
     # 若要以最快速度实现zero则epochs设置为1轮；否则应当利用有限的数据训练2~6个epochs。
-    parser.add_argument("--epochs", type=int, default=1)
-    parser.add_argument("--batch_size", type=int, default=16)
+    parser.add_argument("--epochs", type=int, default=2)
+    parser.add_argument("--batch_size", type=int, default=32)
     parser.add_argument("--learning_rate", type=float, default=5e-4)
     parser.add_argument("--device", type=str, default="cuda:0" if torch.cuda.is_available() else "cpu")
     parser.add_argument("--dtype", type=str, default="bfloat16")
@@ -174,6 +175,7 @@ if __name__ == "__main__":
         wandb = None
 
     model, tokenizer = init_model(lm_config)
+    model = torch.compile(model) # <--- 添加此行
     train_ds = PretrainDataset(args.data_path, tokenizer, max_length=args.max_seq_len)
     train_sampler = DistributedSampler(train_ds) if ddp else None
     train_loader = DataLoader(
@@ -187,11 +189,12 @@ if __name__ == "__main__":
     )
 
     scaler = torch.cuda.amp.GradScaler(enabled=(args.dtype in ['float16', 'bfloat16']))
-    optimizer = optim.AdamW(model.parameters(), lr=args.learning_rate)
+    optimizer = optim.AdamW(model.parameters(), lr=args.learning_rate, fused=True if device_type == 'cuda' else False) # <--- 修改此行
 
     if ddp:
         model._ddp_params_and_buffers_to_ignore = {"pos_cis"}
-        model = DistributedDataParallel(model, device_ids=[ddp_local_rank])
+        # 注意：torch.compile 应该在 DDP 封装之前调用
+        model = DistributedDataParallel(model, device_ids=[ddp_local_rank], static_graph=True) # <--- 修改此行
 
     iter_per_epoch = len(train_loader)
     for epoch in range(args.epochs):
