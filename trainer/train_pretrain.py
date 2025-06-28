@@ -1,7 +1,10 @@
 import os
 import sys
 __package__ = "trainer"
-sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), '..')))
+# 获取脚本所在目录的绝对路径
+SCRIPT_DIR = os.path.dirname(os.path.abspath(__file__))
+PROJECT_ROOT = os.path.abspath(os.path.join(SCRIPT_DIR, '..'))
+sys.path.append(PROJECT_ROOT)
 
 import argparse
 import time
@@ -16,13 +19,13 @@ from contextlib import nullcontext
 from transformers import AutoTokenizer
 from model.model_minimind import MiniMindConfig, MiniMindForCausalLM
 from dataset.lm_dataset import PretrainDataset
-
+from loguru import logger
 warnings.filterwarnings('ignore')
-
+logger.add("file_{time}.log")
 
 def Logger(content):
     if not ddp or dist.get_rank() == 0:
-        print(content)
+        logger.info(content)
 
 
 def get_lr(current_step, total_steps, lr):
@@ -73,7 +76,8 @@ def train_epoch(epoch, wandb):
                     loss.item() * args.accumulation_steps,
                     optimizer.param_groups[-1]['lr'],
                     spend_time / (step + 1) * iter_per_epoch // 60 - spend_time // 60))
-
+            decoded_text = tokenizer.decode(X[0].tolist())
+            Logger(f"原始文本：{decoded_text}")
             if (wandb is not None) and (not ddp or dist.get_rank() == 0):
                 wandb.log({"loss": loss.item() * args.accumulation_steps,
                            "lr": optimizer.param_groups[-1]['lr'],
@@ -95,7 +99,9 @@ def train_epoch(epoch, wandb):
 
 
 def init_model(lm_config):
-    tokenizer = AutoTokenizer.from_pretrained('../model/')
+    # 使用基于项目根目录的路径
+    tokenizer_path = os.path.join(PROJECT_ROOT, 'model')
+    tokenizer = AutoTokenizer.from_pretrained(tokenizer_path)
     model = MiniMindForCausalLM(lm_config).to(args.device)
     Logger(f'LLM可训练总参数量：{sum(p.numel() for p in model.parameters() if p.requires_grad) / 1e6:.3f} 百万')
     return model, tokenizer
@@ -116,7 +122,8 @@ def init_distributed_mode():
 # torchrun --nproc_per_node 2 1-pretrain.py
 if __name__ == "__main__":
     parser = argparse.ArgumentParser(description="MiniMind Pretraining")
-    parser.add_argument("--out_dir", type=str, default="../out")
+    # 使用基于项目根目录的路径
+    parser.add_argument("--out_dir", type=str, default=os.path.join(PROJECT_ROOT, "out"))
     # 若要以最快速度实现zero则epochs设置为1轮；否则应当利用有限的数据训练2~6个epochs。
     parser.add_argument("--epochs", type=int, default=1)
     parser.add_argument("--batch_size", type=int, default=32)
@@ -137,7 +144,8 @@ if __name__ == "__main__":
     parser.add_argument('--num_hidden_layers', default=8, type=int)
     parser.add_argument('--max_seq_len', default=512, type=int)
     parser.add_argument('--use_moe', default=False, type=bool)
-    parser.add_argument("--data_path", type=str, default="../dataset/pretrain_hq.jsonl")
+    # 使用基于项目根目录的路径
+    parser.add_argument("--data_path", type=str, default=os.path.join(PROJECT_ROOT, "dataset/pretrain_hq.jsonl"))
     args = parser.parse_args()
 
     lm_config = MiniMindConfig(hidden_size=args.hidden_size, num_hidden_layers=args.num_hidden_layers, use_moe=args.use_moe)

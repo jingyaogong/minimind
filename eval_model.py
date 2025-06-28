@@ -39,13 +39,10 @@ def get_prompt_datas(args):
     if args.model_mode == 0:
         # pretrain模型的接龙能力（无法对话）
         prompt_datas = [
-            '马克思主义基本原理',
-            '人类大脑的主要功能',
-            '万有引力原理是',
-            '世界上最高的山峰是',
-            '二氧化碳在空气中',
-            '地球上最大的动物有',
-            '杭州市的美食有'
+            '凤清儿自然',
+            '唐火儿鼓起的小腹',
+            '马上黯淡下去唐火儿便绝望地'
+
         ]
     else:
         if args.lora_name == 'None':
@@ -116,7 +113,7 @@ def main():
     # 模型未经过外推微调时，在更长的上下文的chat_template时难免出现性能的明显退化，因此需要注意此处设置
     parser.add_argument('--history_cnt', default=0, type=int)
     parser.add_argument('--load', default=0, type=int, help="0: 原生torch权重，1: transformers加载")
-    parser.add_argument('--model_mode', default=1, type=int,
+    parser.add_argument('--model_mode', default=0, type=int,
                         help="0: 预训练模型，1: SFT-Chat模型，2: RLHF-Chat模型，3: Reason模型，4: RLAIF-Chat模型")
     args = parser.parse_args()
 
