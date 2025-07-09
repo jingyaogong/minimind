@@ -16,7 +16,7 @@ class MiniMindConfig(PretrainedConfig):
             hidden_act: str = 'silu',
             hidden_size: int = 512,
             intermediate_size: int = None,
-            max_position_embeddings: int = 32768,
+            max_position_embeddings: int = None,  # 设为None，支持动态长度
             num_attention_heads: int = 8,
             num_hidden_layers: int = 8,
             num_key_value_heads: int = 2,
@@ -24,6 +24,8 @@ class MiniMindConfig(PretrainedConfig):
             rms_norm_eps: float = 1e-05,
             rope_theta: int = 1000000.0,
             flash_attn: bool = True,
+            rope_scaling: dict = None,  # 新增：RoPE缩放配置
+            dynamic_rope: bool = True,  # 新增：启用动态RoPE
             ####################################################
             # Here are the specific configurations of MOE
             # When use_moe is false, the following is invalid
@@ -45,7 +47,13 @@ class MiniMindConfig(PretrainedConfig):
         self.hidden_act = hidden_act
         self.hidden_size = hidden_size
         self.intermediate_size = intermediate_size
-        self.max_position_embeddings = max_position_embeddings
+        
+        # 向后兼容性：如果没有指定max_position_embeddings且dynamic_rope为False，则使用默认值
+        if max_position_embeddings is None and not dynamic_rope:
+            self.max_position_embeddings = 32768  # 使用原来的默认值
+        else:
+            self.max_position_embeddings = max_position_embeddings  # 可以为None
+            
         self.num_attention_heads = num_attention_heads
         self.num_hidden_layers = num_hidden_layers
         self.num_key_value_heads = num_key_value_heads
@@ -53,6 +61,8 @@ class MiniMindConfig(PretrainedConfig):
         self.rms_norm_eps = rms_norm_eps
         self.rope_theta = rope_theta
         self.flash_attn = flash_attn
+        self.rope_scaling = rope_scaling
+        self.dynamic_rope = dynamic_rope
         ####################################################
         # Here are the specific configurations of MOE
         # When use_moe is false, the following is invalid
@@ -94,13 +104,73 @@ class RMSNorm(torch.nn.Module):
         return self.weight * self._norm(x.float()).type_as(x)
 
 
-def precompute_freqs_cis(dim: int, end: int = int(32 * 1024), theta: float = 1e6):
+def precompute_freqs_cis(dim: int, end: int = None, theta: float = 1e6, rope_scaling: dict = None):
+    """
+    动态计算RoPE频率，支持任意长度扩展
+    """
+    if end is None:
+        # 如果没有指定end，使用一个合理的初始值
+        end = 4096
+    
     freqs = 1.0 / (theta ** (torch.arange(0, dim, 2)[: (dim // 2)].float() / dim))
+    
+    # 应用RoPE缩放策略
+    if rope_scaling is not None:
+        scaling_type = rope_scaling.get("type", "linear")
+        scaling_factor = rope_scaling.get("factor", 1.0)
+        
+        if scaling_type == "linear":
+            freqs = freqs / scaling_factor
+        elif scaling_type == "dynamic":
+            # 动态缩放：根据序列长度调整频率
+            freqs = freqs / scaling_factor
+    
     t = torch.arange(end, device=freqs.device)
     freqs = torch.outer(t, freqs).float()
     freqs_cos = torch.cat([torch.cos(freqs), torch.cos(freqs)], dim=-1)
     freqs_sin = torch.cat([torch.sin(freqs), torch.sin(freqs)], dim=-1)
     return freqs_cos, freqs_sin
+
+
+def extend_rope_freqs(freqs_cos: torch.Tensor, freqs_sin: torch.Tensor, 
+                     new_length: int, dim: int, theta: float = 1e6, 
+                     rope_scaling: dict = None, device=None):
+    """
+    扩展RoPE频率到新的长度
+    """
+    current_length = freqs_cos.shape[0]
+    if new_length <= current_length:
+        return freqs_cos[:new_length], freqs_sin[:new_length]
+    
+    # 计算需要扩展的部分
+    freqs = 1.0 / (theta ** (torch.arange(0, dim, 2)[: (dim // 2)].float() / dim))
+    
+    if device is not None:
+        freqs = freqs.to(device)
+    
+    # 应用缩放策略
+    if rope_scaling is not None:
+        scaling_type = rope_scaling.get("type", "linear")
+        scaling_factor = rope_scaling.get("factor", 1.0)
+        
+        if scaling_type == "linear":
+            freqs = freqs / scaling_factor
+        elif scaling_type == "dynamic":
+            # 根据新长度动态调整缩放因子
+            adaptive_factor = max(1.0, new_length / 4096) * scaling_factor
+            freqs = freqs / adaptive_factor
+    
+    # 生成新的位置索引
+    t_new = torch.arange(current_length, new_length, device=freqs.device)
+    freqs_new = torch.outer(t_new, freqs).float()
+    freqs_cos_new = torch.cat([torch.cos(freqs_new), torch.cos(freqs_new)], dim=-1)
+    freqs_sin_new = torch.cat([torch.sin(freqs_new), torch.sin(freqs_new)], dim=-1)
+    
+    # 拼接原有和新的频率
+    extended_cos = torch.cat([freqs_cos, freqs_cos_new], dim=0)
+    extended_sin = torch.cat([freqs_sin, freqs_sin_new], dim=0)
+    
+    return extended_cos, extended_sin
 
 
 def apply_rotary_pos_emb(q, k, cos, sin, position_ids=None, unsqueeze_dim=1):
@@ -148,7 +218,8 @@ class Attention(nn.Module):
                 position_embeddings: Tuple[torch.Tensor, torch.Tensor],  # 修改为接收cos和sin
                 past_key_value: Optional[Tuple[torch.Tensor, torch.Tensor]] = None,
                 use_cache=False,
-                attention_mask: Optional[torch.Tensor] = None):
+                attention_mask: Optional[torch.Tensor] = None,
+                config: MiniMindConfig = None):  # 新增config参数
         bsz, seq_len, _ = x.shape
         xq, xk, xv = self.q_proj(x), self.k_proj(x), self.v_proj(x)
         xq = xq.view(bsz, seq_len, self.n_local_heads, self.head_dim)
@@ -156,7 +227,35 @@ class Attention(nn.Module):
         xv = xv.view(bsz, seq_len, self.n_local_kv_heads, self.head_dim)
 
         cos, sin = position_embeddings
-        xq, xk = apply_rotary_pos_emb(xq, xk, cos[:seq_len], sin[:seq_len])
+        
+        # 兼容性处理：根据配置决定是否动态扩展
+        if config and config.dynamic_rope:
+            # 动态扩展位置编码（新功能）
+            total_seq_len = seq_len
+            if past_key_value is not None:
+                total_seq_len += past_key_value[0].shape[1]
+            
+            if total_seq_len > cos.shape[0]:
+                # 需要扩展位置编码
+                cos, sin = extend_rope_freqs(
+                    cos, sin, 
+                    new_length=total_seq_len,
+                    dim=self.head_dim,
+                    theta=config.rope_theta if config else 1e6,
+                    rope_scaling=config.rope_scaling if config else None,
+                    device=cos.device
+                )
+        
+        # 确定当前序列的位置范围
+        if past_key_value is not None:
+            start_pos = past_key_value[0].shape[1]
+            pos_cos = cos[start_pos:start_pos + seq_len]
+            pos_sin = sin[start_pos:start_pos + seq_len]
+        else:
+            pos_cos = cos[:seq_len]
+            pos_sin = sin[:seq_len]
+        
+        xq, xk = apply_rotary_pos_emb(xq, xk, pos_cos, pos_sin)
 
         # kv_cache实现
         if past_key_value is not None:
@@ -196,7 +295,7 @@ class Attention(nn.Module):
 
         output = output.transpose(1, 2).reshape(bsz, seq_len, -1)
         output = self.resid_dropout(self.o_proj(output))
-        return output, past_kv
+        return output, past_kv, (cos, sin)  # 返回更新后的位置编码
 
 
 class FeedForward(nn.Module):
@@ -341,6 +440,7 @@ class MiniMindBlock(nn.Module):
         self.hidden_size = config.hidden_size
         self.head_dim = config.hidden_size // config.num_attention_heads
         self.self_attn = Attention(config)
+        self.config = config  # 保存config引用
 
         self.layer_id = layer_id
         self.input_layernorm = RMSNorm(config.hidden_size, eps=config.rms_norm_eps)
@@ -349,13 +449,13 @@ class MiniMindBlock(nn.Module):
 
     def forward(self, hidden_states, position_embeddings, past_key_value=None, use_cache=False, attention_mask=None):
         residual = hidden_states
-        hidden_states, present_key_value = self.self_attn(
+        hidden_states, present_key_value, updated_pos_emb = self.self_attn(
             self.input_layernorm(hidden_states), position_embeddings,
-            past_key_value, use_cache, attention_mask
+            past_key_value, use_cache, attention_mask, self.config
         )
         hidden_states += residual
         hidden_states = hidden_states + self.mlp(self.post_attention_layernorm(hidden_states))
-        return hidden_states, present_key_value
+        return hidden_states, present_key_value, updated_pos_emb
 
 
 class MiniMindModel(nn.Module):
@@ -368,10 +468,48 @@ class MiniMindModel(nn.Module):
         self.layers = nn.ModuleList([MiniMindBlock(l, config) for l in range(self.num_hidden_layers)])
         self.norm = RMSNorm(config.hidden_size, eps=config.rms_norm_eps)
 
-        freqs_cos, freqs_sin = precompute_freqs_cis(dim=config.hidden_size // config.num_attention_heads,
-                                                    end=config.max_position_embeddings, theta=config.rope_theta)
+        # 初始化RoPE频率缓存（兼容原有配置）
+        head_dim = config.hidden_size // config.num_attention_heads
+        
+        # 兼容性处理：确定初始长度
+        if config.max_position_embeddings is not None:
+            # 原有固定长度配置
+            initial_length = config.max_position_embeddings
+        else:
+            # 新的动态长度配置
+            initial_length = 4096  # 初始长度，可以动态扩展
+        
+        freqs_cos, freqs_sin = precompute_freqs_cis(
+            dim=head_dim,
+            end=initial_length, 
+            theta=config.rope_theta,
+            rope_scaling=config.rope_scaling
+        )
         self.register_buffer("freqs_cos", freqs_cos, persistent=False)
         self.register_buffer("freqs_sin", freqs_sin, persistent=False)
+
+    def _update_rope_cache(self, seq_length: int):
+        """
+        根据需要更新RoPE缓存（仅在启用动态RoPE时）
+        """
+        if not self.config.dynamic_rope:
+            # 如果未启用动态RoPE，不进行扩展
+            return
+            
+        current_length = self.freqs_cos.shape[0]
+        if seq_length > current_length:
+            head_dim = self.config.hidden_size // self.config.num_attention_heads
+            new_cos, new_sin = extend_rope_freqs(
+                self.freqs_cos, self.freqs_sin,
+                new_length=seq_length,
+                dim=head_dim,
+                theta=self.config.rope_theta,
+                rope_scaling=self.config.rope_scaling,
+                device=self.freqs_cos.device
+            )
+            # 更新缓存的RoPE频率
+            self.freqs_cos = new_cos
+            self.freqs_sin = new_sin
 
     def forward(self,
                 input_ids: Optional[torch.Tensor] = None,
@@ -382,24 +520,35 @@ class MiniMindModel(nn.Module):
         batch_size, seq_length = input_ids.shape
         past_key_values = past_key_values or [None] * len(self.layers)
         start_pos = past_key_values[0][0].shape[1] if past_key_values[0] is not None else 0
+        
+        # 计算总序列长度
+        total_length = start_pos + seq_length
+        
+        # 动态更新RoPE缓存（如果启用动态RoPE）
+        if self.config.dynamic_rope:
+            self._update_rope_cache(total_length)
 
         hidden_states = self.dropout(self.embed_tokens(input_ids))
 
+        # 获取当前需要的位置编码
         position_embeddings = (
-            self.freqs_cos[start_pos:start_pos + seq_length],
-            self.freqs_sin[start_pos:start_pos + seq_length]
+            self.freqs_cos,  # 传递完整的位置编码，在attention中处理具体范围
+            self.freqs_sin
         )
 
         presents = []
+        current_pos_emb = position_embeddings
+        
         for layer_idx, (layer, past_key_value) in enumerate(zip(self.layers, past_key_values)):
-            hidden_states, present = layer(
+            hidden_states, present, updated_pos_emb = layer(
                 hidden_states,
-                position_embeddings,
+                current_pos_emb,
                 past_key_value=past_key_value,
                 use_cache=use_cache,
                 attention_mask=attention_mask
             )
             presents.append(present)
+            current_pos_emb = updated_pos_emb  # 使用更新后的位置编码
 
         hidden_states = self.norm(hidden_states)
 
@@ -444,3 +593,89 @@ class MiniMindForCausalLM(PreTrainedModel, GenerationMixin):
         self.OUT.__setitem__('aux_loss', aux_loss)
         self.OUT.__setitem__('past_key_values', past_kvs)
         return self.OUT
+
+
+def check_config_compatibility(config: MiniMindConfig, warn: bool = True):
+    """
+    检查配置兼容性，确保新旧配置都能正常工作
+    
+    Args:
+        config: MiniMindConfig配置对象
+        warn: 是否输出警告信息
+    
+    Returns:
+        bool: 配置是否兼容
+    """
+    issues = []
+    
+    # 检查max_position_embeddings和dynamic_rope的配置
+    if config.max_position_embeddings is None and not config.dynamic_rope:
+        issues.append("max_position_embeddings为None但dynamic_rope为False，这可能导致位置编码问题")
+    
+    # 检查RoPE缩放配置
+    if config.rope_scaling is not None and not config.dynamic_rope:
+        issues.append("配置了rope_scaling但dynamic_rope为False，RoPE缩放可能不会生效")
+    
+    # 输出警告信息
+    if warn and issues:
+        print("⚠️  配置兼容性警告:")
+        for issue in issues:
+            print(f"   - {issue}")
+        print("   建议: 使用dynamic_rope=True以获得最佳的长度扩展性能")
+    
+    return len(issues) == 0
+
+
+def create_legacy_config(hidden_size: int = 512, num_hidden_layers: int = 8, 
+                        use_moe: bool = False, max_seq_len: int = 32768):
+    """
+    创建与原版MiniMind完全兼容的配置
+    
+    Args:
+        hidden_size: 隐藏层大小
+        num_hidden_layers: 隐藏层数量  
+        use_moe: 是否使用MoE
+        max_seq_len: 最大序列长度
+    
+    Returns:
+        MiniMindConfig: 兼容的配置对象
+    """
+    return MiniMindConfig(
+        hidden_size=hidden_size,
+        num_hidden_layers=num_hidden_layers,
+        use_moe=use_moe,
+        max_position_embeddings=max_seq_len,
+        dynamic_rope=False,  # 禁用动态RoPE，使用原有逻辑
+        rope_scaling=None
+    )
+
+
+def create_dynamic_config(hidden_size: int = 512, num_hidden_layers: int = 8,
+                         use_moe: bool = False, rope_scaling_factor: float = 1.0):
+    """
+    创建支持动态长度扩展的配置
+    
+    Args:
+        hidden_size: 隐藏层大小
+        num_hidden_layers: 隐藏层数量
+        use_moe: 是否使用MoE  
+        rope_scaling_factor: RoPE缩放因子
+    
+    Returns:
+        MiniMindConfig: 动态配置对象
+    """
+    rope_scaling = None
+    if rope_scaling_factor != 1.0:
+        rope_scaling = {
+            "type": "linear",
+            "factor": rope_scaling_factor
+        }
+    
+    return MiniMindConfig(
+        hidden_size=hidden_size,
+        num_hidden_layers=num_hidden_layers,
+        use_moe=use_moe,
+        max_position_embeddings=None,  # 无限制
+        dynamic_rope=True,  # 启用动态RoPE
+        rope_scaling=rope_scaling
+    )

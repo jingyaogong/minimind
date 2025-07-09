@@ -33,7 +33,9 @@ def init_model(args):
         model = MiniMindForCausalLM(MiniMindConfig(
             hidden_size=args.hidden_size,
             num_hidden_layers=args.num_hidden_layers,
-            max_seq_len=args.max_seq_len,
+            max_position_embeddings=None,  # 设为None以支持动态长度
+            dynamic_rope=True,  # 启用动态RoPE
+            rope_scaling=None,  # 可根据需要配置RoPE缩放
             use_moe=args.use_moe
         ))
         model.load_state_dict(torch.load(ckp, map_location=device), strict=True)

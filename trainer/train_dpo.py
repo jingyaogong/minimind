@@ -183,13 +183,30 @@ if __name__ == "__main__":
     parser.add_argument('--local_rank', type=int, default=-1)
     parser.add_argument('--hidden_size', default=512, type=int)
     parser.add_argument('--num_hidden_layers', default=8, type=int)
-    parser.add_argument('--max_seq_len', default=1024, type=int)
+    parser.add_argument('--max_seq_len', default=1024, type=int, help='训练时的序列长度，但模型支持动态扩展到更长')
     parser.add_argument('--use_moe', default=False, type=bool)
+    parser.add_argument('--dynamic_rope', default=True, type=bool, help='是否启用动态RoPE扩展')
+    parser.add_argument('--rope_scaling_factor', default=1.0, type=float, help='RoPE缩放因子')
+    parser.add_argument('--rope_scaling_type', default='linear', type=str, help='RoPE缩放类型：linear或dynamic')
     parser.add_argument("--data_path", type=str, default="../dataset/dpo.jsonl")
-
     args = parser.parse_args()
 
-    lm_config = MiniMindConfig(hidden_size=args.hidden_size, num_hidden_layers=args.num_hidden_layers, use_moe=args.use_moe)
+    # 配置RoPE缩放
+    rope_scaling = None
+    if args.rope_scaling_factor != 1.0:
+        rope_scaling = {
+            "type": args.rope_scaling_type,
+            "factor": args.rope_scaling_factor
+        }
+    
+    lm_config = MiniMindConfig(
+        hidden_size=args.hidden_size, 
+        num_hidden_layers=args.num_hidden_layers, 
+        use_moe=args.use_moe,
+        max_position_embeddings=None,  # 设为None以支持动态长度
+        dynamic_rope=args.dynamic_rope,
+        rope_scaling=rope_scaling
+    )
     args.save_dir = os.path.join(args.out_dir)
     os.makedirs(args.save_dir, exist_ok=True)
     os.makedirs(args.out_dir, exist_ok=True)
