@@ -14,14 +14,20 @@ from torch.nn.parallel import DistributedDataParallel
 from torch.utils.data import DataLoader, DistributedSampler
 from contextlib import nullcontext
 from transformers import AutoTokenizer
-from model.model_minimind import MiniMindConfig, MiniMindForCausalLM
+from model.model_minimind import MiniMindConfig, MiniMindForCausalLM, check_config_compatibility
 from dataset.lm_dataset import PretrainDataset
+import time
 
 warnings.filterwarnings('ignore')
 
 
 def Logger(content):
-    if not ddp or dist.get_rank() == 0:
+    # 检查是否在分布式环境中
+    try:
+        if not ddp or dist.get_rank() == 0:
+            print(content)
+    except NameError:
+        # 如果ddp未定义，直接打印（单机模式）
         print(content)
 
 
@@ -33,6 +39,9 @@ def train_epoch(epoch, wandb):
     loss_fct = nn.CrossEntropyLoss(reduction='none')
     start_time = time.time()
     for step, (X, Y, loss_mask) in enumerate(train_loader):
+        # 添加10ms睡眠，让显卡休息
+        time.sleep(0.01)
+        
         X = X.to(args.device)
         Y = Y.to(args.device)
         loss_mask = loss_mask.to(args.device)
@@ -96,7 +105,24 @@ def train_epoch(epoch, wandb):
 
 def init_model(lm_config):
     tokenizer = AutoTokenizer.from_pretrained('../model/')
-    model = MiniMindForCausalLM(lm_config).to(args.device)
+    model = MiniMindForCausalLM(lm_config)
+    
+    # 如果启用继续预训练，则加载已有的预训练模型
+    if args.continue_pretrain:
+        moe_path = '_moe' if lm_config.use_moe else ''
+        ckp = f'{args.save_dir}/pretrain_{lm_config.hidden_size}{moe_path}.pth'
+        
+        if os.path.exists(ckp):
+            Logger(f'继续预训练模式：加载已有预训练模型 {ckp}')
+            state_dict = torch.load(ckp, map_location=args.device)
+            model.load_state_dict(state_dict, strict=False)
+            Logger('✅ 已有预训练模型加载成功，将在此基础上继续预训练')
+        else:
+            Logger(f'⚠️  警告：未找到预训练模型文件 {ckp}，将从随机权重开始训练')
+    else:
+        Logger('从随机权重开始预训练')
+    
+    model = model.to(args.device)
     Logger(f'LLM可训练总参数量：{sum(p.numel() for p in model.parameters() if p.requires_grad) / 1e6:.3f} 百万')
     return model, tokenizer
 
@@ -133,21 +159,69 @@ if __name__ == "__main__":
     parser.add_argument("--log_interval", type=int, default=100)
     parser.add_argument("--save_interval", type=int, default=100)
     parser.add_argument('--local_rank', type=int, default=-1)
-    parser.add_argument('--hidden_size', default=512, type=int)
-    parser.add_argument('--num_hidden_layers', default=8, type=int)
-    parser.add_argument('--max_seq_len', default=512, type=int)
-    parser.add_argument('--use_moe', default=False, type=bool)
+    parser.add_argument('--hidden_size', default=512, type=int)#隐藏层维度大小
+    parser.add_argument('--num_hidden_layers', default=8, type=int)#隐藏层数量
+    parser.add_argument('--max_seq_len', default=512, type=int, help='训练时的序列长度，但模型支持动态扩展到更长')#最大序列长度
+    parser.add_argument('--use_moe', default=False, type=bool)#是否使用moe
+    parser.add_argument('--dynamic_rope', default=True, type=bool, help='是否启用动态RoPE扩展')
+    parser.add_argument('--rope_scaling_factor', default=1.0, type=float, help='RoPE缩放因子')
+    parser.add_argument('--rope_scaling_type', default='linear', type=str, help='RoPE缩放类型：linear或dynamic')
     parser.add_argument("--data_path", type=str, default="../dataset/pretrain_hq.jsonl")
+    # 继续预训练相关参数
+    parser.add_argument("--continue_pretrain", action="store_true", 
+                        help="是否在已有预训练模型基础上继续预训练")
+    parser.add_argument("--continue_data_path", type=str, default="../dataset/pretrain_hq_add.jsonl",
+                        help="继续预训练时使用的数据路径")
+    parser.add_argument("--continue_lr_scale", type=float, default=0.1,
+                        help="继续预训练时的学习率缩放因子，默认为原学习率的0.1倍")
     args = parser.parse_args()
 
-    lm_config = MiniMindConfig(hidden_size=args.hidden_size, num_hidden_layers=args.num_hidden_layers, use_moe=args.use_moe)
+    # 配置RoPE缩放
+    rope_scaling = None
+    if args.rope_scaling_factor != 1.0:
+        rope_scaling = {
+            "type": args.rope_scaling_type,
+            "factor": args.rope_scaling_factor
+        }
+    
+    lm_config = MiniMindConfig(
+        hidden_size=args.hidden_size, 
+        num_hidden_layers=args.num_hidden_layers, 
+        use_moe=args.use_moe,
+        max_position_embeddings=None,  # 设为None以支持动态长度
+        dynamic_rope=args.dynamic_rope,
+        rope_scaling=rope_scaling
+    )
+    
+    # 检查配置兼容性
+    Logger("🔍 检查模型配置兼容性...")
+    check_config_compatibility(lm_config, warn=True)
+    
+    if lm_config.dynamic_rope:
+        Logger("✅ 启用动态RoPE：模型支持处理任意长度序列（内存允许范围内）")
+    else:
+        Logger(f"📏 使用固定长度：模型最大支持 {lm_config.max_position_embeddings} tokens")
+    
     args.save_dir = os.path.join(args.out_dir)
     os.makedirs(args.save_dir, exist_ok=True)
     os.makedirs(args.out_dir, exist_ok=True)
     tokens_per_iter = args.batch_size * args.max_seq_len
     device_type = "cuda" if "cuda" in args.device else "cpu"
 
-    args.wandb_run_name = f"MiniMind-Pretrain-Epoch-{args.epochs}-BatchSize-{args.batch_size}-LearningRate-{args.learning_rate}"
+    # 根据是否继续预训练调整wandb运行名称、数据路径和学习率
+    if args.continue_pretrain:
+        # 继续预训练时使用较小的学习率
+        actual_learning_rate = args.learning_rate * args.continue_lr_scale
+        args.wandb_run_name = f"MiniMind-ContinuePretrain-Epoch-{args.epochs}-BatchSize-{args.batch_size}-LearningRate-{actual_learning_rate}"
+        actual_data_path = args.continue_data_path
+        Logger(f"继续预训练模式：使用数据集 {actual_data_path}")
+        Logger(f"继续预训练学习率：{actual_learning_rate} (原学习率 {args.learning_rate} × 缩放因子 {args.continue_lr_scale})")
+    else:
+        actual_learning_rate = args.learning_rate
+        args.wandb_run_name = f"MiniMind-Pretrain-Epoch-{args.epochs}-BatchSize-{args.batch_size}-LearningRate-{args.learning_rate}"
+        actual_data_path = args.data_path
+        Logger(f"从零预训练模式：使用数据集 {actual_data_path}")
+        Logger(f"初始预训练学习率：{actual_learning_rate}")
 
     ctx = nullcontext() if device_type == "cpu" else torch.cuda.amp.autocast()
 
@@ -174,7 +248,7 @@ if __name__ == "__main__":
         wandb = None
 
     model, tokenizer = init_model(lm_config)
-    train_ds = PretrainDataset(args.data_path, tokenizer, max_length=args.max_seq_len)
+    train_ds = PretrainDataset(actual_data_path, tokenizer, max_length=args.max_seq_len)
     train_sampler = DistributedSampler(train_ds) if ddp else None
     train_loader = DataLoader(
         train_ds,
@@ -187,7 +261,7 @@ if __name__ == "__main__":
     )
 
     scaler = torch.cuda.amp.GradScaler(enabled=(args.dtype in ['float16', 'bfloat16']))
-    optimizer = optim.AdamW(model.parameters(), lr=args.learning_rate)
+    optimizer = optim.AdamW(model.parameters(), lr=actual_learning_rate)
 
     if ddp:
         model._ddp_params_and_buffers_to_ignore = {"pos_cis"}
