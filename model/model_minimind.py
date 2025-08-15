@@ -133,6 +133,7 @@ class Attention(nn.Module):
         self.n_local_kv_heads = self.num_key_value_heads
         self.n_rep = self.n_local_heads // self.n_local_kv_heads
         self.head_dim = args.hidden_size // args.num_attention_heads
+        # 把所有头权重都映射到同一个维度，方便并行运算
         self.q_proj = nn.Linear(args.hidden_size, args.num_attention_heads * self.head_dim, bias=False)
         self.k_proj = nn.Linear(args.hidden_size, self.num_key_value_heads * self.head_dim, bias=False)
         self.v_proj = nn.Linear(args.hidden_size, self.num_key_value_heads * self.head_dim, bias=False)
@@ -151,6 +152,7 @@ class Attention(nn.Module):
                 attention_mask: Optional[torch.Tensor] = None):
         bsz, seq_len, _ = x.shape
         xq, xk, xv = self.q_proj(x), self.k_proj(x), self.v_proj(x)
+        # 分割并行计算后的结果，还原至各个注意力头
         xq = xq.view(bsz, seq_len, self.n_local_heads, self.head_dim)
         xk = xk.view(bsz, seq_len, self.n_local_kv_heads, self.head_dim)
         xv = xv.view(bsz, seq_len, self.n_local_kv_heads, self.head_dim)
@@ -164,6 +166,7 @@ class Attention(nn.Module):
             xv = torch.cat([past_key_value[1], xv], dim=1)
         past_kv = (xk, xv) if use_cache else None
 
+        # GQA时可能需要多个Q 共用 KV 矩阵
         xq, xk, xv = (
             xq.transpose(1, 2),
             repeat_kv(xk, self.n_rep).transpose(1, 2),
@@ -179,13 +182,18 @@ class Attention(nn.Module):
 
             output = F.scaled_dot_product_attention(xq, xk, xv, attn_mask=attn_mask, dropout_p=dropout_p, is_causal=True)
         else:
+            # 计算注意力分数
             scores = (xq @ xk.transpose(-2, -1)) / math.sqrt(self.head_dim)
+            # 添加三角掩码，防止模型看到未来的信息（在训练和推理阶段都 mask）。这是实现 kv cache 的关键
             scores = scores + torch.triu(
                 torch.full((seq_len, seq_len), float("-inf"), device=scores.device),
                 diagonal=1
             ).unsqueeze(0).unsqueeze(0)  # scores+mask
 
             if attention_mask is not None:
+                # attention mask 标记了输入token，并把有意义的 token 值设置为 1
+                # 掩盖 pad 部分的注意力分数，防止模型关注空白token
+                # 掩盖的结果就是把 pad 部分的分数设置为极小值，从而在 softmax 时忽略这些 token
                 extended_attention_mask = attention_mask.unsqueeze(1).unsqueeze(2)
                 extended_attention_mask = (1.0 - extended_attention_mask) * -1e9
                 scores = scores + extended_attention_mask
@@ -384,7 +392,7 @@ class MiniMindModel(nn.Module):
         start_pos = past_key_values[0][0].shape[1] if past_key_values[0] is not None else 0
 
         hidden_states = self.dropout(self.embed_tokens(input_ids))
-
+        # 在模型顶部计算一次位置编码，之后传给每个 Attention 层
         position_embeddings = (
             self.freqs_cos[start_pos:start_pos + seq_length],
             self.freqs_sin[start_pos:start_pos + seq_length]
