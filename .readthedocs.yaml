@@ -1,0 +1,18 @@
+# Read the Docs 配置文件
+version: 2
+
+# 构建配置
+build:
+  os: ubuntu-22.04
+  tools:
+    python: "3.11"
+
+# MkDocs 配置
+mkdocs:
+  configuration: mkdocs.yml
+
+# Python 依赖
+python:
+  install:
+    - requirements: requirements.txt
+

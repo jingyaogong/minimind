@@ -1,0 +1,89 @@
+site_name: MiniMind
+site_description: MiniMind - 轻量级语言模型训练框架 / Lightweight Language Model Training Framework
+site_author: jingyaogong
+site_url: https://minimind.readthedocs.io/
+
+# 多语言配置
+plugins:
+  - search:
+      lang:
+        - zh
+        - en
+  - i18n:
+      docs_structure: suffix
+      fallback_to_default: true
+      reconfigure_material: true
+      reconfigure_search: true
+      languages:
+        - locale: zh
+          default: true
+          name: 简体中文
+          build: true
+          nav_translations:
+            首页: 首页
+            快速开始: 快速开始
+            模型训练: 模型训练
+        - locale: en
+          name: English
+          build: true
+          nav_translations:
+            首页: Home
+            快速开始: Quick Start
+            模型训练: Model Training
+
+# 主题配置
+theme:
+  name: material
+  favicon: images/logo.png
+  icon:
+    logo: material/book-open-page-variant
+  palette:
+    # 浅色模式
+    - scheme: default
+      primary: white
+      accent: blue
+      toggle:
+        icon: material/brightness-7
+        name: 切换至深色模式
+    # 深色模式
+    - scheme: slate
+      primary: black
+      accent: blue
+      toggle:
+        icon: material/brightness-4
+        name: 切换至浅色模式
+  features:
+    - navigation.instant      # 即时加载
+    - navigation.tracking     # 锚点跟踪
+    - navigation.sections     # 导航分组
+    - navigation.expand       # 默认展开导航
+    - navigation.top          # 返回顶部按钮
+    - search.suggest          # 搜索建议
+    - search.highlight        # 搜索高亮
+    - content.code.copy       # 代码复制按钮
+    - toc.follow              # 目录跟随
+    - toc.integrate           # 目录集成到左侧边栏
+  language: zh
+
+# 导航结构
+nav:
+  - 首页: index.md
+  - 快速开始: quickstart.md
+  - 模型训练: training.md
+
+# Markdown 扩展
+markdown_extensions:
+  - toc:
+      permalink: true
+  - admonition
+  - pymdownx.highlight:
+      anchor_linenums: true
+  - pymdownx.inlinehilite
+  - pymdownx.snippets
+  - pymdownx.superfences
+  - pymdownx.details
+  - pymdownx.tabbed:
+      alternate_style: true
+  - attr_list
+  - md_in_html
+
