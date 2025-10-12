@@ -10,6 +10,7 @@ build:
 # MkDocs 配置
 mkdocs:
   configuration: mkdocs.yml
+  fail_on_warning: false
 
 # Python 依赖
 python:
