@@ -1,74 +1,74 @@
-# 快速开始
+# Quick Start
 
-本页面将帮助你快速上手 MiniMind 项目。
+This page will help you quickly get started with the MiniMind project.
 
-## 📋 环境要求
+## 📋 Requirements
 
 - **Python**: 3.10+
 - **PyTorch**: 1.12+
-- **CUDA**: 12.2+（可选，用于 GPU 加速）
-- **显存**: 至少 8GB（推荐 24GB）
+- **CUDA**: 12.2+ (optional, for GPU acceleration)
+- **VRAM**: At least 8GB (24GB recommended)
 
-!!! tip "硬件配置参考"
+!!! tip "Hardware Configuration Reference"
     - CPU: Intel i9-10980XE @ 3.00GHz
     - RAM: 128 GB
     - GPU: NVIDIA GeForce RTX 3090 (24GB)
 
-## 🚀 测试已有模型
+## 🚀 Testing Existing Models
 
-### 1. 克隆项目
+### 1. Clone the Project
 
 ```bash
 git clone https://github.com/jingyaogong/minimind.git
 cd minimind
 ```
 
-### 2. 安装依赖
+### 2. Install Dependencies
 
 ```bash
 pip install -r requirements.txt -i https://pypi.tuna.tsinghua.edu.cn/simple
 ```
 
-!!! warning "Torch CUDA 检查"
-    安装后请测试 Torch 是否可用 CUDA：
+!!! warning "Torch CUDA Check"
+    After installation, test if Torch can use CUDA:
     ```python
     import torch
     print(torch.cuda.is_available())
     ```
 
-### 3. 下载模型
+### 3. Download Model
 
-从 HuggingFace 或 ModelScope 下载预训练模型：
+Download pretrained models from HuggingFace or ModelScope:
 
 ```bash
-# 从 HuggingFace 下载
+# From HuggingFace
 git clone https://huggingface.co/jingyaogong/MiniMind2
 
-# 或从 ModelScope 下载
+# Or from ModelScope
 git clone https://www.modelscope.cn/models/gongjy/MiniMind2.git
 ```
 
-### 4. 命令行问答
+### 4. Command Line Q&A
 
 ```bash
-# load=0: 加载 PyTorch 模型, load=1: 加载 Transformers 模型
+# load=0: load PyTorch model, load=1: load Transformers model
 python eval_model.py --load 1 --model_mode 2
 ```
 
-### 5. 启动 WebUI（可选）
+### 5. Start WebUI (Optional)
 
 ```bash
-# 需要 Python >= 3.10
+# Requires Python >= 3.10
 pip install streamlit
 cd scripts
 streamlit run web_demo.py
 ```
 
-访问 `http://localhost:8501` 即可使用 Web 界面。
+Visit `http://localhost:8501` to use the web interface.
 
-## 🔧 第三方推理框架
+## 🔧 Third-party Inference Frameworks
 
-MiniMind 支持多种主流推理框架：
+MiniMind supports multiple mainstream inference frameworks:
 
 ### Ollama
 
@@ -85,30 +85,30 @@ vllm serve ./MiniMind2/ --served-model-name "minimind"
 ### llama.cpp
 
 ```bash
-# 转换模型
+# Convert model
 python convert_hf_to_gguf.py ./MiniMind2/
 
-# 量化模型
+# Quantize model
 ./build/bin/llama-quantize ./MiniMind2/MiniMind2-109M-F16.gguf ./Q4-MiniMind2.gguf Q4_K_M
 
-# 推理
+# Inference
 ./build/bin/llama-cli -m ./Q4-MiniMind2.gguf --chat-template chatml
 ```
 
-## 📝 效果测试
+## 📝 Effect Testing
 
 ```text
-👶: 你好，请介绍一下自己。
-🤖️: 你好！我是 MiniMind，一个由 Jingyao Gong 开发的人工智能助手。
-    我通过自然语言处理和算法训练来与用户进行交互。
+👶: Hello, please introduce yourself.
+🤖️: Hello! I'm MiniMind, an AI assistant developed by Jingyao Gong.
+    I interact with users through natural language processing and algorithm training.
 
-👶: 世界上最高的山峰是什么？
-🤖️: 珠穆朗玛峰是世界上最高的山峰，位于喜马拉雅山脉，
-    海拔 8,848.86 米（29,031.7 英尺）。
+👶: What is the highest mountain in the world?
+🤖️: Mount Everest is the highest mountain in the world, located in the Himalayas,
+    with an elevation of 8,848.86 meters (29,031.7 feet).
 ```
 
-## 🎯 下一步
+## 🎯 Next Steps
 
-- 查看 [模型训练](training.md) 了解如何从 0 开始训练自己的模型
-- 阅读源码了解 LLM 的实现原理
+- Check [Model Training](training.md) to learn how to train your own model from scratch
+- Read the source code to understand LLM implementation principles
 

@@ -3,27 +3,10 @@ site_description: MiniMind - 轻量级语言模型训练框架 / Lightweight Lan
 site_author: jingyaogong
 site_url: https://minimind.readthedocs.io/
 
-# 多语言配置
+# 搜索插件配置
 plugins:
   - search:
-      lang:
-        - zh
-        - en
-  - i18n:
-      docs_structure: folder
-      fallback_to_default: true
-      reconfigure_material: true
-      reconfigure_search: true
-      languages:
-        - locale: zh
-          default: true
-          name: 简体中文
-          build: true
-          site_name: MiniMind
-        - locale: en
-          name: English
-          build: true
-          site_name: MiniMind
+      lang: en
 
 # 主题配置
 theme:
@@ -57,13 +40,13 @@ theme:
     - content.code.copy       # 代码复制按钮
     - toc.follow              # 目录跟随
     - toc.integrate           # 目录集成到左侧边栏
-  language: zh
+  language: en
 
 # 导航结构
 nav:
-  - 首页: index.md
-  - 快速开始: quickstart.md
-  - 模型训练: training.md
+  - Home: index.md
+  - Quick Start: quickstart.md
+  - Model Training: training.md
 
 # Markdown 扩展
 markdown_extensions:
