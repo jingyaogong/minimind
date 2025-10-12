@@ -19,6 +19,7 @@ plugins:
           default: true
           name: 简体中文
           build: true
+          site_name: MiniMind
           nav_translations:
             首页: 首页
             快速开始: 快速开始
@@ -26,6 +27,7 @@ plugins:
         - locale: en
           name: English
           build: true
+          site_name: MiniMind
           nav_translations:
             首页: Home
             快速开始: Quick Start
@@ -53,7 +55,7 @@ theme:
         icon: material/brightness-4
         name: 切换至浅色模式
   features:
-    - navigation.instant      # 即时加载
+    # - navigation.instant    # 与多语言切换不兼容，已禁用
     - navigation.tracking     # 锚点跟踪
     - navigation.sections     # 导航分组
     - navigation.expand       # 默认展开导航
