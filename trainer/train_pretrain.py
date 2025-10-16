@@ -46,6 +46,49 @@ def train_epoch(epoch, wandb):
             loss = loss_fct(
                 res.logits.view(-1, res.logits.size(-1)),
                 Y.view(-1)
+import pickle
+import collections
+
+# Whitelist of safe classes to be used by the SafeUnpickler
+# This is a backport of the safety mechanism from newer PyTorch versions
+# to prevent arbitrary code execution from untrusted checkpoints.
+ALLOWED_CLASSES = {
+    'torch: {
+        'LongStorage, 'DoubleStorage, 'FloatStorage, 'HalfStorage,
+        'ShortStorage, 'IntStorage, 'CharStorage, 'ByteStorage,
+        'BoolStorage, 'BFloat16Storage, 'ComplexDoubleStorage,
+        'ComplexFloatStorage, 'QUInt8Storage, 'QInt8Storage,
+        'QInt32Storage, 'QUInt4Storage, 'QUInt2Storage,
+        '_UntypedStorage,
+    },
+    'collections: {
+        'OrderedDict,
+    }
+}
+
+class SafeUnpickler(pickle.Unpickler):
+    def find_class(self, module, name):
+        # Only allow classes from the whitelist
+        if module in ALLOWED_CLASSES and name in ALLOWED_CLASSES[module]:
+            if module == 'torch':
+                return getattr(torch, name)
+            if module == 'collections':
+                return getattr(collections, name)
+        # Forbid everything else.
+        raise pickle.UnpicklingError(
+            f"Loading of '{module}.{name}' is forbidden for security reasons."
+        )
+
+# Create a module-like object to pass to torch.load
+class SafePickleModule:
+    def load(self, *args, **kwargs):
+        return SafeUnpickler(*args, **kwargs).load()
+
+    Unpickler = SafeUnpickler
+
+safe_pickle_module = SafePickleModule()
+
+
             ).view(Y.size())
             loss = (loss * loss_mask).sum() / loss_mask.sum()
             loss += res.aux_loss
