@@ -13,13 +13,14 @@ def init_model(args):
     tokenizer = AutoTokenizer.from_pretrained('./model/')
     if args.load == 0:
         moe_path = '_moe' if args.use_moe else ''
-        modes = {0: 'pretrain', 1: 'full_sft', 2: 'rlhf', 3: 'reason', 4: 'grpo'}
+        modes = {0: 'pretrain', 1: 'full_sft', 2: 'rlhf', 3: 'reason', 4: 'ppo_actor', 5: 'grpo'}
         ckp = f'./{args.out_dir}/{modes[args.model_mode]}_{args.hidden_size}{moe_path}.pth'
 
         model = MiniMindForCausalLM(MiniMindConfig(
             hidden_size=args.hidden_size,
             num_hidden_layers=args.num_hidden_layers,
-            use_moe=args.use_moe
+            use_moe=args.use_moe,
+            inference_rope_scaling=args.inference_rope_scaling
         ))
 
         model.load_state_dict(torch.load(ckp, map_location=args.device), strict=True)
@@ -28,7 +29,7 @@ def init_model(args):
             apply_lora(model)
             load_lora(model, f'./{args.out_dir}/lora/{args.lora_name}_{args.hidden_size}.pth')
     else:
-        transformers_model_path = './MiniMind2'
+        transformers_model_path = './MiniMind2-MoE'
         tokenizer = AutoTokenizer.from_pretrained(transformers_model_path)
         model = AutoModelForCausalLM.from_pretrained(transformers_model_path, trust_remote_code=True)
     print(f'MiniMind模型参数量: {sum(p.numel() for p in model.parameters() if p.requires_grad) / 1e6:.2f}M(illion)')
@@ -48,8 +49,8 @@ def get_prompt_datas(args):
             '杭州市的美食有'
         ]
     else:
+        # 非LoRA模型的通用对话问题
         if args.lora_name == 'None':
-            # 通用对话问题
             prompt_datas = [
                 '请介绍一下自己。',
                 '你更擅长哪一个学科？',
@@ -62,7 +63,7 @@ def get_prompt_datas(args):
                 'Introduce the history of the United States, please.'
             ]
         else:
-            # 特定领域问题
+            # LoRA微调模型的特定领域问题
             lora_prompt_datas = {
                 'lora_identity': [
                     "你是ChatGPT吧。",
@@ -111,13 +112,14 @@ def main():
     parser.add_argument('--num_hidden_layers', default=8, type=int)
     parser.add_argument('--max_seq_len', default=8192, type=int)
     parser.add_argument('--use_moe', default=False, type=bool)
-    # 携带历史对话上下文条数
-    # history_cnt需要设为偶数，即【用户问题, 模型回答】为1组；设置为0时，即当前query不携带历史上文
-    # 模型未经过外推微调时，在更长的上下文的chat_template时难免出现性能的明显退化，因此需要注意此处设置
+    parser.add_argument('--model_mode', default=5, type=int, help="0: 预训练模型，1: SFT-Chat模型，2: RLHF-Chat模型，3: Reason模型，4: RLAIF-Chat模型，6: Funcall-Chat模型")
+    # 启用长度外推，默认为4倍（注：仅解决位置编码外推问题，不代表模型真实具备长文本能力）
+    parser.add_argument('--inference_rope_scaling', default=False, action='store_true')
+    # 携带历史对话上下文条数history_cnt需要设为偶数，即【用户问题, 模型回答】为1组；设置为0时，即当前query不携带历史上文
+    # 模型未经过多轮对话微调时，在多轮次的长上下文难免出现能力的明显退化，因此需要注意此处设置
     parser.add_argument('--history_cnt', default=0, type=int)
-    parser.add_argument('--load', default=0, type=int, help="0: 原生torch权重，1: transformers加载")
-    parser.add_argument('--model_mode', default=1, type=int,
-                        help="0: 预训练模型，1: SFT-Chat模型，2: RLHF-Chat模型，3: Reason模型，4: RLAIF-Chat模型")
+    # load模式为1时，前置hidden_size、num_hidden_layers、max_seq_len等参数失效，即以加载的transformers模型的config.json配置为准
+    parser.add_argument('--load', default=1, type=int, help="0: 原生torch权重，1: transformers加载")
     args = parser.parse_args()
 
     model, tokenizer = init_model(args)
@@ -128,18 +130,27 @@ def main():
 
     messages = []
     for idx, prompt in enumerate(prompts if test_mode == 0 else iter(lambda: input('👶: '), '')):
-        setup_seed(random.randint(0, 2048))
-        # setup_seed(2025)  # 如需固定每次输出则换成【固定】的随机种子
+        # setup_seed(random.randint(0, 2048))
+        setup_seed(2026)  # 如需固定每次输出则换成【固定】的随机种子
         if test_mode == 0: print(f'👶: {prompt}')
 
         messages = messages[-args.history_cnt:] if args.history_cnt else []
         messages.append({"role": "user", "content": prompt})
 
-        new_prompt = tokenizer.apply_chat_template(
-            messages,
-            tokenize=False,
-            add_generation_prompt=True
-        ) if args.model_mode != 0 else (tokenizer.bos_token + prompt)
+        # 1. Pretrain：接龙模型
+        if args.model_mode == 0:
+            new_prompt = tokenizer.bos_token + prompt
+        # 2. SFT/RL：聊天模型
+        else:
+            template_args = {
+                "conversation": messages,
+                "tokenize": False,
+                "add_generation_prompt": True
+            }
+            # 只可对Reason模型使用，非思考模型不能加此参数
+            if args.model_mode == 3:
+                template_args["enable_thinking"] = True  # False则关闭think
+            new_prompt = tokenizer.apply_chat_template(**template_args)
 
         inputs = tokenizer(
             new_prompt,
