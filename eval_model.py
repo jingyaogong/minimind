@@ -22,7 +22,8 @@ def init_model(args):
             use_moe=args.use_moe,
             inference_rope_scaling=args.inference_rope_scaling
         ))
-
+        model = torch.compile(model)
+        
         model.load_state_dict(torch.load(ckp, map_location=args.device), strict=True)
 
         if args.lora_name != 'None':
