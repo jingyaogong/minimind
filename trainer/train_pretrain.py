@@ -47,17 +47,24 @@ def train_epoch(epoch, wandb):
                 res.logits.view(-1, res.logits.size(-1)),
                 Y.view(-1)
             ).view(Y.size())
+            # 实际句子长度通常小于max_length，pad部分的loss_mask是0，不需要计算损失
             loss = (loss * loss_mask).sum() / loss_mask.sum()
+            # 添加辅助损失，用于训练专家选择
             loss += res.aux_loss
+            # 梯度累积（/累计步数）
             loss = loss / args.accumulation_steps
 
+        # 放大 Loss，因为 loss 高精度而梯度低精度，防止极小的梯度丢失。
+        # 相当于链式法则 ∂L_scaled/∂W₁ = ∂(k×L)/∂W₁ = k × ∂L/∂W₁，k是缩放因子
         scaler.scale(loss).backward()
 
         if (step + 1) % args.accumulation_steps == 0:
+            # 缩小梯度
             scaler.unscale_(optimizer)
+            # 梯度裁剪，防止梯度爆炸
             torch.nn.utils.clip_grad_norm_(model.parameters(), args.grad_clip)
-
             scaler.step(optimizer)
+            # 更新缩放因子
             scaler.update()
 
             optimizer.zero_grad(set_to_none=True)
