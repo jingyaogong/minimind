@@ -194,20 +194,25 @@ class Attention(nn.Module):
         )
 
         if self.flash and seq_len > 1 and (attention_mask is None or torch.all(attention_mask == 1)):
-            attn_mask = (
-                None
-                if attention_mask is None
-                else attention_mask.view(bsz, 1, 1, -1).expand(bsz, self.n_local_heads, seq_len, -1).bool()
+            # Fix: 不能同时使用 attn_mask 和 is_causal=True
+            output = F.scaled_dot_product_attention(
+                xq, xk, xv, 
+                attn_mask=None,  # 使用 is_causal 时必须设为 None
+                dropout_p=self.dropout if self.training else 0.0, 
+                is_causal=True
             )
-
-            output = F.scaled_dot_product_attention(xq, xk, xv, attn_mask=attn_mask, dropout_p=self.dropout if self.training else 0.0, is_causal=True)
         else:
+            # 传统注意力机制（fallback）
             scores = (xq @ xk.transpose(-2, -1)) / math.sqrt(self.head_dim)
-            scores = scores + torch.triu(
-                torch.full((seq_len, seq_len), float("-inf"), device=scores.device),
-                diagonal=1
-            ).unsqueeze(0).unsqueeze(0)  # scores+mask
+            
+            # 添加因果mask
+            if seq_len > 1:
+                scores = scores + torch.triu(
+                    torch.full((seq_len, seq_len), float("-inf"), device=scores.device),
+                    diagonal=1
+                ).unsqueeze(0).unsqueeze(0)
 
+            # 添加 attention_mask
             if attention_mask is not None:
                 extended_attention_mask = attention_mask.unsqueeze(1).unsqueeze(2)
                 extended_attention_mask = (1.0 - extended_attention_mask) * -1e9
