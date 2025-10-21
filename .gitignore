@@ -1,3 +1,4 @@
-/model/__pycache__
-/dataset
-/out
+model/__pycache__
+out
+website/
+docs-minimind/
