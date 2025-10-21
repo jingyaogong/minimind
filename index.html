@@ -3,133 +3,831 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>MiniMind Project</title>
-    <!-- 引入 Bootstrap CSS -->
+    <title>MiniMind - Train LLMs from Scratch</title>
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/css/bootstrap.min.css" rel="stylesheet">
-    <!-- 可选: 引入自定义样式 -->
     <style>
+        @import url('https://fonts.googleapis.com/css2?family=Press+Start+2P&display=swap');
+
+        :root {
+            --mc-grass: #5fa824;
+            --mc-stone: #7f8c8d;
+            --mc-wood: #8b5a3c;
+            --mc-sand: #d4a574;
+            --mc-gold: #ffd700;
+            --mc-dark: #1e1e1e;
+            --mc-light: #f5f5f5;
+            --primary: #5e72e4;
+            --accent: #11cdef;
+        }
+
+        * {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+        }
+
+        .pixel-font {
+            font-family: 'Press Start 2P', 'Courier New', monospace;
+        }
+
+        body {
+            background: linear-gradient(180deg, #87ceeb 0%, #e0f6ff 50%, #d4a574 100%);
+            min-height: 100vh;
+            padding: 20px;
+            margin: 0;
+        }
+
+        .container-main {
+            background: var(--mc-light);
+            border: 4px solid;
+            border-color: #fff #ccc #999 #fff;
+            box-shadow: inset 1px 1px 0 rgba(255,255,255,.5),
+                        inset -1px -1px 0 rgba(0,0,0,.5),
+                        3px 3px 0 rgba(0,0,0,.3);
+            padding: 40px;
+            max-width: 1200px;
+            margin: 0 auto;
+            image-rendering: pixelated;
+            image-rendering: -moz-crisp-edges;
+            image-rendering: crisp-edges;
+        }
+
+        /* Logo */
         .logo {
-            max-width: 100%;
+            max-width: 80%;
             height: auto;
+            image-rendering: pixelated;
+            display: block;
         }
 
-        .scroll-container {
+        /* Badge Container - between logo and title */
+        .badge-container {
             display: flex;
-            overflow-x: auto; /* 启用水平滚动 */
+            flex-wrap: wrap;
+            justify-content: center;
+            gap: 8px;
+            margin: 12px 0 15px 0;
+        }
+
+        .badge-container img {
+            height: 22px;
+        }
+
+        /* Title Section */
+        .title-section {
+            text-align: center;
+            background: var(--mc-grass);
+            color: white;
+            padding: 20px 20px;
+            border: 3px solid;
+            border-color: #fff #777 #777 #fff;
+            box-shadow: inset 1px 1px 0 rgba(255,255,255,.3),
+                        inset -1px -1px 0 rgba(0,0,0,.3);
+            margin-bottom: 20px;
+        }
+
+        .title-section h1 {
+            display: none;
+        }
+
+        .subtitle {
+            display: none;
+        }
+
+        .tagline {
+            font-size: 0.85rem;
+            color: #fff;
+            margin: 0;
+            line-height: 1.4;
+        }
+
+        /* Stats Section */
+        .stats-section {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
+            gap: 12px;
+            margin: 20px 0;
+        }
+
+        .stat-box {
+            background: var(--mc-sand);
+            border: 3px solid;
+            border-color: #fff #888 #888 #fff;
+            box-shadow: inset 1px 1px 0 rgba(255,255,255,.3),
+                        inset -1px -1px 0 rgba(0,0,0,.3),
+                        2px 2px 0 rgba(0,0,0,.2);
+            padding: 15px;
+            text-align: center;
+            background: linear-gradient(135deg, #ffd700 0%, #ffed4e 100%);
+        }
+
+        .stat-box h3 {
+            margin: 0;
+            font-size: 1.4rem;
+            color: #333;
+            text-shadow: 1px 1px 0 rgba(255,255,255,.8);
+        }
+
+        .stat-box p {
+            margin: 6px 0 0 0;
+            font-size: 0.7rem;
+            color: #555;
+            font-weight: bold;
+        }
+
+        /* Feature Cards */
+        .features-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+            gap: 15px;
+            margin: 25px 0;
+        }
+
+        .feature-card {
+            background: var(--mc-light);
+            border: 3px solid;
+            border-color: #fff #888 #888 #fff;
+            box-shadow: inset 1px 1px 0 rgba(255,255,255,.5),
+                        inset -1px -1px 0 rgba(0,0,0,.2),
+                        3px 3px 0 rgba(0,0,0,.2);
+            padding: 15px;
+            background: linear-gradient(135deg, #f5f5f5 0%, #e8e8e8 100%);
+            transition: transform 0.1s, box-shadow 0.1s;
+        }
+
+        .feature-card:hover {
+            transform: translate(-2px, -2px);
+            box-shadow: inset 1px 1px 0 rgba(255,255,255,.5),
+                        inset -1px -1px 0 rgba(0,0,0,.2),
+                        5px 5px 0 rgba(0,0,0,.3);
+        }
+
+        .feature-card h3 {
+            margin: 0 0 8px 0;
+            color: var(--mc-grass);
+            font-size: 0.9rem;
+        }
+
+        .feature-card p {
+            margin: 0;
+            color: #555;
+            font-size: 0.75rem;
+            line-height: 1.4;
+        }
+
+        /* Section Headers */
+        .section-header {
+            background: var(--mc-stone);
+            color: white;
+            padding: 12px 15px;
+            border: 3px solid;
+            border-color: #fff #555 #555 #fff;
+            box-shadow: inset 1px 1px 0 rgba(255,255,255,.3),
+                        inset -1px -1px 0 rgba(0,0,0,.3);
+            margin: 25px 0 15px 0;
+            font-size: 1rem;
+            font-weight: bold;
+            text-shadow: 1px 1px 0 rgba(0,0,0,.5);
+        }
+
+        /* Models Table */
+        .models-table {
+            margin: 18px 0;
+        }
+
+        .models-table table {
             width: 100%;
-            padding: 20px 10px 1px 10px; /* 内边距 */
-            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.5); /* 阴影效果 */
-            border-radius: 20px 20px 5px 5px; /* 圆角 */
+            border-collapse: collapse;
+            border: 3px solid;
+            border-color: #fff #888 #888 #fff;
+            box-shadow: inset 1px 1px 0 rgba(255,255,255,.3),
+                        inset -1px -1px 0 rgba(0,0,0,.3);
+            background: var(--mc-light);
         }
 
-        .scroll-container img {
-            width: auto; /* 图片最大宽度为100%，以适应容器 */
-            height: 500px; /* 维持图片的宽高比 */
-            margin: 0 10px; /* 图片之间有间距 */
-            object-fit: contain; /* 确保图片不被拉伸且完全显示 */
+        .models-table thead {
+            background: var(--mc-wood);
+            color: white;
         }
 
-
-        /* 自定义滚动条整体部分 */
-        .scroll-container::-webkit-scrollbar {
-            width: 10px; /* 滚动条宽度 */
-            height: 10px; /* 对于水平滚动条有效 */
+        .models-table thead th {
+            padding: 10px;
+            text-align: center;
+            font-weight: bold;
+            font-size: 0.8rem;
+            text-shadow: 1px 1px 0 rgba(0,0,0,.5);
+            border-right: 2px solid rgba(0,0,0,.2);
         }
 
-        /* 自定义滚动条轨道 */
-        .scroll-container::-webkit-scrollbar-track {
-            background: rgba(0, 0, 0, 0.1); /* 轨道背景颜色 */
-            border-radius: 60px; /* 轨道圆角 */
+        .models-table tbody tr {
+            border-bottom: 2px solid #ddd;
         }
 
-        /* 自定义滚动条滑块 */
-        .scroll-container::-webkit-scrollbar-thumb {
-            background: rgba(0, 0, 0, 0.1); /* 滑块颜色 */
-            border-radius: 10px; /* 滑块圆角 */
+        .models-table tbody tr:nth-child(even) {
+            background: #f0f0f0;
         }
 
-        /* 当鼠标悬停在滑块上时的样式 */
-        .scroll-container::-webkit-scrollbar-thumb:hover {
-            background: rgba(0, 0, 0, 0.3); /* 悬停时的颜色 */
+        .models-table td {
+            padding: 8px 10px;
+            text-align: center;
+            font-size: 0.8rem;
+            border-right: 2px solid #ddd;
         }
 
-        /* 对于Firefox浏览器（如果需要支持） */
-        @-moz-document url-prefix() {
-            .scroll-container {
-                scrollbar-width: thin; /* "auto"、"thin" 或 "none" */
-                scrollbar-color: rgba(0, 0, 0, 0.3) rgba(0, 0, 0, 0.1); /* thumb 和 track 颜色 */
+        .models-table td:last-child {
+            border-right: none;
+        }
+
+        .models-table tbody tr:hover {
+            background: #fffacd !important;
+        }
+
+        /* Changelog */
+        .changelog-section {
+            margin: 18px 0;
+        }
+
+        .changelog-item {
+            background: var(--mc-light);
+            border: 3px solid;
+            border-color: #fff #888 #888 #fff;
+            box-shadow: inset 1px 1px 0 rgba(255,255,255,.3),
+                        inset -1px -1px 0 rgba(0,0,0,.2),
+                        2px 2px 0 rgba(0,0,0,.15);
+            padding: 0;
+            margin: 8px 0;
+        }
+
+        .changelog-header {
+            background: var(--mc-gold);
+            color: #333;
+            padding: 10px 15px;
+            cursor: pointer;
+            font-weight: bold;
+            user-select: none;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            transition: background 0.1s;
+            border-bottom: 2px solid #ddd;
+            font-size: 0.85rem;
+        }
+
+        .changelog-header:hover {
+            background: #ffed4e;
+        }
+
+        .changelog-header.open {
+            background: #ffd700;
+        }
+
+        .toggle-icon {
+            font-size: 0.9rem;
+        }
+
+        .changelog-content {
+            padding: 12px 15px;
+            display: none;
+            background: #fafafa;
+            font-size: 0.8rem;
+        }
+
+        .changelog-item.open .changelog-content {
+            display: block;
+        }
+
+        .changelog-content ul {
+            list-style: none;
+            padding-left: 0;
+            margin: 0;
+        }
+
+        .changelog-content li {
+            padding: 4px 0;
+            padding-left: 20px;
+            position: relative;
+            color: #333;
+            line-height: 1.3;
+        }
+
+        .changelog-content li:before {
+            content: "▸";
+            position: absolute;
+            left: 0;
+            color: var(--mc-grass);
+            font-weight: bold;
+        }
+
+        /* Links Section */
+        .links-section {
+            background: var(--mc-grass);
+            color: white;
+            padding: 25px;
+            border: 3px solid;
+            border-color: #fff #555 #555 #fff;
+            box-shadow: inset 1px 1px 0 rgba(255,255,255,.2),
+                        inset -1px -1px 0 rgba(0,0,0,.3),
+                        3px 3px 0 rgba(0,0,0,.3);
+            margin: 25px 0;
+        }
+
+        .links-section h2 {
+            text-align: center;
+            margin-bottom: 15px;
+            font-size: 1rem;
+            text-shadow: 1px 1px 0 rgba(0,0,0,.5);
+        }
+
+        .links-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 10px;
+        }
+
+        .pixel-button {
+            background: var(--mc-sand);
+            color: #333;
+            border: 3px solid;
+            border-color: #fff #888 #888 #fff;
+            box-shadow: inset 1px 1px 0 rgba(255,255,255,.3),
+                        inset -1px -1px 0 rgba(0,0,0,.2),
+                        2px 2px 0 rgba(0,0,0,.2);
+            padding: 8px 14px;
+            text-decoration: none;
+            font-weight: bold;
+            text-align: center;
+            cursor: pointer;
+            display: inline-block;
+            transition: all 0.1s;
+            font-size: 0.75rem;
+        }
+
+        .pixel-button:hover {
+            border-color: #888 #fff #fff #888;
+            box-shadow: inset -1px -1px 0 rgba(255,255,255,.3),
+                        inset 1px 1px 0 rgba(0,0,0,.2),
+                        1px 1px 0 rgba(0,0,0,.1);
+            transform: translate(2px, 2px);
+            color: #333;
+            text-decoration: none;
+        }
+
+        .pixel-button:active {
+            box-shadow: inset 1px 1px 0 rgba(255,255,255,.3),
+                        inset -1px -1px 0 rgba(0,0,0,.2);
+            transform: translate(3px, 3px);
+        }
+
+        /* Why Section */
+        .why-section {
+            background: var(--mc-light);
+            border: 3px solid;
+            border-color: #fff #888 #888 #fff;
+            box-shadow: inset 1px 1px 0 rgba(255,255,255,.3),
+                        inset -1px -1px 0 rgba(0,0,0,.2);
+            padding: 20px;
+            margin: 22px 0;
+        }
+
+        .why-section h2 {
+            color: var(--mc-wood);
+            margin-bottom: 15px;
+            font-size: 1rem;
+        }
+
+        .why-section ul {
+            list-style: none;
+            padding-left: 0;
+            margin: 0;
+        }
+
+        .why-section li {
+            padding: 4px 0;
+            padding-left: 22px;
+            position: relative;
+            color: #333;
+            line-height: 1.4;
+            font-size: 0.8rem;
+        }
+
+        .why-section li:before {
+            content: "→";
+            position: absolute;
+            left: 0;
+            color: var(--mc-grass);
+            font-weight: bold;
+            font-size: 0.9rem;
+        }
+
+        .quote {
+            font-style: italic;
+            color: #666;
+            border-left: 4px solid var(--mc-grass);
+            padding-left: 12px;
+            margin: 15px 0;
+            font-size: 0.85rem;
+        }
+
+        /* Visuals */
+        .visuals-container {
+            display: flex;
+            overflow-x: auto;
+            gap: 12px;
+            padding: 15px;
+            background: var(--mc-light);
+            border: 3px solid #ddd;
+            margin: 20px 0;
+            border-radius: 2px;
+        }
+
+        .visuals-container img {
+            width: auto;
+            height: auto;
+            max-height: 450px;
+            border: 2px solid #999;
+            image-rendering: auto;
+            flex-shrink: 0;
+            object-fit: contain;
+        }
+
+        .visuals-container::-webkit-scrollbar {
+            height: 10px;
+        }
+
+        .visuals-container::-webkit-scrollbar-track {
+            background: #e0e0e0;
+        }
+
+        .visuals-container::-webkit-scrollbar-thumb {
+            background: #999;
+            border: 1px solid #777;
+        }
+
+        /* Footer */
+        .footer {
+            text-align: center;
+            padding-top: 20px;
+            border-top: 3px solid #ccc;
+            margin-top: 25px;
+            color: #666;
+            font-size: 0.75rem;
+        }
+
+        .footer a {
+            color: var(--mc-grass);
+            text-decoration: none;
+            font-weight: bold;
+        }
+
+        .footer a:hover {
+            text-decoration: underline;
+        }
+
+        @media (max-width: 768px) {
+            .container-main {
+                padding: 20px;
+            }
+
+            .title-section h1 {
+                font-size: 2.2rem;
+            }
+
+            .stats-section {
+                grid-template-columns: repeat(2, 1fr);
+            }
+
+            .features-grid {
+                grid-template-columns: 1fr;
+            }
+
+            .visuals-container {
+                flex-wrap: wrap;
+            }
+
+            .visuals-container img {
+                max-width: 100%;
+                height: auto;
             }
         }
     </style>
 </head>
 <body>
-<div class="container" style="max-width: 1000px;margin-top: 10px;">
-    <div align="center">
-        <img src="./images/logo.png" alt="Logo" class="logo mb-4"/>
-        <!--<br>-->
-        <img src="https://visitor-badge.laobi.icu/badge?page_id=jingyaogong/minimind" alt="Visitor Badge" class="me-2">
-        <img src="https://img.shields.io/github/stars/jingyaogong/minimind?style=social" alt="GitHub Stars"
-             class="me-2">
-        <img src="https://img.shields.io/github/license/jingyaogong/minimind" alt="License" class="me-2">
-        <img src="https://img.shields.io/github/last-commit/jingyaogong/minimind" alt="Last Commit" class="me-2">
-        <img src="https://img.shields.io/badge/PRs-welcome-blue" alt="Pull Requests Welcome" class="me-2">
-        <img src="https://img.shields.io/badge/🤗-MiniMind%20%20Collection-blue" alt="MiniMind Collection" class="me-2">
+<div class="container-main">
+    <!-- Logo -->
+    <div align="center" style="padding: 30px 0;">
+        <img src="./images/logo.png" alt="MiniMind Logo" class="logo"/>
     </div>
 
-    <div align="center">
-        <br/>
-        <p style="font-size: 4vh;font-weight: bold;">"The Greatest Path is the Simplest"</p>
-        <a href="https://github.com/jingyaogong/minimind">🔗 MiniMind Github Repo 🔗</a>
+    <!-- Badges -->
+    <div class="badge-container">
+        <img src="https://visitor-badge.laobi.icu/badge?page_id=jingyaogong/minimind" alt="Visitor Badge">
+        <img src="https://img.shields.io/github/stars/jingyaogong/minimind?style=social" alt="GitHub Stars">
+        <img src="https://img.shields.io/github/license/jingyaogong/minimind" alt="License">
+        <img src="https://img.shields.io/github/last-commit/jingyaogong/minimind" alt="Last Commit">
     </div>
 
-    <hr>
+    <!-- Title Section -->
+    <div class="title-section">
+        <p class="tagline pixel-font">
+            Train a 26M ChatBot from zero.<br/>
+            2 hours. ¥3. One 3090.<br/>
+            That's it.
+        </p>
+    </div>
 
-    <ul>
-        <li>The <strong>MiniMind</strong> series is extremely lightweight, with the smallest version being 1/7000 the
-            size of GPT-3, making it possible to train quickly on even the most ordinary personal GPUs.
-        </li>
-        <li>The project also open-sources the minimalist structure of the large model, including extensions for shared
-            mixed experts (MoE), dataset cleaning, pretraining, supervised fine-tuning (SFT), LoRA fine-tuning, direct
-            preference optimization (DPO) algorithms, and model distillation algorithms, along with the full code of the
-            process.
-        </li>
-        <li><strong>MiniMind</strong> also expands into vision multimodal VLM: <a
-                href="https://github.com/jingyaogong/minimind-v" target="_blank">MiniMind-V</a>.
-        </li>
-        <li>All core algorithm code is reconstructed from scratch using native PyTorch! It does not rely on abstract
-            interfaces provided by third-party libraries.
-        </li>
-        <li>This is not only a full-stage open-source reproduction of a large language model but also a tutorial for
-            beginners in LLM.
-        </li>
-        <li>We hope this project will serve as an inspiring example for everyone, helping to enjoy the fun of creation
-            and promoting the progress of the wider AI community!
-        </li>
-
-        <li style="color: #aaa;">To avoid misunderstanding, the "2 hours" test is based on NVIDIA 3090 hardware (single
-            GPU), and the "3
-            RMB" refers to the GPU server rental cost. Details of the specifications can be found below.
-        </li>
-    </ul>
-
-
-    <div align="center">
-
-        <div class="scroll-container">
-            <img src="./images/minimind2.gif" alt="Streamlit Demo" class="img-fluid mb-4">
-            <img src="./images/LLM-structure.png" alt="LLM Structure" class="img-fluid mb-4">
-            <img src="./images/LLM-structure-moe.png" alt="LLM Structure MOE" class="img-fluid mb-4">
+    <!-- Key Stats -->
+    <div class="stats-section">
+        <div class="stat-box">
+            <h3>26M</h3>
+            <p>Parameters</p>
         </div>
-        <br/>
-        <a href="https://www.modelscope.cn/studios/gongjy/MiniMind-Reasoning">🔗🍓Reason Model</a> |
-        <a href="https://www.modelscope.cn/studios/gongjy/MiniMind">🔗🤖Standard Model</a> |
-        <a href="https://www.bilibili.com/video/BV12dHPeqE72/?share_source=copy_web&vd_source=670c2504f88726f8cf4a21ef6147c0e8">🔗🎞️Video Introduction</a>
-        <br/>
-        <br/>
+        <div class="stat-box">
+            <h3>2h</h3>
+            <p>Training</p>
+        </div>
+        <div class="stat-box">
+            <h3>¥3</h3>
+            <p>Cost</p>
+        </div>
+        <div class="stat-box">
+            <h3>1/7000</h3>
+            <p>vs GPT-3</p>
+        </div>
+    </div>
+
+    <!-- What You Get -->
+    <div class="section-header pixel-font">✨ What You Get</div>
+    <div class="features-grid">
+        <div class="feature-card">
+            <h3>💰 Ultra-Cheap</h3>
+            <p>One 3090. Zero to ChatBot in 2 hours, costing just ¥3.</p>
+        </div>
+        <div class="feature-card">
+            <h3>📦 Full Stack</h3>
+            <p>Complete pipeline: Tokenizer → Pretrain → SFT → LoRA → PPO/GRPO/SPO</p>
+        </div>
+        <div class="feature-card">
+            <h3>🔬 Latest RL (2025)</h3>
+            <p>PPO, GRPO, SPO + YaRN length extrapolation. Native PyTorch implementation.</p>
+        </div>
+        <div class="feature-card">
+            <h3>📖 Learn by Reading</h3>
+            <p>Pure PyTorch. No black boxes. Understand every line of code.</p>
+        </div>
+        <div class="feature-card">
+            <h3>🔌 Plug & Play</h3>
+            <p>Compatible with vLLM, ollama, llama.cpp, transformers.</p>
+        </div>
+        <div class="feature-card">
+            <h3>⚡ OpenAI API</h3>
+            <p>Drop-in replacement for FastGPT, Open-WebUI, Dify.</p>
+        </div>
+    </div>
+
+    <!-- Models -->
+    <div class="section-header pixel-font">📦 Models</div>
+    <div class="models-table">
+        <table>
+            <thead>
+                <tr>
+                    <th>Model</th>
+                    <th>Parameters</th>
+                    <th>Hidden Dim</th>
+                    <th>Layers</th>
+                    <th>Memory</th>
+                </tr>
+            </thead>
+            <tbody>
+                <tr>
+                    <td><strong>MiniMind2-Small</strong></td>
+                    <td>26M</td>
+                    <td>512</td>
+                    <td>8</td>
+                    <td>~0.5 GB</td>
+                </tr>
+                <tr>
+                    <td><strong>MiniMind2</strong></td>
+                    <td>104M</td>
+                    <td>768</td>
+                    <td>16</td>
+                    <td>~1.0 GB</td>
+                </tr>
+                <tr>
+                    <td><strong>MiniMind2-MoE</strong></td>
+                    <td>145M</td>
+                    <td>640</td>
+                    <td>8</td>
+                    <td>~1.0 GB</td>
+                </tr>
+            </tbody>
+        </table>
+    </div>
+
+    <!-- What's New / Changelog -->
+    <div class="section-header pixel-font">📰 What's New</div>
+    <div class="changelog-section">
+        <div class="changelog-item open">
+            <div class="changelog-header open" onclick="toggleChangelog(this)">
+                <span>🔥 2025-10-24 (Latest)</span>
+                <span class="toggle-icon">−</span>
+            </div>
+            <div class="changelog-content">
+                <ul>
+                    <li>🔥 RLAIF algorithms: PPO, GRPO, SPO (native PyTorch)</li>
+                    <li>YaRN algorithm for RoPE length extrapolation</li>
+                    <li>Adaptive Thinking in reasoning models</li>
+                    <li>Tool Calling & Reasoning tags support</li>
+                    <li>SwanLab integration (WandB alternative for China)</li>
+                    <li>Bug fixes and performance improvements</li>
+                </ul>
+            </div>
+        </div>
+
+        <div class="changelog-item">
+            <div class="changelog-header" onclick="toggleChangelog(this)">
+                <span>⚙️ 2025-04-26 (Major Refactor)</span>
+                <span class="toggle-icon">+</span>
+            </div>
+            <div class="changelog-content">
+                <ul>
+                    <li>Model parameter renaming (align with Transformers)</li>
+                    <li>Generate method refactor (GenerationMixin)</li>
+                    <li>✅ llama.cpp, vllm, ollama support</li>
+                    <li>Vocab update: &lt;s&gt;&lt;/s&gt; → &lt;|im_start|&gt;&lt;|im_end|&gt;</li>
+                    <li>Code structure standardization</li>
+                </ul>
+            </div>
+        </div>
+
+        <div class="changelog-item">
+            <div class="changelog-header" onclick="toggleChangelog(this)">
+                <span>🎉 2025-02-09 (MiniMind2 Release)</span>
+                <span class="toggle-icon">+</span>
+            </div>
+            <div class="changelog-content">
+                <ul>
+                    <li>Complete codebase rewrite</li>
+                    <li>MiniMind2 series: 26M, 104M, 145M models</li>
+                    <li>JSONL data format (no preprocessing needed)</li>
+                    <li>LoRA from scratch (no peft dependency)</li>
+                    <li>DPO native PyTorch implementation</li>
+                    <li>White-box model distillation</li>
+                    <li>DeepSeek-R1 distillation models</li>
+                    <li>HQ pretraining data (2h on single 3090)</li>
+                </ul>
+            </div>
+        </div>
+
+        <div class="changelog-item">
+            <div class="changelog-header" onclick="toggleChangelog(this)">
+                <span>🎬 2024-10-05 (Vision Multimodal)</span>
+                <span class="toggle-icon">+</span>
+            </div>
+            <div class="changelog-content">
+                <ul>
+                    <li>Vision multimodal support</li>
+                    <li>MiniMind-V project launch</li>
+                </ul>
+            </div>
+        </div>
+
+        <div class="changelog-item">
+            <div class="changelog-header" onclick="toggleChangelog(this)">
+                <span>🔧 2024-09-27 (Data Preprocessing)</span>
+                <span class="toggle-icon">+</span>
+            </div>
+            <div class="changelog-content">
+                <ul>
+                    <li>Pretrain dataset preprocessing update</li>
+                    <li>Text integrity preservation</li>
+                    <li>Code cleanup</li>
+                </ul>
+            </div>
+        </div>
+
+        <div class="changelog-item">
+            <div class="changelog-header" onclick="toggleChangelog(this)">
+                <span>📝 2024-09-17 (MoE & Tokenizer)</span>
+                <span class="toggle-icon">+</span>
+            </div>
+            <div class="changelog-content">
+                <ul>
+                    <li>MiniMind-V1-MoE model release</li>
+                    <li>Standardized minimind_tokenizer</li>
+                    <li>Removed mistral_tokenizer variants</li>
+                </ul>
+            </div>
+        </div>
+
+        <div class="changelog-item">
+            <div class="changelog-header" onclick="toggleChangelog(this)">
+                <span>🚀 2024-09-01 (V1 Release)</span>
+                <span class="toggle-icon">+</span>
+            </div>
+            <div class="changelog-content">
+                <ul>
+                    <li>MiniMind-V1 (108M) release</li>
+                    <li>3 epochs pretrain + 10 epochs SFT</li>
+                    <li>ModelScope online demo</li>
+    </ul>
+            </div>
+        </div>
+
+        <div class="changelog-item">
+            <div class="changelog-header" onclick="toggleChangelog(this)">
+                <span>⭐ 2024-08-27 (First Release)</span>
+                <span class="toggle-icon">+</span>
+            </div>
+            <div class="changelog-content">
+                <ul>
+                    <li>🚀 First open-source release</li>
+                    <li>MiniMind project launched</li>
+                </ul>
+            </div>
+        </div>
+    </div>
+
+    <!-- Visuals -->
+    <div class="section-header pixel-font">🎮 Inside MiniMind</div>
+    <div align="center">
+        <div class="visuals-container">
+            <img src="./images/minimind2.gif" alt="Streamlit Demo">
+            <img src="./images/LLM-structure.png" alt="LLM Structure">
+            <img src="./images/LLM-structure-moe.png" alt="LLM Structure MOE">
+        </div>
+    </div>
+
+    <!-- Try It Links -->
+    <div class="links-section">
+        <h2 class="pixel-font">🎯 Try It Online</h2>
+        <div class="links-grid">
+            <a href="https://www.modelscope.cn/studios/gongjy/MiniMind-Reasoning" class="pixel-button">
+                🍓 Reasoning Model
+            </a>
+            <a href="https://www.modelscope.cn/studios/gongjy/MiniMind" class="pixel-button">
+                💬 Chat Model
+            </a>
+            <a href="https://www.bilibili.com/video/BV12dHPeqE72/" class="pixel-button">
+                📹 Video Demo
+            </a>
+        </div>
+
+        <div style="border-top: 3px solid rgba(255,255,255,.3); margin: 25px 0;"></div>
+
+        <h2 class="pixel-font">📦 Get the Code</h2>
+        <div class="links-grid">
+            <a href="https://github.com/jingyaogong/minimind" class="pixel-button">
+                GitHub
+            </a>
+            <a href="https://huggingface.co/collections/jingyaogong/minimind-66caf8d999f5c7fa64f399e5" class="pixel-button">
+                🤗 HuggingFace
+            </a>
+            <a href="https://www.modelscope.cn/profile/gongjy" class="pixel-button">
+                ModelScope
+            </a>
+        </div>
+    </div>
+
+    <!-- Why MiniMind -->
+    <div class="why-section">
+        <h2>💡 Why MiniMind?</h2>
+        <ul>
+            <li>Train from zero, not just finetune</li>
+            <li>Pure PyTorch—no magic, no black boxes</li>
+            <li>Understand by building, not by reading docs</li>
+            <li>Works on your laptop—no cloud GPUs needed</li>
+            <li>2025 RLAIF algorithms: PPO, GRPO, SPO</li>
+            <li>OpenAI API compatible—plug into any UI</li>
+            <li>Vision support via MiniMind-V</li>
+            <li>Code you can actually read and modify</li>
+        </ul>
+        <p class="quote">
+            💭 "Building a Lego plane beats flying first class."
+        </p>
+    </div>
+
+    <!-- Footer -->
+    <div class="footer">
+        <p>
+            Timings based on single 3090. YMMV.<br/>
+            Apache-2.0 License · 
+            <a href="https://github.com/jingyaogong/minimind">GitHub</a>
+        </p>
     </div>
 </div>
 
-<!-- 引入 Bootstrap JS 和 Popper.js（用于一些组件） -->
+<script>
+    function toggleChangelog(element) {
+        const item = element.parentElement;
+        item.classList.toggle('open');
+        
+        const icon = element.querySelector('.toggle-icon');
+        if (item.classList.contains('open')) {
+            icon.textContent = '−';
+        } else {
+            icon.textContent = '+';
+        }
+    }
+</script>
+
 <script src="https://cdn.jsdelivr.net/npm/@popperjs/core@2.11.6/dist/umd/popper.min.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/js/bootstrap.min.js"></script>
 </body>
