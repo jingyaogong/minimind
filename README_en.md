@@ -95,7 +95,7 @@ With less than 3 RMB in server costs, you can personally experience the entire p
 Let's enjoy the fun of creation together!
 
 > [!NOTE]
-> (As of 2025-02-07) The MiniMind series has completed pretraining of multiple model variants, with the smallest being only 25.8M (0.02B), capable of fluent conversation!
+> (As of 2025-10) The MiniMind series has completed pretraining of multiple model variants, with the smallest being only 25.8M (0.02B), capable of fluent conversation!
 
 <details style="color:rgb(128,128,128)">
 <summary>Models List</summary>
