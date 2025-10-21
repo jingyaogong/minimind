@@ -112,14 +112,14 @@ def main():
     parser.add_argument('--num_hidden_layers', default=8, type=int)
     parser.add_argument('--max_seq_len', default=8192, type=int)
     parser.add_argument('--use_moe', default=False, type=bool)
-    parser.add_argument('--model_mode', default=1, type=int, help="0: 预训练模型，1: SFT-Chat模型，2: RLHF-Chat模型，3: Reason模型，4/5: RLAIF-Chat模型")
+    parser.add_argument('--model_mode', default=1, type=int, help="【必要的】0: 预训练模型，1: SFT-Chat模型 | 【非必要的】2: RLHF模型，3: Reason模型，4/5: RLAIF模型")
     # 启用长度外推，默认为4倍（注：仅解决位置编码外推问题，不代表模型真实具备长文本能力）
     parser.add_argument('--inference_rope_scaling', default=False, action='store_true')
     # 携带历史对话上下文条数history_cnt需要设为偶数，即【用户问题, 模型回答】为1组；设置为0时，即当前query不携带历史上文
     # 模型未经过多轮对话微调时，在多轮次的长上下文难免出现能力的明显退化，因此需要注意此处设置
     parser.add_argument('--history_cnt', default=0, type=int)
     # load模式为1时，前置hidden_size、num_hidden_layers、max_seq_len等参数失效，即以加载的transformers模型的config.json配置为准
-    parser.add_argument('--load', default=1, type=int, help="0: 原生torch权重，1: transformers加载")
+    parser.add_argument('--load', default=0, type=int, help="0: 原生torch权重，1: transformers加载")
     args = parser.parse_args()
 
     model, tokenizer = init_model(args)

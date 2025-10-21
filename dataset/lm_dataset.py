@@ -57,8 +57,8 @@ class SFTDataset(Dataset):
         self.tokenizer = tokenizer
         self.max_length = max_length
         self.samples = self.load_data(jsonl_path)
-        self.bos_id = tokenizer('<|im_start|>assistant', add_special_tokens=False).input_ids
-        self.eos_id = tokenizer('<|im_end|>', add_special_tokens=False).input_ids
+        self.bos_id = tokenizer(f'{tokenizer.bos_token}assistant', add_special_tokens=False).input_ids
+        self.eos_id = tokenizer(f'{tokenizer.eos_token}', add_special_tokens=False).input_ids
 
     def __len__(self):
         return len(self.samples)
@@ -71,16 +71,14 @@ class SFTDataset(Dataset):
                 samples.append(data)
         return samples
 
-    def _create_chat_prompt(self, conversations):
-        """构建符合ChatML格式的对话"""
-        messages = []
-        for i, turn in enumerate(conversations):
-            role = 'user' if i % 2 == 0 else 'assistant'
-            messages.append({"role": role, "content": turn['content']})
+    def _create_chat_prompt(self, cs):
+        messages = cs.copy()
+        tools = cs[0]["functions"] if (cs and cs[0]["role"] == "system" and cs[0].get("functions")) else None
         return self.tokenizer.apply_chat_template(
             messages,
             tokenize=False,
-            add_generation_prompt=False
+            add_generation_prompt=False,
+            tools=tools
         )
 
     def _generate_loss_mask(self, input_ids):
@@ -115,7 +113,14 @@ class SFTDataset(Dataset):
         X = torch.tensor(input_ids[:-1], dtype=torch.long)
         Y = torch.tensor(input_ids[1:], dtype=torch.long)
         loss_mask = torch.tensor(loss_mask[1:], dtype=torch.long)  # 对齐预测位置
-
+        # # === 打印每个token的掩码情况 ===
+        # print(f"\n--- Sample {index} Token Loss Mask (length: {len(input_ids)}) ---")
+        # for i, (token_id, mask) in enumerate(zip(input_ids, loss_mask)):
+        #     token_str = self.tokenizer.decode([token_id], skip_special_tokens=False)
+        #     token_str = token_str.replace('\n', '\\n').replace('\t', '\\t')  # 处理换行等不可见字符
+        #     print(f"Token {i:3d}: {token_id:5d} -> '{token_str:10s}' | mask: {mask}")
+        # print(f"--- End of Sample {index} ---")
+        # # ================================
         return X, Y, loss_mask
 
 
@@ -125,8 +130,8 @@ class DPODataset(Dataset):
         self.tokenizer = tokenizer
         self.max_length = max_length
         self.padding = tokenizer.pad_token_id if tokenizer.pad_token_id is not None else 0
-        self.bos_id = tokenizer('<|im_start|>assistant', add_special_tokens=False).input_ids
-        self.eos_id = tokenizer('<|im_end|>', add_special_tokens=False).input_ids
+        self.bos_id = tokenizer(f'{tokenizer.bos_token}assistant', add_special_tokens=False).input_ids
+        self.eos_id = tokenizer(f'{tokenizer.eos_token}', add_special_tokens=False).input_ids
         with open(file_path, 'r', encoding='utf-8') as f:
             self.data = []
             for line in f:
@@ -201,8 +206,8 @@ class RLAIFDataset(Dataset):
         self.tokenizer = tokenizer
         self.max_length = max_length
         self.samples = self.load_data(jsonl_path)
-        self.bos_id = tokenizer('<|im_start|>assistant', add_special_tokens=False).input_ids
-        self.eos_id = tokenizer('<|im_end|>', add_special_tokens=False).input_ids
+        self.bos_id = tokenizer(f'{tokenizer.bos_token}assistant', add_special_tokens=False).input_ids
+        self.eos_id = tokenizer(f'{tokenizer.eos_token}', add_special_tokens=False).input_ids
 
     def __len__(self):
         return len(self.samples)
@@ -226,7 +231,7 @@ class RLAIFDataset(Dataset):
         return self.tokenizer.apply_chat_template(
             messages[:-1],
             tokenize=False,
-            add_generation_prompt=True
+            add_generation_prompt=True  # 这里需要True
         ), answer
 
     def __getitem__(self, index):
