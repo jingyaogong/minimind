@@ -968,7 +968,7 @@ The essence of all RL algorithms is only optimizing one expectation:
 
 $$\mathcal{J}_{PO} = \mathbb{E}_{q \sim P(Q), o \sim \pi(O|q)} \left[ \underbrace{f(r_t)}_{\text{policy term}} \cdot \underbrace{g(A_t)}_{\text{advantage term}} - \underbrace{h(\text{KL}_t)}_{\text{regularization term}} \right]$$
 
-During training, only **minimize the negative objective function**, i.e.: $\mathcal{L_{PO}}=\mathcal{J_{PO}}$
+During training, only **minimize the negative objective function**, i.e.: $\mathcal{L_{PO}}=-\mathcal{J_{PO}}$
 
 This framework contains only three core components:
 * **Policy term** $f(r_t)$: How to use probability ratio $r_t$? Tell the model how large the deviation between new and old policies is, whether better tokens are explored
@@ -987,7 +987,6 @@ This framework contains only three core components:
 | $\text{KL}_t$ | KL divergence | Prevent policy from deviating too far from reference model | $[0, +\infty)$ |
 
 </details>
-<br/>
 
 Different **xxPO algorithms** are essentially just different design instantiations of these three components!
 

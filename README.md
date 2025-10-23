@@ -990,7 +990,7 @@ LLM里的强化学习方法可分两类：
 
 $$\mathcal{J}_{PO} = \mathbb{E}_{q \sim P(Q), o \sim \pi(O|q)} \left[ \underbrace{f(r_t)}_{\text{策略项}} \cdot \underbrace{g(A_t)}_{\text{优势项}} - \underbrace{h(\text{KL}_t)}_{\text{正则项}} \right]$$
 
-训练时，只需**最小化负目标函数**，即: $\mathcal{L_{PO}}=\mathcal{J_{PO}}$
+训练时，只需**最小化负目标函数**，即: $\mathcal{L_{PO}}=-\mathcal{J_{PO}}$
 
 这个框架只包含三个核心组件：
 * **策略项** $f(r_t)$: 如何使用概率比 $r_t$? 即告诉模型新旧策略偏差有多大，是否探索到了更好的token
@@ -1009,7 +1009,6 @@ $$\mathcal{J}_{PO} = \mathbb{E}_{q \sim P(Q), o \sim \pi(O|q)} \left[ \underbrac
 | $\text{KL}_t$ | KL散度 | 防止策略偏离参考模型太远 | $[0, +\infty)$ |
 
 </details>
-<br/>
 
 不同的**xxPO算法**本质上只是对这三个组件的不同设计的实例化！
 
