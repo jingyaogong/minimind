@@ -33,9 +33,9 @@ def get_lr(current_step, total_steps, lr):
 
 def distillation_loss_fn(student_logits, teacher_logits, temperature=1.0, reduction='batchmean'):
     with torch.no_grad():
-        teacher_probs = F.softmax(teacher_logits / temperature, hidden_size=-1).detach()
+        teacher_probs = F.softmax(teacher_logits / temperature, dim=-1).detach()
 
-    student_log_probs = F.log_softmax(student_logits / temperature, hidden_size=-1)
+    student_log_probs = F.log_softmax(student_logits / temperature, dim=-1)
 
     kl = F.kl_div(
         student_log_probs,
