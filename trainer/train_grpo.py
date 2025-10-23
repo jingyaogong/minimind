@@ -299,7 +299,7 @@ if __name__ == "__main__":
     train_ds = RLAIFDataset(args.data_path, tokenizer, max_length=lm_config.max_seq_len)
     train_sampler = DistributedSampler(train_ds) if ddp else None
     train_loader = DataLoader(train_ds, batch_size=args.batch_size, pin_memory=True,
-                              drop_last=False, shuffle=False,
+                              drop_last=False, shuffle=(train_sampler is None),
                               num_workers=args.num_workers, sampler=train_sampler)
 
     optimizer = optim.AdamW(model.parameters(), lr=args.learning_rate)

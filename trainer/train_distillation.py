@@ -248,7 +248,7 @@ if __name__ == "__main__":
         batch_size=args.batch_size,
         pin_memory=True,
         drop_last=False,
-        shuffle=False,
+        shuffle=(train_sampler is None),
         num_workers=args.num_workers,
         sampler=train_sampler
     )
