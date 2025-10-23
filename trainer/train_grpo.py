@@ -313,4 +313,5 @@ if __name__ == "__main__":
         model = DistributedDataParallel(model, device_ids=[ddp_local_rank])
 
     for epoch in range(args.epochs):
+        train_sampler and train_sampler.set_epoch(epoch)
         grpo_train_epoch(epoch, wandb)

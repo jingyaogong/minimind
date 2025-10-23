@@ -364,4 +364,5 @@ if __name__ == "__main__":
     value_tracker = AutoAdaptiveValueTracker(rho_mode='kl', rho_const=0.9, D_half=0.06, clip_lower=0.5, clip_upper=0.96)
 
     for epoch in range(args.epochs):
+        train_sampler and train_sampler.set_epoch(epoch)
         spo_train_epoch(epoch, wandb, value_tracker)

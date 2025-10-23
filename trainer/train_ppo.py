@@ -367,6 +367,7 @@ if __name__ == "__main__":
         old_actor_model.to(args.device)
 
     for epoch in range(args.epochs):
+        train_sampler and train_sampler.set_epoch(epoch)
         ppo_train_epoch(epoch, wandb, old_actor_model, ref_model, actor_scheduler, critic_scheduler)
 
     if ddp:

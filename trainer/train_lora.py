@@ -205,4 +205,5 @@ if __name__ == "__main__":
     iter_per_epoch = len(train_loader)
 
     for epoch in range(args.epochs):
+        train_sampler and train_sampler.set_epoch(epoch)
         train_epoch(epoch, wandb)
