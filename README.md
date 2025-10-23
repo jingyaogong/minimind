@@ -260,7 +260,7 @@ pip install -r requirements.txt -i https://pypi.tuna.tsinghua.edu.cn/simple
 到项目根目录
 
 ```bash
-git clone https://huggingface.co/jingyaogong/MiniMind2
+git clone https://huggingface.co/jingyaogong/MiniMind2 # or https://www.modelscope.cn/models/gongjy/MiniMind2
 ```
 
 ### （可选）命令行问答
@@ -446,7 +446,7 @@ python train_xxx.py --use_wandb
 > 但minimind模型选择了自己训练的minimind_tokenizer作为分词器，以保持整体参数轻量，避免编码层和计算层占比失衡，头重脚轻，因为minimind的词表大小只有6400。
 > 且minimind在实际测试中没有出现过生僻词汇解码失败的情况，效果良好。
 > 由于自定义词表压缩长度到6400，使得LLM总参数量最低只有25.8M。
-> 训练数据`tokenizer_train.jsonl`均来自于`匠数大模型数据集`，这部分数据相对次要，如需训练可以自由选择。
+> 训练数据`pretrain_hq.jsonl`均来自于`匠数大模型数据集`，这部分数据相对次要，如需训练可以自由选择。
 ```
 
 </details>
@@ -557,8 +557,7 @@ MiniMind训练数据集下载地址： [ModelScope](https://www.modelscope.cn/da
 ├── sft_1024.jsonl (5.6GB)
 ├── sft_2048.jsonl (9GB)
 ├── sft_512.jsonl (7.5GB)
-├── sft_mini_512.jsonl (1.2GB, ✨)
-└── tokenizer_train.jsonl (1GB)
+└── sft_mini_512.jsonl (1.2GB, ✨)
 ```
 
 <details style="color:rgb(128,128,128)">
@@ -574,7 +573,7 @@ MiniMind训练数据集下载地址： [ModelScope](https://www.modelscope.cn/da
 * `sft_2048.jsonl` --整合自Qwen2.5蒸馏数据，每条数据字符最大长度为2048（因此训练时设置max_seq_len=2048）
 * `sft_512.jsonl` --整合自匠数科技SFT数据，每条数据字符最大长度为512（因此训练时设置max_seq_len=512）
 * `sft_mini_512.jsonl`✨ --极简整合自匠数科技SFT数据+Qwen2.5蒸馏数据（用于快速训练Zero模型），每条数据字符最大长度为512（因此训练时设置max_seq_len=512）
-* `tokenizer_train.jsonl` --均来自于`匠数大模型数据集`，这部分数据相对次要，（不推荐自己重复训练tokenizer，理由如上）如需自己训练tokenizer可以自由选择数据集。
+* `pretrain_hq.jsonl` --均来自于`匠数大模型数据集`，这部分数据相对次要，（不推荐自己重复训练tokenizer，理由如上）如需自己训练tokenizer可以自由选择数据集。
 
 </details>
 
@@ -618,7 +617,7 @@ MiniMind的整体结构一致，只是在RoPE计算、推理函数和FFN层的�
 ![structure](./images/LLM-structure.png)
 ![structure-moe](./images/LLM-structure-moe.png)
 
-修改模型配置见[./model/LMConfig.py](./model/LMConfig.py)。
+修改模型配置见[./model/model_minimind.py](./model/model_minimind.py)。
 参考模型参数版本见下表：
 
 | Model Name        | params | len_vocab | rope_theta | n_layers | d_model | kv_heads | q_heads | share+route |

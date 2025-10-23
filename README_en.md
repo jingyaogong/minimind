@@ -258,7 +258,7 @@ pip install -r requirements.txt -i https://pypi.tuna.tsinghua.edu.cn/simple
 Go to the project root directory
 
 ```bash
-git clone https://huggingface.co/jingyaogong/MiniMind2
+git clone https://huggingface.co/jingyaogong/MiniMind2 # or https://www.modelscope.cn/models/gongjy/MiniMind2
 ```
 
 ### (Optional) Command Line Q&A
@@ -438,7 +438,7 @@ The tokenizer vocabulary sizes of powerful open-source models from third parties
 > But the minimind model chose the self-trained minimind_tokenizer as the tokenizer to maintain lightweight overall parameters, avoiding imbalance in encoding layer and computation layer proportions, preventing top-heavy models, because minimind's vocabulary size is only 6400.
 > And minimind has never encountered rare word decoding failures in actual testing, with good results.
 > Due to the custom vocabulary compression to 6400, the total LLM parameters are as low as 25.8M.
-> The training data `tokenizer_train.jsonl` all comes from the `JiangShu large model dataset`, this part of data is relatively secondary. You can freely choose if you need to train.
+> The training data `pretrain_hq.jsonl` all comes from the `JiangShu large model dataset`, this part of data is relatively secondary. You can freely choose if you need to train.
 ```
 
 </details>
@@ -549,8 +549,7 @@ Place the downloaded dataset files in the `./dataset/` directory (✨ are recomm
 ├── sft_1024.jsonl (5.6GB)
 ├── sft_2048.jsonl (9GB)
 ├── sft_512.jsonl (7.5GB)
-├── sft_mini_512.jsonl (1.2GB, ✨)
-└── tokenizer_train.jsonl (1GB)
+└── sft_mini_512.jsonl (1.2GB, ✨)
 ```
 
 <details style="color:rgb(128,128,128)">
@@ -566,7 +565,7 @@ Place the downloaded dataset files in the `./dataset/` directory (✨ are recomm
 * `sft_2048.jsonl` --Integrated from Qwen2.5 distilled data, maximum character length per entry is 2048 (therefore set max_seq_len=2048 when training)
 * `sft_512.jsonl` --Integrated from JiangShu SFT data, maximum character length per entry is 512 (therefore set max_seq_len=512 when training)
 * `sft_mini_512.jsonl`✨ --Minimal integration from JiangShu SFT data + Qwen2.5 distilled data (for quick training of Zero models), maximum character length per entry is 512 (therefore set max_seq_len=512 when training)
-* `tokenizer_train.jsonl` --All from the `JiangShu large model dataset`, this part of data is relatively secondary. (Not recommended to retrain tokenizer yourself, see reasons above) You can freely choose datasets if you want to train tokenizer yourself.
+* `pretrain_hq.jsonl` --All from the `JiangShu large model dataset`, this part of data is relatively secondary. (Not recommended to retrain tokenizer yourself, see reasons above) You can freely choose datasets if you want to train tokenizer yourself.
 
 </details>
 
@@ -609,7 +608,7 @@ The structure is shown in the diagram below (redrawn version):
 ![structure](./images/LLM-structure.png)
 ![structure-moe](./images/LLM-structure-moe.png)
 
-To modify model configuration, see [./model/LMConfig.py](./model/LMConfig.py).
+To modify model configuration, see [./model/model_minimind.py](./model/model_minimind.py).
 Reference model parameter versions see the table below:
 
 | Model Name        | params | len_vocab | rope_theta | n_layers | d_model | kv_heads | q_heads | share+route |
