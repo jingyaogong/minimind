@@ -250,7 +250,7 @@ git clone https://github.com/jingyaogong/minimind.git
 ### 1. Environment Setup
 
 ```bash
-pip install -r requirements.txt -i https://pypi.tuna.tsinghua.edu.cn/simple
+pip install -r requirements.txt -i https://mirrors.aliyun.com/pypi/simple
 ```
 
 ### 2. Download Model
@@ -290,7 +290,7 @@ vllm serve ./MiniMind2/ --served-model-name "minimind"
 ### 1. Environment Setup
 
 ```bash
-pip install -r requirements.txt -i https://pypi.tuna.tsinghua.edu.cn/simple
+pip install -r requirements.txt -i https://mirrors.aliyun.com/pypi/simple
 ```
 
 <details style="color:rgb(128,128,128)">
