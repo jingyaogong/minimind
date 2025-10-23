@@ -169,7 +169,8 @@ def main():
             eos_token_id=tokenizer.eos_token_id,
             streamer=streamer,
             top_p=args.top_p,
-            temperature=args.temperature
+            temperature=args.temperature,
+            repetition_penalty=1.0 # 重复惩罚力度，1.0使用默认分布
         )
 
         response = tokenizer.decode(generated_ids[0][inputs["input_ids"].shape[1]:], skip_special_tokens=True)
