@@ -169,7 +169,7 @@ def grpo_train_epoch(epoch, wandb):
 
             Logger(
                 f'Epoch: {epoch}, Step: {step + 1}/{iter_per_epoch}, '
-                f'Actor Loss: {policy_loss_val:.4f}, Reward: {avg_reward_val:.4f}, '
+                f'Actor Loss: {policy_loss_val:.6f}, Reward: {avg_reward_val:.6f}, '
                 f'Avg Response Len: {avg_len_val:.2f}, LR: {current_lr:.2e}')
 
             if wandb and (not ddp or dist.get_rank() == 0):

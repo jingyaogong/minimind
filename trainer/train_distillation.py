@@ -113,7 +113,7 @@ def train_epoch(epoch, wandb, alpha=0.0, temperature=1.0):
         if step % args.log_interval == 0 or step == iter_per_epoch - 1:
             spend_time = time.time() - start_time
             Logger(
-                'Epoch:[{}/{}]({}/{}) loss:{:.4f} lr:{:.12f} epoch_Time:{}min:'.format(
+                'Epoch:[{}/{}]({}/{}) loss:{:.6f} lr:{:.12f} epoch_Time:{}min:'.format(
                     epoch,
                     args.epochs - 1,
                     step,

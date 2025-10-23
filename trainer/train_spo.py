@@ -216,7 +216,7 @@ def spo_train_epoch(epoch, wandb, value_tracker):
 
             Logger(
                 f'Epoch: {epoch}, Step: {step + 1}/{iter_per_epoch}, '
-                f'Actor Loss: {policy_loss_val:.4f}, Reward: {avg_reward_val:.4f}, '
+                f'Actor Loss: {policy_loss_val:.6f}, Reward: {avg_reward_val:.6f}, '
                 f'Baseline: {avg_baseline_val:.4f}, KL: {kl_val:.4f}, Rho: {rho:.4f}, Avg Response Len: {avg_len_val:.2f}, LR: {current_lr:.2e}')
 
             if wandb and (not ddp or dist.get_rank() == 0):
