@@ -359,8 +359,8 @@ if __name__ == "__main__":
 
     # 如果使用分布式训练，包装模型
     if ddp:
-        actor_model._ddp_params_and_buffers_to_ignore = {"pos_cis"}
-        critic_model._ddp_params_and_buffers_to_ignore = {"pos_cis"}
+        actor_model._ddp_params_and_buffers_to_ignore = {"freqs_cos", "freqs_sin"}
+        critic_model._ddp_params_and_buffers_to_ignore = {"freqs_cos", "freqs_sin"}
         actor_model = DistributedDataParallel(actor_model, device_ids=[ddp_local_rank])
         critic_model = DistributedDataParallel(critic_model, device_ids=[ddp_local_rank])
         # old_actor_model 不需要DDP包装，因为它只在主进程上用于计算，并且不进行梯度更新
