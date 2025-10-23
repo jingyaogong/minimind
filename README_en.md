@@ -381,11 +381,13 @@ torchrun --nproc_per_node N train_xxx.py
 <details style="color:rgb(128,128,128)">
 <summary>Note: Other Notes</summary>
 
+<del>
 Single machine N GPU training (DeepSpeed)
 
 ```bash
 deepspeed --master_port 29500 --num_gpus=N train_xxx.py
 ```
+</del>
 
 You can optionally enable wandb to record the training process (requires direct internet connection)
 

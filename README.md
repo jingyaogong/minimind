@@ -388,11 +388,13 @@ torchrun --nproc_per_node N train_xxx.py
 <details style="color:rgb(128,128,128)">
 <summary>注：其它须知</summary>
 
+<del>
 单机N卡启动训练 (DeepSpeed)
 
 ```bash
 deepspeed --master_port 29500 --num_gpus=N train_xxx.py
 ```
+</del>
 
 可根据需要开启wandb记录训练过程（需可直连）
 
