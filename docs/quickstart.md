@@ -64,16 +64,16 @@ git clone https://www.modelscope.cn/models/gongjy/MiniMind2.git
 ### 3. Command-Line Chat
 
 ```bash
-# load=0: load PyTorch model, load=1: load transformers model
-python eval_model.py --load 1 --model_mode 2
+# Use transformers format model
+python eval_llm.py --load_from ./MiniMind2
 ```
 
-**Model Modes**:
-- `model_mode 0`: Pretrain model (word continuation)
-- `model_mode 1`: SFT Chat model (conversation)
-- `model_mode 2`: RLHF model (refined responses, currently same as SFT for small models)
-- `model_mode 3`: Reasoning model (with thinking chains)
-- `model_mode 4/5`: RLAIF models (PPO/GRPO trained)
+**Weight Options** (`--weight` parameter):
+- `pretrain`: Pretrain model (word continuation)
+- `full_sft`: SFT Chat model (conversation)
+- `dpo`: DPO model (preference optimization)
+- `reason`: Reasoning model (with thinking chains)
+- `ppo_actor`, `grpo`, `spo`: RLAIF models (reinforcement learning trained)
 
 **Example Session**:
 ```text
@@ -103,7 +103,7 @@ Visit `http://localhost:8501` to use the interactive web interface.
 Extend context length beyond training with RoPE extrapolation:
 
 ```bash
-python eval_model.py --inference_rope_scaling True
+python eval_llm.py --weight full_sft --inference_rope_scaling
 ```
 
 This enables the YaRN algorithm to handle sequences longer than the 2K training context, useful for processing documents and long conversations.
@@ -227,10 +227,10 @@ A: 珠穆朗玛峰（Mount Everest）是世界上最高的山峰，位于喜马�
 **Solution**:
 ```bash
 # Reduce batch size
-python eval_model.py --batch_size 1
+python eval_llm.py --batch_size 1
 
 # Or use CPU (slow but works)
-python eval_model.py --device cpu
+python eval_llm.py --device cpu
 ```
 
 ### Issue: Slow Inference
@@ -244,7 +244,7 @@ python eval_model.py --device cpu
 ### Issue: Model Responses Are Poor Quality
 
 **Possible Causes**:
-- Using pretrain model (`model_mode 0`) instead of SFT (`model_mode 1`)
+- Using pretrain model (`--weight pretrain`) instead of SFT (`--weight full_sft`)
 - Model is undertrained - download the full checkpoint instead
 - Input prompt is too short - provide more context
 

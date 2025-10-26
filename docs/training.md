@@ -54,7 +54,7 @@ cd dataset
 ├── sft_512.jsonl (7.5GB, standard SFT)
 ├── sft_1024.jsonl (5.6GB, longer SFT)
 ├── sft_2048.jsonl (9GB, very long SFT)
-├── dpo.jsonl (909MB, DPO training)
+├── dpo.jsonl ✨ (55MB, DPO training - optimized and simplified)
 ├── r1_mix_1024.jsonl (340MB, reasoning distillation)
 ├── rlaif-mini.jsonl (1MB, RLAIF algorithms)
 ├── lora_identity.jsonl (22.8KB, identity LoRA)
@@ -111,6 +111,25 @@ All training scripts are in the `./trainer` directory.
 ```bash
 cd trainer
 ```
+
+!!! info "💡 Checkpoint Resume Training"
+    All training scripts automatically save checkpoints. Simply add `--from_resume 1` parameter to automatically detect, load & resume training:
+    
+    ```bash
+    python train_pretrain.py --from_resume 1
+    python train_full_sft.py --from_resume 1
+    python train_dpo.py --from_resume 1
+    # ... and all other training scripts
+    ```
+    
+    **Checkpoint Resume Mechanism:**
+    
+    - Training process automatically saves complete checkpoints in `./checkpoints/` directory (model, optimizer, training progress, etc.)
+    - Checkpoint file naming: `<weight_name>_<dimension>_resume.pth` (e.g., `full_sft_512_resume.pth`)
+    - Supports cross-GPU recovery (automatically adjusts step)
+    - Supports wandb training log continuity (automatically resumes the same run)
+    
+    > Suitable for long training sessions or unstable environments, no need to worry about progress loss from interruptions
 
 ### Stage 1: Pretraining
 
@@ -234,7 +253,7 @@ python train_dpo.py
 torchrun --nproc_per_node 2 train_dpo.py
 ```
 
-**Output**: `./out/rlhf_*.pth`
+**Output**: `./out/dpo_*.pth`
 
 **Key Features**:
 - Off-policy training (reuse data across epochs)
@@ -439,35 +458,38 @@ python train_xxx.py --use_wandb  # Automatically uses SwanLab if available
 ### Evaluate Pretrain Model
 
 ```bash
-python eval_model.py --model_mode 0
+python eval_llm.py --weight pretrain
 ```
 
 ### Evaluate Chat Model
 
 ```bash
-python eval_model.py --model_mode 1
+python eval_llm.py --weight full_sft
 ```
 
 ### Evaluate with LoRA
 
 ```bash
-python eval_model.py --lora_name 'lora_medical' --model_mode 1
+python eval_llm.py --weight dpo --lora_weight lora_medical
 ```
 
 ### Evaluate Reasoning Model
 
 ```bash
-python eval_model.py --model_mode 3
+python eval_llm.py --weight reason
 ```
 
 ### Evaluate RLAIF Models
 
 ```bash
 # PPO model
-python eval_model.py --model_mode 4
+python eval_llm.py --weight ppo_actor
 
 # GRPO model
-python eval_model.py --model_mode 4
+python eval_llm.py --weight grpo
+
+# SPO model
+python eval_llm.py --weight spo
 ```
 
 ### RoPE Length Extrapolation
@@ -475,7 +497,7 @@ python eval_model.py --model_mode 4
 Test with extended context:
 
 ```bash
-python eval_model.py --model_mode 1 --inference_rope_scaling True
+python eval_llm.py --weight full_sft --inference_rope_scaling
 ```
 
 ## 📐 Model Architecture
