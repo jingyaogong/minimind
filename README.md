@@ -129,13 +129,14 @@
 <summary> <b>2025-10-24 (newest🎉)</b> </summary>
 
 - 🔥 新增RLAIF训练算法：PPO、GRPO、SPO（从0原生实现）
-- 新增RLAIF数据集：rlaif-mini.jsonl（从SFT数据随机采样1万条）
+- 新增断点续训功能：支持训练自动恢复、跨GPU数量恢复、wandb记录连续性
+- 新增RLAIF数据集：rlaif-mini.jsonl（从SFT数据随机采样1万条）；简化DPO数据集，加入中文数据
 - 新增YaRN算法：支持RoPE长文本外推，提升长序列处理能力
 - Adaptive Thinking：Reason模型可选是否启用思考链
 - chat_template全面支持Tool Calling和Reasoning标签（`<tool_call>`、`<think>`等）
 - 新增RLAIF完整章节、训练曲线对比、算法原理折叠说明
 - [SwanLab](https://swanlab.cn/)替代WandB（国内访问友好，API完全兼容）
-- 修复一些已知bug
+- 规范化所有代码 & 修复一些已知bugs
 
 </details>
 
@@ -266,8 +267,8 @@ git clone https://huggingface.co/jingyaogong/MiniMind2 # or https://www.modelsco
 ### （可选）命令行问答
 
 ```bash
-# load=0: load from pytorch model, load=1: load from transformers-hf model
-python eval_model.py --load 1 --model_mode 2
+# 使用transformers格式模型
+python eval_llm.py --load_from ./MiniMind2
 ```
 
 ### （可选）启动WebUI
@@ -326,6 +327,27 @@ print(torch.cuda.is_available())
 
 目录位于`trainer`
 
+<details style="color:rgb(128,128,128)">
+<summary>💡 检查点暂停续训</summary>
+
+所有训练脚本均自动保存检查点，只需添加 `--from_resume 1` 参数即可自动检测加载&恢复训练：
+
+```bash
+python train_pretrain.py --from_resume 1
+python train_full_sft.py --from_resume 1
+...
+```
+
+**断点续训机制说明：**
+- 训练过程自动在 `./checkpoints/` 目录保存完整检查点（模型、优化器、训练进度等）
+- 检查点文件命名：`<权重名>_<维度>_resume.pth`（如：`full_sft_512_resume.pth`）
+- 支持跨不同GPU数量恢复（自动调整step）
+- 支持wandb训练记录连续性（自动恢复同一个run）
+
+> 适合长时间训练或不稳定环境，无需担心训练中断导致进度丢失
+
+</details>
+
 **3.1 预训练（学知识）**
 
 ```bash
@@ -361,15 +383,25 @@ python train_full_sft.py
 也可以直接去[此处](https://www.modelscope.cn/models/gongjy/MiniMind2-PyTorch/files)下载使用我训练的`*.pth`文件。
 
 ```bash
-python eval_model.py --model_mode 1 # 默认为0：测试pretrain模型效果，设置为1：测试full_sft模型效果
+python eval_llm.py --weight full_sft # 或 pretrain/dpo/ppo/grpo...
 ```
 
 <details style="color:rgb(128,128,128)">
 <summary>注：测试须知</summary>
 
-详情查看`eval_model.py`脚本代码即可。
+`--weight` 参数指定权重名称前缀，可选：`pretrain`, `full_sft`, `dpo`, `reason`, `ppo_actor`, `grpo`, `spo` 等
 
-model_mode分为【必要的】 0: 预训练模型，1: SFT-Chat模型 |【非必要的】2: RLHF模型，3: Reason模型，4/5: RLAIF模型
+其他常用参数：
+- `--load_from`: 模型加载路径（`model`=原生torch权重，其他路径=transformers格式）
+- `--save_dir`: 模型权重目录（默认`out`）
+- `--lora_weight`: LoRA权重名称（`None`表示不使用）
+- `--historys`: 携带历史对话轮数（需为偶数，0表示不携带历史）
+- `--max_new_tokens`: 最大生成长度（默认8192）
+- `--temperature`: 生成温度（默认0.85）
+- `--top_p`: nucleus采样阈值（默认0.85）
+
+
+使用方式直接查看`eval_llm.py`代码即可。
 
 </details>
 
@@ -550,7 +582,7 @@ MiniMind训练数据集下载地址： [ModelScope](https://www.modelscope.cn/da
 
 ```bash
 ./dataset/
-├── dpo.jsonl (909MB)
+├── dpo.jsonl (55MB, ✨)
 ├── lora_identity.jsonl (22.8KB)
 ├── lora_medical.jsonl (34MB)
 ├── pretrain_hq.jsonl (1.6GB, ✨)
@@ -565,17 +597,16 @@ MiniMind训练数据集下载地址： [ModelScope](https://www.modelscope.cn/da
 <details style="color:rgb(128,128,128)">
 <summary>注：各数据集简介</summary>
 
-* `dpo.jsonl` --RLHF阶段数据集
+* `dpo.jsonl`✨ --RLHF阶段数据集（已精简优化，适合快速训练）
 * `lora_identity.jsonl` --自我认知数据集（例如：你是谁？我是minimind...），推荐用于lora训练（亦可用于全参SFT，勿被名字局限）
 * `lora_medical.jsonl` --医疗问答数据集，推荐用于lora训练（亦可用于全参SFT，勿被名字局限）
-* `pretrain_hq.jsonl`✨ --预训练数据集，整合自jiangshu科技
+* `pretrain_hq.jsonl`✨ --预训练数据集，整合自匠数科技
 * `r1_mix_1024.jsonl` --DeepSeek-R1-1.5B蒸馏数据，每条数据字符最大长度为1024（因此训练时设置max_seq_len=1024）
 * `rlaif-mini.jsonl` --RLAIF训练数据集，从SFT数据集中随机采样1万条高质量对话，用于PPO/GRPO/SPO等强化学习算法训练
 * `sft_1024.jsonl` --整合自Qwen2.5蒸馏数据（是sft_2048的子集），每条数据字符最大长度为1024（因此训练时设置max_seq_len=1024）
 * `sft_2048.jsonl` --整合自Qwen2.5蒸馏数据，每条数据字符最大长度为2048（因此训练时设置max_seq_len=2048）
 * `sft_512.jsonl` --整合自匠数科技SFT数据，每条数据字符最大长度为512（因此训练时设置max_seq_len=512）
 * `sft_mini_512.jsonl`✨ --极简整合自匠数科技SFT数据+Qwen2.5蒸馏数据（用于快速训练Zero模型），每条数据字符最大长度为512（因此训练时设置max_seq_len=512）
-* `pretrain_hq.jsonl` --均来自于`匠数大模型数据集`，这部分数据相对次要，（不推荐自己重复训练tokenizer，理由如上）如需自己训练tokenizer可以自由选择数据集。
 
 </details>
 
@@ -855,11 +886,11 @@ python train_lora.py
 ```
 
 此时【基础模型+LoRA模型】即可获得医疗场景模型增强的能力，相当于为基础模型增加了LoRA外挂，这个过程并不损失基础模型的本身能力。
-可以通过`eval_model.py`进行模型评估测试。
+可以通过`eval_llm.py`进行模型评估测试。
 
 ```bash
-# 注意：model_mode即选择基础模型的类型，这和train_lora是基于哪个模型训练的相关，确保统一即可。
-python eval_model.py --lora_name 'lora_medical' --model_mode 2
+# 注意：weight参数指定基础模型类型，需与train_lora训练时使用的基础模型保持一致
+python eval_llm.py  --weight dpo --lora_weight lora_medical
 ```
 
 **小测试**
@@ -1041,7 +1072,7 @@ torchrun --nproc_per_node 1 train_dpo.py
 python train_dpo.py
 ```
 
-> 训练后的模型权重文件默认每隔`100步`保存为: `rlhf_*.pth`（*为模型具体dimension，每次保存时新文件会覆盖旧文件）
+> 训练后的模型权重文件默认每隔`100步`保存为: `dpo_*.pth`（*为模型具体dimension，每次保存时新文件会覆盖旧文件）
 
 ### **7. 基于AI反馈的强化学习 (Reinforcement Learning from AI Feedback, RLAIF)**
 
@@ -1310,9 +1341,9 @@ MiniMind2模型权重 ([ModelScope](https://www.modelscope.cn/models/gongjy/Mini
 
 | Model Name      | params | pretrain_model         | sft_model              | rlhf_model (DPO)    | reason_model     | rlaif_model (PPO/GRPO/SPO)                    | lora_model         |
 |-----------------|--------|------------------------|------------------------|--------------------|------------------|----------------------------------------------|--------------------|
-| MiniMind2-small | 26M    | `pretrain_512.pth`     | `full_sft_512.pth`     | `rlhf_512.pth`     | `reason_512.pth` | `xxpo_512.pth` | `lora_xxx_512.pth` |
-| MiniMind2-MoE   | 145M   | `pretrain_640_moe.pth` | `full_sft_640_moe.pth` | `rlhf_640_moe.pth` | -                | -                                            | -                  |
-| MiniMind2       | 104M   | `pretrain_768.pth`     | `full_sft_768.pth`     | `rlhf_768.pth`     | `reason_768.pth` | `xxpo_768.pth` | `lora_xxx_768.pth` |
+| MiniMind2-small | 26M    | `pretrain_512.pth`     | `full_sft_512.pth`     | `dpo_512.pth`     | `reason_512.pth` | `xxpo_512.pth` | `lora_xxx_512.pth` |
+| MiniMind2-MoE   | 145M   | `pretrain_640_moe.pth` | `full_sft_640_moe.pth` | `dpo_640_moe.pth` | -                | -                                            | -                  |
+| MiniMind2       | 104M   | `pretrain_768.pth`     | `full_sft_768.pth`     | `dpo_768.pth`     | `reason_768.pth` | `xxpo_768.pth` | `lora_xxx_768.pth` |
 
 </details>
 
@@ -1327,10 +1358,10 @@ MiniMind系列 ([ModelScope](https://www.modelscope.cn/collections/MiniMind-b72f
 
 ## Ⅰ RLHF对比
 
-测试基于`full_sft`和`rlhf`的`MiniMind2系列`模型对比，测试随机种子均固定
+测试基于`full_sft`和`dpo`的`MiniMind2系列`模型对比，测试随机种子均固定
 
 [A] MiniMind2：full_sft_640<br/>
-[B] MiniMind2：rlhf_640
+[B] MiniMind2：dpo_640
 
   ```text
   [Q]: 你叫什么名字？
@@ -1571,10 +1602,10 @@ DPO和在线PPO的区别在于reject和chosen都是离线准备的，和minimind
 ## Ⅳ RoPE长度外推
 
 MiniMind支持通过YaRN算法进行RoPE位置编码的长度外推，使模型能够处理超出训练长度的文本序列。
-在使用`eval_model.py`进行推理时，只需添加`--inference_rope_scaling True`参数即可启用RoPE外推：
+在使用`eval_llm.py`进行推理时，只需添加`--inference_rope_scaling`参数即可启用RoPE外推：
 
 ```bash
-python eval_model.py --inference_rope_scaling True
+python eval_llm.py --weight full_sft --inference_rope_scaling
 ```
 
 下图展示了在不同文本「西游记」白话文小说长度下，使用RoPE scaling前后的困惑度(PPL)对比。可以看出，启用RoPE scaling后，模型在长文本上的表现显著提升：

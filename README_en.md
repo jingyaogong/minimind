@@ -134,13 +134,14 @@ We hope this open-source project can help LLM beginners get started quickly!
 <summary> <b>2025-10-24 (newest🎉)</b> </summary>
 
 - 🔥 Added RLAIF training algorithms: PPO, GRPO, SPO (native implementation from scratch)
-- Added RLAIF dataset: rlaif-mini.jsonl (randomly sampled 10,000 entries from SFT data)
+- Added checkpoint resume training: supports automatic training recovery, cross-GPU recovery, wandb continuity
+- Added RLAIF dataset: rlaif-mini.jsonl (randomly sampled 10,000 entries from SFT data); simplified DPO dataset with Chinese data
 - Added YaRN algorithm: supports RoPE long-text extrapolation, improving long sequence handling capability
 - Adaptive Thinking: Reason model can optionally enable thinking chain
 - chat_template fully supports Tool Calling and Reasoning tags (`<tool_call>`, `<think>`, etc.)
 - Added complete RLAIF chapter, training curve comparison, algorithm principle explanations
 - [SwanLab](https://swanlab.cn/) replaces WandB (friendly for domestic access, fully compatible API)
-- Fixed some known bugs
+- Code standardization & fixed some known bugs
 
 </details>
 
@@ -264,8 +265,8 @@ git clone https://huggingface.co/jingyaogong/MiniMind2 # or https://www.modelsco
 ### (Optional) Command Line Q&A
 
 ```bash
-# load=0: load from pytorch model, load=1: load from transformers-hf model
-python eval_model.py --load 1 --model_mode 2
+# Use transformers format model
+python eval_llm.py --load_from ./MiniMind2
 ```
 
 ### (Optional) Launch WebUI
@@ -322,6 +323,27 @@ You can freely choose data files. The section below provides multiple combinatio
 
 Directory is located in `trainer`
 
+<details style="color:rgb(128,128,128)">
+<summary>💡 Checkpoint Resume Training</summary>
+
+All training scripts automatically save checkpoints. Simply add `--from_resume 1` parameter to automatically detect, load & resume training:
+
+```bash
+python train_pretrain.py --from_resume 1
+python train_full_sft.py --from_resume 1
+...
+```
+
+**Checkpoint Resume Mechanism:**
+- Training process automatically saves complete checkpoints in `./checkpoints/` directory (model, optimizer, training progress, etc.)
+- Checkpoint file naming: `<weight_name>_<dimension>_resume.pth` (e.g., `full_sft_512_resume.pth`)
+- Supports cross-GPU recovery (automatically adjusts step)
+- Supports wandb training log continuity (automatically resumes the same run)
+
+> Suitable for long training sessions or unstable environments, no need to worry about progress loss from interruptions
+
+</details>
+
 **3.1 Pretraining (Learning Knowledge)**
 
 ```bash
@@ -355,15 +377,25 @@ Ensure the model `*.pth` files to be tested are in the `./out/` directory.
 You can also directly download and use the `*.pth` files I trained from [here](https://www.modelscope.cn/models/gongjy/MiniMind2-PyTorch/files).
 
 ```bash
-python eval_model.py --model_mode 1 # Default 0: test pretrain model, set to 1: test full_sft model
+python eval_llm.py --weight full_sft # or pretrain/dpo/ppo/grpo...
 ```
 
 <details style="color:rgb(128,128,128)">
 <summary>Note: Testing Notes</summary>
 
-For details, check the `eval_model.py` script code.
+The `--weight` parameter specifies the weight name prefix. Options: `pretrain`, `full_sft`, `dpo`, `reason`, `ppo_actor`, `grpo`, `spo`, etc.
 
-model_mode is divided into [required] 0: pretraining model, 1: SFT-Chat model | [optional] 2: RLHF model, 3: Reason model, 4/5: RLAIF model
+Other common parameters:
+- `--load_from`: Model loading path (`model`=native torch weights, other paths=transformers format)
+- `--save_dir`: Model weight directory (default `out`)
+- `--lora_weight`: LoRA weight name (`None` means not used)
+- `--historys`: Number of historical dialogue rounds to carry (must be even, 0 means no history)
+- `--max_new_tokens`: Maximum generation length (default 8192)
+- `--temperature`: Generation temperature (default 0.85)
+- `--top_p`: Nucleus sampling threshold (default 0.85)
+
+
+For usage details, refer directly to the `eval_llm.py` code.
 
 </details>
 
@@ -542,7 +574,7 @@ Place the downloaded dataset files in the `./dataset/` directory (✨ are recomm
 
 ```bash
 ./dataset/
-├── dpo.jsonl (909MB)
+├── dpo.jsonl (55MB, ✨)
 ├── lora_identity.jsonl (22.8KB)
 ├── lora_medical.jsonl (34MB)
 ├── pretrain_hq.jsonl (1.6GB, ✨)
@@ -557,17 +589,16 @@ Place the downloaded dataset files in the `./dataset/` directory (✨ are recomm
 <details style="color:rgb(128,128,128)">
 <summary>Note: Brief Description of Each Dataset</summary>
 
-* `dpo.jsonl` --RLHF stage dataset
+* `dpo.jsonl`✨ --RLHF stage dataset (optimized and simplified, suitable for fast training)
 * `lora_identity.jsonl` --Self-awareness dataset (e.g., Who are you? I am minimind...), recommended for lora training (can also be used for full-parameter SFT, don't be limited by the name)
 * `lora_medical.jsonl` --Medical Q&A dataset, recommended for lora training (can also be used for full-parameter SFT, don't be limited by the name)
-* `pretrain_hq.jsonl`✨ --Pretraining dataset, integrated from JiangShu technology
+* `pretrain_hq.jsonl`✨ --Pretraining dataset, integrated from JiangShu Technology
 * `r1_mix_1024.jsonl` --DeepSeek-R1-1.5B distilled data, maximum character length per entry is 1024 (therefore set max_seq_len=1024 when training)
 * `rlaif-mini.jsonl` --RLAIF training dataset, randomly sampled 10,000 high-quality conversations from SFT dataset for training reinforcement learning algorithms like PPO/GRPO/SPO
 * `sft_1024.jsonl` --Integrated from Qwen2.5 distilled data (a subset of sft_2048), maximum character length per entry is 1024 (therefore set max_seq_len=1024 when training)
 * `sft_2048.jsonl` --Integrated from Qwen2.5 distilled data, maximum character length per entry is 2048 (therefore set max_seq_len=2048 when training)
-* `sft_512.jsonl` --Integrated from JiangShu SFT data, maximum character length per entry is 512 (therefore set max_seq_len=512 when training)
-* `sft_mini_512.jsonl`✨ --Minimal integration from JiangShu SFT data + Qwen2.5 distilled data (for quick training of Zero models), maximum character length per entry is 512 (therefore set max_seq_len=512 when training)
-* `pretrain_hq.jsonl` --All from the `JiangShu large model dataset`, this part of data is relatively secondary. (Not recommended to retrain tokenizer yourself, see reasons above) You can freely choose datasets if you want to train tokenizer yourself.
+* `sft_512.jsonl` --Integrated from JiangShu Technology SFT data, maximum character length per entry is 512 (therefore set max_seq_len=512 when training)
+* `sft_mini_512.jsonl`✨ --Minimal integration from JiangShu Technology SFT data + Qwen2.5 distilled data (for quick training of Zero models), maximum character length per entry is 512 (therefore set max_seq_len=512 when training)
 
 </details>
 
@@ -839,11 +870,11 @@ to get the new model weights `./out/lora/lora_xxx.pth`.
 ```
 
 At this point, [base model + LoRA model] can acquire medical scenario model-enhanced capabilities, equivalent to adding a LoRA plug-in to the base model, which does not lose the base model's original abilities.
-You can test the model through `eval_model.py` for model evaluation.
+You can test the model through `eval_llm.py` for model evaluation.
 
 ```bash
-# Note: model_mode selects the type of base model, which should be consistent with which model train_lora is based on.
-python eval_model.py --lora_name 'lora_medical' --model_mode 2
+# Note: weight parameter specifies base model type, should match the base model used during train_lora training
+python eval_llm.py  --weight dpo --lora_weight lora_medical
 ```
 
 **Small Test**
@@ -1020,7 +1051,7 @@ torchrun --nproc_per_node 1 train_dpo.py
 python train_dpo.py
 ```
 
-> After training, model weight files are saved by default every `100 steps` as: `rlhf_*.pth` (where * is the model's specific dimension, new files overwrite old ones on each save)
+> After training, model weight files are saved by default every `100 steps` as: `dpo_*.pth` (where * is the model's specific dimension, new files overwrite old ones on each save)
 
 ### **7. Reinforcement Learning from AI Feedback (RLAIF)**
 
@@ -1279,9 +1310,9 @@ MiniMind2 Model Weights ([ModelScope](https://www.modelscope.cn/models/gongjy/Mi
 
 | Model Name      | params | pretrain_model         | sft_model              | rlhf_model (DPO)    | reason_model     | rlaif_model (PPO/GRPO/SPO)                    | lora_model         |
 |-----------------|--------|------------------------|------------------------|--------------------|------------------|----------------------------------------------|--------------------|
-| MiniMind2-small | 26M    | `pretrain_512.pth`     | `full_sft_512.pth`     | `rlhf_512.pth`     | `reason_512.pth` | `xxpo_512.pth` | `lora_xxx_512.pth` |
-| MiniMind2-MoE   | 145M   | `pretrain_640_moe.pth` | `full_sft_640_moe.pth` | `rlhf_640_moe.pth` | -                | -                                            | -                  |
-| MiniMind2       | 104M   | `pretrain_768.pth`     | `full_sft_768.pth`     | `rlhf_768.pth`     | `reason_768.pth` | `xxpo_768.pth` | `lora_xxx_768.pth` |
+| MiniMind2-small | 26M    | `pretrain_512.pth`     | `full_sft_512.pth`     | `dpo_512.pth`     | `reason_512.pth` | `xxpo_512.pth` | `lora_xxx_512.pth` |
+| MiniMind2-MoE   | 145M   | `pretrain_640_moe.pth` | `full_sft_640_moe.pth` | `dpo_640_moe.pth` | -                | -                                            | -                  |
+| MiniMind2       | 104M   | `pretrain_768.pth`     | `full_sft_768.pth`     | `dpo_768.pth`     | `reason_768.pth` | `xxpo_768.pth` | `lora_xxx_768.pth` |
 
 </details>
 
@@ -1296,10 +1327,10 @@ MiniMind Series ([ModelScope](https://www.modelscope.cn/collections/MiniMind-b72
 
 ## Ⅰ RLHF Comparison
 
-Test based on `full_sft` and `rlhf` models of `MiniMind2 series`, with fixed random seeds.
+Test based on `full_sft` and `dpo` models of `MiniMind2 series`, with fixed random seeds.
 
 [A] MiniMind2：full_sft_640<br/>
-[B] MiniMind2：rlhf_640
+[B] MiniMind2：dpo_640
 
 ```text
 [Q]: 你叫什么名字？
@@ -1531,10 +1562,10 @@ Personal subjective evaluation basically aligns with DeepSeek-R1, where:
 ## Ⅳ RoPE Long-text Extrapolation
 
 MiniMind supports RoPE position encoding length extrapolation through YaRN algorithm, enabling models to handle text sequences exceeding training length.
-When using `eval_model.py` for inference, just add `--inference_rope_scaling True` parameter to enable RoPE extrapolation:
+When using `eval_llm.py` for inference, just add `--inference_rope_scaling` parameter to enable RoPE extrapolation:
 
 ```bash
-python eval_model.py --inference_rope_scaling True
+python eval_llm.py --weight full_sft --inference_rope_scaling
 ```
 
 The chart below shows perplexity (PPL) comparison before and after RoPE scaling on different lengths of "Journey to the West" vernacular fiction text. You can see that after enabling RoPE scaling, model performance on long texts is significantly improved.
