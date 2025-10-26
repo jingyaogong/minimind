@@ -193,17 +193,71 @@ def grpo_train_epoch(epoch, wandb):
         # 对所有优势值进行全局归一化，使训练更加稳定。
         advantages = (advantages - advantages.mean()) / (advantages.std() + 1e-8)  # [B*num_gen]
 
-        # --- 步骤4: 计算损失 (Loss) ---
-        # 创建一个mask，确保只计算到句子结束符(EOS)为止的token的损失。
-        is_eos = completion_ids == tokenizer.eos_token_id  # [B*num_gen, R]
+        # --- 准备阶段 ---
+        # completion_ids: 模型生成的回答部分的token ID, 维度
+        # tokenizer.eos_token_id: 句子结束符的token ID, 比如 2
+        
+        # --- 步骤1: 找到每个回答中的结束符(EOS) ---
+        # 比较 completion_ids 中的每个元素是否等于结束符ID。
+        # is_eos 是一个布尔类型的张量，形状和 completion_ids 一样。
+        # 值为 True 的位置表示那里是一个结束符。
+        is_eos = completion_ids == tokenizer.eos_token_id  # 维度: [B*num_gen, R]
+        
+        # --- 步骤2: 定位第一个结束符的位置 ---
+        # a. 创建一个初始索引张量 eos_idx，长度为 B*num_gen。
+        #    torch.full 用 R (回答的最大长度) 来填充它。
+        #    这是一种“悲观”初始化：假设所有回答都没有结束符，那么有效长度就是最大长度R。
         eos_idx = torch.full((is_eos.size(0),), is_eos.size(1), dtype=torch.long, device=args.device)
+        
+        # b. is_eos.any(dim=1) 会检查每一行(每个回答)是否至少包含一个 True (结束符)。
+        #    这会返回一个布尔类型的一维张量，标记了哪些回答是“完整”的。
+        # c. is_eos.int().argmax(dim=1) 会找到每一行中第一个 1 (即第一个True) 的索引。
+        #    这就是我们想要的第一个结束符的位置。
+        # d. 最后，用 b 作为索引，将 c 中计算出的真实结束符位置，更新到 a 中对应的位置。
+        #    对于那些没有结束符的回答，它们在 eos_idx 中的值依然是初始的 R。
         eos_idx[is_eos.any(dim=1)] = is_eos.int().argmax(dim=1)[is_eos.any(dim=1)]
-        completion_mask = (torch.arange(is_eos.size(1), device=args.device).expand(is_eos.size(0), -1) <= eos_idx.unsqueeze(1)).int()  # [B*num_gen, R]
+        
+        # --- 步骤3: 根据结束符位置创建掩码 ---
+        # a. torch.arange(is_eos.size(1),...): 创建一个从 0 到 R-1 的序列:。
+        # b..expand(is_eos.size(0), -1): 将这个序列复制 B*num_gen 次，形成一个矩阵。
+        #    每一行都是。
+        # c. eos_idx.unsqueeze(1): 将结束符索引张量变形，以便进行广播比较。
+        # d. <=: 逐元素比较。对于每一行，只有当列索引小于或等于该行的结束符索引时，结果才为 True。
+        # e..int(): 将布尔结果 (True/False) 转换为整数 (1/0)。
+        completion_mask = (torch.arange(is_eos.size(1), device=args.device).expand(is_eos.size(0), -1) <= eos_idx.unsqueeze(1)).int()  # 维度: [B*num_gen, R]
 
+        # --- 步骤1: 计算KL散度惩罚 ---
+        # KL散度(Kullback-Leibler divergence)衡量两个概率分布的差异。
+        # 在这里，它衡量“策略模型”的输出分布与“参考模型”的输出分布有多么不同。
+        # kl_div 是对数概率的直接相减，这是计算KL散度的基础。
         kl_div = ref_per_token_logps - per_token_logps
-        per_token_kl = torch.exp(kl_div) - kl_div - 1  # [B*num_gen, R]
-        per_token_loss = -(torch.exp(per_token_logps - per_token_logps.detach()) * advantages.unsqueeze(1) - args.beta * per_token_kl)  # [B*num_gen, R]
-        loss = ((per_token_loss * completion_mask).sum(dim=1) / completion_mask.sum(dim=1)).mean() / args.accumulation_steps  # scalar
+        # 这行代码是KL散度惩罚项的一种常见且数值稳定的近似计算方法。
+        # 它的作用是：当 kl_div 远离0时，per_token_kl 的值会迅速增大，形成一个惩罚。
+        per_token_kl = torch.exp(kl_div) - kl_div - 1  # 维度: [B*num_gen, R]
+        
+        # --- 步骤2: 计算PPO/GRPO核心损失 ---
+        # 这是整个算法最核心的公式，它由两部分组成：
+        # 1. 策略梯度项: torch.exp(...) * advantages.unsqueeze(1)
+        #    - per_token_logps.detach() 创建一个不带梯度的副本，代表“旧策略”的概率。
+        #    - exp(新logp - 旧logp) = exp(log(新p/旧p)) = 新p/旧p，这就是“重要性采样”中的概率比(ratio)。
+        #    - 用这个概率比乘以“优势”，就是策略梯度的核心思想：
+        #      - 如果优势为正（好行为），则鼓励增大这个概率比（即提高新策略的概率）。
+        #      - 如果优势为负（坏行为），则鼓励减小这个概率比（即降低新策略的概率）。
+        # 2. KL惩罚项: args.beta * per_token_kl
+        #    - 用超参数 beta 缩放KL惩罚，加到损失中。这会阻止策略模型为了追求高优势而变得与初始模型差异过大，从而保证了训练的稳定性。
+        # 整个表达式前的负号是因为优化器通常是最小化(minimize)损失，而我们的目标是最大化(maximize)这个策略目标。
+        per_token_loss = -(torch.exp(per_token_logps - per_token_logps.detach()) * advantages.unsqueeze(1) - args.beta * per_token_kl)  # 维度:
+        
+        # --- 步骤3: 聚合损失并反向传播 ---
+        # a. (per_token_loss * completion_mask): 用我们之前计算的掩码，将所有填充位置的损失清零。
+        # b..sum(dim=1): 计算每个回答的“有效”总损失。
+        # c. / completion_mask.sum(dim=1): 除以每个回答的“有效”长度，得到每个回答的平均损失。
+        # d..mean(): 计算整个batch的平均损失，得到一个最终的标量值。
+        # e. / args.accumulation_steps: 如果使用梯度累积，将损失进行缩放。
+        loss = ((per_token_loss * completion_mask).sum(dim=1) / completion_mask.sum(dim=1)).mean() / args.accumulation_steps  # 最终为标量(scalar)
+        
+        # --- 步骤4: 启动优化 ---
+        # 根据计算出的最终损失值，计算所有模型参数的梯度。
         loss.backward()
 
         if (step + 1) % args.accumulation_steps == 0:
