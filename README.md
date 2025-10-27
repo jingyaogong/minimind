@@ -1659,9 +1659,9 @@ MiniMind模型本身预训练数据集小的可怜，也没有针对性的对测
 
 ## 模型转换
 
-* [./scripts/convert_model.py](./scripts/convert_model.py)可以实现`torch模型/transformers`模型之间的转换
+* [./scripts/convert_model.py](./scripts/convert_model.py)可以实现`torch / transformers`模型的互相转换
+* 如无特别说明，`MiniMind2`模型均默认为`Transformers`格式的模型，需提前`t2t`转换！
 
----
 
 ## 基于MiniMind-API服务接口
 
@@ -1670,13 +1670,12 @@ MiniMind模型本身预训练数据集小的可怜，也没有针对性的对测
 
 * 从[Huggingface](https://huggingface.co/collections/jingyaogong/minimind-66caf8d999f5c7fa64f399e5)下载模型权重文件，文件树：
     ```
-    <MiniMind-Model-Name> (root dir)
-    ├─<MiniMind-Model-Name>
+    minimind (root dir)
+    ├─<MiniMind-Model-Name>（例如MiniMind2）
     |  ├── config.json
     |  ├── generation_config.json
-    |  ├── LMConfig.py
-    |  ├── model.py
-    |  ├── pytorch_model.bin
+    |  ├── model_minimind.py or w/o
+    |  ├── pytorch_model.bin or model.safetensors
     |  ├── special_tokens_map.json
     |  ├── tokenizer_config.json
     |  ├── tokenizer.json
@@ -1709,6 +1708,8 @@ MiniMind模型本身预训练数据集小的可怜，也没有针对性的对测
 
 vLLM是极其流行的高效推理框架，支持大模型快速部署，优化显存利用与吞吐量。
 
+以openai-serve形式启动 minimind2：
+
 ```bash
 vllm serve ./MiniMind2 --model-impl transformers --served-model-name "minimind" --port 8998
 ```
@@ -1718,59 +1719,106 @@ vllm serve ./MiniMind2 --model-impl transformers --served-model-name "minimind" 
 llama.cpp是一个C++库，
 可以在命令行下直接使用，支持多线程推理，支持GPU加速。
 
-参考官方仓库安装后，在`convert_hf_to_gguf.py` ～760行插入
+**目录结构**：建议将llama.cpp与minimind放在同级目录下
 
-```text
-# 添加MiniMind2 tokenizer支持
+```
+parent/
+├── minimind/          # MiniMind项目目录
+│   ├── MiniMind2/     # HuggingFace格式MiniMind2模型 (先convert_model.py生成)
+│   │   ├── config.json
+│   │   ├── model.safetensors
+│   │   └── ...
+│   ├── model/
+│   ├── trainer/
+│   └── ...
+└── llama.cpp/         # llama.cpp项目目录
+    ├── build/
+    ├── convert_hf_to_gguf.py
+    └── ...
+```
+
+0、参考`llama.cpp`官方步骤进行install
+
+1、在`convert_hf_to_gguf.py`的`get_vocab_base_pre`函数最后插入：
+
+```python
+# 添加MiniMind tokenizer支持（这里随便写一个例如qwen2即可）
 if res is None:
-    res = "smollm"
+    res = "qwen2"
 ```
 
-转换自定义训练的minimind模型 -> gguf
+2、转换自训练的minimind模型：huggingface -> gguf
 
 ```bash
-python convert_hf_to_gguf.py ../minimind/MiniMind2/
+# 在llama.cpp下执行，将生成../minimind/MiniMind2/MiniMind2-xxx.gguf
+python convert_hf_to_gguf.py ../minimind/MiniMind2
 ```
 
-量化模型
+3、量化此模型 (可选)
 
 ```bash
-./build/bin/llama-quantize ../minimind/MiniMind2/MiniMind2-109M-F16.gguf ../minimind/MiniMind2/Q4-MiniMind2.gguf Q4_K_M
+./build/bin/llama-quantize ../minimind/MiniMind2/MiniMind2.gguf ../minimind/MiniMind2/Q4-MiniMind2.gguf Q4_K_M
 ```
 
-命令行推理
+4、命令行推理测试
 
 ```bash
-./build/bin/llama-cli -m ../minimind/MiniMind2/MiniMind2-109M-F16.gguf --chat-template chatml
+./build/bin/llama-cli -m ../minimind/MiniMind2/MiniMind2.gguf -sys "You are a helpful assistant" # system prompt必须固定
 ```
 
 ## <img src="https://ollama.com/public/cloud.png" height="28" style="vertical-align: middle;"/> [ollama](https://ollama.ai)
 
 ollama是本地运行大模型的工具，支持多种开源LLM，简单易用。
 
-通过ollama加载自定义的gguf模型，新建minimind.modelfile：
+1、通过ollama加载自定义的gguf模型
+
+在`MiniMind2`下新建`minimind.modelfile`，写入：
 
 ```text
-FROM ./MiniMind2-109M-F16.gguf
-TEMPLATE """{{ if .System }}<|im_start|>system
+FROM ./Q4-MiniMind2.gguf
+
+SYSTEM """You are a helpful assistant"""
+
+TEMPLATE """<|im_start|>system
 {{ .System }}<|im_end|>
-{{ end }}{{ if .Prompt }}<|im_start|>user
+<|im_start|>user
 {{ .Prompt }}<|im_end|>
-{{ end }}<|im_start|>assistant
+<|im_start|>assistant
+{{ .Response }}<|im_end|>
 """
 ```
 
-加载模型并命名为`minimind2`
+2、加载并命名此模型为`minimind-local`
 
 ```bash
-ollama create -f minimind.modelfile minimind2
+ollama create -f minimind.modelfile minimind-local
 ```
 
-启动推理
+3、启动推理
 
-```text
-ollama run minimind2
-> 你好，我是MiniMind2，一个基于xxxxxxxx
+```bash
+ollama run minimind-local
+```
+
+<details>
+<summary>📤 推送你的模型到 Ollama Hub</summary>
+
+```bash
+# 1. 为本地模型重命名为你的ollama-account/minimind的tag
+ollama cp minimind-local:latest your_username/minimind:latest
+
+# 2. 推送模型
+ollama push your_username/minimind:latest
+```
+</details>
+<br/>
+
+⭐️ 也可直接使用我提供的ollama模型一键启动：
+
+```bash
+ollama run jingyaogong/minimind2 # 其他可选 minimind2-r1 / minimind2-small / minimind2-small-r1
+>>> 你叫什么名字
+我是一个语言模型...
 ```
 
 > 以上三方框架的更多用法请参考对应官方文档😊
