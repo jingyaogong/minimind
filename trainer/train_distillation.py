@@ -16,7 +16,7 @@ from torch.nn.parallel import DistributedDataParallel
 from torch.utils.data import DataLoader, DistributedSampler
 from model.model_minimind import MiniMindConfig
 from dataset.lm_dataset import SFTDataset
-from trainer.trainer_utils import *
+from trainer.trainer_utils import get_lr, Logger, is_main_process, lm_checkpoint, init_distributed_mode, setup_seed, init_model, SkipBatchSampler
 
 warnings.filterwarnings('ignore')
 
@@ -184,9 +184,9 @@ if __name__ == "__main__":
         wandb.init(project=args.wandb_project, name=wandb_run_name, id=wandb_id, resume=resume)
     
     # ========== 5. 定义学生和教师模型 ==========
-    model, tokenizer = init_model(lm_config_student, args.from_student_weight)
+    model, tokenizer = init_model(lm_config_student, args.from_student_weight, device=args.device)
     Logger(f'学生模型总参数量：{sum(p.numel() for p in model.parameters()) / 1e6:.3f} M')
-    teacher_model, _ = init_model(lm_config_teacher, args.from_teacher_weight)
+    teacher_model, _ = init_model(lm_config_teacher, args.from_teacher_weight, device=args.device)
     teacher_model.eval()
     teacher_model.requires_grad_(False)
     Logger(f'教师模型总参数量：{sum(p.numel() for p in teacher_model.parameters()) / 1e6:.3f} M')

@@ -16,7 +16,7 @@ from torch.utils.data import DataLoader, DistributedSampler
 from model.model_minimind import MiniMindConfig
 from dataset.lm_dataset import SFTDataset
 from model.model_lora import save_lora, apply_lora
-from trainer.trainer_utils import *
+from trainer.trainer_utils import get_lr, Logger, is_main_process, lm_checkpoint, init_distributed_mode, setup_seed, init_model, SkipBatchSampler
 
 warnings.filterwarnings('ignore')
 
@@ -123,7 +123,7 @@ if __name__ == "__main__":
         wandb.init(project=args.wandb_project, name=wandb_run_name, id=wandb_id, resume=resume)
     
     # ========== 5. 定义模型、应用LoRA、冻结非LoRA参数 ==========
-    model, tokenizer = init_model(lm_config, args.from_weight)
+    model, tokenizer = init_model(lm_config, args.from_weight, device=args.device)
     apply_lora(model)
     
     # 统计参数

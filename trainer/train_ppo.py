@@ -20,7 +20,7 @@ from torch.optim.lr_scheduler import CosineAnnealingLR
 from transformers import AutoModel
 from model.model_minimind import MiniMindConfig, MiniMindForCausalLM
 from dataset.lm_dataset import RLAIFDataset
-from trainer.trainer_utils import *
+from trainer.trainer_utils import Logger, is_main_process, lm_checkpoint, init_distributed_mode, setup_seed, SkipBatchSampler, init_model
 
 warnings.filterwarnings('ignore')
 
@@ -290,33 +290,28 @@ if __name__ == "__main__":
         wandb.init(project=args.wandb_project, name=wandb_run_name, id=wandb_id, resume=resume)
     
     # ========== 5. 初始化模型和数据 ==========
-    tokenizer = AutoTokenizer.from_pretrained('../model/', padding_side='left')
-    moe_suffix = '_moe' if lm_config.use_moe else ''
     base_weight = "reason" if args.reasoning == 1 else "full_sft"
+    # Actor模型
+    actor_model, tokenizer = init_model(lm_config, base_weight, device=args.device)
+    tokenizer.padding_side = 'left'  # PPO需要左侧padding
+    # Old Actor模型
+    old_actor_model, _ = init_model(lm_config, base_weight, device=args.device)
+    old_actor_model = old_actor_model.eval().requires_grad_(False)
+    # Reference模型
+    ref_model, _ = init_model(lm_config, base_weight, device=args.device)
+    ref_model = ref_model.eval().requires_grad_(False)
+    # Critic模型
+    moe_suffix = '_moe' if lm_config.use_moe else ''
     ckp = f'{args.save_dir}/{base_weight}_{lm_config.hidden_size}{moe_suffix}.pth'
     state_dict = torch.load(ckp, map_location=args.device)
-    # Actor模型
-    actor_model = MiniMindForCausalLM(lm_config)
-    actor_model.load_state_dict(state_dict, strict=False)
-    actor_model = actor_model.to(args.device)
-    Logger(f'Actor模型总参数量：{sum(p.numel() for p in actor_model.parameters() if p.requires_grad) / 1e6:.3f} M')
-    # Old Actor模型
-    old_actor_model = MiniMindForCausalLM(lm_config)
-    old_actor_model.load_state_dict(state_dict, strict=False)
-    old_actor_model = old_actor_model.eval().requires_grad_(False).to(args.device)
-    # Reference模型
-    ref_model = MiniMindForCausalLM(lm_config)
-    ref_model.load_state_dict(state_dict, strict=False)
-    ref_model = ref_model.eval().requires_grad_(False).to(args.device)
-    # Critic模型
     critic_model = CriticModel(lm_config)
     critic_model.load_state_dict(state_dict, strict=False)
     critic_model = critic_model.to(args.device)
-    Logger(f'Critic模型总参数量：{sum(p.numel() for p in critic_model.parameters() if p.requires_grad) / 1e6:.3f} M')
     # Reward模型
     reward_model = AutoModel.from_pretrained(
-        args.reward_model_path, device_map="cuda", torch_dtype=torch.float32, trust_remote_code=True
-    ).to(args.device).eval().requires_grad_(False)
+        args.reward_model_path, torch_dtype=torch.float16, trust_remote_code=True
+    )
+    reward_model = reward_model.to(args.device).eval().requires_grad_(False)
     reward_tokenizer = AutoTokenizer.from_pretrained(args.reward_model_path, trust_remote_code=True)
     # 数据和优化器
     train_ds = RLAIFDataset(args.data_path, tokenizer, max_length=(args.max_seq_len + args.max_gen_len))
