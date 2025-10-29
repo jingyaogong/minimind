@@ -166,10 +166,10 @@ if __name__ == "__main__":
         wandb.init(project=args.wandb_project, name=wandb_run_name, id=wandb_id, resume=resume)
     
     # ========== 5. 定义模型和参考模型 ==========
-    model, tokenizer = init_model(lm_config, args.from_weight)
+    model, tokenizer = init_model(lm_config, args.from_weight, device=args.device)
     Logger(f'策略模型总参数量：{sum(p.numel() for p in model.parameters()) / 1e6:.3f} M')
     # 初始化参考模型（ref_model冻结）
-    ref_model, _ = init_model(lm_config, args.from_weight)
+    ref_model, _ = init_model(lm_config, args.from_weight, device=args.device)
     ref_model.eval()
     ref_model.requires_grad_(False)
     Logger(f'参考模型总参数量：{sum(p.numel() for p in ref_model.parameters()) / 1e6:.3f} M')
