@@ -1754,22 +1754,14 @@ I am a language model...
 
 ## 🤝 [Contributors](https://github.com/jingyaogong/minimind/graphs/contributors)
 
-<a href="https://github.com/jingyaogong"><img src="https://avatars.githubusercontent.com/u/62287848" width="70px" height="70px"/></a>
-&nbsp;
-<a href="https://github.com/MuWinds"><img src="https://avatars.githubusercontent.com/u/93832089" width="70px" height="70px"/></a>
-&nbsp;
-<a href="https://github.com/chuanzhubin"><img src="https://avatars.githubusercontent.com/u/2813798" width="70px" height="70px"/></a>
-&nbsp;
-<a href="https://github.com/iomgaa-ycz"><img src="https://avatars.githubusercontent.com/u/124225682" width="70px" height="70px"/></a>
-&nbsp;
+<a href="https://github.com/jingyaogong/minimind/graphs/contributors">
+  <img src="https://contrib.rocks/image?repo=jingyaogong/minimind" />
+</a>
 
 ## 😊 Thanks
 
 <a href="https://github.com/ipfgao"><b>@ipfgao</b></a>:
 <a href="https://github.com/jingyaogong/minimind/issues/26">🔗 Training Steps Recording</a>
-
-<a href="https://github.com/chuanzhubin"><b>@chuanzhubin</b></a>:
-<a href="https://github.com/jingyaogong/minimind/pull/34">🔗 Code Line-by-Line Comments</a>
 
 <a href="https://github.com/WangRongsheng"><b>@WangRongsheng</b></a>:
 <a href="https://github.com/jingyaogong/minimind/issues/39">🔗 Large Dataset Preprocessing</a>

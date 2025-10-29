@@ -1832,28 +1832,14 @@ ollama run jingyaogong/minimind2 # 其他可选 minimind2-r1 / minimind2-small /
 
 ## 🤝[贡献者](https://github.com/jingyaogong/minimind/graphs/contributors)
 
-<!--
 <a href="https://github.com/jingyaogong/minimind/graphs/contributors">
-  <img src="https://contrib.rocks/image?repo=jingyaogong/minimind&v3" />
+  <img src="https://contrib.rocks/image?repo=jingyaogong/minimind" />
 </a>
--->
-
-<a href="https://github.com/jingyaogong"><img src="https://avatars.githubusercontent.com/u/62287848" width="70px" height="70px"/></a>
-&nbsp;
-<a href="https://github.com/MuWinds"><img src="https://avatars.githubusercontent.com/u/93832089" width="70px" height="70px"/></a>
-&nbsp;
-<a href="https://github.com/chuanzhubin"><img src="https://avatars.githubusercontent.com/u/2813798" width="70px" height="70px"/></a>
-&nbsp;
-<a href="https://github.com/iomgaa-ycz"><img src="https://avatars.githubusercontent.com/u/124225682" width="70px" height="70px"/></a>
-&nbsp;
 
 ## 😊鸣谢
 
 <a href="https://github.com/ipfgao"><b>@ipfgao</b></a>:
 <a href="https://github.com/jingyaogong/minimind/issues/26">🔗训练步骤记录</a>
-
-<a href="https://github.com/chuanzhubin"><b>@chuanzhubin</b></a>:
-<a href="https://github.com/jingyaogong/minimind/pull/34">🔗代码逐行注释</a>
 
 <a href="https://github.com/WangRongsheng"><b>@WangRongsheng</b></a>:
 <a href="https://github.com/jingyaogong/minimind/issues/39">🔗大型数据集预处理</a>
