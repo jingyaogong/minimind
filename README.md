@@ -126,7 +126,7 @@
 ### 👉**更新日志**
 
 <details close> 
-<summary> <b>2025-10-24 (newest🎉)</b> </summary>
+<summary> <b>2025-10-24</b> </summary>
 
 - 🔥 新增RLAIF训练算法：PPO、GRPO、SPO（从0原生实现）
 - 新增断点续训功能：支持训练自动恢复、跨GPU数量恢复、wandb记录连续性
@@ -179,50 +179,28 @@ MiniMind2系列旧模型均经过权重映射+（微调训练）QKVO线性层校
 
 </details>
 
+<details close>
+<summary> <b>More...</b> </summary>
 
-
-<details close> 
-<summary> <b>2024-10-05</b> </summary>
-
+**2024-10-05**
 - 为MiniMind拓展了多模态能力之---视觉
 - 移步孪生项目[minimind-v](https://github.com/jingyaogong/minimind-v)查看详情！
 
-</details>
-
-
-
-<details close> 
-<summary> <b>2024-09-27</b> </summary>
-
+**2024-09-27**
 - 09-27更新pretrain数据集的预处理方式，为了保证文本完整性，放弃预处理成.bin训练的形式（轻微牺牲训练速度）。
 - 目前pretrain预处理后的文件命名为：pretrain_data.csv。
 - 删除了一些冗余的代码。
 
-</details>
-
-
-<details close> 
-<summary> <b>2024-09-17</b> </summary>
-
+**2024-09-17**
 - 更新minimind-v1-moe模型
 - 为了防止歧义，不再使用mistral_tokenizer分词，全部采用自定义的minimind_tokenizer作为分词器。
 
-</details>
-
-
-<details close>
-<summary> <b>2024-09-01</b> </summary>
-
+**2024-09-01**
 - 更新minimind-v1 (108M)模型，采用minimind_tokenizer，预训练轮次3 + SFT轮次10，更充分训练，性能更强。
 - 项目已部署至ModelScope创空间，可以在此网站上体验：
 - [🔗ModelScope在线体验🔗](https://www.modelscope.cn/studios/gongjy/minimind)
 
-</details>
-
-
-<details close> 
-<summary> <b>2024-08-27</b> </summary>
-
+**2024-08-27**
 - 项目首次开源
 
 </details>
@@ -1896,6 +1874,38 @@ ollama run jingyaogong/minimind2 # 其他可选 minimind2-r1 / minimind2-small /
   <source media="(prefers-color-scheme: light)" srcset="https://api.star-history.com/svg?repos=jingyaogong/minimind&type=Date"/>
   <img alt="Star History Chart" src="https://api.star-history.com/svg?repos=jingyaogong/minimind&type=Date"/>
 </picture>
+
+## 🎉 Awesome Work using MiniMind
+
+本模型抛砖引玉地促成了一些可喜成果的落地，感谢研究者们的认可：
+
+- ECG-Expert-QA: A Benchmark for Evaluating Medical Large Language Models in Heart Disease Diagnosis [[arxiv](https://arxiv.org/pdf/2502.17475)]
+
+- Binary-Integer-Programming Based Algorithm for Expert Load Balancing in Mixture-of-Experts Models [[arxiv](https://arxiv.org/pdf/2502.15451)]
+
+- LegalEval-Q: A New Benchmark for The Quality Evaluation of LLM-Generated Legal Text [[arxiv](https://arxiv.org/pdf/2505.24826)]
+
+- On the Generalization Ability of Next-Token-Prediction Pretraining [[ICML 2025](https://openreview.net/forum?id=hLGJ1qZPdu)]
+
+- Building Large Models from Scratch: From Neural Networks to Transformer by Wang Shuang, Mou Chen, Wang Haoyi - Tsinghua University Press
+
+- FedBRB: A Solution to the Small-to-Large Scenario in Device-Heterogeneity Federated Learning [[TMC 2025](https://ieeexplore.ieee.org/abstract/document/11168259)]
+
+- 进行中...
+
+
+# 🎓 Citation
+
+If you find MiniMind helpful in your research or work, please cite:
+
+```bibtex
+@misc{minimind,
+  title={MiniMind: Train a Tiny LLM from scratch},
+  author={Jingyao Gong},
+  year={2024},
+  howpublished={\url{https://github.com/jingyaogong/minimind}}
+}
+```
 
 # License
 

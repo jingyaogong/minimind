@@ -131,7 +131,7 @@ We hope this open-source project can help LLM beginners get started quickly!
 ### 👉**Update Log**
 
 <details close> 
-<summary> <b>2025-10-24 (newest🎉)</b> </summary>
+<summary> <b>2025-10-24</b> </summary>
 
 - 🔥 Added RLAIF training algorithms: PPO, GRPO, SPO (native implementation from scratch)
 - Added checkpoint resume training: supports automatic training recovery, cross-GPU recovery, wandb continuity
@@ -184,43 +184,28 @@ After this update, maintenance of the entire minimind-v1 series will be abandone
 
 </details>
 
-<details close> 
-<summary> <b>2024-10-05</b> </summary>
+<details close>
+<summary> <b>More...</b> </summary>
 
+**2024-10-05**
 - Extended MiniMind with multimodal capabilities---Vision
 - Check out the twin project [minimind-v](https://github.com/jingyaogong/minimind-v) for details!
 
-</details>
-
-<details close> 
-<summary> <b>2024-09-27</b> </summary>
-
+**2024-09-27**
 - 09-27 updated the preprocessing method for the pretrain dataset, abandoned preprocessing into .bin format for training to ensure text integrity (slightly sacrificing training speed).
 - Current pretrain preprocessing file is named: pretrain_data.csv.
 - Removed some redundant code.
 
-</details>
-
-<details close> 
-<summary> <b>2024-09-17</b> </summary>
-
+**2024-09-17**
 - Updated minimind-v1-moe model
 - To avoid ambiguity, no longer using mistral_tokenizer for tokenization, completely using custom minimind_tokenizer as the tokenizer.
 
-</details>
-
-<details close>
-<summary> <b>2024-09-01</b> </summary>
-
+**2024-09-01**
 - Updated minimind-v1 (108M) model, using minimind_tokenizer, 3 pretraining rounds + 10 SFT rounds, more thorough training, stronger performance.
 - Project has been deployed to ModelScope creation space, you can experience it on this website:
 - [🔗ModelScope Online Experience🔗](https://www.modelscope.cn/studios/gongjy/minimind)
 
-</details>
-
-<details close> 
-<summary> <b>2024-08-27</b> </summary>
-
+**2024-08-27**
 - Project first open-sourced
 
 </details>
@@ -1817,6 +1802,38 @@ I am a language model...
   <source media="(prefers-color-scheme: light)" srcset="https://api.star-history.com/svg?repos=jingyaogong/minimind&type=Date"/>
   <img alt="Star History Chart" src="https://api.star-history.com/svg?repos=jingyaogong/minimind&type=Date"/>
 </picture>
+
+## 🎉 Awesome Work using MiniMind
+
+This model has inspired some exciting research outcomes. Thank you to all researchers for your recognition:
+
+- ECG-Expert-QA: A Benchmark for Evaluating Medical Large Language Models in Heart Disease Diagnosis [[arxiv](https://arxiv.org/pdf/2502.17475)]
+
+- Binary-Integer-Programming Based Algorithm for Expert Load Balancing in Mixture-of-Experts Models [[arxiv](https://arxiv.org/pdf/2502.15451)]
+
+- LegalEval-Q: A New Benchmark for The Quality Evaluation of LLM-Generated Legal Text [[arxiv](https://arxiv.org/pdf/2505.24826)]
+
+- On the Generalization Ability of Next-Token-Prediction Pretraining [[ICML 2025](https://openreview.net/forum?id=hLGJ1qZPdu)]
+
+- Building Large Models from Scratch: From Neural Networks to Transformer by Wang Shuang, Mou Chen, Wang Haoyi - Tsinghua University Press
+
+- FedBRB: A Solution to the Small-to-Large Scenario in Device-Heterogeneity Federated Learning [[TMC 2025](https://ieeexplore.ieee.org/abstract/document/11168259)]
+
+- Continuously...
+
+
+# 🎓 Citation
+
+If you find MiniMind helpful in your research or work, please cite:
+
+```bibtex
+@misc{minimind,
+  title={MiniMind: Train a Tiny LLM from scratch},
+  author={Jingyao Gong},
+  year={2024},
+  howpublished={\url{https://github.com/jingyaogong/minimind}}
+}
+```
 
 # License
 
