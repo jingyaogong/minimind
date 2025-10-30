@@ -11,7 +11,7 @@ warnings.filterwarnings('ignore')
 
 def init_model(args):
     tokenizer = AutoTokenizer.from_pretrained(args.load_from)
-    if args.load_from == 'model':
+    if 'model' in args.load_from:
         model = MiniMindForCausalLM(MiniMindConfig(
             hidden_size=args.hidden_size,
             num_hidden_layers=args.num_hidden_layers,
