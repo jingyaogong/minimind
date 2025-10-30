@@ -1903,7 +1903,7 @@ If you find MiniMind helpful in your research or work, please cite:
   title={MiniMind: Train a Tiny LLM from scratch},
   author={Jingyao Gong},
   year={2024},
-  howpublished={\url{https://github.com/jingyaogong/minimind}}
+  howpublished={https://github.com/jingyaogong/minimind}
 }
 ```
 
