@@ -1,4 +1,4 @@
-datasets==2.21.0
+datasets==3.6.0
 datasketch==1.6.4
 Flask==3.0.3
 Flask_Cors==4.0.0
