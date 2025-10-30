@@ -1887,7 +1887,7 @@ ollama run jingyaogong/minimind2 # 其他可选 minimind2-r1 / minimind2-small /
 
 - On the Generalization Ability of Next-Token-Prediction Pretraining [[ICML 2025](https://openreview.net/forum?id=hLGJ1qZPdu)]
 
-- Building Large Models from Scratch: From Neural Networks to Transformer by Wang Shuang, Mou Chen, Wang Haoyi - Tsinghua University Press
+- 《从零开始写大模型：从神经网络到Transformer》王双、牟晨、王昊怡 编著 - 清华大学出版社
 
 - FedBRB: A Solution to the Small-to-Large Scenario in Device-Heterogeneity Federated Learning [[TMC 2025](https://ieeexplore.ieee.org/abstract/document/11168259)]
 

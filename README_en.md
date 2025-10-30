@@ -1815,7 +1815,7 @@ This model has inspired some exciting research outcomes. Thank you to all resear
 
 - On the Generalization Ability of Next-Token-Prediction Pretraining [[ICML 2025](https://openreview.net/forum?id=hLGJ1qZPdu)]
 
-- Building Large Models from Scratch: From Neural Networks to Transformer by Wang Shuang, Mou Chen, Wang Haoyi - Tsinghua University Press
+- 《从零开始写大模型：从神经网络到Transformer》(Chinese book: Building LLMs from Scratch) by Wang Shuang, Mou Chen, Wang Haoyi - Tsinghua University Press
 
 - FedBRB: A Solution to the Small-to-Large Scenario in Device-Heterogeneity Federated Learning [[TMC 2025](https://ieeexplore.ieee.org/abstract/document/11168259)]
 
