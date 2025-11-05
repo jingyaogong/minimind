@@ -244,7 +244,32 @@ pip install -r requirements.txt -i https://mirrors.aliyun.com/pypi/simple
 Go to the project root directory
 
 ```bash
+cd minimind
+```
+
+Method 1: Using Git + Git LFS (Requires pre-installed [Git LFS](https://git-lfs.com/))
+
+```bash
 git clone https://huggingface.co/jingyaogong/MiniMind2 # or https://www.modelscope.cn/models/gongjy/MiniMind2
+```
+
+Method 2: Using hf CLI
+
+```bash
+hf download jingyaogong/MiniMind2 --local-dir ./MiniMind2
+```
+
+Method 3: Using hf CLI + Changing download source (Recommended in Mainland China)
+
+```bash
+export HF_ENDPOINT=https://hf-mirror.com
+hf download jingyaogong/MiniMind2 --local-dir ./MiniMind2
+```
+
+Method 4: Using modelscope CLI (Recommended in Mainland China)
+
+```bash
+modelscope download --model gongjy/MiniMind2 --local_dir ./MiniMind2
 ```
 
 ### (Optional) Command Line Q&A

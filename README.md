@@ -236,10 +236,35 @@ pip install -r requirements.txt -i https://mirrors.aliyun.com/pypi/simple
 
 ### 2.下载模型
 
-到项目根目录
+到项目根目录：
+
+```bash
+cd minimind
+```
+
+方法一：使用 Git + Git LFS（需要预装 [Git LFS](https://git-lfs.com/)）
 
 ```bash
 git clone https://huggingface.co/jingyaogong/MiniMind2 # or https://www.modelscope.cn/models/gongjy/MiniMind2
+```
+
+方法二：使用 hf CLI
+
+```bash
+hf download jingyaogong/MiniMind2 --local-dir ./MiniMind2
+```
+
+方法三：使用 hf CLI + 更换下载源（大陆推荐）
+
+```bash
+export HF_ENDPOINT=https://hf-mirror.com
+hf download jingyaogong/MiniMind2 --local-dir ./MiniMind2
+```
+
+方法四：使用 modelscope CLI（大陆推荐）
+
+```bash
+modelscope download --model gongjy/MiniMind2 --local_dir ./MiniMind2
 ```
 
 ### （可选）命令行问答
@@ -1910,5 +1935,4 @@ If you find MiniMind helpful in your research or work, please cite:
 # License
 
 This repository is licensed under the [Apache-2.0 License](LICENSE).
-
 
