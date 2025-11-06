@@ -192,6 +192,7 @@ def spo_train_epoch(epoch, loader, iters, ref_model, reward_model, reward_tokeni
             optimizer.step()
             scheduler.step()
             optimizer.zero_grad()
+            torch.cuda.empty_cache()
 
         if step % args.log_interval == 0 or step == iters:
             policy_loss_val = loss.item()

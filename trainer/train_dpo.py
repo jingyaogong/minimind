@@ -90,6 +90,7 @@ def train_epoch(epoch, loader, iters, ref_model, lm_config, start_step=0, wandb=
             scaler.step(optimizer)
             scaler.update()
             optimizer.zero_grad(set_to_none=True)
+            torch.cuda.empty_cache()
 
         if step % args.log_interval == 0 or step == iters - 1:
             spend_time = time.time() - start_time

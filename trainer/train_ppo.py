@@ -179,6 +179,7 @@ def ppo_train_epoch(epoch, loader, iters, old_actor_model, ref_model, actor_sche
             critic_scheduler.step()
             actor_optimizer.zero_grad()
             critic_optimizer.zero_grad()
+            torch.cuda.empty_cache()
 
         if is_main_process():
             response_ids = gen_out[:, enc.input_ids.shape[1]:]
