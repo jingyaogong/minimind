@@ -1,0 +1,338 @@
+body {
+    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
+    line-height: 1.6;
+    color: #e0e0e0;
+    max-width: 1200px;
+    margin: 0 auto;
+    padding: 20px;
+    background-color: #121212;
+    min-height: 100vh;
+}
+h1 {
+    color: #ffffff;
+    text-align: center;
+    margin-bottom: 30px;
+    text-shadow: 0 2px 10px rgba(0, 0, 0, 0.5);
+    font-size: 2.5em;
+    font-weight: 700;
+}
+.tabs {
+    display: flex;
+    justify-content: space-between;
+    margin-bottom: 20px;
+    border-radius: 10px;
+    overflow: hidden;
+    box-shadow: 0 5px 15px rgba(0, 0, 0, 0.1);
+}
+.tab {
+    padding: 12px 0;
+    cursor: pointer;
+    background-color: #2a2a2a;
+    border: none;
+    font-size: 16px;
+    font-weight: 500;
+    transition: all 0.3s ease;
+    position: relative;
+    color: #cccccc;
+    width: 30%;
+    text-align: center;
+}
+.tab.active {
+    background: linear-gradient(135deg, #4a148c 0%, #8e24aa 100%);
+    color: white;
+    transform: translateY(-2px);
+    box-shadow: 0 5px 15px rgba(0, 0, 0, 0.3);
+}
+.form-container {
+    background: rgba(30, 30, 30, 0.9);
+    padding: 30px;
+    border-radius: 15px;
+    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.3);
+    margin-bottom: 30px;
+    border: 1px solid #333;
+}
+
+/* 参数卡片样式 */
+.parameter-card {
+    background-color: #2d2d2d;
+    border-radius: 8px;
+    padding: 20px;
+    margin-bottom: 20px;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.3);
+    transition: transform 0.2s ease, box-shadow 0.2s ease;
+    padding-left: 5%;
+    padding-right: 5%;
+}
+
+.parameter-card:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.4);
+}
+
+/* 卡片标题样式 */
+.card-title {
+    color: #e0e0e0;
+    font-size: 1.4rem;
+    font-weight: bold;
+    margin-top: 0;
+    margin-bottom: 20px;
+    padding-bottom: 10px;
+    border-bottom: 1px solid #404040;
+    width: 100%;
+}
+
+/* 提交按钮容器 */
+.submit-container {
+    text-align: center;
+    margin-top: 30px;
+    padding-top: 20px;
+    border-top: 1px solid #4d4d4d;
+}
+
+/* 参数内容容器 */
+.parameter-content {
+    width: 100%;
+}
+
+.form-group {
+    width: 40%;
+    float: left;
+    margin-bottom: 15px;
+    margin-right: 10%;
+    box-sizing: border-box;
+}
+
+.form-group:nth-child(2n) {
+    margin-right: 0;
+}
+
+/* 确保复选框组占满整行 */
+.form-group.checkbox-group {
+    width: 100%;
+    margin-right: 0;
+}
+
+.form-group.pretrain-sft, .form-group.lora {
+    /* 移除100%宽度设置，让这些参数也遵循每行两个的布局 */
+}
+
+.parameter-content::after {
+    content: "";
+    display: table;
+    clear: both;
+}
+label {
+    display: block;
+    margin-bottom: 5px;
+    color: #ffffff;
+    font-weight: 600;
+    font-size: 0.9rem;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+}
+input[type="text"], input[type="number"], select {
+    width: 100%;
+    padding: 12px 15px;
+    border: 2px solid #444;
+    border-radius: 8px;
+    font-size: 0.9rem;
+    transition: all 0.3s ease;
+    background-color: #2a2a2a;
+    color: #ffffff;
+}
+
+/* 确保textarea也适应两列布局 */
+textarea {
+    width: 100%;
+    padding: 12px 15px;
+    border: 2px solid #444;
+    border-radius: 8px;
+    font-size: 0.9rem;
+    transition: all 0.3s ease;
+    background-color: #2a2a2a;
+    color: #ffffff;
+    resize: vertical;
+}
+
+input[type="text"]:focus, input[type="number"]:focus, select:focus {
+    outline: none;
+    border-color: #8e24aa;
+    box-shadow: 0 0 0 3px rgba(142, 36, 170, 0.2);
+    background-color: #333;
+}
+.checkbox-group {
+    display: flex;
+    align-items: center;
+}
+.checkbox-group input[type="checkbox"] {
+    width: auto;
+    margin-right: 10px;
+}
+button {
+    background: linear-gradient(135deg, #4a148c 0%, #8e24aa 100%);
+    color: white;
+    border: none;
+    padding: 12px 25px;
+    border-radius: 8px;
+    font-size: 16px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.3);
+    position: relative;
+    overflow: hidden;
+}
+button:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 6px 20px rgba(0, 0, 0, 0.15);
+}
+
+button:active {
+    transform: translateY(0);
+}
+.logs-container {
+    background-color: #0d0d0d;
+    color: #e0e0e0;
+    padding: 20px;
+    border-radius: 10px;
+    max-height: 300px;
+    overflow-y: auto;
+    margin-top: 15px;
+    font-family: 'Courier New', monospace;
+    box-shadow: 0 5px 15px rgba(0, 0, 0, 0.4);
+    transition: all 0.3s ease;
+    border: 1px solid #333;
+}
+
+.logs-container:hover {
+    box-shadow: 0 8px 25px rgba(0, 0, 0, 0.3);
+}
+.process-item {
+    background: rgba(30, 30, 30, 0.9);
+    padding: 20px;
+    margin-bottom: 15px;
+    border-radius: 12px;
+    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.3);
+    transition: all 0.3s ease;
+    border: 1px solid #444;
+}
+
+.process-item:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 6px 20px rgba(0, 0, 0, 0.15);
+}
+.process-info {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 10px;
+}
+.process-status {
+    padding: 5px 12px;
+    border-radius: 20px;
+    font-size: 12px;
+    font-weight: bold;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+}
+.status-running {
+    background: linear-gradient(135deg, #11998e 0%, #38ef7d 100%);
+    color: white;
+}
+.status-completed {
+    background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);
+    color: white;
+}
+.status-error {
+    background: linear-gradient(135deg, #ff416c 0%, #ff4b2b 100%);
+    color: white;
+}
+.btn-stop {
+    background: linear-gradient(135deg, #ff416c 0%, #ff4b2b 100%);
+    padding: 8px 15px;
+    font-size: 14px;
+    border-radius: 6px;
+}
+.btn-stop:hover {
+    transform: translateY(-1px);
+    box-shadow: 0 4px 10px rgba(255, 65, 108, 0.3);
+}
+.btn-logs {
+    background: linear-gradient(135deg, #4facfe 0%, #00f2fe 100%);
+    padding: 8px 15px;
+    font-size: 14px;
+    margin-right: 10px;
+    border-radius: 6px;
+}
+.btn-logs:hover {
+    transform: translateY(-1px);
+    box-shadow: 0 4px 10px rgba(79, 172, 254, 0.3);
+}
+.hidden {
+    display: none;
+}
+.section-title {
+    color: #ffffff;
+    font-size: 20px;
+    margin-bottom: 25px;
+    text-shadow: 0 2px 5px rgba(0, 0, 0, 0.5);
+    font-weight: 600;
+    padding-bottom: 10px;
+    border-bottom: 3px solid rgba(142, 36, 170, 0.3);
+}
+
+/* 添加滚动条样式 */
+::-webkit-scrollbar {
+    width: 8px;
+}
+
+::-webkit-scrollbar-track {
+    background: rgba(255, 255, 255, 0.05);
+    border-radius: 10px;
+}
+
+::-webkit-scrollbar-thumb {
+    background: linear-gradient(135deg, #4a148c 0%, #8e24aa 100%);
+    border-radius: 10px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+    background: linear-gradient(135deg, #6a1b9a 0%, #ab47bc 100%);
+}
+
+/* 添加动画效果 */
+@keyframes fadeIn {
+    from {
+        opacity: 0;
+        transform: translateY(10px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+.tab-content {
+    animation: fadeIn 0.5s ease-out;
+}
+
+/* 响应式设计 */
+@media (max-width: 768px) {
+    body {
+        padding: 10px;
+    }
+    
+    .tabs {
+        flex-direction: column;
+    }
+    
+    .tab {
+        margin-right: 0;
+        margin-bottom: 5px;
+        border-radius: 5px;
+    }
+    
+    .form-container {
+        padding: 20px;
+    }
+}

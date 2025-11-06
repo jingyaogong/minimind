@@ -1,0 +1,163 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>MiniMind 训练 Web UI</title>
+    <link rel="stylesheet" href="/static/css/style.css">
+</head>
+<body>
+    <h1>MiniMind 训练 Web UI</h1>
+    
+    <div class="tabs">
+        <button class="tab active" onclick="openTab(event, 'train')">开始训练</button>
+        <button class="tab" onclick="openTab(event, 'processes')">训练进程</button>
+        <button class="tab" onclick="openTab(event, 'logfiles')">日志文件</button>
+    </div>
+    
+    <div id="train" class="tab-content">
+        <div class="form-container">
+            <h2 class="section-title">选择训练类型并配置参数</h2>
+            <form id="train-form" method="post" action="/train">
+                <!-- 基础训练参数 -->
+                <div class="parameter-card">
+                    <h3 class="card-title">基础训练参数</h3>
+                    <div class="parameter-content">
+                        <div class="form-group">
+                            <label for="train_type">训练类型：</label>
+                            <select id="train_type" name="train_type" required>
+                                <option value="pretrain">预训练 (Pretrain)</option>
+                                <option value="sft">监督微调 (Full SFT)</option>
+                                <option value="lora">LoRA 微调</option>
+                            </select>
+                        </div>
+                        <div class="form-group">
+                            <label for="epochs">训练轮数：</label>
+                            <input type="number" id="epochs" name="epochs" min="1" required>
+                        </div>
+                        <div class="form-group">
+                            <label for="batch_size">Batch Size：</label>
+                            <input type="number" id="batch_size" name="batch_size" min="1" required>
+                        </div>
+                        <div class="form-group">
+                            <label for="learning_rate">学习率：</label>
+                            <input type="text" id="learning_rate" name="learning_rate" required>
+                        </div>
+                        <div class="form-group">
+                            <label for="log_interval">日志打印间隔：</label>
+                            <input type="number" id="log_interval" name="log_interval" min="1" required>
+                        </div>
+                        <div class="form-group">
+                            <label for="data_path">数据路径：</label>
+                            <input type="text" id="data_path" name="data_path" required>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- 模型结构参数 -->
+                <div class="parameter-card">
+                    <h3 class="card-title">模型结构参数</h3>
+                    <div class="parameter-content">
+                        <div class="form-group">
+                            <label for="hidden_size">隐藏层维度：</label>
+                            <input type="number" id="hidden_size" name="hidden_size" min="128" required>
+                        </div>
+                        <div class="form-group">
+                            <label for="num_hidden_layers">隐藏层数量：</label>
+                            <input type="number" id="num_hidden_layers" name="num_hidden_layers" min="1" required>
+                        </div>
+                        <div class="form-group">
+                            <label for="max_seq_len">最大序列长度：</label>
+                            <input type="number" id="max_seq_len" name="max_seq_len" min="64" required>
+                        </div>
+                        <div class="form-group">
+                            <label for="use_moe">是否使用MoE架构：</label>
+                            <select id="use_moe" name="use_moe">
+                                <option value="0">否</option>
+                                <option value="1">是</option>
+                            </select>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- 硬件配置 -->
+                <div class="parameter-card">
+                    <h3 class="card-title">硬件配置</h3>
+                    <div class="parameter-content">
+                        <div class="form-group">
+                            <label for="device">训练设备：</label>
+                            <input type="text" id="device" name="device" value="cuda:0" required>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- 模型保存与恢复 -->
+                <div class="parameter-card">
+                    <h3 class="card-title">模型保存与恢复</h3>
+                    <div class="parameter-content">
+                        <div class="form-group">
+                            <label for="save_dir">模型保存目录：</label>
+                            <input type="text" id="save_dir" name="save_dir" required>
+                        </div>
+                        <div class="form-group">
+                            <label for="save_interval">模型保存间隔：</label>
+                            <input type="number" id="save_interval" name="save_interval" min="1" required>
+                        </div>
+                        <div class="form-group pretrain-sft">
+                            <label for="save_weight">保存权重前缀名：</label>
+                            <input type="text" id="save_weight" name="save_weight">
+                        </div>
+                        <div class="form-group lora">
+                            <label for="lora_name">LoRA权重名称：</label>
+                            <input type="text" id="lora_name" name="lora_name">
+                        </div>
+                        <div class="form-group">
+                            <label for="from_weight">基于哪个权重训练：</label>
+                            <input type="text" id="from_weight" name="from_weight">
+                        </div>
+                        <div class="form-group">
+                            <div class="checkbox-group">
+                                <input type="checkbox" id="from_resume" name="from_resume" value="1">
+                                <label for="from_resume">是否自动检测&续训</label>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- 其他设置 -->
+                <div class="parameter-card">
+                    <h3 class="card-title">其他设置</h3>
+                    <div class="parameter-content">
+                        <div class="form-group">
+                            <div class="checkbox-group">
+                                <input type="checkbox" id="use_wandb" name="use_wandb" value="1">
+                                <label for="use_wandb">是否使用wandb</label>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="submit-container">
+                    <button type="submit">开始训练</button>
+                </div>
+            </form>
+        </div>
+    </div>
+    
+    <div id="processes" class="tab-content hidden">
+        <h2 class="section-title">训练进程列表</h2>
+        <div id="process-list">
+            <!-- 进程列表将通过JavaScript动态加载 -->
+        </div>
+    </div>
+    
+    <div id="logfiles" class="tab-content hidden">
+        <h2 class="section-title">日志文件列表</h2>
+        <div id="logfiles-list">
+            <!-- 日志文件列表将通过JavaScript动态加载 -->
+        </div>
+    </div>
+    
+    <script src="/static/js/script.js"></script>
+</body>
+</html>
