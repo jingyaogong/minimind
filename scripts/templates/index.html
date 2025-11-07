@@ -7,7 +7,10 @@
     <link rel="stylesheet" href="/static/css/style.css">
 </head>
 <body>
-    <h1>MiniMind Training Lab</h1>
+     <div class="header">
+         <img src="/static/images/logo2.png" alt="MiniMind Logo" class="logo">
+         <h1>MiniMind Training Lab</h1>
+     </div>
     
     <div class="tabs">
         <button class="tab active" onclick="openTab(event, 'train')">开始训练</button>
@@ -26,10 +29,10 @@
                         <div class="form-group">
                             <label for="train_type">训练类型：</label>
                             <select id="train_type" name="train_type" required>
-                                <option value="pretrain">预训练 (Pretrain)</option>
-                                <option value="sft">监督微调 (Full SFT)</option>
-                                <option value="lora">LoRA 微调</option>
-                                <option value="dpo">强化学习 (RL-DPO)</option>
+                                <option value="pretrain">Pretrain</option>
+                                <option value="sft">SFT - Full</option>
+                                <option value="lora">SFT - Lora</option>
+                                <option value="dpo">RL - DPO</option>
                             </select>
                         </div>
                         <div class="form-group">

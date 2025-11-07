@@ -238,6 +238,28 @@ def get_logfile_content(filename):
             return f'读取日志失败: {str(e)}'
     return '日志文件不存在'
 
+@app.route('/delete-logfile/<filename>', methods=['DELETE'])
+def delete_logfile(filename):
+    # 获取脚本所在目录的绝对路径
+    script_dir = os.path.dirname(os.path.abspath(__file__))
+    # 构建logfile目录的绝对路径
+    log_dir = os.path.join(script_dir, '../logfile')
+    log_dir = os.path.abspath(log_dir)
+    
+    # 安全检查：防止路径遍历攻击
+    if '..' in filename or '/' in filename or '\\' in filename:
+        return jsonify({'success': False, 'message': '非法的文件名'})
+    
+    log_file = os.path.join(log_dir, filename)
+    if os.path.exists(log_file) and os.path.isfile(log_file):
+        try:
+            os.remove(log_file)
+            return jsonify({'success': True, 'message': '日志文件删除成功'})
+        except Exception as e:
+            print(f"删除日志文件失败: {str(e)}")
+            return jsonify({'success': False, 'message': f'删除失败: {str(e)}'})
+    return jsonify({'success': False, 'message': '日志文件不存在'})
+
 
 @app.route('/stop/<process_id>', methods=['POST'])
 def stop(process_id):
@@ -257,6 +279,41 @@ def stop(process_id):
             # 标记为手动停止
             training_processes[process_id]['running'] = False
             training_processes[process_id]['manually_stopped'] = True
+        return jsonify({'success': True})
+    return jsonify({'success': False})
+
+@app.route('/delete/<process_id>', methods=['POST'])
+def delete(process_id):
+    if process_id in training_processes:
+        # 确保进程已经停止
+        if training_processes[process_id]['running']:
+            # 如果进程还在运行，先停止它
+            try:
+                process = training_processes[process_id]['process']
+                process.terminate()
+                try:
+                    process.wait(timeout=3)
+                except subprocess.TimeoutExpired:
+                    process.kill()
+            except Exception as e:
+                print(f"停止进程失败: {str(e)}")
+        
+        # 从进程字典中删除
+        del training_processes[process_id]
+        
+        # 可选：删除对应的日志文件
+        try:
+            script_dir = os.path.dirname(os.path.abspath(__file__))
+            log_dir = os.path.join(script_dir, '../logfile')
+            log_dir = os.path.abspath(log_dir)
+            
+            if os.path.exists(log_dir):
+                for filename in os.listdir(log_dir):
+                    if filename.endswith(f'{process_id}.log'):
+                        os.remove(os.path.join(log_dir, filename))
+        except Exception as e:
+            print(f"删除日志文件失败: {str(e)}")
+        
         return jsonify({'success': True})
     return jsonify({'success': False})
 

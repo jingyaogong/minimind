@@ -8,13 +8,28 @@ body {
     background-color: #121212;
     min-height: 100vh;
 }
+
+/* 头部样式 */
+.header {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    margin-bottom: 30px;
+}
+
+.logo {
+    height: 60px;
+    margin-right: 20px;
+    vertical-align: middle;
+}
+
 h1 {
     color: #ffffff;
-    text-align: center;
-    margin-bottom: 30px;
     text-shadow: 0 2px 10px rgba(0, 0, 0, 0.5);
     font-size: 2.5em;
     font-weight: 700;
+    margin: 0;
+    vertical-align: middle;
 }
 .tabs {
     display: flex;
@@ -33,15 +48,23 @@ h1 {
     font-weight: 500;
     transition: all 0.3s ease;
     position: relative;
-    color: #cccccc;
+    color: #888888;
     width: 30%;
     text-align: center;
+    opacity: 0.7;
 }
 .tab.active {
-    background: linear-gradient(135deg, #4a148c 0%, #8e24aa 100%);
+    background: linear-gradient(135deg, #9c27b0 0%, #e040fb 100%);
     color: white;
     transform: translateY(-2px);
     box-shadow: 0 5px 15px rgba(0, 0, 0, 0.3);
+    opacity: 1;
+    font-weight: 600;
+}
+.tab:hover {
+    color: #aaaaaa;
+    opacity: 0.9;
+    transform: translateY(-1px);
 }
 .form-container {
     background: rgba(30, 30, 30, 0.9);
@@ -56,12 +79,13 @@ h1 {
 .parameter-card {
     background-color: #2d2d2d;
     border-radius: 8px;
-    padding: 20px;
-    margin-bottom: 20px;
+    padding: 24px;
+    margin-bottom: 16px;
     box-shadow: 0 2px 4px rgba(0, 0, 0, 0.3);
     transition: transform 0.2s ease, box-shadow 0.2s ease;
     padding-left: 5%;
     padding-right: 5%;
+    margin-top: 16px;
 }
 
 .parameter-card:hover {
@@ -71,13 +95,13 @@ h1 {
 
 /* 卡片标题样式 */
 .card-title {
-    color: #e0e0e0;
-    font-size: 1.4rem;
-    font-weight: bold;
+    color: #ffffff;
+    font-size: 18px;
+    font-weight: 700;
     margin-top: 0;
     margin-bottom: 20px;
     padding-bottom: 10px;
-    border-bottom: 1px solid #404040;
+    border-bottom: 1px solid #e040fb;
     width: 100%;
 }
 
@@ -118,14 +142,15 @@ label {
     display: block;
     margin-bottom: 5px;
     color: #ffffff;
-    font-weight: 600;
-    font-size: 0.9rem;
+    font-weight: 500;
+    font-size: 13px;
+    opacity: 0.8;
     text-transform: uppercase;
     letter-spacing: 0.5px;
 }
 input[type="text"], input[type="number"], select {
     width: 100%;
-    padding: 12px 15px;
+    padding: 8px 12px;
     border: 2px solid #444;
     border-radius: 8px;
     font-size: 0.9rem;
@@ -137,7 +162,7 @@ input[type="text"], input[type="number"], select {
 /* 确保textarea也适应两列布局 */
 textarea {
     width: 100%;
-    padding: 12px 15px;
+    padding: 8px 12px;
     border: 2px solid #444;
     border-radius: 8px;
     font-size: 0.9rem;
@@ -200,14 +225,69 @@ button:active {
 .logs-container:hover {
     box-shadow: 0 8px 25px rgba(0, 0, 0, 0.3);
 }
+.process-type-group {
+    margin-bottom: 30px;
+    background-color: rgba(30, 30, 30, 0.9);
+    border-radius: 15px;
+    border: 1px solid #444;
+    box-shadow: 0 5px 15px rgba(0, 0, 0, 0.2);
+    overflow: hidden;
+}
+
+/* 标题容器样式 */
+.process-type-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 20px;
+    cursor: pointer;
+    user-select: none;
+}
+
+.process-type-title {
+    margin: 0;
+    color: #e0e0e0;
+    font-size: 1.2em;
+    font-weight: 600;
+    border-bottom: 2px solid #8e24aa;
+    padding-bottom: 8px;
+    flex-grow: 1;
+}
+
+/* 切换按钮样式 */
+.toggle-btn {
+    background: none;
+    border: none;
+    color: #e0e0e0;
+    font-size: 0.8em;
+    cursor: pointer;
+    padding: 5px 10px;
+    border-radius: 5px;
+    transition: background-color 0.3s, transform 0.2s;
+    margin-left: 15px;
+}
+
+.toggle-btn:hover {
+    background-color: rgba(255, 255, 255, 0.1);
+    transform: scale(1.1);
+}
+
+/* 内容容器样式 */
+.process-type-content {
+    max-height: none;
+    overflow: visible;
+    transition: max-height 0.3s ease-in-out;
+    padding: 0 20px 20px 20px;
+}
+
 .process-item {
-    background: rgba(30, 30, 30, 0.9);
+    background: rgba(40, 40, 40, 0.9);
     padding: 20px;
     margin-bottom: 15px;
     border-radius: 12px;
     box-shadow: 0 4px 15px rgba(0, 0, 0, 0.3);
     transition: all 0.3s ease;
-    border: 1px solid #444;
+    border: 1px solid #555;
 }
 
 .process-item:hover {
@@ -261,6 +341,24 @@ button:active {
     margin-right: 10px;
     border-radius: 6px;
 }
+.btn-delete {
+    background: linear-gradient(135deg, #f44336 0%, #d32f2f 100%);
+    padding: 8px 15px;
+    font-size: 14px;
+    margin-right: 10px;
+    border-radius: 6px;
+    color: white;
+}
+.btn-delete:hover {
+    transform: translateY(-1px);
+    box-shadow: 0 4px 10px rgba(244, 67, 54, 0.3);
+}
+.btn-delete:disabled {
+    background: linear-gradient(135deg, #cccccc 0%, #aaaaaa 100%);
+    cursor: not-allowed;
+    transform: none;
+    box-shadow: none;
+}
 .btn-logs:hover {
     transform: translateY(-1px);
     box-shadow: 0 4px 10px rgba(79, 172, 254, 0.3);
@@ -270,12 +368,13 @@ button:active {
 }
 .section-title {
     color: #ffffff;
-    font-size: 20px;
+    font-size: 18px;
     margin-bottom: 25px;
     text-shadow: 0 2px 5px rgba(0, 0, 0, 0.5);
-    font-weight: 600;
+    font-weight: 700;
     padding-bottom: 10px;
-    border-bottom: 3px solid rgba(142, 36, 170, 0.3);
+    border-bottom: 1px solid #e040fb;
+    margin-top: 16px;
 }
 
 /* 添加滚动条样式 */
@@ -309,6 +408,131 @@ button:active {
     }
 }
 
+/* 自定义确认对话框样式 */
+.dialog-overlay {
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background-color: rgba(0, 0, 0, 0.7);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    z-index: 1000;
+    opacity: 0;
+    transition: opacity 0.3s ease;
+}
+
+.dialog-overlay.show {
+    opacity: 1;
+}
+
+.custom-dialog {
+    background: linear-gradient(135deg, #1a1a2e 0%, #16213e 100%);
+    border-radius: 8px;
+    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.5);
+    max-width: 400px;
+    width: 90%;
+    transform: translateY(-20px);
+    opacity: 0;
+    transition: transform 0.3s ease, opacity 0.3s ease;
+    border: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+.custom-dialog.show {
+    transform: translateY(0);
+    opacity: 1;
+}
+
+.dialog-content {
+    padding: 20px;
+}
+
+.dialog-message {
+    color: #ffffff;
+    font-size: 16px;
+    margin-bottom: 20px;
+    text-align: center;
+    line-height: 1.5;
+}
+
+.dialog-actions {
+    display: flex;
+    justify-content: flex-end;
+    gap: 12px;
+}
+
+.dialog-button {
+    padding: 10px 20px;
+    border: none;
+    border-radius: 6px;
+    cursor: pointer;
+    font-size: 14px;
+    font-weight: 500;
+    transition: all 0.2s ease;
+}
+
+.dialog-cancel {
+    background: linear-gradient(135deg, #4a4a4a 0%, #333333 100%);
+    color: #ffffff;
+}
+
+.dialog-cancel:hover {
+    background: linear-gradient(135deg, #5a5a5a 0%, #444444 100%);
+    transform: translateY(-1px);
+}
+
+.dialog-confirm {
+    background: linear-gradient(135deg, #6a11cb 0%, #2575fc 100%);
+    color: #ffffff;
+}
+
+.dialog-confirm:hover {
+    background: linear-gradient(135deg, #7a21db 0%, #3585ff 100%);
+    transform: translateY(-1px);
+}
+
+/* 消息弹窗样式 */
+.notification {
+    position: fixed;
+    top: 20px;
+    right: 20px;
+    padding: 15px 25px;
+    border-radius: 10px;
+    color: white;
+    font-weight: 600;
+    font-size: 16px;
+    z-index: 1000;
+    box-shadow: 0 5px 20px rgba(0, 0, 0, 0.3);
+    opacity: 0;
+    transform: translateX(100%);
+    transition: all 0.3s ease;
+    max-width: 400px;
+    word-wrap: break-word;
+}
+
+/* 显示状态 */
+.notification.show {
+    opacity: 1;
+    transform: translateX(0);
+}
+
+/* 成功通知样式 */
+.notification-success {
+    background: linear-gradient(135deg, #4caf50 0%, #81c784 100%);
+}
+
+/* 错误通知样式 */
+.notification-error {
+    background: linear-gradient(135deg, #f44336 0%, #ef5350 100%);
+}
+
+/* 信息通知样式 */
+.notification-info {
+    background: linear-gradient(135deg, #2196f3 0%, #64b5f6 100%);
+}
+
 .tab-content {
     animation: fadeIn 0.5s ease-out;
 }
@@ -317,6 +541,21 @@ button:active {
 @media (max-width: 768px) {
     body {
         padding: 10px;
+    }
+    
+    .header {
+        flex-direction: column;
+        text-align: center;
+    }
+    
+    .logo {
+        height: 50px;
+        margin-right: 0;
+        margin-bottom: 10px;
+    }
+    
+    h1 {
+        font-size: 2em;
     }
     
     .tabs {
