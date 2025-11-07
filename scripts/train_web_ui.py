@@ -48,14 +48,22 @@ def start_training_process(train_type, params):
     
     # 添加通用参数
     for key, value in params.items():
-        if key not in ['train_type', 'save_weight', 'lora_name']:
-            # 特殊处理布尔标志参数
-            if key in ['use_wandb', 'from_resume']:
-                if value == '1':  # 只有当值为1时才添加这个标志
-                    cmd.append(f'--{key}')
-            else:
-                # 确保log_interval和save_interval参数正确传递
-                cmd.extend([f'--{key}', str(value)])
+        # 跳过特殊参数
+        if key in ['train_type', 'save_weight', 'lora_name', 'train_monitor']:
+            continue
+            
+        # 特殊处理布尔标志参数
+        if key == 'from_resume':
+            if value == '1':  # 只有当值为1时才添加这个标志
+                cmd.append(f'--{key}')
+        else:
+            # 确保log_interval和save_interval参数正确传递
+            cmd.extend([f'--{key}', str(value)])
+    
+    # 单独处理训练监控参数，确保它不会被错误地添加值
+    if 'train_monitor' in params:
+        if params['train_monitor'] == 'wandb' or params['train_monitor'] == 'swanlab':
+            cmd.append('--use_wandb')  # 对于wandb和swanlab，只添加标志，不添加值
     
     # 创建日志文件
     with open(log_file, 'w') as f:
@@ -118,8 +126,6 @@ def train():
     # 处理复选框参数
     if 'from_resume' not in params:
         params['from_resume'] = '0'
-    if 'use_wandb' not in params:
-        params['use_wandb'] = '0'
     
     # 启动训练进程
     process_id = start_training_process(train_type, params)
@@ -133,12 +139,18 @@ def train():
 def processes():
     result = []
     for process_id, info in training_processes.items():
+        # 确定状态
+        status = '运行中' if info['running'] else \
+                '手动停止' if 'manually_stopped' in info and info['manually_stopped'] else \
+                '出错' if info['error'] else '已完成'
+                
         result.append({
             'id': process_id,
             'train_type': info['train_type'],
             'start_time': info['start_time'],
             'running': info['running'],
-            'error': info['error']
+            'error': info['error'],
+            'status': status
         })
     return jsonify(result)
 
@@ -158,7 +170,10 @@ def logs(process_id):
                 if os.path.exists(log_file):
                     try:
                         with open(log_file, 'r', encoding='utf-8') as f:
-                            return f.read()
+                            # 只读取最后500行
+                            lines = f.readlines()
+                            last_500_lines = lines[-500:] if len(lines) > 500 else lines
+                            return ''.join(last_500_lines)
                     except Exception as e:
                         return f'读取日志失败: {str(e)}'
     return '日志文件不存在或已被删除'
@@ -186,6 +201,8 @@ def get_logfiles():
                     })
                 except Exception as e:
                     continue
+    # 按修改时间倒序排序，最新的在前面
+    logfiles.sort(key=lambda x: x['modified_time'], reverse=True)
     return jsonify(logfiles)
 
 @app.route('/logfile-content/<filename>')
@@ -219,11 +236,15 @@ def stop(process_id):
             process.terminate()
             # 等待进程结束
             process.wait(timeout=5)
+            # 标记为手动停止
+            training_processes[process_id]['running'] = False
+            training_processes[process_id]['manually_stopped'] = True
         except subprocess.TimeoutExpired:
             # 如果超时，强制杀死
             process.kill()
-        
-        training_processes[process_id]['running'] = False
+            # 标记为手动停止
+            training_processes[process_id]['running'] = False
+            training_processes[process_id]['manually_stopped'] = True
         return jsonify({'success': True})
     return jsonify({'success': False})
 

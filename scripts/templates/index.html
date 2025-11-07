@@ -80,17 +80,6 @@
                     </div>
                 </div>
                 
-                <!-- 硬件配置 -->
-                <div class="parameter-card">
-                    <h3 class="card-title">硬件配置</h3>
-                    <div class="parameter-content">
-                        <div class="form-group">
-                            <label for="device">训练设备：</label>
-                            <input type="text" id="device" name="device" value="cuda:0" required>
-                        </div>
-                    </div>
-                </div>
-                
                 <!-- 模型保存与恢复 -->
                 <div class="parameter-card">
                     <h3 class="card-title">模型保存与恢复</h3>
@@ -129,10 +118,15 @@
                     <h3 class="card-title">其他设置</h3>
                     <div class="parameter-content">
                         <div class="form-group">
-                            <div class="checkbox-group">
-                                <input type="checkbox" id="use_wandb" name="use_wandb" value="1">
-                                <label for="use_wandb">是否使用wandb</label>
-                            </div>
+                            <label for="device">训练设备：</label>
+                            <input type="text" id="device" name="device" value="cuda:0" required>
+                        </div>
+                        <div class="form-group">
+                            <label for="train_monitor">训练监控：</label>
+                            <select id="train_monitor" name="train_monitor">
+                                <option value="none">无监控</option>
+                                <option value="wandb">使用WandB/SwanLab</option>
+                            </select>
                         </div>
                     </div>
                 </div>

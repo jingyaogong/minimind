@@ -89,16 +89,15 @@ function loadProcesses() {
                 processItem.className = 'process-item';
                 
                 let statusClass = '';
-                let statusText = '';
-                if (process.running) {
+                // 根据后端返回的status字段设置状态类
+                if (process.status === '运行中') {
                     statusClass = 'status-running';
-                    statusText = '运行中';
-                } else if (process.error) {
+                } else if (process.status === '手动停止') {
+                    statusClass = 'status-manual-stop';
+                } else if (process.status === '出错') {
                     statusClass = 'status-error';
-                    statusText = '出错';
                 } else {
                     statusClass = 'status-completed';
-                    statusText = '已完成';
                 }
                 
                 processItem.innerHTML = `
@@ -107,11 +106,12 @@ function loadProcesses() {
                             <strong>${process.train_type}</strong> - ${process.start_time}
                         </div>
                         <div>
-                            <span class="process-status ${statusClass}">${statusText}</span>
+                            <span class="process-status ${statusClass}">${process.status}</span>
                         </div>
                     </div>
                     <div>
                         <button class="btn-logs" onclick="showLogs('${process.id}')">查看日志</button>
+                        <button class="btn-logs" onclick="refreshLog('${process.id}')">刷新日志</button>
                         ${process.running ? `<button class="btn-stop" onclick="stopProcess('${process.id}')">停止训练</button>` : ''}
                     </div>
                     <div id="logs-${process.id}" class="logs-container hidden"></div>
@@ -128,13 +128,26 @@ function showLogs(processId) {
     logsContainer.classList.toggle('hidden');
     
     if (!logsContainer.classList.contains('hidden')) {
-        fetch(`/logs/${processId}`)
-            .then(response => response.text())
-            .then(logs => {
-                logsContainer.textContent = logs;
-                logsContainer.scrollTop = logsContainer.scrollHeight;
-            });
+        loadLogContent(processId, logsContainer);
     }
+}
+
+// 刷新日志
+function refreshLog(processId) {
+    const logsContainer = document.getElementById(`logs-${processId}`);
+    if (!logsContainer.classList.contains('hidden')) {
+        loadLogContent(processId, logsContainer);
+    }
+}
+
+// 加载日志内容
+function loadLogContent(processId, logsContainer) {
+    fetch(`/logs/${processId}`)
+        .then(response => response.text())
+        .then(logs => {
+            logsContainer.textContent = logs;
+            logsContainer.scrollTop = logsContainer.scrollHeight;
+        });
 }
 
 // 停止进程
@@ -206,10 +219,11 @@ function loadLogFiles() {
                 fileItem.innerHTML = `
                     <div class="process-info">
                         <div>
-                            <strong>${trainType}</strong> - ${logfile.modified_time}
+                            <strong>${trainType}</strong> - ${logfile.filename}
                         </div>
                         <div>
                             <span class="process-status status-completed">已保存</span>
+                            <span style="margin-left: 10px; color: #999; font-size: 0.9em;">${logfile.modified_time}</span>
                         </div>
                     </div>
                     <div>

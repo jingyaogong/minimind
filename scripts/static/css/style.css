@@ -89,37 +89,30 @@ h1 {
     border-top: 1px solid #4d4d4d;
 }
 
-/* 参数内容容器 */
+/* 参数内容容器 - 使用flex布局替代float */
 .parameter-content {
     width: 100%;
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: space-between;
+    gap: 15px;
 }
 
 .form-group {
-    width: 40%;
-    float: left;
-    margin-bottom: 15px;
-    margin-right: 10%;
+    width: 40%; /* 考虑gap间距，确保两个元素能并排 */
+    margin-bottom: 0;
+    margin-right: 5%;
     box-sizing: border-box;
-}
-
-.form-group:nth-child(2n) {
-    margin-right: 0;
 }
 
 /* 确保复选框组占满整行 */
 .form-group.checkbox-group {
     width: 100%;
-    margin-right: 0;
 }
 
 .form-group.pretrain-sft, .form-group.lora {
-    /* 移除100%宽度设置，让这些参数也遵循每行两个的布局 */
-}
-
-.parameter-content::after {
-    content: "";
-    display: table;
-    clear: both;
+    /* 保持默认宽度，遵循每行两个的布局 */
+    width: calc(40% - 8px);
 }
 label {
     display: block;
@@ -245,6 +238,10 @@ button:active {
 }
 .status-error {
     background: linear-gradient(135deg, #ff416c 0%, #ff4b2b 100%);
+    color: white;
+}
+.status-manual-stop {
+    background: linear-gradient(135deg, #4e54c8 0%, #8f94fb 100%);
     color: white;
 }
 .btn-stop {
