@@ -43,13 +43,23 @@ def start_training_process(train_type, params):
         cmd = [sys.executable, script_path]
         if 'lora_name' in params:
             cmd.extend(['--lora_name', params['lora_name']])
+    elif train_type == 'dpo':
+        script_path = '../trainer/train_dpo.py'
+        cmd = [sys.executable, script_path]
+        # 添加DPO特定参数
+        if 'beta' in params and params['beta']:
+            cmd.extend(['--beta', params['beta']])
+        if 'accumulation_steps' in params and params['accumulation_steps']:
+            cmd.extend(['--accumulation_steps', params['accumulation_steps']])
+        if 'grad_clip' in params and params['grad_clip']:
+            cmd.extend(['--grad_clip', params['grad_clip']])
     else:
         return None
     
     # 添加通用参数
     for key, value in params.items():
-        # 跳过特殊参数
-        if key in ['train_type', 'save_weight', 'lora_name', 'train_monitor']:
+        # 跳过特殊参数和DPO特有参数
+        if key in ['train_type', 'save_weight', 'lora_name', 'train_monitor', 'beta', 'accumulation_steps', 'grad_clip']:
             continue
             
         # 特殊处理布尔标志参数
@@ -64,6 +74,8 @@ def start_training_process(train_type, params):
     if 'train_monitor' in params:
         if params['train_monitor'] == 'wandb' or params['train_monitor'] == 'swanlab':
             cmd.append('--use_wandb')  # 对于wandb和swanlab，只添加标志，不添加值
+            if params['train_monitor'] == 'wandb':
+                cmd.extend(['--wandb_project', 'minimind_training'])
     
     # 创建日志文件
     with open(log_file, 'w') as f:
@@ -170,10 +182,10 @@ def logs(process_id):
                 if os.path.exists(log_file):
                     try:
                         with open(log_file, 'r', encoding='utf-8') as f:
-                            # 只读取最后500行
+                            # 只读取最后200行
                             lines = f.readlines()
-                            last_500_lines = lines[-500:] if len(lines) > 500 else lines
-                            return ''.join(last_500_lines)
+                            last_200_lines = lines[-200:] if len(lines) > 200 else lines
+                            return ''.join(last_200_lines)
                     except Exception as e:
                         return f'读取日志失败: {str(e)}'
     return '日志文件不存在或已被删除'

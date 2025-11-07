@@ -12,6 +12,14 @@ function openTab(evt, tabName) {
     document.getElementById(tabName).classList.remove("hidden");
     evt.currentTarget.classList.add("active");
     
+    // 当切换到其他标签页时，清除所有日志自动更新定时器
+    if (tabName !== 'processes') {
+        for (let processId in logTimers) {
+            clearInterval(logTimers[processId]);
+            delete logTimers[processId];
+        }
+    }
+    
     // 如果切换到进程页面，刷新进程列表
     if (tabName === 'processes') {
         loadProcesses();
@@ -25,6 +33,8 @@ document.getElementById('train_type').addEventListener('change', function() {
     const trainType = this.value;
     const pretrainSftFields = document.querySelectorAll('.pretrain-sft');
     const loraFields = document.querySelectorAll('.lora');
+    const dpoFields = document.querySelectorAll('.dpo');
+    const dpoParamCard = document.querySelector('.parameter-card.dpo');
     
     pretrainSftFields.forEach(field => {
         field.style.display = (trainType === 'pretrain' || trainType === 'sft') ? 'block' : 'none';
@@ -33,6 +43,14 @@ document.getElementById('train_type').addEventListener('change', function() {
     loraFields.forEach(field => {
         field.style.display = trainType === 'lora' ? 'block' : 'none';
     });
+    
+    dpoFields.forEach(field => {
+        field.style.display = trainType === 'dpo' ? 'block' : 'none';
+    });
+    
+    if (dpoParamCard) {
+        dpoParamCard.style.display = trainType === 'dpo' ? 'block' : 'none';
+    }
     
     // 设置默认值
     if (trainType === 'pretrain') {
@@ -65,6 +83,17 @@ document.getElementById('train_type').addEventListener('change', function() {
         document.getElementById('from_weight').value = 'full_sft';
         document.getElementById('log_interval').value = '10';
         document.getElementById('save_interval').value = '1';
+    } else if (trainType === 'dpo') {
+        document.getElementById('save_dir').value = '../out';
+        document.getElementById('save_weight').value = 'dpo';
+        document.getElementById('epochs').value = '1';
+        document.getElementById('batch_size').value = '4';
+        document.getElementById('learning_rate').value = '4e-8';
+        document.getElementById('data_path').value = '../dataset/dpo.jsonl';
+        document.getElementById('from_weight').value = 'full_sft';
+        document.getElementById('log_interval').value = '100';
+        document.getElementById('save_interval').value = '100';
+        document.getElementById('beta').value = '0.1';
     }
 });
 
@@ -100,6 +129,10 @@ function loadProcesses() {
                     statusClass = 'status-completed';
                 }
                 
+                // 设置进程数据属性，用于后续检查状态
+                processItem.dataset.processId = process.id;
+                processItem.dataset.processStatus = process.status;
+                
                 processItem.innerHTML = `
                     <div class="process-info">
                         <div>
@@ -122,13 +155,52 @@ function loadProcesses() {
         });
 }
 
+// 存储训练日志定时器的ID
+let logTimers = {};
+
 // 显示日志
 function showLogs(processId) {
     const logsContainer = document.getElementById(`logs-${processId}`);
     logsContainer.classList.toggle('hidden');
     
     if (!logsContainer.classList.contains('hidden')) {
+        // 加载日志内容
         loadLogContent(processId, logsContainer);
+        
+        // 清除可能存在的旧定时器
+        if (logTimers[processId]) {
+            clearInterval(logTimers[processId]);
+        }
+        
+        // 查找进程元素，获取其状态
+        const processItem = document.querySelector(`[data-process-id="${processId}"]`);
+        const isRunning = processItem && processItem.dataset.processStatus === '运行中';
+        
+        // 只有运行中的进程才设置自动刷新定时器
+        if (isRunning) {
+            logTimers[processId] = setInterval(() => {
+                // 检查日志容器是否可见
+                if (!logsContainer.classList.contains('hidden')) {
+                    // 再次检查进程状态，确保仍然是运行中
+                    const currentProcessItem = document.querySelector(`[data-process-id="${processId}"]`);
+                    const stillRunning = currentProcessItem && currentProcessItem.dataset.processStatus === '运行中';
+                    
+                    if (stillRunning) {
+                        loadLogContent(processId, logsContainer);
+                    } else {
+                        // 如果进程不再运行中，清除定时器
+                        clearInterval(logTimers[processId]);
+                        delete logTimers[processId];
+                    }
+                }
+            }, 1000);
+        }
+    } else {
+        // 隐藏日志时清除定时器
+        if (logTimers[processId]) {
+            clearInterval(logTimers[processId]);
+            delete logTimers[processId];
+        }
     }
 }
 
@@ -137,6 +209,34 @@ function refreshLog(processId) {
     const logsContainer = document.getElementById(`logs-${processId}`);
     if (!logsContainer.classList.contains('hidden')) {
         loadLogContent(processId, logsContainer);
+        
+        // 查找进程元素，获取其状态
+        const processItem = document.querySelector(`[data-process-id="${processId}"]`);
+        const isRunning = processItem && processItem.dataset.processStatus === '运行中';
+        
+        // 重置定时器，确保从现在开始每1秒更新一次
+        if (logTimers[processId]) {
+            clearInterval(logTimers[processId]);
+        }
+        
+        // 只有运行中的进程才设置定时器
+        if (isRunning) {
+            logTimers[processId] = setInterval(() => {
+                if (!logsContainer.classList.contains('hidden')) {
+                    // 再次检查进程状态
+                    const currentProcessItem = document.querySelector(`[data-process-id="${processId}"]`);
+                    const stillRunning = currentProcessItem && currentProcessItem.dataset.processStatus === '运行中';
+                    
+                    if (stillRunning) {
+                        loadLogContent(processId, logsContainer);
+                    } else {
+                        // 如果进程不再运行中，清除定时器
+                        clearInterval(logTimers[processId]);
+                        delete logTimers[processId];
+                    }
+                }
+            }, 1000);
+        }
     }
 }
 
@@ -214,7 +314,16 @@ function loadLogFiles() {
                     trainType = 'sft';
                 } else if (logfile.filename.includes('train_lora_')) {
                     trainType = 'lora';
+                } else if (logfile.filename.includes('train_dpo_')) {
+                    trainType = 'dpo';
+                } else if (logfile.filename.includes('train_ppo_')) {
+                    trainType = 'ppo';
+                } else if (logfile.filename.includes('train_grpo_')) {
+                    trainType = 'grpo';
+                } else if (logfile.filename.includes('train_spo_')) {
+                    trainType = 'spo';
                 }
+
                 
                 fileItem.innerHTML = `
                     <div class="process-info">
