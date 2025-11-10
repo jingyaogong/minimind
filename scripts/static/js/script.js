@@ -63,6 +63,11 @@ document.getElementById('train_type').addEventListener('change', function() {
         document.getElementById('from_weight').value = 'none';
         document.getElementById('log_interval').value = '100';
         document.getElementById('save_interval').value = '100';
+        // 模型结构参数默认值
+        document.getElementById('hidden_size').value = '512';
+        document.getElementById('num_hidden_layers').value = '8';
+        document.getElementById('max_seq_len').value = '512';
+        document.getElementById('use_moe').value = '0';
     } else if (trainType === 'sft') {
         document.getElementById('save_dir').value = '../out';
         document.getElementById('save_weight').value = 'full_sft';
@@ -73,6 +78,11 @@ document.getElementById('train_type').addEventListener('change', function() {
         document.getElementById('from_weight').value = 'pretrain';
         document.getElementById('log_interval').value = '100';
         document.getElementById('save_interval').value = '100';
+        // 模型结构参数默认值
+        document.getElementById('hidden_size').value = '512';
+        document.getElementById('num_hidden_layers').value = '8';
+        document.getElementById('max_seq_len').value = '512';
+        document.getElementById('use_moe').value = '0';
     } else if (trainType === 'lora') {
         document.getElementById('save_dir').value = '../out/lora';
         document.getElementById('lora_name').value = 'lora_identity';
@@ -83,6 +93,11 @@ document.getElementById('train_type').addEventListener('change', function() {
         document.getElementById('from_weight').value = 'full_sft';
         document.getElementById('log_interval').value = '10';
         document.getElementById('save_interval').value = '1';
+        // 模型结构参数默认值
+        document.getElementById('hidden_size').value = '512';
+        document.getElementById('num_hidden_layers').value = '8';
+        document.getElementById('max_seq_len').value = '512';
+        document.getElementById('use_moe').value = '0';
     } else if (trainType === 'dpo') {
         document.getElementById('save_dir').value = '../out';
         document.getElementById('save_weight').value = 'dpo';
@@ -94,6 +109,11 @@ document.getElementById('train_type').addEventListener('change', function() {
         document.getElementById('log_interval').value = '100';
         document.getElementById('save_interval').value = '100';
         document.getElementById('beta').value = '0.1';
+        // 模型结构参数默认值
+        document.getElementById('hidden_size').value = '512';
+        document.getElementById('num_hidden_layers').value = '8';
+        document.getElementById('max_seq_len').value = '1024';
+        document.getElementById('use_moe').value = '0';
     }
 });
 
