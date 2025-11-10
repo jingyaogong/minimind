@@ -3,6 +3,7 @@ import sys
 import subprocess
 import threading
 import json
+import socket
 from flask import Flask, render_template, request, jsonify, redirect, url_for
 import time
 
@@ -317,5 +318,31 @@ def delete(process_id):
         return jsonify({'success': True})
     return jsonify({'success': False})
 
+def find_available_port(start_port=5000, max_attempts=100):
+    """查找可用的端口号
+    
+    Args:
+        start_port: 起始端口号
+        max_attempts: 最大尝试次数
+        
+    Returns:
+        可用的端口号，如果没有找到则返回None
+    """
+    for port in range(start_port, start_port + max_attempts):
+        sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+        result = sock.connect_ex(('localhost', port))
+        sock.close()
+        if result != 0:  # 端口可用
+            return port
+    return None
+
 if __name__ == '__main__':
-    app.run(host='0.0.0.0', port=5000, debug=True)
+    # 尝试使用默认端口5000，如果被占用则自动寻找可用端口
+    port = find_available_port(5000)
+    if port is not None:
+        print(f"启动Flask服务器在 http://0.0.0.0:{port}")
+        # 使用0.0.0.0作为host以兼容VSCode的端口转发功能
+        app.run(host='0.0.0.0', port=port, debug=True)
+    else:
+        print("无法找到可用的端口，请检查系统端口占用情况")
+        sys.exit(1)
