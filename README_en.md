@@ -1728,6 +1728,23 @@ ollama run jingyaogong/minimind2 # Other options: minimind2-r1 / minimind2-small
 I am a language model...
 ```
 
+## <img src="https://github.com/alibaba/MNN/blob/master/doc/banner.png" height="28" style="vertical-align: middle;"/> [MNN](https://github.com/alibaba/MNN)
+
+MNN is a lightweight, high-performance AI inference engine for on-device applications, supporting inference for various open-source LLM models.
+
+1.  **Model Conversion**
+    ```
+    cd MNN/transformers/llm/export
+    # Export the 4-bit HQQ quantized MNN model
+    python llmexport.py --path /path/to/MiniMind2/  --export mnn --hqq --dst_path MiniMind2-MNN
+    ```
+
+2.  **Test on a Mac or mobile phone**
+    ```
+    ./llm_demo /path/to/MiniMind2-MNN/config.json prompt.txt
+    ```
+    Or download the app to test.
+
 > For more usage of the above third-party frameworks, please refer to their official documentation 😊
 
 # 📌 Acknowledge
