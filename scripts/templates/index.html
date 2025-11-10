@@ -133,8 +133,21 @@
                     <h3 class="card-title">其他设置</h3>
                     <div class="parameter-content">
                         <div class="form-group">
-                            <label for="device">训练设备：</label>
-                            <input type="text" id="device" name="device" value="cuda:0" required>
+                            <label for="training_mode">训练方式：</label>
+                            <select id="training_mode" name="training_mode" required>
+                                <option value="single_gpu">单卡训练</option>
+                                <option value="multi_gpu">多卡训练</option>
+                                <option value="cpu">CPU训练</option>
+                            </select>
+                        </div>
+                        <div class="form-group" id="single-gpu-selection">
+                            <label for="device">GPU序号：</label>
+                            <input type="number" id="device" name="device" min="0" max="{{ gpu_count|default(1) - 1 }}" value="0" required>
+                        </div>
+                        <div class="form-group" id="multi-gpu-selection" style="display: none;">
+                            <label for="gpu_num">多卡并行数：</label>
+                            <input type="number" id="gpu_num" name="gpu_num" min="1" max="{{ gpu_count|default(1) }}" value="{{ gpu_count|default(1) }}" required>
+                            <span class="hint-text">(可用GPU数量: {{ gpu_count|default(0) }})</span>
                         </div>
                         <div class="form-group">
                             <label for="train_monitor">训练监控：</label>
@@ -145,6 +158,61 @@
                         </div>
                     </div>
                 </div>
+                
+                <script>
+                    // 检查是否支持GPU并显示对应的选择器
+                    // 使用Flask模板变量传递GPU信息
+                    var hasGpu = {{ has_gpu|default(false)|tojson|safe }};
+                    var gpuCount = {{ gpu_count|default(0)|tojson|safe }};
+                    
+                    // 根据是否有GPU设置默认训练方式
+                    var trainingModeSelect = document.getElementById('training_mode');
+                    var singleGpuSelection = document.getElementById('single-gpu-selection');
+                    var multiGpuSelection = document.getElementById('multi-gpu-selection');
+                    
+                    // 设置默认值并初始化UI
+                    function initUI() {
+                        if (!trainingModeSelect) return;
+                        
+                        if (!hasGpu) {
+                            // 没有GPU时，默认选择CPU训练
+                            trainingModeSelect.value = 'cpu';
+                            if (singleGpuSelection) singleGpuSelection.style.display = 'none';
+                            if (multiGpuSelection) multiGpuSelection.style.display = 'none';
+                        } else {
+                            // 设置GPU数量的默认值
+                            var gpuNumInput = document.getElementById('gpu_num');
+                            if (gpuNumInput && gpuCount > 0) {
+                                gpuNumInput.value = gpuCount;
+                            }
+                        }
+                        
+                        // 初始化显示状态
+                        updateSelectionVisibility();
+                    }
+                    
+                    // 更新选择器可见性
+                    function updateSelectionVisibility() {
+                        if (!trainingModeSelect) return;
+                        
+                        var selectedMode = trainingModeSelect.value;
+                        
+                        if (singleGpuSelection) {
+                            singleGpuSelection.style.display = selectedMode === 'single_gpu' ? 'block' : 'none';
+                        }
+                        if (multiGpuSelection) {
+                            multiGpuSelection.style.display = selectedMode === 'multi_gpu' ? 'block' : 'none';
+                        }
+                    }
+                    
+                    // 添加训练方式切换事件监听器
+                    if (trainingModeSelect) {
+                        trainingModeSelect.addEventListener('change', updateSelectionVisibility);
+                    }
+                    
+                    // 初始化UI
+                    window.addEventListener('DOMContentLoaded', initUI);
+                </script>
                 
                 <div class="submit-container">
                     <button type="submit">开始训练</button>

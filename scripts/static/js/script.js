@@ -533,6 +533,10 @@ function refreshLog(processId) {
                         clearInterval(logTimers[processId]);
                         delete logTimers[processId];
                     }
+                } else {
+                    // 如果日志容器被隐藏，清除定时器
+                    clearInterval(logTimers[processId]);
+                    delete logTimers[processId];
                 }
             }, 1000);
         }
@@ -541,11 +545,33 @@ function refreshLog(processId) {
 
 // 加载日志内容
 function loadLogContent(processId, logsContainer) {
+    // 显示加载状态
+    const oldContent = logsContainer.textContent;
+    const isScrolledToBottom = logsContainer.scrollHeight - logsContainer.scrollTop <= logsContainer.clientHeight + 10;
+    
     fetch(`/logs/${processId}`)
-        .then(response => response.text())
+        .then(response => {
+            if (!response.ok) {
+                throw new Error('获取日志失败');
+            }
+            return response.text();
+        })
         .then(logs => {
+            // 更新日志内容
             logsContainer.textContent = logs;
-            logsContainer.scrollTop = logsContainer.scrollHeight;
+            
+            // 如果用户之前滚动到底部，则继续保持在底部
+            // 否则保持用户的滚动位置
+            if (isScrolledToBottom || oldContent === logsContainer.textContent) {
+                logsContainer.scrollTop = logsContainer.scrollHeight;
+            }
+        })
+        .catch(error => {
+            console.error('加载日志失败:', error);
+            // 只在内容为空或之前不是错误信息时才显示错误
+            if (!logsContainer.textContent.includes('加载失败')) {
+                logsContainer.textContent = `加载日志失败: ${error.message}`;
+            }
         });
 }
 
@@ -815,7 +841,32 @@ function stopProcess(processId) {
 document.getElementById('train-form').addEventListener('submit', function(e) {
     e.preventDefault();
     const formData = new FormData(this);
-    const data = Object.fromEntries(formData.entries());
+    const data = {};
+    const trainingMode = formData.get('training_mode');
+    
+    // 处理表单数据，特别关注训练方式相关参数
+    formData.forEach((value, key) => {
+        // 对于GPU数量，确保只有当选择了多卡训练时才添加到数据中
+        if (key === 'gpu_num') {
+            const multiGpuSelection = document.getElementById('multi-gpu-selection');
+            if (multiGpuSelection && multiGpuSelection.style.display !== 'none') {
+                data[key] = value;
+            }
+        } else if (key === 'device') {
+            // 处理device参数，根据训练方式设置正确格式
+            if (trainingMode === 'single_gpu') {
+                // 单卡训练时，格式为cuda:序号
+                data[key] = `cuda:${value}`;
+            } else if (trainingMode === 'cpu') {
+                // CPU训练时，固定为cpu
+                data[key] = 'cpu';
+            }
+            // 多卡训练时不需要device参数，会通过torchrun自动设置
+        } else if (key !== 'training_mode') {
+            // 排除training_mode参数，保留其他参数
+            data[key] = value;
+        }
+    });
     
     // 立即显示加载通知
     showNotification('正在启动训练...', 'info');
@@ -1131,36 +1182,32 @@ function viewLogFile(filename, button) {
     if (logContainer.classList.contains('hidden')) {
         logContainer.classList.remove('hidden');
         
-        // 如果是首次加载，获取日志内容
-        if (logContainer.textContent.trim() === '') {
-            logContainer.textContent = '加载中...';
-            
-            fetch(`/logfile-content/${encodeURIComponent(filename)}`)
-                .then(response => {
-                    if (!response.ok) {
-                        throw new Error('获取日志失败');
-                    }
-                    return response.text();
-                })
-                .then(logs => {
-                    // 保留空白格式，使用textContent而不是innerHTML
-                    logContainer.textContent = logs;
-                    logContainer.scrollTop = 0;
-                    
-                    // 更新内容容器的高度
-                    updateContentContainerHeight();
-                })
-                .catch(error => {
-                    console.error('获取日志失败:', error);
-                    logContainer.innerHTML = `<p class="error">获取日志失败: ${error.message}</p>`;
-                    
-                    // 更新内容容器的高度
-                    updateContentContainerHeight();
-                });
-        } else {
-            // 如果不是首次加载，直接更新内容容器的高度
-            updateContentContainerHeight();
-        }
+        // 读取完整日志内容
+        logContainer.textContent = '加载中...';
+        
+        fetch(`/logfile-content/${encodeURIComponent(filename)}`)
+            .then(response => {
+                if (!response.ok) {
+                    throw new Error('获取日志失败');
+                }
+                return response.text();
+            })
+            .then(logs => {
+                // 保留空白格式，使用textContent而不是innerHTML
+                logContainer.textContent = logs;
+                // 默认滚动到顶部，显示完整历史
+                logContainer.scrollTop = 0;
+                
+                // 更新内容容器的高度
+                updateContentContainerHeight();
+            })
+            .catch(error => {
+                console.error('获取日志失败:', error);
+                logContainer.textContent = `获取日志失败: ${error.message}`;
+                
+                // 更新内容容器的高度
+                updateContentContainerHeight();
+            });
     } else {
         logContainer.classList.add('hidden');
         

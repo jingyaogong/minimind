@@ -7,6 +7,38 @@ import socket
 from flask import Flask, render_template, request, jsonify, redirect, url_for
 import time
 
+# 尝试导入torch来检测GPU
+try:
+    import torch
+    HAS_TORCH = True
+    # 检测可用的GPU数量和设备信息
+    if torch.cuda.is_available():
+        GPU_COUNT = torch.cuda.device_count()
+        # 获取GPU设备名称
+        GPU_NAMES = [torch.cuda.get_device_name(i) for i in range(GPU_COUNT)]
+    else:
+        GPU_COUNT = 0
+        GPU_NAMES = []
+except ImportError:
+    HAS_TORCH = False
+    GPU_COUNT = 0
+    GPU_NAMES = []
+
+# 训练方式支持检测
+def get_supported_training_methods():
+    """获取当前环境支持的训练方法"""
+    methods = {
+        'pretrain': True,  # 预训练总是支持
+        'sft': True,       # SFT总是支持
+        'lora': True,      # LoRA总是支持
+        'dpo': True,       # DPO总是支持
+        'multi_gpu': HAS_TORCH and GPU_COUNT > 1  # 多GPU训练需要PyTorch和多个GPU
+    }
+    return methods
+
+# 获取当前环境支持的训练方法
+SUPPORTED_METHODS = get_supported_training_methods()
+
 sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), '..')))
 
 app = Flask(__name__, template_folder='templates', static_folder='static')
@@ -28,25 +60,41 @@ def start_training_process(train_type, params):
     # 确保日志目录存在
     os.makedirs(log_dir, exist_ok=True)
     
+    # 获取GPU数量参数，如果存在且大于1，则使用torchrun启动多卡训练
+    gpu_num = int(params.get('gpu_num', 0)) if 'gpu_num' in params else 0
+    use_torchrun = HAS_TORCH and GPU_COUNT > 0 and gpu_num > 1
+    
     # 构建命令
     if train_type == 'pretrain':
         script_path = '../trainer/train_pretrain.py'
-        cmd = [sys.executable, script_path]
+        if use_torchrun:
+            cmd = ['torchrun', '--nproc_per_node', str(gpu_num), script_path]
+        else:
+            cmd = [sys.executable, script_path]
         if 'save_weight' in params:
             cmd.extend(['--save_weight', params['save_weight']])
     elif train_type == 'sft':
         script_path = '../trainer/train_full_sft.py'
-        cmd = [sys.executable, script_path]
+        if use_torchrun:
+            cmd = ['torchrun', '--nproc_per_node', str(gpu_num), script_path]
+        else:
+            cmd = [sys.executable, script_path]
         if 'save_weight' in params:
             cmd.extend(['--save_weight', params['save_weight']])
     elif train_type == 'lora':
         script_path = '../trainer/train_lora.py'
-        cmd = [sys.executable, script_path]
+        if use_torchrun:
+            cmd = ['torchrun', '--nproc_per_node', str(gpu_num), script_path]
+        else:
+            cmd = [sys.executable, script_path]
         if 'lora_name' in params:
             cmd.extend(['--lora_name', params['lora_name']])
     elif train_type == 'dpo':
         script_path = '../trainer/train_dpo.py'
-        cmd = [sys.executable, script_path]
+        if use_torchrun:
+            cmd = ['torchrun', '--nproc_per_node', str(gpu_num), script_path]
+        else:
+            cmd = [sys.executable, script_path]
         # 添加DPO特定参数
         if 'beta' in params and params['beta']:
             cmd.extend(['--beta', params['beta']])
@@ -59,14 +107,14 @@ def start_training_process(train_type, params):
     
     # 添加通用参数
     for key, value in params.items():
-        # 跳过特殊参数和DPO特有参数
-        if key in ['train_type', 'save_weight', 'lora_name', 'train_monitor', 'beta', 'accumulation_steps', 'grad_clip']:
+        # 跳过特殊参数和DPO特有参数，以及gpu_num参数（因为已经在torchrun命令中使用）
+        if key in ['train_type', 'save_weight', 'lora_name', 'train_monitor', 'beta', 'accumulation_steps', 'grad_clip', 'gpu_num']:
             continue
             
-        # 特殊处理布尔标志参数
+        # 对于from_resume参数，需要正确传递参数值
         if key == 'from_resume':
-            if value == '1':  # 只有当值为1时才添加这个标志
-                cmd.append(f'--{key}')
+            # 确保传递参数名和参数值
+            cmd.extend([f'--{key}', str(value)])
         else:
             # 确保log_interval和save_interval参数正确传递
             cmd.extend([f'--{key}', str(value)])
@@ -126,7 +174,8 @@ def start_training_process(train_type, params):
 # Flask路由
 @app.route('/')
 def index():
-    return render_template('index.html')
+    # 传递GPU信息到前端
+    return render_template('index.html', has_gpu=HAS_TORCH and GPU_COUNT > 0, gpu_count=GPU_COUNT)
 
 @app.route('/train', methods=['POST'])
 def train():
@@ -176,20 +225,62 @@ def logs(process_id):
     log_dir = os.path.join(script_dir, '../logfile')
     log_dir = os.path.abspath(log_dir)
     
+    # 查找匹配的日志文件
+    log_file = None
     if os.path.exists(log_dir):
         for filename in os.listdir(log_dir):
             if filename.endswith(f'{process_id}.log'):
                 log_file = os.path.join(log_dir, filename)
-                if os.path.exists(log_file):
-                    try:
-                        with open(log_file, 'r', encoding='utf-8') as f:
-                            # 只读取最后200行
-                            lines = f.readlines()
-                            last_200_lines = lines[-200:] if len(lines) > 200 else lines
-                            return ''.join(last_200_lines)
-                    except Exception as e:
-                        return f'读取日志失败: {str(e)}'
-    return '日志文件不存在或已被删除'
+                break
+    
+    if not log_file or not os.path.exists(log_file):
+        return '日志文件不存在或已被删除'
+    
+    try:
+        # 使用高效的方法读取文件的最后200行
+        # 这对于大文件特别有用，可以避免读取整个文件
+        last_200_lines = []
+        block_size = 8192  # 8KB blocks
+        
+        with open(log_file, 'r', encoding='utf-8') as f:
+            # 尝试直接定位到文件末尾，然后向前读取
+            f.seek(0, os.SEEK_END)
+            file_size = f.tell()
+            
+            # 计算需要读取的块数
+            position = file_size
+            blocks = []
+            while position > 0:
+                # 后退一个块的位置
+                position -= block_size
+                if position < 0:
+                    position = 0
+                
+                # 移动到计算的位置
+                f.seek(position)
+                
+                # 读取这个块
+                block = f.read(block_size)
+                blocks.append(block)
+                
+                # 如果已经收集了足够的行，就停止
+                combined_text = ''.join(reversed(blocks))
+                lines = combined_text.splitlines(True)
+                if len(lines) >= 200:
+                    # 获取最后200行
+                    last_200_lines = lines[-200:]
+                    break
+            
+            # 如果文件内容不足200行，或者上面的方法没有收集到足够的行
+            if len(last_200_lines) < 200:
+                # 重新读取整个文件（对于小文件）
+                f.seek(0)
+                all_lines = f.readlines()
+                last_200_lines = all_lines[-200:] if len(all_lines) > 200 else all_lines
+        
+        return ''.join(last_200_lines)
+    except Exception as e:
+        return f'读取日志失败: {str(e)}'
 
 @app.route('/logfiles')
 def get_logfiles():
@@ -220,24 +311,26 @@ def get_logfiles():
 
 @app.route('/logfile-content/<filename>')
 def get_logfile_content(filename):
+    # 安全检查：确保文件名不包含路径遍历字符
+    if '..' in filename or '/' in filename or '\\' in filename:
+        return jsonify({'error': 'Invalid filename'}), 400
+    
     # 获取脚本所在目录的绝对路径
     script_dir = os.path.dirname(os.path.abspath(__file__))
-    # 构建logfile目录的绝对路径
+    # 构建logfile目录的绝对路径，train_web_ui.py在scripts目录下
     log_dir = os.path.join(script_dir, '../logfile')
     log_dir = os.path.abspath(log_dir)
-    
-    # 安全检查：防止路径遍历攻击
-    if '..' in filename or '/' in filename or '\\' in filename:
-        return '非法的文件名'
-    
     log_file = os.path.join(log_dir, filename)
-    if os.path.exists(log_file) and os.path.isfile(log_file):
-        try:
-            with open(log_file, 'r', encoding='utf-8') as f:
-                return f.read()
-        except Exception as e:
-            return f'读取日志失败: {str(e)}'
-    return '日志文件不存在'
+    
+    try:
+        # 读取完整的日志文件内容
+        with open(log_file, 'r', encoding='utf-8') as f:
+            content = f.read()
+        return content
+    except FileNotFoundError:
+        return jsonify({'error': 'Log file not found'}), 404
+    except Exception as e:
+        return jsonify({'error': str(e)}), 500
 
 @app.route('/delete-logfile/<filename>', methods=['DELETE'])
 def delete_logfile(filename):
