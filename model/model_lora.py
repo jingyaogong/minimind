@@ -34,9 +34,11 @@ def apply_lora(model, rank=8):
 
 def load_lora(model, path):
     state_dict = torch.load(path, map_location=model.device)
+    # 去除权重键名中可能存在的 module. 前缀
+    cleaned_state_dict = {k.replace('module.', ''): v for k, v in state_dict.items()}
     for name, module in model.named_modules():
         if hasattr(module, 'lora'):
-            lora_state = {k.replace(f'{name}.lora.', ''): v for k, v in state_dict.items() if f'{name}.lora.' in k}
+            lora_state = {k.replace(f'{name}.lora.', ''): v for k, v in cleaned_state_dict.items() if f'{name}.lora.' in k}
             module.lora.load_state_dict(lora_state)
 
 
