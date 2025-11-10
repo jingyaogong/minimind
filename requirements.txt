@@ -2,10 +2,12 @@ datasets==3.6.0
 datasketch==1.6.4
 Flask==3.0.3
 Flask_Cors==4.0.0
+huggingface-hub==0.36.0
 jieba==0.42.1
 jsonlines==4.0.0
 marshmallow==3.22.0
 matplotlib==3.10.0
+modelscope==1.31.0
 ngrok==1.4.0
 nltk==3.8
 numpy==1.26.4
