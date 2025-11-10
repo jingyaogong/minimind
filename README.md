@@ -1799,6 +1799,23 @@ ollama run jingyaogong/minimind2 # 其他可选 minimind2-r1 / minimind2-small /
 我是一个语言模型...
 ```
 
+## <img src="https://github.com/alibaba/MNN/blob/master/doc/banner.png" height="28" style="vertical-align: middle;"/> [MNN](https://github.com/alibaba/MNN)
+
+MNN是面向端侧的AI推理引擎，支持多种开源LLM模型推理，轻量化、高性能。
+
+1. 模型转换
+```
+cd MNN/transformers/llm/export
+# 导出4bit HQQ量化的MNN模型
+python llmexport.py --path /path/to/MiniMind2/  --export mnn --hqq --dst_path MiniMind2-MNN
+```
+
+2. 在Mac或手机上测试
+```
+./llm_demo /path/to/MiniMind2-MNN/config.json prompt.txt
+```
+或者下载APP测试
+
 > 以上三方框架的更多用法请参考对应官方文档😊
 
 # 📌 Acknowledge
