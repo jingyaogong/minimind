@@ -33,8 +33,18 @@ nohup python -u train_web_ui.py > "$LOG_FILE" 2>&1 &
 # 保存PID
 echo $! > "train_web_ui.pid"
 
-sleep 2
+# 等待服务启动并获取实际端口号
+sleep 3
+
+# 从日志文件中提取实际使用的端口号
+# 查找包含"启动Flask服务器在 http://0.0.0.0:"的行并提取端口号
+PORT=$(grep -oP '启动Flask服务器在 http://0.0.0.0:\K[0-9]+' "$LOG_FILE" || echo "5000")
+
+# 如果没有找到端口号，尝试查找"Running on http://0.0.0.0:"格式的日志
+if [ "$PORT" = "5000" ]; then
+    PORT=$(grep -oP 'Running on http://0.0.0.0:\K[0-9]+' "$LOG_FILE" || echo "5000")
+fi
 
 echo "服务已启动! PID: $(cat "train_web_ui.pid")"
-echo "访问地址: http://localhost:5000"
-echo "停止命令: kill $(cat "train_web_ui.pid") or ./trainer_web/stop_web_ui.sh"
+echo "访问地址: http://localhost:$PORT"
+echo "停止命令: kill $(cat "train_web_ui.pid") or bash trainer_web/stop_web_ui.sh"

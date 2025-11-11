@@ -341,6 +341,20 @@ button:active {
     margin-right: 10px;
     border-radius: 6px;
 }
+
+.btn-swanlab {
+    background: linear-gradient(135deg, #007bff 0%, #00bfff 100%);
+    padding: 8px 15px;
+    font-size: 14px;
+    margin-right: 10px;
+    border-radius: 6px;
+    color: white;
+}
+
+.btn-swanlab:hover {
+    transform: translateY(-1px);
+    box-shadow: 0 4px 10px rgba(0, 123, 255, 0.3);
+}
 .btn-delete {
     background: linear-gradient(135deg, #f44336 0%, #d32f2f 100%);
     padding: 8px 15px;

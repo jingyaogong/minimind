@@ -175,7 +175,10 @@ def start_training_process(train_type, params):
         'log_file': log_file,
         'start_time': time.strftime('%Y-%m-%d %H:%M:%S'),
         'running': True,
-        'error': False
+        'error': False,
+        'train_monitor': params.get('train_monitor', 'none'),  # 保存训练监控设置
+        'swanlab_url': None,
+        'next_line_is_swanlab_url': False
     }
     
     # 开始读取输出
@@ -186,6 +189,16 @@ def start_training_process(train_type, params):
                 if output == '' and process.poll() is not None:
                     break
                 if output:
+                    # 检查是否是swanlab链接的行
+                    output_stripped = output.strip()
+                    if training_processes[process_id]['next_line_is_swanlab_url']:
+                        # 保存swanlab链接
+                        training_processes[process_id]['swanlab_url'] = output_stripped
+                        training_processes[process_id]['next_line_is_swanlab_url'] = False
+                    elif 'swanlab: 🚀 View run at' in output_stripped:
+                        # 标记下一行是swanlab链接
+                        training_processes[process_id]['next_line_is_swanlab_url'] = True
+                    
                     with open(log_file, 'a') as f:
                         f.write(output)
             # 检查进程是否成功结束
@@ -240,7 +253,9 @@ def processes():
             'start_time': info['start_time'],
             'running': info['running'],
             'error': info['error'],
-            'status': status
+            'status': status,
+            'train_monitor': info.get('train_monitor', 'none'),  # 添加train_monitor字段
+            'swanlab_url': info.get('swanlab_url')  # 添加swanlab_url字段
         })
     return jsonify(result)
 
@@ -265,12 +280,26 @@ def logs(process_id):
         return '日志文件不存在或已被删除'
     
     try:
-        # 使用高效的方法读取文件的最后200行
-        # 这对于大文件特别有用，可以避免读取整个文件
-        last_200_lines = []
-        block_size = 8192  # 8KB blocks
+        # 使用二进制模式读取，然后尝试解码以处理不同编码的日志文件
+        def read_log_file_robust(file_path):
+            # 尝试多种编码方式读取文件
+            encodings = ['utf-8', 'latin-1', 'gbk', 'gb2312']
+            for encoding in encodings:
+                try:
+                    with open(file_path, 'r', encoding=encoding) as f:
+                        return f.read(), encoding
+                except UnicodeDecodeError:
+                    continue
+            # 如果所有编码都失败，使用二进制模式读取并替换不可解码的字符
+            with open(file_path, 'rb') as f:
+                content = f.read()
+            return content.decode('utf-8', errors='replace'), 'binary_decoded'
         
-        with open(log_file, 'r', encoding='utf-8') as f:
+        # 使用高效的方法读取文件的最后200行，确保以完整行为单位
+        last_200_lines = []
+        
+        # 先尝试使用二进制模式读取文件末尾的部分
+        with open(log_file, 'rb') as f:
             # 尝试直接定位到文件末尾，然后向前读取
             f.seek(0, os.SEEK_END)
             file_size = f.tell()
@@ -278,7 +307,11 @@ def logs(process_id):
             # 计算需要读取的块数
             position = file_size
             blocks = []
-            while position > 0:
+            block_size = 8192  # 8KB blocks
+            
+            # 确保我们有足够的数据来处理完整行
+            found_complete_lines = False
+            while position > 0 and not found_complete_lines:
                 # 后退一个块的位置
                 position -= block_size
                 if position < 0:
@@ -291,19 +324,36 @@ def logs(process_id):
                 block = f.read(block_size)
                 blocks.append(block)
                 
-                # 如果已经收集了足够的行，就停止
-                combined_text = ''.join(reversed(blocks))
-                lines = combined_text.splitlines(True)
-                if len(lines) >= 200:
-                    # 获取最后200行
-                    last_200_lines = lines[-200:]
-                    break
+                # 如果已经收集了足够的数据，尝试解码并检查行数
+                combined_binary = b''.join(blocks)
+                # 尝试解码，使用errors='replace'处理无法解码的字符
+                try:
+                    combined_text = combined_binary.decode('utf-8', errors='replace')
+                except:
+                    combined_text = combined_binary.decode('latin-1')
+                
+                lines = combined_text.splitlines(True)  # 使用True保留换行符
+                
+                # 确保我们不返回不完整的第一行
+                if len(lines) > 0:
+                    # 如果有足够的行，确保我们从一个完整行开始
+                    if len(lines) > 1:
+                        # 跳过可能不完整的第一行
+                        last_200_lines = lines[1:]
+                    else:
+                        last_200_lines = lines
+                    
+                    # 如果我们有足够的行，停止读取
+                    if len(last_200_lines) >= 200:
+                        # 获取最后200行
+                        last_200_lines = last_200_lines[-200:]
+                        found_complete_lines = True
             
             # 如果文件内容不足200行，或者上面的方法没有收集到足够的行
             if len(last_200_lines) < 200:
                 # 重新读取整个文件（对于小文件）
-                f.seek(0)
-                all_lines = f.readlines()
+                content, encoding = read_log_file_robust(log_file)
+                all_lines = content.splitlines(True)  # 使用True保留换行符
                 last_200_lines = all_lines[-200:] if len(all_lines) > 200 else all_lines
         
         return ''.join(last_200_lines)
@@ -351,9 +401,27 @@ def get_logfile_content(filename):
     log_file = os.path.join(log_dir, filename)
     
     try:
-        # 读取完整的日志文件内容
-        with open(log_file, 'r', encoding='utf-8') as f:
-            content = f.read()
+        # 使用二进制模式读取文件，可以更可靠地保留原始换行符
+        with open(log_file, 'rb') as f:
+            content_bytes = f.read()
+        
+        # 尝试多种编码方式解码，确保正确处理换行符
+        encodings = ['utf-8', 'latin-1', 'gbk', 'gb2312']
+        content = None
+        
+        for encoding in encodings:
+            try:
+                # 解码文件内容，保留原始换行符
+                content = content_bytes.decode(encoding)
+                break
+            except UnicodeDecodeError:
+                continue
+        
+        # 如果所有编码都失败，使用errors='replace'参数处理不可解码的字符
+        if content is None:
+            content = content_bytes.decode('utf-8', errors='replace')
+        
+        # 确保返回的内容正确保留所有换行符
         return content
     except FileNotFoundError:
         return jsonify({'error': 'Log file not found'}), 404
@@ -470,7 +538,9 @@ def save_processes_info():
                 'start_time': info['start_time'],
                 'running': info['running'],
                 'error': info.get('error', False),
-                'manually_stopped': info.get('manually_stopped', False)
+                'manually_stopped': info.get('manually_stopped', False),
+                'train_monitor': info.get('train_monitor', 'none'),  # 保存train_monitor
+                'swanlab_url': info.get('swanlab_url')  # 保存swanlab_url
             }
         
         with open(PROCESSES_FILE, 'w', encoding='utf-8') as f:
@@ -488,6 +558,16 @@ def load_processes_info():
             
             # 检查每个进程是否还在运行
             for pid, info in loaded_processes.items():
+                # 确保所有需要的字段都存在
+                if 'swanlab_url' not in info:
+                    info['swanlab_url'] = None
+                if 'manually_stopped' not in info:
+                    info['manually_stopped'] = False
+                if 'error' not in info:
+                    info['error'] = False
+                if 'train_monitor' not in info:
+                    info['train_monitor'] = 'none'
+                
                 if info['running']:
                     try:
                         # 检查进程是否还在运行
@@ -498,10 +578,16 @@ def load_processes_info():
                         else:
                             # 进程已停止
                             info['running'] = False
+                            # 如果进程未被明确标记为完成或出错，则默认为手动停止
+                            if not info['error']:
+                                info['manually_stopped'] = True
                             training_processes[pid] = info
                     except (psutil.NoSuchProcess, psutil.AccessDenied):
                         # 进程不存在或无权限访问
                         info['running'] = False
+                        # 如果进程未被明确标记为完成或出错，则默认为手动停止
+                        if not info['error']:
+                            info['manually_stopped'] = True
                         training_processes[pid] = info
                 else:
                     # 进程已停止，直接恢复

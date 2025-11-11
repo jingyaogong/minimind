@@ -226,10 +226,92 @@ function checkProcessStatusChanges() {
         });
 }
 
+// 检查并打开SwanLab链接
+function checkAndOpenSwanlab(processId) {
+    // 首先检查训练监控设置
+    const processItem = document.querySelector(`[data-process-id="${processId}"]`);
+    const trainMonitor = processItem ? processItem.dataset.trainMonitor : 'none';
+    
+    // 如果训练监控设置为'none'，显示提示信息
+    if (trainMonitor === 'none') {
+        showNotification('此训练未启用监控功能', 'info');
+        return;
+    }
+    
+    // 首先从DOM中获取最新的URL
+    let currentUrl = processItem ? processItem.dataset.swanlabUrl : '';
+    
+    // 如果没有URL或URL不完整，尝试从后端获取最新的进程信息
+    if (!currentUrl || currentUrl.trim() === '') {
+        fetch('/processes')
+            .then(response => response.json())
+            .then(data => {
+                const process = data.find(p => p.id === processId);
+                if (process && process.swanlab_url) {
+                    currentUrl = process.swanlab_url;
+                    // 更新DOM中的URL数据属性
+                    if (processItem) {
+                        processItem.dataset.swanlabUrl = currentUrl;
+                    }
+                    openSwanlab(processId, currentUrl);
+                } else {
+                    // 没有找到有效的链接
+                    showNotification('SwanLab链接尚未生成，请稍后再试', 'info');
+                }
+            })
+            .catch(error => {
+                console.error('获取进程信息失败:', error);
+                showNotification('获取SwanLab链接失败，请稍后再试', 'error');
+            });
+    } else {
+        // 有URL，直接打开
+        openSwanlab(processId, currentUrl);
+    }
+}
+
+// 打开SwanLab链接
+function openSwanlab(processId, url) {
+    // 检查URL是否有效
+    if (!url || typeof url !== 'string' || url.trim() === '' || !isValidUrl(url)) {
+        showNotification('SwanLab链接无效或尚未生成', 'info');
+        return;
+    }
+    
+    // 在新窗口打开链接
+    const newWindow = window.open(url, '_blank');
+    
+    // 检查窗口是否成功打开
+    if (newWindow) {
+        // 显示成功通知
+        showNotification('正在打开SwanLab页面', 'info');
+    } else {
+        // 弹出窗口被阻止
+        showNotification('无法打开新窗口，请检查浏览器设置', 'error');
+    }
+}
+
+// 检查URL是否有效
+function isValidUrl(url) {
+    try {
+        // 尝试创建URL对象，如果失败说明URL无效
+        new URL(url);
+        return true;
+    } catch (error) {
+        // 简单检查是否以http或https开头
+        return url.toLowerCase().startsWith('http://') || url.toLowerCase().startsWith('https://');
+    }
+}
+
 // 更新单个进程项
 function updateProcessItem(processItem, process) {
     // 更新数据属性
     processItem.dataset.processStatus = process.status;
+    processItem.dataset.trainMonitor = process.train_monitor || 'none';
+    
+    // 更新SwanLab URL数据属性
+    if (process.swanlab_url) {
+        processItem.dataset.swanlabUrl = process.swanlab_url;
+    }
     
     // 更新状态类和文本
     const statusElement = processItem.querySelector('.process-status');
@@ -253,23 +335,56 @@ function updateProcessItem(processItem, process) {
         statusElement.textContent = process.status;
     }
     
+    // 更新SwanLab按钮
+    const existingSwanlabButton = processItem.querySelector('.btn-swanlab');
+    const buttonContainer = processItem.querySelector('div:nth-child(2)'); // 按钮容器是第二个div
+    
+    // 只有当train_monitor不是'none'时才显示SwanLab按钮
+    const shouldShowSwanlab = process.train_monitor !== 'none';
+    
+    // 如果应该显示按钮但不存在，则创建并添加
+    if (shouldShowSwanlab && !existingSwanlabButton && buttonContainer) {
+        const swanlabButton = document.createElement('button');
+        swanlabButton.className = 'btn-swanlab';
+        swanlabButton.textContent = 'SwanLab';
+        swanlabButton.onclick = function() {
+            checkAndOpenSwanlab(process.id);
+        };
+        
+        // 插入到停止按钮之前
+        const stopButton = buttonContainer.querySelector('.btn-stop');
+        if (stopButton) {
+            buttonContainer.insertBefore(swanlabButton, stopButton);
+        } else {
+            // 如果没有停止按钮，插入到刷新按钮之后
+            const refreshButton = buttonContainer.querySelector('.btn-logs:nth-child(2)');
+            if (refreshButton) {
+                buttonContainer.insertBefore(swanlabButton, refreshButton.nextSibling);
+            }
+        }
+    } else if (!shouldShowSwanlab && existingSwanlabButton) {
+        // 如果不应该显示按钮但存在，则移除
+        existingSwanlabButton.remove();
+    } else if (existingSwanlabButton) {
+        // 更新现有按钮的点击事件
+        existingSwanlabButton.onclick = function() {
+            checkAndOpenSwanlab(process.id);
+        };
+    }
+    
     // 更新停止按钮
     const stopButton = processItem.querySelector('.btn-stop');
     if (stopButton) {
         if (!process.running) {
             stopButton.remove();
         }
-    } else if (process.running) {
-        // 如果按钮不存在但进程仍在运行，添加停止按钮
-        const buttonContainer = processItem.querySelector('div:last-child');
-        if (buttonContainer) {
+    } else if (process.running && buttonContainer) {
             const newStopButton = document.createElement('button');
             newStopButton.className = 'btn-stop';
             newStopButton.onclick = () => stopProcess(process.id);
             newStopButton.textContent = '停止训练';
             buttonContainer.appendChild(newStopButton);
         }
-    }
     
     // 处理删除按钮
     const deleteButton = processItem.querySelector('.btn-delete');
@@ -465,9 +580,17 @@ function addProcessItemToGroup(parentElement, process) {
     // 设置进程数据属性，用于后续检查状态
     processItem.dataset.processId = process.id;
     processItem.dataset.processStatus = process.status;
+    processItem.dataset.trainMonitor = process.train_monitor || 'none';
+    processItem.dataset.swanlabUrl = process.swanlab_url || '';
     
     // 检查是否显示删除按钮（对于非运行中的进程）
     const showDeleteButton = !process.running;
+    
+    // 只有当train_monitor不是'none'时才显示SwanLab按钮
+    const showSwanlabButton = process.train_monitor !== 'none';
+    const swanlabButton = showSwanlabButton ? `<button class="btn-swanlab" onclick="checkAndOpenSwanlab('${process.id}')">
+        SwanLab
+     </button>` : '';
     
     processItem.innerHTML = `
         <div class="process-info">
@@ -481,6 +604,7 @@ function addProcessItemToGroup(parentElement, process) {
         <div>
             <button class="btn-logs" onclick="showLogs('${process.id}')">查看日志</button>
             <button class="btn-logs" onclick="refreshLog('${process.id}')">刷新日志</button>
+            ${swanlabButton}
             ${process.running ? `<button class="btn-stop" onclick="stopProcess('${process.id}')">停止训练</button>` : ''}
             ${showDeleteButton ? `<button class="btn-delete" onclick="deleteProcess('${process.id}')">删除</button>` : ''}
         </div>
