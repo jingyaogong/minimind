@@ -1,0 +1,29 @@
+{
+  "20251111_030331": {
+    "pid": 2327112,
+    "train_type": "pretrain",
+    "log_file": "/file_system/wyz/minimind/logfile/train_pretrain_20251111_030331.log",
+    "start_time": "2025-11-11 03:03:31",
+    "running": false,
+    "error": false,
+    "manually_stopped": false
+  },
+  "20251111_030507": {
+    "pid": 2332304,
+    "train_type": "sft",
+    "log_file": "/file_system/wyz/minimind/logfile/train_sft_20251111_030507.log",
+    "start_time": "2025-11-11 03:05:07",
+    "running": false,
+    "error": false,
+    "manually_stopped": false
+  },
+  "20251111_035709": {
+    "pid": 2626329,
+    "train_type": "ppo",
+    "log_file": "/file_system/wyz/minimind/logfile/train_ppo_20251111_035709.log",
+    "start_time": "2025-11-11 03:57:09",
+    "running": false,
+    "error": true,
+    "manually_stopped": false
+  }
+}

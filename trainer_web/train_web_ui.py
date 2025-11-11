@@ -4,8 +4,11 @@ import subprocess
 import threading
 import json
 import socket
+import atexit
+import signal
 from flask import Flask, render_template, request, jsonify, redirect, url_for
 import time
+import psutil
 
 # 尝试导入torch来检测GPU
 try:
@@ -45,6 +48,12 @@ app = Flask(__name__, template_folder='templates', static_folder='static')
 
 # 存储训练进程的信息
 training_processes = {}
+
+# 进程信息持久化文件
+PROCESSES_FILE = os.path.join(os.path.dirname(os.path.abspath(__file__)), 'training_processes.json')
+
+# PID文件
+PID_FILE = os.path.join(os.path.dirname(os.path.abspath(__file__)), 'train_web_ui.pid')
 
 # 启动训练进程
 def start_training_process(train_type, params):
@@ -102,17 +111,36 @@ def start_training_process(train_type, params):
             cmd.extend(['--accumulation_steps', params['accumulation_steps']])
         if 'grad_clip' in params and params['grad_clip']:
             cmd.extend(['--grad_clip', params['grad_clip']])
+    elif train_type == 'ppo':
+        script_path = '../trainer/train_ppo.py'
+        if use_torchrun:
+            cmd = ['torchrun', '--nproc_per_node', str(gpu_num), script_path]
+        else:
+            cmd = [sys.executable, script_path]
+        # 添加PPO特定参数
+        if 'clip_epsilon' in params and params['clip_epsilon']:
+            cmd.extend(['--clip_epsilon', params['clip_epsilon']])
+        if 'vf_coef' in params and params['vf_coef']:
+            cmd.extend(['--vf_coef', params['vf_coef']])
+        if 'kl_coef' in params and params['kl_coef']:
+            cmd.extend(['--kl_coef', params['kl_coef']])
+        if 'reasoning' in params and params['reasoning']:
+            cmd.extend(['--reasoning', params['reasoning']])
+        if 'update_old_actor_freq' in params and params['update_old_actor_freq']:
+            cmd.extend(['--update_old_actor_freq', params['update_old_actor_freq']])
+        if 'reward_model_path' in params and params['reward_model_path']:
+            cmd.extend(['--reward_model_path', params['reward_model_path']])
     else:
         return None
     
     # 添加通用参数
     for key, value in params.items():
-        # 跳过特殊参数和DPO特有参数，以及gpu_num参数（因为已经在torchrun命令中使用）
-        if key in ['train_type', 'save_weight', 'lora_name', 'train_monitor', 'beta', 'accumulation_steps', 'grad_clip', 'gpu_num']:
+        # 跳过特殊参数和DPO、PPO特有参数，以及gpu_num参数（因为已经在torchrun命令中使用）
+        # 对于PPO训练，跳过--from_weight参数
+        if key in ['train_type', 'save_weight', 'lora_name', 'train_monitor', 'beta', 'accumulation_steps', 'grad_clip', 'gpu_num', 'clip_epsilon', 'vf_coef', 'kl_coef', 'reasoning', 'update_old_actor_freq', 'reward_model_path'] or (train_type == 'ppo' and key == 'from_weight'):
             continue
-            
         # 对于from_resume参数，需要正确传递参数值
-        if key == 'from_resume':
+        elif key == 'from_resume':
             # 确保传递参数名和参数值
             cmd.extend([f'--{key}', str(value)])
         else:
@@ -429,13 +457,99 @@ def find_available_port(start_port=5000, max_attempts=100):
             return port
     return None
 
+def save_processes_info():
+    """保存训练进程信息到文件"""
+    try:
+        # 创建一个不包含进程对象的可序列化版本
+        serializable_processes = {}
+        for pid, info in training_processes.items():
+            serializable_processes[pid] = {
+                'pid': info.get('pid', info.get('process').pid) if isinstance(info.get('process'), subprocess.Popen) else info.get('pid'),
+                'train_type': info['train_type'],
+                'log_file': info['log_file'],
+                'start_time': info['start_time'],
+                'running': info['running'],
+                'error': info.get('error', False),
+                'manually_stopped': info.get('manually_stopped', False)
+            }
+        
+        with open(PROCESSES_FILE, 'w', encoding='utf-8') as f:
+            json.dump(serializable_processes, f, ensure_ascii=False, indent=2)
+    except Exception as e:
+        print(f"保存进程信息失败: {str(e)}")
+
+def load_processes_info():
+    """从文件加载训练进程信息"""
+    global training_processes
+    try:
+        if os.path.exists(PROCESSES_FILE):
+            with open(PROCESSES_FILE, 'r', encoding='utf-8') as f:
+                loaded_processes = json.load(f)
+            
+            # 检查每个进程是否还在运行
+            for pid, info in loaded_processes.items():
+                if info['running']:
+                    try:
+                        # 检查进程是否还在运行
+                        proc = psutil.Process(info['pid'])
+                        if proc.is_running() and proc.status() != 'zombie':
+                            # 进程仍在运行，恢复信息
+                            training_processes[pid] = info
+                        else:
+                            # 进程已停止
+                            info['running'] = False
+                            training_processes[pid] = info
+                    except (psutil.NoSuchProcess, psutil.AccessDenied):
+                        # 进程不存在或无权限访问
+                        info['running'] = False
+                        training_processes[pid] = info
+                else:
+                    # 进程已停止，直接恢复
+                    training_processes[pid] = info
+    except Exception as e:
+        print(f"加载进程信息失败: {str(e)}")
+
+def handle_exit(signum, frame):
+    """处理程序退出信号，保存进程信息"""
+    print("正在保存进程信息...")
+    save_processes_info()
+    # 删除PID文件
+    if os.path.exists(PID_FILE):
+        try:
+            os.remove(PID_FILE)
+        except:
+            pass
+    sys.exit(0)
+
+# 注册退出处理器
+signal.signal(signal.SIGINT, handle_exit)  # Ctrl+C
+if hasattr(signal, 'SIGTERM'):
+    signal.signal(signal.SIGTERM, handle_exit)  # 终止信号
+
+# 注册程序退出时的处理函数
+atexit.register(save_processes_info)
+
 if __name__ == '__main__':
+    # 加载已保存的进程信息
+    load_processes_info()
+    
+    # 创建PID文件，用于标识web进程
+    with open(PID_FILE, 'w') as f:
+        f.write(str(os.getpid()))
+    
     # 尝试使用默认端口5000，如果被占用则自动寻找可用端口
     port = find_available_port(5000)
     if port is not None:
         print(f"启动Flask服务器在 http://0.0.0.0:{port}")
+        print(f"使用nohup启动可保持服务持续运行: nohup python -u scripts/train_web_ui.py &")
         # 使用0.0.0.0作为host以兼容VSCode的端口转发功能
-        app.run(host='0.0.0.0', port=port, debug=True)
+        app.run(host='0.0.0.0', port=port, debug=False)  # 生产环境关闭debug
     else:
         print("无法找到可用的端口，请检查系统端口占用情况")
+        # 删除PID文件
+        if os.path.exists(PID_FILE):
+            try:
+                os.remove(PID_FILE)
+            except:
+                pass
         sys.exit(1)

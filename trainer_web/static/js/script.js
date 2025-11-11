@@ -32,12 +32,19 @@ function openTab(evt, tabName) {
 document.getElementById('train_type').addEventListener('change', function() {
     const trainType = this.value;
     const pretrainSftFields = document.querySelectorAll('.pretrain-sft');
+    const fromWeightFields = document.querySelectorAll('.from-weight');
     const loraFields = document.querySelectorAll('.lora');
     const dpoFields = document.querySelectorAll('.dpo');
     const dpoParamCard = document.querySelector('.parameter-card.dpo');
+    const ppoFields = document.querySelectorAll('.ppo');
+    const ppoParamCard = document.querySelector('.parameter-card.ppo');
     
     pretrainSftFields.forEach(field => {
-        field.style.display = (trainType === 'pretrain' || trainType === 'sft') ? 'block' : 'none';
+        field.style.display = (trainType === 'pretrain' || trainType === 'sft' || trainType === 'dpo' || trainType === 'ppo') ? 'block' : 'none';
+    });
+
+    fromWeightFields.forEach(field => {
+        field.style.display = (trainType !== 'ppo') ? 'block' : 'none';
     });
     
     loraFields.forEach(field => {
@@ -48,8 +55,16 @@ document.getElementById('train_type').addEventListener('change', function() {
         field.style.display = trainType === 'dpo' ? 'block' : 'none';
     });
     
+    ppoFields.forEach(field => {
+        field.style.display = trainType === 'ppo' ? 'block' : 'none';
+    });
+    
     if (dpoParamCard) {
         dpoParamCard.style.display = trainType === 'dpo' ? 'block' : 'none';
+    }
+    
+    if (ppoParamCard) {
+        ppoParamCard.style.display = trainType === 'ppo' ? 'block' : 'none';
     }
     
     // 设置默认值
@@ -113,6 +128,27 @@ document.getElementById('train_type').addEventListener('change', function() {
         document.getElementById('hidden_size').value = '512';
         document.getElementById('num_hidden_layers').value = '8';
         document.getElementById('max_seq_len').value = '1024';
+        document.getElementById('use_moe').value = '0';
+    } else if (trainType === 'ppo') {
+        document.getElementById('save_dir').value = '../out';
+        document.getElementById('save_weight').value = 'ppo_actor';
+        document.getElementById('epochs').value = '1';
+        document.getElementById('batch_size').value = '2';
+        document.getElementById('learning_rate').value = '8e-8';
+        document.getElementById('data_path').value = '../dataset/rlaif-mini.jsonl';
+        document.getElementById('log_interval').value = '1';
+        document.getElementById('save_interval').value = '10';
+        // PPO特有参数默认值
+        document.getElementById('clip_epsilon').value = '0.1';
+        document.getElementById('vf_coef').value = '0.5';
+        document.getElementById('kl_coef').value = '0.02';
+        document.getElementById('reasoning').value = '1';
+        document.getElementById('update_old_actor_freq').value = '4';
+        document.getElementById('reward_model_path').value = '../../internlm2-1_8b-reward';
+        // 模型结构参数默认值
+        document.getElementById('hidden_size').value = '512';
+        document.getElementById('num_hidden_layers').value = '8';
+        document.getElementById('max_seq_len').value = '66';
         document.getElementById('use_moe').value = '0';
     }
 });
