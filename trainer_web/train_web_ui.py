@@ -280,82 +280,68 @@ def logs(process_id):
         return '日志文件不存在或已被删除'
     
     try:
-        # 使用二进制模式读取，然后尝试解码以处理不同编码的日志文件
-        def read_log_file_robust(file_path):
-            # 尝试多种编码方式读取文件
+        # 使用高效且健壮的方法读取文件的最后200行
+        def read_last_n_lines(file_path, n=200):
+            # 使用二进制模式读取文件，避免编码问题
+            with open(file_path, 'rb') as f:
+                # 获取文件大小
+                f.seek(0, os.SEEK_END)
+                file_size = f.tell()
+                
+                # 如果文件很小，直接读取整个文件
+                if file_size < 1024 * 1024:  # 小于1MB的文件直接读取
+                    f.seek(0)
+                    content = f.read()
+                    return process_content(content)
+                
+                # 对于大文件，使用缓冲读取末尾部分
+                # 估计需要读取的字节数（假设每行平均100字节）
+                buffer_size = n * 200  # 为了保险，读取更多字节
+                
+                # 定位到适当的位置
+                position = max(0, file_size - buffer_size)
+                f.seek(position)
+                
+                # 读取缓冲区内容
+                buffer = f.read(file_size - position)
+                
+                # 处理缓冲区内容
+                lines = process_content(buffer)
+                
+                # 确保我们获取到完整的行
+                # 如果缓冲区不是从文件开头开始，第一个行可能不完整
+                if position > 0:
+                    # 跳过第一个可能不完整的行
+                    if len(lines) > 1:
+                        lines = lines[1:]
+                    else:
+                        # 如果只有一行且不在文件开头，可能需要读取更多
+                        # 这里简单处理，直接读取整个文件（罕见情况）
+                        f.seek(0)
+                        content = f.read()
+                        lines = process_content(content)
+                
+                # 返回最后n行
+                return lines[-n:] if len(lines) > n else lines
+        
+        def process_content(content):
+            # 尝试多种编码方式解码内容
             encodings = ['utf-8', 'latin-1', 'gbk', 'gb2312']
             for encoding in encodings:
                 try:
-                    with open(file_path, 'r', encoding=encoding) as f:
-                        return f.read(), encoding
+                    text = content.decode(encoding)
+                    # 使用True参数保留换行符，确保行分隔符正确
+                    return text.splitlines(True)
                 except UnicodeDecodeError:
                     continue
-            # 如果所有编码都失败，使用二进制模式读取并替换不可解码的字符
-            with open(file_path, 'rb') as f:
-                content = f.read()
-            return content.decode('utf-8', errors='replace'), 'binary_decoded'
+            # 如果所有编码都失败，使用错误替换模式
+            text = content.decode('utf-8', errors='replace')
+            return text.splitlines(True)
         
-        # 使用高效的方法读取文件的最后200行，确保以完整行为单位
-        last_200_lines = []
+        # 读取最后200行
+        last_200_lines = read_last_n_lines(log_file, 200)
         
-        # 先尝试使用二进制模式读取文件末尾的部分
-        with open(log_file, 'rb') as f:
-            # 尝试直接定位到文件末尾，然后向前读取
-            f.seek(0, os.SEEK_END)
-            file_size = f.tell()
-            
-            # 计算需要读取的块数
-            position = file_size
-            blocks = []
-            block_size = 8192  # 8KB blocks
-            
-            # 确保我们有足够的数据来处理完整行
-            found_complete_lines = False
-            while position > 0 and not found_complete_lines:
-                # 后退一个块的位置
-                position -= block_size
-                if position < 0:
-                    position = 0
-                
-                # 移动到计算的位置
-                f.seek(position)
-                
-                # 读取这个块
-                block = f.read(block_size)
-                blocks.append(block)
-                
-                # 如果已经收集了足够的数据，尝试解码并检查行数
-                combined_binary = b''.join(blocks)
-                # 尝试解码，使用errors='replace'处理无法解码的字符
-                try:
-                    combined_text = combined_binary.decode('utf-8', errors='replace')
-                except:
-                    combined_text = combined_binary.decode('latin-1')
-                
-                lines = combined_text.splitlines(True)  # 使用True保留换行符
-                
-                # 确保我们不返回不完整的第一行
-                if len(lines) > 0:
-                    # 如果有足够的行，确保我们从一个完整行开始
-                    if len(lines) > 1:
-                        # 跳过可能不完整的第一行
-                        last_200_lines = lines[1:]
-                    else:
-                        last_200_lines = lines
-                    
-                    # 如果我们有足够的行，停止读取
-                    if len(last_200_lines) >= 200:
-                        # 获取最后200行
-                        last_200_lines = last_200_lines[-200:]
-                        found_complete_lines = True
-            
-            # 如果文件内容不足200行，或者上面的方法没有收集到足够的行
-            if len(last_200_lines) < 200:
-                # 重新读取整个文件（对于小文件）
-                content, encoding = read_log_file_robust(log_file)
-                all_lines = content.splitlines(True)  # 使用True保留换行符
-                last_200_lines = all_lines[-200:] if len(all_lines) > 200 else all_lines
-        
+        # 确保返回的内容顺序正确，并且不包含空行
         return ''.join(last_200_lines)
     except Exception as e:
         return f'读取日志失败: {str(e)}'
@@ -507,7 +493,7 @@ def delete(process_id):
         return jsonify({'success': True})
     return jsonify({'success': False})
 
-def find_available_port(start_port=5000, max_attempts=100):
+def find_available_port(start_port=12581, max_attempts=100):
     """查找可用的端口号
     
     Args:
@@ -623,8 +609,8 @@ if __name__ == '__main__':
     with open(PID_FILE, 'w') as f:
         f.write(str(os.getpid()))
     
-    # 尝试使用默认端口5000，如果被占用则自动寻找可用端口
-    port = find_available_port(5000)
+    # 尝试使用默认端口12581，如果被占用则自动寻找可用端口
+    port = find_available_port(12581)
     if port is not None:
         print(f"启动Flask服务器在 http://0.0.0.0:{port}")
         print(f"使用nohup启动可保持服务持续运行: nohup python -u scripts/train_web_ui.py &")

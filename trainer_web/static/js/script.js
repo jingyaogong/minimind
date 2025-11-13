@@ -197,9 +197,59 @@ function startProcessPolling() {
     }, 5000);
 }
 
+// 带超时和重试的fetch请求函数
+function fetchWithTimeoutAndRetry(url, options = {}, timeout = 10000, retries = 3) {
+    const controller = new AbortController();
+    const timeoutId = setTimeout(() => controller.abort(), timeout);
+    
+    // 添加缓存控制头
+    const fetchOptions = {
+        ...options,
+        headers: {
+            ...options.headers,
+            'Cache-Control': 'no-cache, no-store, must-revalidate',
+            'Pragma': 'no-cache',
+            'Expires': '0'
+        },
+        signal: controller.signal
+    };
+    
+    return fetch(url, fetchOptions)
+        .then(response => {
+            clearTimeout(timeoutId);
+            
+            // 检查响应是否成功
+            if (!response.ok) {
+                throw new Error(`HTTP错误! 状态码: ${response.status}`);
+            }
+            return response;
+        })
+        .catch(error => {
+            clearTimeout(timeoutId);
+            
+            // 如果是AbortError，说明请求超时
+            if (error.name === 'AbortError') {
+                throw new Error('请求超时');
+            }
+            
+            // 如果还有重试次数，重新发起请求
+            if (retries > 0) {
+                console.warn(`请求失败，${retries}次重试剩余，${timeout/2}ms后重试...`);
+                return new Promise(resolve => {
+                    setTimeout(() => {
+                        resolve(fetchWithTimeoutAndRetry(url, options, timeout, retries - 1));
+                    }, timeout / 2);
+                });
+            }
+            
+            // 重试次数用完，抛出错误
+            throw error;
+        });
+}
+
 // 检查进程状态变化（特别是错误状态）
 function checkProcessStatusChanges() {
-    fetch('/processes')
+    fetchWithTimeoutAndRetry('/processes')
         .then(response => response.json())
         .then(data => {
             // 遍历每个进程，检查状态变化
@@ -223,6 +273,8 @@ function checkProcessStatusChanges() {
         })
         .catch(error => {
             console.error('检查进程状态时出错:', error);
+            // 显示连接错误通知
+            showNotification('连接服务器失败，请刷新页面重试', 'error');
         });
 }
 
@@ -243,7 +295,7 @@ function checkAndOpenSwanlab(processId) {
     
     // 如果没有URL或URL不完整，尝试从后端获取最新的进程信息
     if (!currentUrl || currentUrl.trim() === '') {
-        fetch('/processes')
+        fetchWithTimeoutAndRetry('/processes')
             .then(response => response.json())
             .then(data => {
                 const process = data.find(p => p.id === processId);
@@ -414,7 +466,7 @@ function updateProcessItem(processItem, process) {
 
 // 加载进程列表
 function loadProcesses() {
-    fetch('/processes')
+    fetchWithTimeoutAndRetry('/processes')
         .then(response => response.json())
         .then(data => {
             const processList = document.getElementById('process-list');
@@ -709,7 +761,7 @@ function loadLogContent(processId, logsContainer) {
     const oldContent = logsContainer.textContent;
     const isScrolledToBottom = logsContainer.scrollHeight - logsContainer.scrollTop <= logsContainer.clientHeight + 10;
     
-    fetch(`/logs/${processId}`)
+    fetchWithTimeoutAndRetry(`/logs/${processId}`)
         .then(response => {
             if (!response.ok) {
                 throw new Error('获取日志失败');
@@ -838,16 +890,16 @@ function deleteProcess(processId) {
         '确定要删除这个训练进程吗？此操作不可恢复。',
         () => {
             // 确认删除
-            fetch(`/delete/${processId}`, {
-                method: 'POST'
-            })
-            .then(response => {
-                // 检查响应状态
-                if (!response.ok) {
-                    throw new Error('删除请求失败');
-                }
-                return response.json().catch(() => ({})); // 即使没有JSON响应也继续
-            })
+                fetchWithTimeoutAndRetry(`/delete/${processId}`, {
+                    method: 'POST'
+                })
+                .then(response => {
+                    // 检查响应状态
+                    if (!response.ok) {
+                        throw new Error('删除请求失败');
+                    }
+                    return response.json().catch(() => ({})); // 即使没有JSON响应也继续
+                })
             .then(() => {
                 // 从UI中移除进程项
                 const processItem = document.querySelector(`[data-process-id="${processId}"]`);
@@ -939,9 +991,9 @@ function stopProcess(processId) {
         '确定要停止这个训练进程吗？',
         () => {
             // 确认停止
-            fetch(`/stop/${processId}`, {
-                method: 'POST'
-            })
+                fetchWithTimeoutAndRetry(`/stop/${processId}`, {
+                    method: 'POST'
+                })
             .then(() => {
                 // 立即给用户反馈，设置为手动停止状态
                 const processItem = document.querySelector(`[data-process-id="${processId}"]`);
@@ -972,7 +1024,7 @@ function stopProcess(processId) {
                 showNotification('训练进程已停止', 'info');
                 
                 // 为了确保状态准确，仍然获取完整列表并更新单个进程
-                fetch('/processes')
+                fetchWithTimeoutAndRetry('/processes')
                     .then(response => response.json())
                     .then(data => {
                         // 从完整列表中找到特定进程
@@ -1033,10 +1085,11 @@ document.getElementById('train-form').addEventListener('submit', function(e) {
     
     // 延迟1秒后发送请求，确保两个通知之间有间隔
     setTimeout(() => {
-        fetch('/train', {
+        fetchWithTimeoutAndRetry('/train', {
             method: 'POST',
             headers: {
-                'Content-Type': 'application/json'
+                'Content-Type': 'application/json',
+                'Cache-Control': 'no-cache'
             },
             body: JSON.stringify(data)
         })
@@ -1072,7 +1125,7 @@ document.getElementById('train-form').addEventListener('submit', function(e) {
 
 // 加载日志文件列表
 function loadLogFiles() {
-    fetch('/logfiles')
+    fetchWithTimeoutAndRetry('/logfiles')
         .then(response => response.json())
         .then(data => {
             const logfilesList = document.getElementById('logfiles-list');
@@ -1270,8 +1323,11 @@ function deleteLogFile(filename, button) {
             button.disabled = true;
             
             // 发送删除请求到服务器
-            fetch(`/delete-logfile/${encodeURIComponent(filename)}`, {
-                method: 'DELETE'
+            fetchWithTimeoutAndRetry(`/delete-logfile/${encodeURIComponent(filename)}`, {
+                method: 'DELETE',
+                headers: {
+                    'Cache-Control': 'no-cache'
+                }
             })
             .then(response => {
                 if (!response.ok) {
@@ -1345,7 +1401,7 @@ function viewLogFile(filename, button) {
         // 读取完整日志内容
         logContainer.textContent = '加载中...';
         
-        fetch(`/logfile-content/${encodeURIComponent(filename)}`)
+        fetchWithTimeoutAndRetry(`/logfile-content/${encodeURIComponent(filename)}`)
             .then(response => {
                 if (!response.ok) {
                     throw new Error('获取日志失败');
