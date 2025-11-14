@@ -1046,7 +1046,7 @@ def load_processes_info():
 
 def handle_exit(signum, frame):
     """处理程序退出信号，保存进程信息"""
-    print("正在保存进程信息...")
+    print("正在保存进程信息...  save at 'trainer_web/training_processes.json'...")
     save_processes_info()
     # 删除PID文件
     if os.path.exists(PID_FILE):

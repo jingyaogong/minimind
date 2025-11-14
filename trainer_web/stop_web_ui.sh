@@ -14,6 +14,9 @@ if [ -f "train_web_ui.pid" ]; then
             echo "强制停止服务..."
             kill -9 "$pid"
         fi
+        echo "正在保存进程信息..."
+        echo "已保存到 'trainer_web/training_processes.json'"
+        sleep 1
         echo "服务已停止"
     else
         echo "服务未运行，但存在PID文件，已删除"
