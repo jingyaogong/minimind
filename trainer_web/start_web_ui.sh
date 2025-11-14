@@ -47,4 +47,4 @@ fi
 
 echo "服务已启动! PID: $(cat "train_web_ui.pid")"
 echo "访问地址: http://localhost:$PORT"
-echo "停止命令: kill $(cat "train_web_ui.pid") or bash trainer_web/stop_web_ui.sh"
+echo "停止命令: kill $(cat "train_web_ui.pid") or 'bash trainer_web/stop_web_ui.sh'"
