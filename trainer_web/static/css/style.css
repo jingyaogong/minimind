@@ -1,11 +1,28 @@
+:root {
+    --bg: #121212;
+    --card-bg: #2d2d2d;
+    --panel-bg: rgba(30, 30, 30, 0.9);
+    --text: #e0e0e0;
+    --accent: #8e24aa;
+    --accent-grad-start: #4a148c;
+    --accent-grad-end: #8e24aa;
+    --danger-grad-start: #ff416c;
+    --danger-grad-end: #ff4b2b;
+    --info-grad-start: #4facfe;
+    --info-grad-end: #00f2fe;
+    --success-grad-start: #11998e;
+    --success-grad-end: #38ef7d;
+    --border: #333;
+}
+
 body {
     font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
     line-height: 1.6;
-    color: #e0e0e0;
+    color: var(--text);
     max-width: 1200px;
     margin: 0 auto;
     padding: 20px;
-    background-color: #121212;
+    background-color: var(--bg);
     min-height: 100vh;
 }
 
@@ -67,7 +84,7 @@ h1 {
     transform: translateY(-1px);
 }
 .form-container {
-    background: rgba(30, 30, 30, 0.9);
+    background: var(--panel-bg);
     padding: 30px;
     border-radius: 15px;
     box-shadow: 0 10px 30px rgba(0, 0, 0, 0.3);
@@ -77,7 +94,7 @@ h1 {
 
 /* 参数卡片样式 */
 .parameter-card {
-    background-color: #2d2d2d;
+    background-color: var(--card-bg);
     border-radius: 8px;
     padding: 24px;
     margin-bottom: 16px;
@@ -101,7 +118,7 @@ h1 {
     margin-top: 0;
     margin-bottom: 20px;
     padding-bottom: 10px;
-    border-bottom: 1px solid #e040fb;
+    border-bottom: 1px solid var(--accent);
     width: 100%;
 }
 
@@ -174,7 +191,7 @@ textarea {
 
 input[type="text"]:focus, input[type="number"]:focus, select:focus {
     outline: none;
-    border-color: #8e24aa;
+    border-color: var(--accent);
     box-shadow: 0 0 0 3px rgba(142, 36, 170, 0.2);
     background-color: #333;
 }
@@ -187,7 +204,7 @@ input[type="text"]:focus, input[type="number"]:focus, select:focus {
     margin-right: 10px;
 }
 button {
-    background: linear-gradient(135deg, #4a148c 0%, #8e24aa 100%);
+    background: linear-gradient(135deg, var(--accent-grad-start) 0%, var(--accent-grad-end) 100%);
     color: white;
     border: none;
     padding: 12px 25px;
@@ -210,7 +227,7 @@ button:active {
 }
 .logs-container {
     background-color: #0d0d0d;
-    color: #e0e0e0;
+    color: var(--text);
     padding: 20px;
     border-radius: 10px;
     max-height: 300px;
@@ -219,7 +236,7 @@ button:active {
     font-family: 'Courier New', monospace;
     box-shadow: 0 5px 15px rgba(0, 0, 0, 0.4);
     transition: all 0.3s ease;
-    border: 1px solid #333;
+    border: 1px solid var(--border);
 }
 
 .logs-container:hover {
@@ -227,7 +244,7 @@ button:active {
 }
 .process-type-group {
     margin-bottom: 30px;
-    background-color: rgba(30, 30, 30, 0.9);
+    background-color: var(--panel-bg);
     border-radius: 15px;
     border: 1px solid #444;
     box-shadow: 0 5px 15px rgba(0, 0, 0, 0.2);
@@ -246,10 +263,10 @@ button:active {
 
 .process-type-title {
     margin: 0;
-    color: #e0e0e0;
+    color: var(--text);
     font-size: 1.2em;
     font-weight: 600;
-    border-bottom: 2px solid #8e24aa;
+    border-bottom: 2px solid var(--accent);
     padding-bottom: 8px;
     flex-grow: 1;
 }
@@ -309,7 +326,7 @@ button:active {
     letter-spacing: 0.5px;
 }
 .status-running {
-    background: linear-gradient(135deg, #11998e 0%, #38ef7d 100%);
+    background: linear-gradient(135deg, var(--success-grad-start) 0%, var(--success-grad-end) 100%);
     color: white;
 }
 .status-completed {
@@ -325,7 +342,7 @@ button:active {
     color: white;
 }
 .btn-stop {
-    background: linear-gradient(135deg, #ff416c 0%, #ff4b2b 100%);
+    background: linear-gradient(135deg, var(--danger-grad-start) 0%, var(--danger-grad-end) 100%);
     padding: 8px 15px;
     font-size: 14px;
     border-radius: 6px;
@@ -335,7 +352,7 @@ button:active {
     box-shadow: 0 4px 10px rgba(255, 65, 108, 0.3);
 }
 .btn-logs {
-    background: linear-gradient(135deg, #4facfe 0%, #00f2fe 100%);
+    background: linear-gradient(135deg, var(--info-grad-start) 0%, var(--info-grad-end) 100%);
     padding: 8px 15px;
     font-size: 14px;
     margin-right: 10px;

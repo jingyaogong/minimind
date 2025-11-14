@@ -1,7 +1,7 @@
 #!/bin/bash
 
-# 获取脚本所在目录
-SCRIPT_DIR=$(dirname "$(readlink -f "$0")")
+# 获取脚本所在目录（兼容 macOS）
+SCRIPT_DIR="$(cd "$(dirname "$0")" && pwd)"
 cd "$SCRIPT_DIR"
 
 # 检查是否已经有实例在运行
@@ -33,16 +33,20 @@ nohup python -u train_web_ui.py > "$LOG_FILE" 2>&1 &
 # 保存PID
 echo $! > "train_web_ui.pid"
 
-# 等待服务启动并获取实际端口号
-sleep 3
+# 轮询日志以获取实际端口号（最多等待10秒）
+PORT=""
+for i in {1..20}; do
+    # 提取形如 http://0.0.0.0:12345 的地址，再截取端口
+    PORT=$(grep -Eo 'http://0\.0\.0\.0:[0-9]+' "$LOG_FILE" | tail -n1 | awk -F: '{print $NF}')
+    if [ -n "$PORT" ]; then
+        break
+    fi
+    sleep 0.5
+done
 
-# 从日志文件中提取实际使用的端口号
-# 查找包含"启动Flask服务器在 http://0.0.0.0:"的行并提取端口号
-PORT=$(grep -oP '启动Flask服务器在 http://0.0.0.0:\K[0-9]+' "$LOG_FILE" || echo "5000")
-
-# 如果没有找到端口号，尝试查找"Running on http://0.0.0.0:"格式的日志
-if [ "$PORT" = "5000" ]; then
-    PORT=$(grep -oP 'Running on http://0.0.0.0:\K[0-9]+' "$LOG_FILE" || echo "5000")
+# 如果仍未获取到端口，回退为默认提示端口（与后端起始端口一致）
+if [ -z "$PORT" ]; then
+    PORT=12581
 fi
 
 echo "服务已启动! PID: $(cat "train_web_ui.pid")"

@@ -195,58 +195,8 @@
                 </div>
                 
                 <script>
-                    // 检查是否支持GPU并显示对应的选择器
-                    // 使用Flask模板变量传递GPU信息
-                    var hasGpu = {{ has_gpu|default(false)|tojson|safe }};
-                    var gpuCount = {{ gpu_count|default(0)|tojson|safe }};
-                    
-                    // 根据是否有GPU设置默认训练方式
-                    var trainingModeSelect = document.getElementById('training_mode');
-                    var singleGpuSelection = document.getElementById('single-gpu-selection');
-                    var multiGpuSelection = document.getElementById('multi-gpu-selection');
-                    
-                    // 设置默认值并初始化UI
-                    function initUI() {
-                        if (!trainingModeSelect) return;
-                        
-                        if (!hasGpu) {
-                            // 没有GPU时，默认选择CPU训练
-                            trainingModeSelect.value = 'cpu';
-                            if (singleGpuSelection) singleGpuSelection.style.display = 'none';
-                            if (multiGpuSelection) multiGpuSelection.style.display = 'none';
-                        } else {
-                            // 设置GPU数量的默认值
-                            var gpuNumInput = document.getElementById('gpu_num');
-                            if (gpuNumInput && gpuCount > 0) {
-                                gpuNumInput.value = gpuCount;
-                            }
-                        }
-                        
-                        // 初始化显示状态
-                        updateSelectionVisibility();
-                    }
-                    
-                    // 更新选择器可见性
-                    function updateSelectionVisibility() {
-                        if (!trainingModeSelect) return;
-                        
-                        var selectedMode = trainingModeSelect.value;
-                        
-                        if (singleGpuSelection) {
-                            singleGpuSelection.style.display = selectedMode === 'single_gpu' ? 'block' : 'none';
-                        }
-                        if (multiGpuSelection) {
-                            multiGpuSelection.style.display = selectedMode === 'multi_gpu' ? 'block' : 'none';
-                        }
-                    }
-                    
-                    // 添加训练方式切换事件监听器
-                    if (trainingModeSelect) {
-                        trainingModeSelect.addEventListener('change', updateSelectionVisibility);
-                    }
-                    
-                    // 初始化UI
-                    window.addEventListener('DOMContentLoaded', initUI);
+                    window.hasGpu = {{ has_gpu|default(false)|tojson|safe }};
+                    window.gpuCount = {{ gpu_count|default(0)|tojson|safe }};
                 </script>
                 
                 <div class="submit-container">
@@ -270,6 +220,6 @@
         </div>
     </div>
     
-    <script src="/static/js/script.js"></script>
+    <script type="module" src="/static/js/app.js"></script>
 </body>
 </html>
