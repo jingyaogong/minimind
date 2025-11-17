@@ -130,14 +130,40 @@ def start_training_process(train_type, params):
             cmd.extend(['--update_old_actor_freq', params['update_old_actor_freq']])
         if 'reward_model_path' in params and params['reward_model_path']:
             cmd.extend(['--reward_model_path', params['reward_model_path']])
+    elif train_type == 'grpo':
+        script_path = '../trainer/train_grpo.py'
+        if use_torchrun:
+            cmd = ['torchrun', '--nproc_per_node', str(gpu_num), script_path]
+        else:
+            cmd = [sys.executable, script_path]
+        if 'beta' in params and params['beta']:
+            cmd.extend(['--beta', params['beta']])
+        if 'num_generations' in params and params['num_generations']:
+            cmd.extend(['--num_generations', params['num_generations']])
+        if 'reasoning' in params and params['reasoning']:
+            cmd.extend(['--reasoning', params['reasoning']])
+        if 'reward_model_path' in params and params['reward_model_path']:
+            cmd.extend(['--reward_model_path', params['reward_model_path']])
+    elif train_type == 'spo':
+        script_path = '../trainer/train_spo.py'
+        if use_torchrun:
+            cmd = ['torchrun', '--nproc_per_node', str(gpu_num), script_path]
+        else:
+            cmd = [sys.executable, script_path]
+        if 'beta' in params and params['beta']:
+            cmd.extend(['--beta', params['beta']])
+        if 'reasoning' in params and params['reasoning']:
+            cmd.extend(['--reasoning', params['reasoning']])
+        if 'reward_model_path' in params and params['reward_model_path']:
+            cmd.extend(['--reward_model_path', params['reward_model_path']])
     else:
         return None
     
     # 添加通用参数
     for key, value in params.items():
         # 跳过特殊参数和DPO、PPO特有参数，以及gpu_num参数（因为已经在torchrun命令中使用）
-        # 对于PPO训练，跳过--from_weight参数
-        if key in ['train_type', 'save_weight', 'lora_name', 'train_monitor', 'beta', 'accumulation_steps', 'grad_clip', 'gpu_num', 'clip_epsilon', 'vf_coef', 'kl_coef', 'reasoning', 'update_old_actor_freq', 'reward_model_path'] or (train_type == 'ppo' and key == 'from_weight'):
+        # 对于PPO/GRPO/SPO训练，跳过--from_weight参数
+        if key in ['train_type', 'save_weight', 'lora_name', 'train_monitor', 'beta', 'accumulation_steps', 'grad_clip', 'gpu_num', 'clip_epsilon', 'vf_coef', 'kl_coef', 'reasoning', 'update_old_actor_freq', 'reward_model_path', 'num_generations'] or ((train_type == 'ppo' or train_type == 'grpo' or train_type == 'spo') and key == 'from_weight'):
             continue
         # 对于from_resume参数，需要正确传递参数值
         elif key == 'from_resume':

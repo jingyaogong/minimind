@@ -1,0 +1,13 @@
+{
+  "20251117_171339": {
+    "pid": 2060245,
+    "train_type": "grpo",
+    "log_file": "/root/minimind_web/minimind/logfile/train_grpo_20251117_171339.log",
+    "start_time": "2025-11-17 17:13:39",
+    "running": false,
+    "error": true,
+    "manually_stopped": false,
+    "train_monitor": "none",
+    "swanlab_url": null
+  }
+}

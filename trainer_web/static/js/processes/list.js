@@ -115,6 +115,9 @@ function getTrainTypeDisplayName(trainType) {
     sft: '全参数监督微调 (SFT - Full)',
     lora: 'LoRA监督微调 (SFT - Lora)',
     dpo: '直接偏好优化 (RL - DPO)',
+    ppo: 'PPO',
+    grpo: 'GRPO',
+    spo: 'SPO',
   };
   return names[trainType] || trainType;
 }
