@@ -1,8 +1,10 @@
+import { getApiKey } from './authClient.js';
 const defaultTimeout = 10000;
 
 export function fetchWithTimeoutAndRetry(url, options = {}, timeout = defaultTimeout, retries = 3) {
   const controller = new AbortController();
   const timeoutId = setTimeout(() => controller.abort(), timeout);
+  const apiKey = getApiKey();
   const fetchOptions = {
     ...options,
     headers: {
@@ -10,6 +12,7 @@ export function fetchWithTimeoutAndRetry(url, options = {}, timeout = defaultTim
       'Cache-Control': 'no-cache, no-store, must-revalidate',
       Pragma: 'no-cache',
       Expires: '0',
+      ...(apiKey ? { Authorization: `Bearer ${apiKey}` } : {}),
     },
     signal: controller.signal,
   };

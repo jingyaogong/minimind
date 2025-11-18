@@ -7,6 +7,7 @@ import socket
 import atexit
 import signal
 from flask import Flask, render_template, request, jsonify, redirect, url_for
+from flask import g
 import time
 import psutil
 
@@ -55,8 +56,10 @@ PROCESSES_FILE = os.path.join(os.path.dirname(os.path.abspath(__file__)), 'train
 # PID文件
 PID_FILE = os.path.join(os.path.dirname(os.path.abspath(__file__)), 'train_web_ui.pid')
 
+from .auth import register_client, get_client_from_request
+
 # 启动训练进程
-def start_training_process(train_type, params):
+def start_training_process(train_type, params, client_id):
     # 获取脚本所在目录的绝对路径
     script_dir = os.path.dirname(os.path.abspath(__file__))
     # 使用详细的时间戳作为进程ID和日志文件名
@@ -73,112 +76,10 @@ def start_training_process(train_type, params):
     gpu_num = int(params.get('gpu_num', 0)) if 'gpu_num' in params else 0
     use_torchrun = HAS_TORCH and GPU_COUNT > 0 and gpu_num > 1
     
-    # 构建命令
-    if train_type == 'pretrain':
-        script_path = '../trainer/train_pretrain.py'
-        if use_torchrun:
-            cmd = ['torchrun', '--nproc_per_node', str(gpu_num), script_path]
-        else:
-            cmd = [sys.executable, script_path]
-        if 'save_weight' in params:
-            cmd.extend(['--save_weight', params['save_weight']])
-    elif train_type == 'sft':
-        script_path = '../trainer/train_full_sft.py'
-        if use_torchrun:
-            cmd = ['torchrun', '--nproc_per_node', str(gpu_num), script_path]
-        else:
-            cmd = [sys.executable, script_path]
-        if 'save_weight' in params:
-            cmd.extend(['--save_weight', params['save_weight']])
-    elif train_type == 'lora':
-        script_path = '../trainer/train_lora.py'
-        if use_torchrun:
-            cmd = ['torchrun', '--nproc_per_node', str(gpu_num), script_path]
-        else:
-            cmd = [sys.executable, script_path]
-        if 'lora_name' in params:
-            cmd.extend(['--lora_name', params['lora_name']])
-    elif train_type == 'dpo':
-        script_path = '../trainer/train_dpo.py'
-        if use_torchrun:
-            cmd = ['torchrun', '--nproc_per_node', str(gpu_num), script_path]
-        else:
-            cmd = [sys.executable, script_path]
-        # 添加DPO特定参数
-        if 'beta' in params and params['beta']:
-            cmd.extend(['--beta', params['beta']])
-        if 'accumulation_steps' in params and params['accumulation_steps']:
-            cmd.extend(['--accumulation_steps', params['accumulation_steps']])
-        if 'grad_clip' in params and params['grad_clip']:
-            cmd.extend(['--grad_clip', params['grad_clip']])
-    elif train_type == 'ppo':
-        script_path = '../trainer/train_ppo.py'
-        if use_torchrun:
-            cmd = ['torchrun', '--nproc_per_node', str(gpu_num), script_path]
-        else:
-            cmd = [sys.executable, script_path]
-        # 添加PPO特定参数
-        if 'clip_epsilon' in params and params['clip_epsilon']:
-            cmd.extend(['--clip_epsilon', params['clip_epsilon']])
-        if 'vf_coef' in params and params['vf_coef']:
-            cmd.extend(['--vf_coef', params['vf_coef']])
-        if 'kl_coef' in params and params['kl_coef']:
-            cmd.extend(['--kl_coef', params['kl_coef']])
-        if 'reasoning' in params and params['reasoning']:
-            cmd.extend(['--reasoning', params['reasoning']])
-        if 'update_old_actor_freq' in params and params['update_old_actor_freq']:
-            cmd.extend(['--update_old_actor_freq', params['update_old_actor_freq']])
-        if 'reward_model_path' in params and params['reward_model_path']:
-            cmd.extend(['--reward_model_path', params['reward_model_path']])
-    elif train_type == 'grpo':
-        script_path = '../trainer/train_grpo.py'
-        if use_torchrun:
-            cmd = ['torchrun', '--nproc_per_node', str(gpu_num), script_path]
-        else:
-            cmd = [sys.executable, script_path]
-        if 'beta' in params and params['beta']:
-            cmd.extend(['--beta', params['beta']])
-        if 'num_generations' in params and params['num_generations']:
-            cmd.extend(['--num_generations', params['num_generations']])
-        if 'reasoning' in params and params['reasoning']:
-            cmd.extend(['--reasoning', params['reasoning']])
-        if 'reward_model_path' in params and params['reward_model_path']:
-            cmd.extend(['--reward_model_path', params['reward_model_path']])
-    elif train_type == 'spo':
-        script_path = '../trainer/train_spo.py'
-        if use_torchrun:
-            cmd = ['torchrun', '--nproc_per_node', str(gpu_num), script_path]
-        else:
-            cmd = [sys.executable, script_path]
-        if 'beta' in params and params['beta']:
-            cmd.extend(['--beta', params['beta']])
-        if 'reasoning' in params and params['reasoning']:
-            cmd.extend(['--reasoning', params['reasoning']])
-        if 'reward_model_path' in params and params['reward_model_path']:
-            cmd.extend(['--reward_model_path', params['reward_model_path']])
-    else:
+    from .dispatcher import build_command
+    cmd = build_command(train_type, params, gpu_num, use_torchrun)
+    if cmd is None:
         return None
-    
-    # 添加通用参数
-    for key, value in params.items():
-        # 跳过特殊参数和DPO、PPO特有参数，以及gpu_num参数（因为已经在torchrun命令中使用）
-        # 对于PPO/GRPO/SPO训练，跳过--from_weight参数
-        if key in ['train_type', 'save_weight', 'lora_name', 'train_monitor', 'beta', 'accumulation_steps', 'grad_clip', 'gpu_num', 'clip_epsilon', 'vf_coef', 'kl_coef', 'reasoning', 'update_old_actor_freq', 'reward_model_path', 'num_generations'] or ((train_type == 'ppo' or train_type == 'grpo' or train_type == 'spo') and key == 'from_weight'):
-            continue
-        # 对于from_resume参数，需要正确传递参数值
-        elif key == 'from_resume':
-            # 确保传递参数名和参数值
-            cmd.extend([f'--{key}', str(value)])
-        else:
-            # 确保log_interval和save_interval参数正确传递
-            cmd.extend([f'--{key}', str(value)])
-    
-    # 单独处理训练监控参数，确保它不会被错误地添加值
-    if 'train_monitor' in params:
-        if params['train_monitor'] == 'wandb' or params['train_monitor'] == 'swanlab':
-            cmd.append('--use_wandb')  # 对于wandb和swanlab，只添加标志，不添加值
-            if params['train_monitor'] == 'wandb':
-                cmd.extend(['--wandb_project', 'minimind_training'])
     
     # 创建日志文件
     with open(log_file, 'w') as f:
@@ -204,7 +105,8 @@ def start_training_process(train_type, params):
         'error': False,
         'train_monitor': params.get('train_monitor', 'none'),  # 保存训练监控设置
         'swanlab_url': None,
-        'next_line_is_swanlab_url': False
+        'next_line_is_swanlab_url': False,
+        'client_id': client_id
     }
     
     # 开始读取输出
@@ -246,6 +148,9 @@ def index():
 
 @app.route('/train', methods=['POST'])
 def train():
+    client = get_client_from_request(request)
+    if not client:
+        return jsonify({'success': False, 'error': '未授权'}), 401
     data = request.json
     train_type = data.get('train_type')
     
@@ -257,7 +162,7 @@ def train():
         params['from_resume'] = '0'
     
     # 启动训练进程
-    process_id = start_training_process(train_type, params)
+    process_id = start_training_process(train_type, params, client['client_id'])
     
     if process_id:
         return jsonify({'success': True, 'process_id': process_id})
@@ -266,8 +171,14 @@ def train():
 
 @app.route('/processes')
 def processes():
+    client = get_client_from_request(request)
+    if not client:
+        return jsonify([]), 401
+    cid = client['client_id']
     result = []
     for process_id, info in training_processes.items():
+        if info.get('client_id') != cid:
+            continue
         # 确定状态
         status = '运行中' if info['running'] else \
                 '手动停止' if 'manually_stopped' in info and info['manually_stopped'] else \
@@ -287,6 +198,12 @@ def processes():
 
 @app.route('/logs/<process_id>')
 def logs(process_id):
+    client = get_client_from_request(request)
+    if not client:
+        return '未授权', 401
+    cid = client['client_id']
+    if process_id not in training_processes or training_processes[process_id].get('client_id') != cid:
+        return '无权限', 403
     # 直接从本地logfile目录读取日志文件
     # 获取脚本所在目录的绝对路径
     script_dir = os.path.dirname(os.path.abspath(__file__))
@@ -374,6 +291,10 @@ def logs(process_id):
 
 @app.route('/logfiles')
 def get_logfiles():
+    client = get_client_from_request(request)
+    if not client:
+        return jsonify([]), 401
+    cid = client['client_id']
     # 获取脚本所在目录的绝对路径
     script_dir = os.path.dirname(os.path.abspath(__file__))
     # 构建logfile目录的绝对路径
@@ -381,6 +302,7 @@ def get_logfiles():
     log_dir = os.path.abspath(log_dir)
     
     logfiles = []
+    client_pids = {pid for pid, info in training_processes.items() if info.get('client_id') == cid}
     if os.path.exists(log_dir):
         for filename in os.listdir(log_dir):
             if filename.endswith('.log') and filename.startswith('train_'):
@@ -388,6 +310,8 @@ def get_logfiles():
                 try:
                     modified_time = os.path.getmtime(file_path)
                     formatted_time = time.strftime('%Y-%m-%d %H:%M:%S', time.localtime(modified_time))
+                    if not any(filename.endswith(f'{pid}.log') for pid in client_pids):
+                        continue
                     logfiles.append({
                         'filename': filename,
                         'modified_time': formatted_time,
@@ -401,6 +325,9 @@ def get_logfiles():
 
 @app.route('/logfile-content/<filename>')
 def get_logfile_content(filename):
+    client = get_client_from_request(request)
+    if not client:
+        return jsonify({'error': '未授权'}), 401
     # 安全检查：确保文件名不包含路径遍历字符
     if '..' in filename or '/' in filename or '\\' in filename:
         return jsonify({'error': 'Invalid filename'}), 400
@@ -411,6 +338,9 @@ def get_logfile_content(filename):
     log_dir = os.path.join(script_dir, '../logfile')
     log_dir = os.path.abspath(log_dir)
     log_file = os.path.join(log_dir, filename)
+    pid = filename.split('.')[-2].split('_')[-1] if filename.endswith('.log') else None
+    if not pid or pid not in training_processes or training_processes[pid].get('client_id') != client['client_id']:
+        return jsonify({'error': '无权限'}), 403
     
     try:
         # 使用二进制模式读取文件，可以更可靠地保留原始换行符
@@ -442,6 +372,9 @@ def get_logfile_content(filename):
 
 @app.route('/delete-logfile/<filename>', methods=['DELETE'])
 def delete_logfile(filename):
+    client = get_client_from_request(request)
+    if not client:
+        return jsonify({'success': False, 'message': '未授权'}), 401
     # 获取脚本所在目录的绝对路径
     script_dir = os.path.dirname(os.path.abspath(__file__))
     # 构建logfile目录的绝对路径
@@ -453,6 +386,9 @@ def delete_logfile(filename):
         return jsonify({'success': False, 'message': '非法的文件名'})
     
     log_file = os.path.join(log_dir, filename)
+    pid = filename.split('.')[-2].split('_')[-1] if filename.endswith('.log') else None
+    if not pid or pid not in training_processes or training_processes[pid].get('client_id') != client['client_id']:
+        return jsonify({'success': False, 'message': '无权限'}), 403
     if os.path.exists(log_file) and os.path.isfile(log_file):
         try:
             os.remove(log_file)
@@ -465,7 +401,10 @@ def delete_logfile(filename):
 
 @app.route('/stop/<process_id>', methods=['POST'])
 def stop(process_id):
-    if process_id in training_processes and training_processes[process_id]['running']:
+    client = get_client_from_request(request)
+    if not client:
+        return jsonify({'success': False}), 401
+    if process_id in training_processes and training_processes[process_id]['running'] and training_processes[process_id].get('client_id') == client['client_id']:
         process = training_processes[process_id]['process']
         # 在Windows上使用terminate，在Unix上尝试优雅终止
         try:
@@ -486,7 +425,10 @@ def stop(process_id):
 
 @app.route('/delete/<process_id>', methods=['POST'])
 def delete(process_id):
-    if process_id in training_processes:
+    client = get_client_from_request(request)
+    if not client:
+        return jsonify({'success': False}), 401
+    if process_id in training_processes and training_processes[process_id].get('client_id') == client['client_id']:
         # 确保进程已经停止
         if training_processes[process_id]['running']:
             # 如果进程还在运行，先停止它
@@ -552,7 +494,8 @@ def save_processes_info():
                 'error': info.get('error', False),
                 'manually_stopped': info.get('manually_stopped', False),
                 'train_monitor': info.get('train_monitor', 'none'),  # 保存train_monitor
-                'swanlab_url': info.get('swanlab_url')  # 保存swanlab_url
+                'swanlab_url': info.get('swanlab_url'),
+                'client_id': info.get('client_id')
             }
         
         with open(PROCESSES_FILE, 'w', encoding='utf-8') as f:
@@ -579,6 +522,8 @@ def load_processes_info():
                     info['error'] = False
                 if 'train_monitor' not in info:
                     info['train_monitor'] = 'none'
+                if 'client_id' not in info:
+                    info['client_id'] = None
                 
                 if info['running']:
                     try:
@@ -651,3 +596,12 @@ if __name__ == '__main__':
             except:
                 pass
         sys.exit(1)
+@app.route('/api/register', methods=['POST'])
+def api_register():
+    data = request.json or {}
+    name = data.get('name')
+    email = data.get('email')
+    if not name or not email:
+        return jsonify({'error': '缺少参数'}), 400
+    creds = register_client(name, email)
+    return jsonify({'client_id': creds['client_id'], 'api_key': creds['api_key']})
