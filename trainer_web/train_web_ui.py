@@ -146,6 +146,13 @@ def index():
     # 传递GPU信息到前端
     return render_template('index.html', has_gpu=HAS_TORCH and GPU_COUNT > 0, gpu_count=GPU_COUNT)
 
+@app.route('/healthz')
+def healthz():
+    try:
+        return jsonify({'status': 'ok', 'gpu': GPU_COUNT, 'methods': SUPPORTED_METHODS}), 200
+    except Exception as e:
+        return jsonify({'status': 'error', 'message': str(e)}), 500
+
 @app.route('/train', methods=['POST'])
 def train():
     client = get_client_from_request(request)

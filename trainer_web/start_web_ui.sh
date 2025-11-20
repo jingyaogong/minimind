@@ -27,6 +27,24 @@ LOG_FILE="$LOG_DIR/web_ui_$TIMESTAMP.log"
 echo "启动 MiniMind Web UI 服务..."
 echo "日志文件: $LOG_FILE"
 
+# 依赖预检
+python - <<'PY'
+import sys
+missing = []
+for m in ('flask', 'psutil'):
+    try:
+        __import__(m)
+    except Exception as e:
+        missing.append(f"{m}: {e.__class__.__name__} {e}")
+if missing:
+    print("依赖缺失或不可用:\n" + "\n".join(missing))
+    sys.exit(1)
+PY
+if [ $? -ne 0 ]; then
+  echo "启动失败：请先安装缺失依赖，例如 'pip install flask psutil'"
+  exit 1
+fi
+
 # 使用nohup启动服务
 nohup python -u train_web_ui.py > "$LOG_FILE" 2>&1 &
 
@@ -45,10 +63,29 @@ for i in {1..20}; do
 done
 
 # 如果仍未获取到端口，回退为默认提示端口（与后端起始端口一致）
-if [ -z "$PORT" ]; then
-    PORT=12581
+# 健康检查：验证端口响应（最多等待10秒）
+if [ -n "$PORT" ]; then
+  for i in {1..20}; do
+    if curl -s "http://localhost:$PORT/healthz" | grep -q '"status": "ok"'; then
+      echo "服务已启动! PID: $(cat "train_web_ui.pid")"
+      echo "访问地址: http://localhost:$PORT"
+      echo "停止命令: kill $(cat "train_web_ui.pid") or bash trainer_web/stop_web_ui.sh"
+      exit 0
+    fi
+    sleep 0.5
+  done
 fi
 
-echo "服务已启动! PID: $(cat "train_web_ui.pid")"
-echo "访问地址: http://localhost:$PORT"
-echo "停止命令: kill $(cat "train_web_ui.pid") or bash trainer_web/stop_web_ui.sh"
+# 启动失败处理：打印日志并退出非零
+echo "服务启动失败，请查看日志"
+tail -n 50 "$LOG_FILE" || true
+
+if [ -f "train_web_ui.pid" ]; then
+  pid=$(cat "train_web_ui.pid")
+  if ps -p "$pid" > /dev/null 2>&1; then
+    kill "$pid" >/dev/null 2>&1 || true
+  fi
+  rm -f "train_web_ui.pid"
+fi
+
+exit 1
