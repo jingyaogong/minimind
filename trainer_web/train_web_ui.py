@@ -56,7 +56,13 @@ PROCESSES_FILE = os.path.join(os.path.dirname(os.path.abspath(__file__)), 'train
 # PID文件
 PID_FILE = os.path.join(os.path.dirname(os.path.abspath(__file__)), 'train_web_ui.pid')
 
-from .auth import register_client, get_client_from_request
+try:
+    from .auth import register_client, get_client_from_request
+except ImportError:
+    import sys as _sys
+    import os as _os
+    _sys.path.append(_os.path.dirname(_os.path.abspath(__file__)))
+    from auth import register_client, get_client_from_request
 
 # 启动训练进程
 def start_training_process(train_type, params, client_id):
@@ -76,7 +82,13 @@ def start_training_process(train_type, params, client_id):
     gpu_num = int(params.get('gpu_num', 0)) if 'gpu_num' in params else 0
     use_torchrun = HAS_TORCH and GPU_COUNT > 0 and gpu_num > 1
     
-    from .dispatcher import build_command
+    try:
+        from .dispatcher import build_command
+    except ImportError:
+        import sys as _sys
+        import os as _os
+        _sys.path.append(_os.path.dirname(_os.path.abspath(__file__)))
+        from dispatcher import build_command
     cmd = build_command(train_type, params, gpu_num, use_torchrun)
     if cmd is None:
         return None
