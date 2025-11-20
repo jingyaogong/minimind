@@ -56,16 +56,10 @@ PROCESSES_FILE = os.path.join(os.path.dirname(os.path.abspath(__file__)), 'train
 # PID文件
 PID_FILE = os.path.join(os.path.dirname(os.path.abspath(__file__)), 'train_web_ui.pid')
 
-try:
-    from .auth import register_client, get_client_from_request
-except ImportError:
-    import sys as _sys
-    import os as _os
-    _sys.path.append(_os.path.dirname(_os.path.abspath(__file__)))
-    from auth import register_client, get_client_from_request
+# Authentication removed - allow anonymous training
 
 # 启动训练进程
-def start_training_process(train_type, params, client_id):
+def start_training_process(train_type, params, client_id=None):
     # 获取脚本所在目录的绝对路径
     script_dir = os.path.dirname(os.path.abspath(__file__))
     # 使用详细的时间戳作为进程ID和日志文件名
@@ -167,9 +161,6 @@ def healthz():
 
 @app.route('/train', methods=['POST'])
 def train():
-    client = get_client_from_request(request)
-    if not client:
-        return jsonify({'success': False, 'error': '未授权'}), 401
     data = request.json
     train_type = data.get('train_type')
     
@@ -180,8 +171,8 @@ def train():
     if 'from_resume' not in params:
         params['from_resume'] = '0'
     
-    # 启动训练进程
-    process_id = start_training_process(train_type, params, client['client_id'])
+    # 启动训练进程 - 允许匿名训练，不传入client_id
+    process_id = start_training_process(train_type, params)
     
     if process_id:
         return jsonify({'success': True, 'process_id': process_id})
@@ -190,14 +181,8 @@ def train():
 
 @app.route('/processes')
 def processes():
-    client = get_client_from_request(request)
-    if not client:
-        return jsonify([]), 401
-    cid = client['client_id']
     result = []
     for process_id, info in training_processes.items():
-        if info.get('client_id') != cid:
-            continue
         # 确定状态
         status = '运行中' if info['running'] else \
                 '手动停止' if 'manually_stopped' in info and info['manually_stopped'] else \
@@ -217,12 +202,6 @@ def processes():
 
 @app.route('/logs/<process_id>')
 def logs(process_id):
-    client = get_client_from_request(request)
-    if not client:
-        return '未授权', 401
-    cid = client['client_id']
-    if process_id not in training_processes or training_processes[process_id].get('client_id') != cid:
-        return '无权限', 403
     # 直接从本地logfile目录读取日志文件
     # 获取脚本所在目录的绝对路径
     script_dir = os.path.dirname(os.path.abspath(__file__))
@@ -310,10 +289,6 @@ def logs(process_id):
 
 @app.route('/logfiles')
 def get_logfiles():
-    client = get_client_from_request(request)
-    if not client:
-        return jsonify([]), 401
-    cid = client['client_id']
     # 获取脚本所在目录的绝对路径
     script_dir = os.path.dirname(os.path.abspath(__file__))
     # 构建logfile目录的绝对路径
@@ -321,7 +296,9 @@ def get_logfiles():
     log_dir = os.path.abspath(log_dir)
     
     logfiles = []
-    client_pids = {pid for pid, info in training_processes.items() if info.get('client_id') == cid}
+    # 获取所有进程ID用于关联
+    process_pids = set(training_processes.keys())
+    
     if os.path.exists(log_dir):
         for filename in os.listdir(log_dir):
             if filename.endswith('.log') and filename.startswith('train_'):
@@ -329,12 +306,14 @@ def get_logfiles():
                 try:
                     modified_time = os.path.getmtime(file_path)
                     formatted_time = time.strftime('%Y-%m-%d %H:%M:%S', time.localtime(modified_time))
-                    if not any(filename.endswith(f'{pid}.log') for pid in client_pids):
-                        continue
+                    # 提取进程ID
+                    pid = filename.split('.')[-2].split('_')[-1] if filename.endswith('.log') else None
                     logfiles.append({
                         'filename': filename,
                         'modified_time': formatted_time,
-                        'size': os.path.getsize(file_path)
+                        'size': os.path.getsize(file_path),
+                        'process_id': pid,
+                        'has_process': pid in process_pids
                     })
                 except Exception as e:
                     continue
@@ -344,9 +323,6 @@ def get_logfiles():
 
 @app.route('/logfile-content/<filename>')
 def get_logfile_content(filename):
-    client = get_client_from_request(request)
-    if not client:
-        return jsonify({'error': '未授权'}), 401
     # 安全检查：确保文件名不包含路径遍历字符
     if '..' in filename or '/' in filename or '\\' in filename:
         return jsonify({'error': 'Invalid filename'}), 400
@@ -357,9 +333,6 @@ def get_logfile_content(filename):
     log_dir = os.path.join(script_dir, '../logfile')
     log_dir = os.path.abspath(log_dir)
     log_file = os.path.join(log_dir, filename)
-    pid = filename.split('.')[-2].split('_')[-1] if filename.endswith('.log') else None
-    if not pid or pid not in training_processes or training_processes[pid].get('client_id') != client['client_id']:
-        return jsonify({'error': '无权限'}), 403
     
     try:
         # 使用二进制模式读取文件，可以更可靠地保留原始换行符
@@ -391,9 +364,6 @@ def get_logfile_content(filename):
 
 @app.route('/delete-logfile/<filename>', methods=['DELETE'])
 def delete_logfile(filename):
-    client = get_client_from_request(request)
-    if not client:
-        return jsonify({'success': False, 'message': '未授权'}), 401
     # 获取脚本所在目录的绝对路径
     script_dir = os.path.dirname(os.path.abspath(__file__))
     # 构建logfile目录的绝对路径
@@ -405,9 +375,6 @@ def delete_logfile(filename):
         return jsonify({'success': False, 'message': '非法的文件名'})
     
     log_file = os.path.join(log_dir, filename)
-    pid = filename.split('.')[-2].split('_')[-1] if filename.endswith('.log') else None
-    if not pid or pid not in training_processes or training_processes[pid].get('client_id') != client['client_id']:
-        return jsonify({'success': False, 'message': '无权限'}), 403
     if os.path.exists(log_file) and os.path.isfile(log_file):
         try:
             os.remove(log_file)
@@ -420,10 +387,7 @@ def delete_logfile(filename):
 
 @app.route('/stop/<process_id>', methods=['POST'])
 def stop(process_id):
-    client = get_client_from_request(request)
-    if not client:
-        return jsonify({'success': False}), 401
-    if process_id in training_processes and training_processes[process_id]['running'] and training_processes[process_id].get('client_id') == client['client_id']:
+    if process_id in training_processes and training_processes[process_id]['running']:
         process = training_processes[process_id]['process']
         # 在Windows上使用terminate，在Unix上尝试优雅终止
         try:
@@ -444,10 +408,7 @@ def stop(process_id):
 
 @app.route('/delete/<process_id>', methods=['POST'])
 def delete(process_id):
-    client = get_client_from_request(request)
-    if not client:
-        return jsonify({'success': False}), 401
-    if process_id in training_processes and training_processes[process_id].get('client_id') == client['client_id']:
+    if process_id in training_processes:
         # 确保进程已经停止
         if training_processes[process_id]['running']:
             # 如果进程还在运行，先停止它
@@ -615,12 +576,4 @@ if __name__ == '__main__':
             except:
                 pass
         sys.exit(1)
-@app.route('/api/register', methods=['POST'])
-def api_register():
-    data = request.json or {}
-    name = data.get('name')
-    email = data.get('email')
-    if not name or not email:
-        return jsonify({'error': '缺少参数'}), 400
-    creds = register_client(name, email)
-    return jsonify({'client_id': creds['client_id'], 'api_key': creds['api_key']})
+# Registration endpoint removed - allow anonymous training

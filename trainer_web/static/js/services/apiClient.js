@@ -13,6 +13,7 @@ export function fetchWithTimeoutAndRetry(url, options = {}, timeout = defaultTim
     },
     signal: controller.signal,
   };
+  
   return fetch(url, fetchOptions)
     .then((response) => {
       clearTimeout(timeoutId);
