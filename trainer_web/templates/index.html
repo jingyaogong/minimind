@@ -59,7 +59,12 @@
                         </div>
                         <div class="form-group">
                             <label for="data_path">数据路径：</label>
-                            <input type="text" id="data_path" name="data_path" value="./dataset" required>
+                            <div class="input-with-picker">
+                                <input type="text" id="data_path" name="data_path" value="./dataset" required>
+                                <button type="button" class="btn-picker" onclick="selectFolder('data_path')" title="选择文件夹">
+                                    📁
+                                </button>
+                            </div>
                         </div>
                     </div>
                 </div>
@@ -104,7 +109,12 @@
                         </div>
                         <div class="form-group">
                             <label for="reward_model_path">奖励模型路径：</label>
-                            <input type="text" id="reward_model_path" name="reward_model_path" placeholder="path/to/reward/model">
+                            <div class="input-with-picker">
+                                <input type="text" id="reward_model_path" name="reward_model_path" placeholder="path/to/reward/model">
+                                <button type="button" class="btn-picker" onclick="selectFolder('reward_model_path')" title="选择文件夹">
+                                    📁
+                                </button>
+                            </div>
                         </div>
                     </div>
                 </div>
@@ -130,7 +140,12 @@
                         </div>
                         <div class="form-group">
                             <label for="reward_model_path_grpo">奖励模型路径：</label>
-                            <input type="text" id="reward_model_path_grpo" name="reward_model_path" placeholder="../../internlm2-1_8b-reward">
+                            <div class="input-with-picker">
+                                <input type="text" id="reward_model_path_grpo" name="reward_model_path" placeholder="../../internlm2-1_8b-reward">
+                                <button type="button" class="btn-picker" onclick="selectFolder('reward_model_path_grpo')" title="选择文件夹">
+                                    📁
+                                </button>
+                            </div>
                         </div>
                     </div>
                 </div>
@@ -152,7 +167,12 @@
                         </div>
                         <div class="form-group">
                             <label for="reward_model_path_spo">奖励模型路径：</label>
-                            <input type="text" id="reward_model_path_spo" name="reward_model_path" placeholder="../../internlm2-1_8b-reward">
+                            <div class="input-with-picker">
+                                <input type="text" id="reward_model_path_spo" name="reward_model_path" placeholder="../../internlm2-1_8b-reward">
+                                <button type="button" class="btn-picker" onclick="selectFolder('reward_model_path_spo')" title="选择文件夹">
+                                    📁
+                                </button>
+                            </div>
                         </div>
                     </div>
                 </div>
@@ -189,7 +209,12 @@
                     <div class="parameter-content">
                         <div class="form-group">
                             <label for="save_dir">模型保存目录：</label>
-                            <input type="text" id="save_dir" name="save_dir" value="./checkpoints" required>
+                            <div class="input-with-picker">
+                                <input type="text" id="save_dir" name="save_dir" value="./checkpoints" required>
+                                <button type="button" class="btn-picker" onclick="selectFolder('save_dir')" title="选择文件夹">
+                                    📁
+                                </button>
+                            </div>
                         </div>
                         <div class="form-group">
                             <label for="save_interval">模型保存间隔：</label>
@@ -234,8 +259,10 @@
                         </div>
                         <div class="form-group" id="multi-gpu-selection" style="display: none;">
                             <label for="gpu_num">多卡并行数：</label>
-                            <input type="number" id="gpu_num" name="gpu_num" min="1" max="{{ gpu_count|default(1) }}" value="{{ gpu_count|default(1) }}" required>
-                            <span class="hint-text">(可用GPU数量: {{ gpu_count|default(0) }})</span>
+                            <div class="input-with-picker">
+                                <input type="number" id="gpu_num" name="gpu_num" min="1" max="{{ gpu_count|default(1) }}" value="{{ gpu_count|default(1) }}" required>
+                                <span class="hint-text">(可用GPU数量: {{ gpu_count|default(0) }})</span>
+                            </div>
                         </div>
                         <div class="form-group">
                             <label for="train_monitor">训练监控：</label>

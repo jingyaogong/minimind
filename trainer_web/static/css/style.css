@@ -253,6 +253,119 @@ input[type="text"]:focus, input[type="number"]:focus, select:focus, textarea:foc
     background: rgba(45, 55, 72, 0.9);
     transform: translateY(-1px);
 }
+
+/* 文件夹选择器样式 */
+.input-with-picker {
+    display: flex;
+    gap: 0.5rem;
+    align-items: center;
+}
+
+.input-with-picker input {
+    flex: 1;
+}
+
+.btn-picker {
+    background: linear-gradient(135deg, var(--info-grad-start) 0%, var(--info-grad-end) 100%);
+    color: white;
+    border: none;
+    padding: 0.75rem;
+    border-radius: var(--radius-md);
+    font-size: 1rem;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    box-shadow: var(--shadow-sm);
+    min-width: 40px;
+    height: 40px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.btn-picker:hover {
+    transform: translateY(-1px);
+    box-shadow: var(--shadow-md);
+    filter: brightness(1.1);
+}
+
+/* 进度条样式 */
+.progress-container {
+    margin: 0.5rem 0;
+    background: rgba(45, 55, 72, 0.3);
+    border-radius: var(--radius-lg);
+    padding: 0.5rem;
+    border: 1px solid var(--border);
+}
+
+.progress-bar {
+    width: 100%;
+    height: 8px;
+    background: rgba(45, 55, 72, 0.5);
+    border-radius: var(--radius-sm);
+    overflow: hidden;
+    margin: 0.5rem 0;
+}
+
+.progress-fill {
+    height: 100%;
+    background: linear-gradient(90deg, var(--accent-grad-start) 0%, var(--accent-grad-end) 100%);
+    border-radius: var(--radius-sm);
+    transition: width 0.3s ease;
+    position: relative;
+}
+
+.progress-fill::after {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: linear-gradient(90deg, transparent, rgba(255,255,255,0.3), transparent);
+    animation: progress-shine 2s infinite;
+}
+
+@keyframes progress-shine {
+    0% { transform: translateX(-100%); }
+    100% { transform: translateX(100%); }
+}
+
+.progress-info {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    font-size: 0.8rem;
+    color: var(--text-secondary);
+    margin-top: 0.25rem;
+}
+
+.progress-metrics {
+    display: flex;
+    gap: 1rem;
+    flex-wrap: wrap;
+    font-size: 0.85rem;
+    margin-top: 0.5rem;
+}
+
+.metric-item {
+    display: flex;
+    align-items: center;
+    gap: 0.25rem;
+    padding: 0.25rem 0.5rem;
+    background: rgba(139, 92, 246, 0.1);
+    border-radius: var(--radius-sm);
+    border: 1px solid rgba(139, 92, 246, 0.2);
+}
+
+.metric-label {
+    font-weight: 500;
+    color: var(--text-secondary);
+}
+
+.metric-value {
+    font-weight: 600;
+    color: var(--accent);
+}
 .checkbox-group {
     display: flex;
     align-items: center;

@@ -4,6 +4,64 @@ import { showConfirmDialog } from '../ui/dialog.js';
 import { el, clearChildren } from '../utils/dom.js';
 import { showLogs, refreshLog, clearLogTimerFor } from './logs.js';
 
+// 计算训练进度信息
+function calculateProgress(process) {
+  const defaultProgress = {
+    percentage: 0,
+    current: 0,
+    total: 0,
+    remaining: '计算中...',
+    loss: null,
+    epoch: null,
+    lr: null
+  };
+  
+  // 如果进程不在运行，返回默认进度
+  if (!process.running) return defaultProgress;
+  
+  // 从进程数据中提取进度信息
+  if (process.progress) {
+    return {
+      percentage: process.progress.percentage || 0,
+      current: process.progress.current_epoch || 0,
+      total: process.progress.total_epochs || 0,
+      remaining: process.progress.remaining_time || '计算中...',
+      loss: process.progress.current_loss || null,
+      epoch: process.progress.current_epoch ? `${process.progress.current_epoch}/${process.progress.total_epochs}` : null,
+      lr: process.progress.current_lr || null
+    };
+  }
+  
+  // 尝试从日志中提取进度信息（简化版本）
+  if (process.logs) {
+    const logText = process.logs.slice(-1000); // 取最近1000字符
+    
+    // 提取epoch信息
+    const epochMatch = logText.match(/epoch\s+(\d+)\/(\d+)/i);
+    if (epochMatch) {
+      const current = parseInt(epochMatch[1]);
+      const total = parseInt(epochMatch[2]);
+      const percentage = total > 0 ? Math.round((current / total) * 100) : 0;
+      
+      // 提取loss信息
+      const lossMatch = logText.match(/loss[\s:=]\s*([\d.]+)/i);
+      const currentLoss = lossMatch ? parseFloat(lossMatch[1]).toFixed(4) : null;
+      
+      return {
+        percentage,
+        current,
+        total,
+        remaining: '计算中...',
+        loss: currentLoss,
+        epoch: `${current}/${total}`,
+        lr: null
+      };
+    }
+  }
+  
+  return defaultProgress;
+}
+
 let processPollingTimer = null;
 
 export function startProcessPolling() {
@@ -135,11 +193,32 @@ export function addProcessItemToGroup(parent, process) {
   const showDelete = !process.running;
   const showSwanlab = process.train_monitor !== 'none';
   const swanBtn = showSwanlab ? `<button class="btn-swanlab" data-swan="${process.id}">SwanLab</button>` : '';
+  
+  // 计算进度信息
+  const progressInfo = calculateProgress(process);
+  const progressBar = process.running ? `
+    <div class="progress-container">
+      <div class="progress-bar">
+        <div class="progress-fill" style="width: ${progressInfo.percentage}%"></div>
+      </div>
+      <div class="progress-info">
+        <span>进度: ${progressInfo.current}/${progressInfo.total}</span>
+        <span>剩余时间: ${progressInfo.remaining}</span>
+      </div>
+      <div class="progress-metrics">
+        ${progressInfo.loss ? `<div class="metric-item"><span class="metric-label">Loss:</span><span class="metric-value">${progressInfo.loss}</span></div>` : ''}
+        ${progressInfo.epoch ? `<div class="metric-item"><span class="metric-label">Epoch:</span><span class="metric-value">${progressInfo.epoch}</span></div>` : ''}
+        ${progressInfo.lr ? `<div class="metric-item"><span class="metric-label">LR:</span><span class="metric-value">${progressInfo.lr}</span></div>` : ''}
+      </div>
+    </div>
+  ` : '';
+  
   item.innerHTML = `
     <div class="process-info">
       <div><strong>${process.start_time}</strong></div>
       <div><span class="process-status ${statusClass}">${process.status}</span></div>
     </div>
+    ${progressBar}
     <div>
       <button class="btn-logs" data-show="${process.id}">查看日志</button>
       <button class="btn-logs" data-refresh="${process.id}">刷新日志</button>

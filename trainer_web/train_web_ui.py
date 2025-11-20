@@ -6,6 +6,7 @@ import json
 import socket
 import atexit
 import signal
+import re
 from flask import Flask, render_template, request, jsonify, redirect, url_for
 from flask import g
 import time
@@ -27,6 +28,120 @@ except ImportError:
     HAS_TORCH = False
     GPU_COUNT = 0
     GPU_NAMES = []
+
+def calculate_training_progress(process_id, process_info):
+    """
+    计算训练进度信息
+    从日志文件中提取训练进度、loss、epoch等信息
+    """
+    progress = {
+        'percentage': 0,
+        'current_epoch': 0,
+        'total_epochs': 0,
+        'remaining_time': '计算中...',
+        'current_loss': None,
+        'current_lr': None
+    }
+    
+    # 如果进程不在运行，返回空进度
+    if not process_info.get('running', False):
+        return progress
+    
+    try:
+        # 获取日志文件路径
+        script_dir = os.path.dirname(os.path.abspath(__file__))
+        log_dir = os.path.join(script_dir, '../logfile')
+        log_dir = os.path.abspath(log_dir)
+        
+        log_file = None
+        if os.path.exists(log_dir):
+            for filename in os.listdir(log_dir):
+                if filename.endswith(f'{process_id}.log'):
+                    log_file = os.path.join(log_dir, filename)
+                    break
+        
+        if not log_file or not os.path.exists(log_file):
+            return progress
+        
+        # 读取日志文件的最后1000行
+        def read_last_lines(file_path, n=1000):
+            try:
+                with open(file_path, 'r', encoding='utf-8', errors='ignore') as f:
+                    # 使用更高效的方法读取最后n行
+                    lines = []
+                    for line in f:
+                        lines.append(line.strip())
+                        if len(lines) > n:
+                            lines.pop(0)
+                    return lines
+            except Exception:
+                return []
+        
+        lines = read_last_lines(log_file, 1000)
+        
+        # 从日志中提取进度信息
+        current_epoch = 0
+        total_epochs = 0
+        current_loss = None
+        current_lr = None
+        
+        for line in reversed(lines):  # 从最新日志开始
+            # 提取epoch信息 (格式: epoch 3/10)
+            if not total_epochs:
+                epoch_match = re.search(r'epoch\s+(\d+)\s*/\s*(\d+)', line, re.IGNORECASE)
+                if epoch_match:
+                    current_epoch = int(epoch_match.group(1))
+                    total_epochs = int(epoch_match.group(2))
+            
+            # 提取loss信息 (格式: loss: 4.32 或 loss = 4.32)
+            if not current_loss:
+                loss_match = re.search(r'loss[\s:=]\s*([\d.]+)', line, re.IGNORECASE)
+                if loss_match:
+                    current_loss = float(loss_match.group(1))
+            
+            # 提取学习率信息 (格式: lr: 1e-4 或 learning_rate: 1e-4)
+            if not current_lr:
+                lr_match = re.search(r'(?:lr|learning_rate)[\s:=]\s*([\d.e-]+)', line, re.IGNORECASE)
+                if lr_match:
+                    current_lr = lr_match.group(1)
+            
+            # 如果已经收集到足够信息，提前退出
+            if total_epochs and current_loss and current_lr:
+                break
+        
+        # 计算进度百分比
+        percentage = 0
+        if total_epochs > 0:
+            percentage = min(100, max(0, int((current_epoch / total_epochs) * 100)))
+        
+        # 估算剩余时间（简化计算）
+        remaining_time = '计算中...'
+        if current_epoch > 0 and total_epochs > current_epoch:
+            # 假设每epoch时间大致相同
+            elapsed_time = time.time() - process_info.get('start_timestamp', time.time())
+            time_per_epoch = elapsed_time / current_epoch
+            remaining_epochs = total_epochs - current_epoch
+            remaining_seconds = remaining_epochs * time_per_epoch
+            
+            if remaining_seconds > 3600:
+                remaining_time = f"{remaining_seconds / 3600:.1f}小时"
+            elif remaining_seconds > 60:
+                remaining_time = f"{remaining_seconds / 60:.1f}分钟"
+            else:
+                remaining_time = f"{int(remaining_seconds)}秒"
+        
+        return {
+            'percentage': percentage,
+            'current_epoch': current_epoch,
+            'total_epochs': total_epochs,
+            'remaining_time': remaining_time,
+            'current_loss': f"{current_loss:.4f}" if current_loss else None,
+            'current_lr': current_lr
+        }
+        
+    except Exception as e:
+        print(f"计算进度时出错: {e}")
+        return progress
 
 # 训练方式支持检测
 def get_supported_training_methods():
@@ -107,6 +222,7 @@ def start_training_process(train_type, params, client_id=None):
         'train_type': train_type,
         'log_file': log_file,
         'start_time': time.strftime('%Y-%m-%d %H:%M:%S'),
+        'start_timestamp': time.time(),  # 添加时间戳用于进度计算
         'running': True,
         'error': False,
         'train_monitor': params.get('train_monitor', 'none'),  # 保存训练监控设置
@@ -187,6 +303,9 @@ def processes():
         status = '运行中' if info['running'] else \
                 '手动停止' if 'manually_stopped' in info and info['manually_stopped'] else \
                 '出错' if info['error'] else '已完成'
+        
+        # 计算训练进度信息
+        progress = calculate_training_progress(process_id, info)
                 
         result.append({
             'id': process_id,
@@ -196,7 +315,8 @@ def processes():
             'error': info['error'],
             'status': status,
             'train_monitor': info.get('train_monitor', 'none'),  # 添加train_monitor字段
-            'swanlab_url': info.get('swanlab_url')  # 添加swanlab_url字段
+            'swanlab_url': info.get('swanlab_url'),  # 添加swanlab_url字段
+            'progress': progress  # 添加进度信息
         })
     return jsonify(result)
 
