@@ -11,26 +11,6 @@
          <img src="/static/images/logo2.png" alt="MiniMind Logo" class="logo">
          <h1>MiniMind Training Lab</h1>
      </div>
-    <div class="form-container" style="margin-top:10px;">
-        <form id="register-form">
-            <div class="parameter-card">
-                <h3 class="card-title">注册客户端</h3>
-                <div class="parameter-content">
-                    <div class="form-group">
-                        <label for="reg_name">名称：</label>
-                        <input type="text" id="reg_name" name="name" required>
-                    </div>
-                    <div class="form-group">
-                        <label for="reg_email">邮箱：</label>
-                        <input type="email" id="reg_email" name="email" required>
-                    </div>
-                </div>
-                <div class="submit-container">
-                    <button type="submit">注册/更新 API Key</button>
-                </div>
-            </div>
-        </form>
-    </div>
     
     <div class="tabs">
         <button class="tab active" onclick="openTab(event, 'train')">开始训练</button>
@@ -291,26 +271,5 @@
     </div>
     
     <script type="module" src="/static/js/app.js"></script>
-    <script type="module">
-        import { registerClient } from '/static/js/services/authClient.js';
-        import { showNotification } from '/static/js/ui/notify.js';
-        const form = document.getElementById('register-form');
-        if (form) {
-            form.addEventListener('submit', (e) => {
-                e.preventDefault();
-                const name = document.getElementById('reg_name').value;
-                const email = document.getElementById('reg_email').value;
-                registerClient({ name, email }).then((res) => {
-                    if (res && res.api_key) {
-                        showNotification('注册成功，API Key 已保存', 'success');
-                    } else {
-                        showNotification('注册成功', 'success');
-                    }
-                }).catch(() => {
-                    showNotification('注册失败', 'error');
-                });
-            });
-        }
-    </script>
 </body>
 </html>
