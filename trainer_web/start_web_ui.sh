@@ -66,7 +66,7 @@ done
 # 健康检查：验证端口响应（最多等待10秒）
 if [ -n "$PORT" ]; then
   for i in {1..20}; do
-    if curl -s "http://localhost:$PORT/healthz" | grep -q '"status": "ok"'; then
+    if curl -s "http://localhost:$PORT/healthz" | grep -Eq '"status"[[:space:]]*:[[:space:]]*"ok"'; then
       echo "服务已启动! PID: $(cat "train_web_ui.pid")"
       echo "访问地址: http://localhost:$PORT"
       echo "停止命令: kill $(cat "train_web_ui.pid") or bash trainer_web/stop_web_ui.sh"
