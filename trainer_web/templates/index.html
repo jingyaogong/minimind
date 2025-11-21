@@ -323,23 +323,29 @@
     <div id="file-browser-modal" class="modal hidden">
         <div class="modal-content">
             <div class="modal-header">
-                <h3>选择文件夹</h3>
+                <h3 id="modal-title">选择文件或文件夹</h3>
                 <button class="modal-close" onclick="closeFileBrowser()">&times;</button>
             </div>
             <div class="modal-body">
                 <div class="file-browser-nav">
                     <div class="current-path" id="current-path">./</div>
-                    <button class="btn-navigate" onclick="navigateToParent()">⬆️ 上级目录</button>
+                    <div class="nav-buttons">
+                        <button class="btn-navigate" onclick="selectCurrentDirectory()" title="选择当前目录">📍</button>
+                        <button class="btn-navigate" onclick="navigateToParent()" title="上级目录">⬆️</button>
+                    </div>
                 </div>
                 <div class="quick-paths" id="quick-paths">
                     <!-- 快捷路径将在这里显示 -->
+                </div>
+                <div class="file-browser-help">
+                    💡 点击文件夹进入目录，点击文件选择文件，使用📍选择当前目录
                 </div>
                 <div class="file-list" id="file-list">
                     <!-- 文件列表将在这里显示 -->
                 </div>
             </div>
             <div class="modal-footer">
-                <input type="text" id="selected-path" placeholder="选择的文件夹路径" readonly>
+                <input type="text" id="selected-path" placeholder="选择的文件或文件夹路径" readonly>
                 <button class="btn-primary" onclick="confirmFileSelection()">确认选择</button>
                 <button class="btn-secondary" onclick="closeFileBrowser()">取消</button>
             </div>

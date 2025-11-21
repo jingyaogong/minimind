@@ -472,6 +472,37 @@ input[type="text"]:focus, input[type="number"]:focus, select:focus, textarea:foc
     filter: brightness(1.1);
 }
 
+/* 模态框底部样式 */
+.modal-footer {
+    display: flex;
+    gap: 0.75rem;
+    align-items: center;
+    padding-top: 1rem;
+    border-top: 1px solid var(--border);
+}
+
+.modal-footer input {
+    flex: 1;
+    margin-right: 0.5rem;
+}
+
+/* 改进模态框关闭按钮 */
+.modal-close {
+    background: none;
+    border: none;
+    font-size: 1.5rem;
+    color: var(--text-secondary);
+    cursor: pointer;
+    padding: 0.25rem;
+    border-radius: var(--radius-sm);
+    transition: all 0.3s ease;
+}
+
+.modal-close:hover {
+    color: var(--text);
+    background: rgba(239, 68, 68, 0.1);
+}
+
 /* 文件浏览器导航 */
 .file-browser-nav {
     display: flex;
@@ -481,6 +512,11 @@ input[type="text"]:focus, input[type="number"]:focus, select:focus, textarea:foc
     padding: 0.5rem;
     background: rgba(45, 55, 72, 0.5);
     border-radius: var(--radius-md);
+}
+
+.nav-buttons {
+    display: flex;
+    gap: 0.5rem;
 }
 
 .current-path {
@@ -519,6 +555,19 @@ input[type="text"]:focus, input[type="number"]:focus, select:focus, textarea:foc
     flex-wrap: wrap;
 }
 
+.file-browser-help {
+    background: rgba(59, 130, 246, 0.1);
+    border: 1px solid rgba(59, 130, 246, 0.3);
+    border-radius: var(--radius-sm);
+    padding: 0.75rem;
+    margin-bottom: 1rem;
+    font-size: 0.8rem;
+    color: var(--info-grad-start);
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+}
+
 .quick-path-btn {
     background: rgba(139, 92, 246, 0.1);
     color: var(--accent);
@@ -542,6 +591,7 @@ input[type="text"]:focus, input[type="number"]:focus, select:focus, textarea:foc
     border: 1px solid var(--border);
     border-radius: var(--radius-md);
     background: rgba(22, 22, 32, 0.3);
+    margin-bottom: 1rem;
 }
 
 .file-item {
@@ -564,6 +614,15 @@ input[type="text"]:focus, input[type="number"]:focus, select:focus, textarea:foc
 .file-item.selected {
     background: rgba(139, 92, 246, 0.2);
     border-left: 3px solid var(--accent);
+}
+
+.file-item.disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+}
+
+.file-item.disabled:hover {
+    background: none;
 }
 
 .file-icon {
