@@ -99,7 +99,11 @@ function confirmFileSelection() {
 }
 
 function navigateToParent() {
-  if (currentBrowsePath !== './') {
+  if (window.currentParentPath) {
+    // 使用后端提供的父目录路径（绝对路径）
+    browsePath(window.currentParentPath);
+  } else if (currentBrowsePath && currentBrowsePath !== './') {
+    // 回退到基于当前路径的计算
     const parentPath = currentBrowsePath.includes('/') ? 
       currentBrowsePath.substring(0, currentBrowsePath.lastIndexOf('/')) : './';
     browsePath(parentPath || './');
@@ -141,7 +145,6 @@ async function browsePath(path) {
   try {
     currentBrowsePath = path;
     selectedFilePath = null; // 重置选中的文件路径
-    document.getElementById('current-path').textContent = path;
     document.getElementById('selected-path').value = ''; // 清空显示
     
     // 更新帮助文本
@@ -171,6 +174,12 @@ function renderFileList(data) {
     fileList.innerHTML = '<div style="padding: 2rem; text-align: center; color: var(--text-secondary);">此目录为空</div>';
     return;
   }
+  
+  // 更新当前路径显示（使用相对路径用于显示）
+  document.getElementById('current-path').textContent = data.relative_path || data.current_path;
+  
+  // 存储父目录路径供导航使用
+  window.currentParentPath = data.parent;
   
   // 先显示目录，再显示文件
   const directories = data.items.filter(item => item.type === 'directory');

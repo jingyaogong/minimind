@@ -371,7 +371,8 @@ def browse_files():
                         stat = os.stat(item_path)
                         items.append({
                             'name': item,
-                            'path': os.path.relpath(item_path, project_root),
+                            'path': item_path,  # 返回绝对路径
+                            'relative_path': os.path.relpath(item_path, project_root),  # 同时返回相对路径用于显示
                             'type': 'directory' if os.path.isdir(item_path) else 'file',
                             'size': stat.st_size if os.path.isfile(item_path) else 0,
                             'modified': time.strftime('%Y-%m-%d %H:%M:%S', time.localtime(stat.st_mtime))
@@ -381,10 +382,11 @@ def browse_files():
                         continue
                 
                 return jsonify({
-                    'current_path': os.path.relpath(full_path, project_root),
+                    'current_path': full_path,  # 返回绝对路径
+                    'relative_path': os.path.relpath(full_path, project_root),  # 相对路径用于显示
                     'absolute_path': full_path,
                     'items': items,
-                    'parent': os.path.relpath(os.path.dirname(full_path), project_root) if full_path != project_root else None
+                    'parent': os.path.dirname(full_path) if full_path != project_root else None
                 })
             except (OSError, PermissionError) as e:
                 return jsonify({'error': f'无法访问目录: {str(e)}', 'path': path})
@@ -394,7 +396,8 @@ def browse_files():
             stat = os.stat(full_path)
             return jsonify({
                 'name': os.path.basename(full_path),
-                'path': os.path.relpath(full_path, project_root),
+                'path': full_path,  # 返回绝对路径
+                'relative_path': os.path.relpath(full_path, project_root),  # 相对路径用于显示
                 'type': 'file',
                 'size': stat.st_size,
                 'modified': time.strftime('%Y-%m-%d %H:%M:%S', time.localtime(stat.st_mtime))
