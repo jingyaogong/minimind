@@ -1,7 +1,7 @@
 :root {
-    --bg: #0f0f15;
-    --card-bg: #1a1a24;
-    --panel-bg: rgba(22, 22, 32, 0.95);
+    --bg: #0b0b0b;
+    --card-bg: #000000;
+    --panel-bg: rgba(0, 0, 0, 0.95);
     --text: #e2e8f0;
     --text-secondary: #94a3b8;
     --accent: #8b5cf6;
@@ -34,7 +34,7 @@ body {
     max-width: 1400px;
     margin: 0 auto;
     padding: 0;
-    background: linear-gradient(135deg, var(--bg) 0%, #1a1a2e 100%);
+    background: linear-gradient(135deg, var(--bg) 0%, #000000 100%);
     min-height: 100vh;
     background-attachment: fixed;
     font-size: 14px;
@@ -47,7 +47,7 @@ body {
     justify-content: center;
     padding: 2rem 0;
     margin-bottom: 2rem;
-    background: rgba(22, 22, 32, 0.8);
+    background: rgba(0, 0, 0, 0.8);
     backdrop-filter: blur(10px);
     border-bottom: 1px solid var(--border);
     position: sticky;
@@ -1191,7 +1191,7 @@ button:active {
     padding: 1.5rem;
     cursor: pointer;
     user-select: none;
-    background: rgba(45, 55, 72, 0.3);
+    background: rgba(0, 0, 0, 0.3);
     transition: background-color 0.3s ease;
 }
 
