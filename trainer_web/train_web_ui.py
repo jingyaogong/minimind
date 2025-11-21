@@ -11,6 +11,8 @@ from flask import Flask, render_template, request, jsonify, redirect, url_for
 from flask import g
 import time
 import psutil
+import glob
+import pathlib
 
 # 尝试导入torch来检测GPU
 try:
@@ -319,6 +321,115 @@ def processes():
             'progress': progress  # 添加进度信息
         })
     return jsonify(result)
+
+@app.route('/api/browse')
+def browse_files():
+    """
+    浏览服务器文件系统
+    支持远程文件选择功能
+    """
+    try:
+        # 获取请求的路径参数
+        path = request.args.get('path', './')
+        
+        # 安全检查：限制访问范围
+        script_dir = os.path.dirname(os.path.abspath(__file__))
+        project_root = os.path.abspath(os.path.join(script_dir, '..'))
+        
+        # 解析请求的路径
+        if path.startswith('./'):
+            # 相对路径，基于项目根目录
+            full_path = os.path.abspath(os.path.join(project_root, path[2:]))
+        elif path.startswith('/'):
+            # 绝对路径，检查是否在项目目录内
+            full_path = os.path.abspath(path)
+        else:
+            # 相对路径，基于项目根目录
+            full_path = os.path.abspath(os.path.join(project_root, path))
+        
+        # 安全检查：确保路径在项目目录内
+        if not full_path.startswith(project_root):
+            full_path = project_root
+        
+        # 检查路径是否存在
+        if not os.path.exists(full_path):
+            return jsonify({'error': '路径不存在', 'path': path})
+        
+        # 获取目录内容
+        if os.path.isdir(full_path):
+            items = []
+            try:
+                # 列出目录内容
+                for item in sorted(os.listdir(full_path)):
+                    item_path = os.path.join(full_path, item)
+                    
+                    # 跳过隐藏文件和系统文件
+                    if item.startswith('.') or item.startswith('__'):
+                        continue
+                    
+                    try:
+                        stat = os.stat(item_path)
+                        items.append({
+                            'name': item,
+                            'path': os.path.relpath(item_path, project_root),
+                            'type': 'directory' if os.path.isdir(item_path) else 'file',
+                            'size': stat.st_size if os.path.isfile(item_path) else 0,
+                            'modified': time.strftime('%Y-%m-%d %H:%M:%S', time.localtime(stat.st_mtime))
+                        })
+                    except (OSError, PermissionError):
+                        # 跳过无法访问的项目
+                        continue
+                
+                return jsonify({
+                    'current_path': os.path.relpath(full_path, project_root),
+                    'absolute_path': full_path,
+                    'items': items,
+                    'parent': os.path.relpath(os.path.dirname(full_path), project_root) if full_path != project_root else None
+                })
+            except (OSError, PermissionError) as e:
+                return jsonify({'error': f'无法访问目录: {str(e)}', 'path': path})
+        
+        else:
+            # 如果是文件，返回文件信息
+            stat = os.stat(full_path)
+            return jsonify({
+                'name': os.path.basename(full_path),
+                'path': os.path.relpath(full_path, project_root),
+                'type': 'file',
+                'size': stat.st_size,
+                'modified': time.strftime('%Y-%m-%d %H:%M:%S', time.localtime(stat.st_mtime))
+            })
+            
+    except Exception as e:
+        return jsonify({'error': f'浏览文件时出错: {str(e)}'})
+
+@app.route('/api/quick-paths')
+def quick_paths():
+    """
+    返回常用路径快捷方式
+    """
+    try:
+        script_dir = os.path.dirname(os.path.abspath(__file__))
+        project_root = os.path.abspath(os.path.join(script_dir, '..'))
+        
+        quick_paths = [
+            {'name': '项目根目录', 'path': './', 'type': 'directory'},
+            {'name': '数据集目录', 'path': './dataset', 'type': 'directory'},
+            {'name': '模型检查点', 'path': './checkpoints', 'type': 'directory'},
+            {'name': '日志文件', 'path': './logfile', 'type': 'directory'}
+        ]
+        
+        # 验证路径是否存在
+        valid_paths = []
+        for item in quick_paths:
+            full_path = os.path.join(project_root, item['path'][2:] if item['path'].startswith('./') else item['path'])
+            if os.path.exists(full_path):
+                valid_paths.append(item)
+        
+        return jsonify({'paths': valid_paths})
+        
+    except Exception as e:
+        return jsonify({'error': f'获取快捷路径时出错: {str(e)}'})
 
 @app.route('/logs/<process_id>')
 def logs(process_id):
