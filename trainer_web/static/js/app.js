@@ -6,7 +6,10 @@ import { refreshLog } from './processes/logs.js';
 
 const hooks = {
   onEnterProcesses: () => {
-    loadProcesses();
+    // 当切换到进程标签页时，立即加载一次，然后开始轮询
+    loadProcesses().then(() => {
+      startProcessPolling();
+    });
   },
   onLeaveProcesses: () => {
     stopProcessPolling();
@@ -339,13 +342,21 @@ window.navigateToParent = navigateToParent;
 window.selectCurrentDirectory = selectCurrentDirectory;
 
 // 将进程管理函数暴露到全局作用域
-window.refreshProcesses = loadProcesses;
+window.refreshProcesses = () => {
+  // 立即刷新进程数据，然后重置轮询计时器
+  return loadProcesses().then(() => {
+    // 重置轮询计时器以确保平滑的更新间隔
+    stopProcessPolling();
+    startProcessPolling();
+  });
+};
 window.refreshLogs = loadLogFiles;
 window.refreshLog = refreshLog;
 
 window.addEventListener('load', () => {
   initTrainForm();
-  startProcessPolling();
-  loadProcesses();
+  // 不再立即开始轮询，而是等待用户切换到进程标签页
+  // startProcessPolling(); // 移动到钩子函数中
+  loadProcesses(); // 仍然加载初始进程数据
 });
 

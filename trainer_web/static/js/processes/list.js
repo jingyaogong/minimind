@@ -168,10 +168,13 @@ let processPollingTimer = null;
 
 export function startProcessPolling() {
   if (processPollingTimer) clearInterval(processPollingTimer);
+  // 使用2秒间隔进行实时更新，确保进度信息及时刷新
   processPollingTimer = setInterval(() => {
     const tab = document.querySelector('.tab.active');
-    if (tab && tab.textContent.includes('进程')) checkProcessStatusChanges();
-  }, 5000);
+    if (tab && tab.textContent.includes('进程')) {
+      checkProcessStatusChanges();
+    }
+  }, 2000);
 }
 
 export function stopProcessPolling() {
@@ -184,16 +187,30 @@ export function stopProcessPolling() {
 export function checkProcessStatusChanges() {
   return getProcesses()
     .then((data) => {
+      let updatedCount = 0;
       data.forEach((p) => {
         const item = document.querySelector(`[data-process-id="${p.id}"]`);
         if (!item) return;
         const cur = item.dataset.processStatus;
         const next = p.status;
+        
+        // 如果状态发生变化，更新整个项目
         if (cur !== next) {
           updateProcessItem(item, p);
           if (next === '出错') showNotification(`进程 ${p.train_type} 已出错`, 'error');
+          updatedCount++;
+        } 
+        // 如果进程正在运行，即使状态没变也要更新进度信息
+        else if (p.running) {
+          updateProcessProgress(item, p);
+          updatedCount++;
         }
       });
+      
+      // 调试用：在控制台显示更新信息（生产环境中可以移除）
+      if (updatedCount > 0) {
+        console.log(`[${new Date().toLocaleTimeString()}] 更新了 ${updatedCount} 个进程的进度信息`);
+      }
     })
     .catch(() => {
       showNotification('连接服务器失败，请刷新页面重试', 'error');
@@ -345,6 +362,46 @@ function bindItemButtons(item, process) {
   if (stopBtn) stopBtn.addEventListener('click', () => stopProcess(process.id));
   const delBtn = item.querySelector('[data-del]');
   if (delBtn) delBtn.addEventListener('click', () => deleteProcess(process.id));
+}
+
+export function updateProcessProgress(item, process) {
+  // 只更新进度信息，不更新整个项目
+  const progressInfo = calculateProgress(process);
+  
+  // 更新进度条
+  const progressFill = item.querySelector('.progress-fill');
+  const progressText = item.querySelector('.progress-info span:first-child');
+  const remainingText = item.querySelector('.progress-info span:last-child');
+  const metricsContainer = item.querySelector('.progress-metrics');
+  
+  if (progressFill) {
+    progressFill.style.width = `${progressInfo.percentage}%`;
+  }
+  
+  if (progressText) {
+    progressText.textContent = `进度: ${progressInfo.current}/${progressInfo.total}`;
+  }
+  
+  if (remainingText) {
+    remainingText.textContent = `剩余时间: ${progressInfo.remaining}`;
+  }
+  
+  if (metricsContainer) {
+    // 更新指标 - 只更新有变化的值来减少DOM操作
+    const lossItem = metricsContainer.querySelector('.metric-item:nth-child(1) .metric-value');
+    const epochItem = metricsContainer.querySelector('.metric-item:nth-child(2) .metric-value');
+    const lrItem = metricsContainer.querySelector('.metric-item:nth-child(3) .metric-value');
+    
+    if (progressInfo.loss && lossItem) {
+      lossItem.textContent = progressInfo.loss;
+    }
+    if (progressInfo.epoch && epochItem) {
+      epochItem.textContent = progressInfo.epoch;
+    }
+    if (progressInfo.lr && lrItem) {
+      lrItem.textContent = progressInfo.lr;
+    }
+  }
 }
 
 export function updateProcessItem(item, process) {

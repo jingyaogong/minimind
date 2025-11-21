@@ -389,6 +389,106 @@ def train():
     else:
         return jsonify({'success': False, 'error': '无效的训练类型'})
 
+# 测试端点 - 添加模拟训练进程
+@app.route('/test/add_process', methods=['POST'])
+def add_test_process():
+    """添加一个测试进程用于验证自动更新功能"""
+    import subprocess
+    import threading
+    
+    process_id = f"test_process_{int(time.time())}"
+    
+    # 创建测试训练命令
+    test_command = [
+        'python', '-c', '''
+import time
+import sys
+
+print("2024-11-21 14:30:00 - Starting pretrain training")
+sys.stdout.flush()
+time.sleep(1)
+
+print("2024-11-21 14:30:01 - Loading dataset from ../dataset/pretrain_hq.jsonl")
+sys.stdout.flush()
+time.sleep(1)
+
+print("2024-11-21 14:30:02 - Model initialized with 108M parameters")
+sys.stdout.flush()
+time.sleep(2)
+
+for epoch in range(1, 6):
+    print(f"2024-11-21 14:30:{5 + epoch*5} - Starting epoch {epoch}/5")
+    sys.stdout.flush()
+    time.sleep(1)
+    
+    loss = 4.5 - epoch * 0.3
+    lr = 1e-4 * (0.9 ** epoch)
+    print(f"2024-11-21 14:30:{6 + epoch*5} - Loss: {loss:.4f}, lr: {lr:.2e}")
+    sys.stdout.flush()
+    time.sleep(2)
+    
+    remaining = (5 - epoch) * 15
+    print(f"2024-11-21 14:30:{8 + epoch*5} - Epoch {epoch}/5 completed, remaining: 0:0{remaining}:00")
+    sys.stdout.flush()
+    time.sleep(1)
+
+print("2024-11-21 14:30:35 - Training completed successfully")
+sys.stdout.flush()
+        '''
+    ]
+    
+    # 启动进程
+    process = subprocess.Popen(
+        test_command,
+        stdout=subprocess.PIPE,
+        stderr=subprocess.STDOUT,
+        universal_newlines=True,
+        bufsize=1
+    )
+    
+    # 保存进程信息
+    log_dir = os.path.join(os.path.dirname(os.path.abspath(__file__)), '../logfile')
+    log_dir = os.path.abspath(log_dir)
+    os.makedirs(log_dir, exist_ok=True)
+    
+    training_processes[process_id] = {
+        'process': process,
+        'train_type': 'pretrain',
+        'log_file': os.path.join(log_dir, f'{process_id}.log'),
+        'start_time': time.strftime('%Y-%m-%d %H:%M:%S'),
+        'start_timestamp': time.time(),
+        'running': True,
+        'error': False,
+        'train_monitor': 'none',
+        'swanlab_url': None
+    }
+    
+    # 启动线程读取输出并写入日志文件
+    def read_output():
+        try:
+            log_file = training_processes[process_id]['log_file']
+            with open(log_file, 'w') as f:
+                for line in iter(process.stdout.readline, ''):
+                    if line:
+                        f.write(line)
+                        f.flush()
+            process.wait()
+            training_processes[process_id]['running'] = False
+            if process.returncode != 0:
+                training_processes[process_id]['error'] = True
+        except Exception as e:
+            print(f"读取测试进程输出时出错: {e}")
+            training_processes[process_id]['running'] = False
+            training_processes[process_id]['error'] = True
+    
+    threading.Thread(target=read_output, daemon=True).start()
+    
+    return jsonify({
+        'success': True,
+        'process_id': process_id,
+        'message': '测试进程已添加'
+    })
+
 @app.route('/processes')
 def processes():
     result = []
