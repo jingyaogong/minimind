@@ -47,9 +47,23 @@ def calculate_training_progress(process_id, process_info):
         'current_lr': None
     }
     
-    # 如果进程不在运行，返回空进度
+    # 如果进程不在运行且没有日志文件，返回空进度
     if not process_info.get('running', False):
-        return progress
+        # 检查是否有日志文件，如果有则继续解析
+        script_dir = os.path.dirname(os.path.abspath(__file__))
+        log_dir = os.path.join(script_dir, '../logfile')
+        log_dir = os.path.abspath(log_dir)
+        
+        log_file_exists = False
+        if os.path.exists(log_dir):
+            for filename in os.listdir(log_dir):
+                if filename.endswith(f'{process_id}.log'):
+                    log_file_exists = True
+                    break
+        
+        # 如果没有日志文件且进程不在运行，返回空进度
+        if not log_file_exists:
+            return progress
     
     try:
         # 获取日志文件路径
@@ -96,8 +110,9 @@ def calculate_training_progress(process_id, process_info):
                 
             # 提取epoch信息 - 支持多种格式
             if not total_epochs:
-                # 格式: epoch 3/10, Epoch 3 of 10, [3/10], 第3轮/共10轮
+                # 格式: epoch 3/10, Epoch 3 of 10, [3/10], 第3轮/共10轮, Epoch:[1/1]
                 epoch_patterns = [
+                    r'Epoch:\[(\d+)/(\d+)\]',                      # Epoch:[1/1] - 新格式
                     r'epoch\s+(\d+)\s*/\s*(\d+)',
                     r'Epoch\s+(\d+)\s*of\s*(\d+)',
                     r'\[(\d+)/(\d+)\]',
@@ -108,13 +123,18 @@ def calculate_training_progress(process_id, process_info):
                 for pattern in epoch_patterns:
                     match = re.search(pattern, line, re.IGNORECASE)
                     if match:
-                        current_epoch = int(match.group(1))
-                        total_epochs = int(match.group(2))
+                        if 'Epoch:\[' in pattern:
+                            current_epoch = int(match.group(1))
+                            total_epochs = int(match.group(2))
+                        else:
+                            current_epoch = int(match.group(1))
+                            total_epochs = int(match.group(2))
                         break
             
             # 提取step信息 - 支持多种格式
-            # 格式: step 150/1000, Step 150 of 1000, [150/1000], step: 150/1000
+            # 格式: (74/44160), step 150/1000, Step 150 of 1000, [150/1000], step: 150/1000
             step_patterns = [
+                r'\((\d+)/(\d+)\)',                            # (74/44160) - 新格式
                 r'step\s+(\d+)\s*/\s*(\d+)',
                 r'Step\s+(\d+)\s*of\s*(\d+)',
                 r'\[(\d+)/(\d+)\]',
@@ -134,8 +154,9 @@ def calculate_training_progress(process_id, process_info):
             
             # 提取loss信息 - 支持多种格式
             if not current_loss:
-                # 格式: loss: 4.32, training_loss: 4.32, train_loss: 4.32, Loss: 4.32, 训练损失: 4.32
+                # 格式: loss:8.896761, loss: 4.32, training_loss: 4.32, train_loss: 4.32, Loss: 4.32, 训练损失: 4.32
                 loss_patterns = [
+                    r'loss:([\d.]+(?:e[+-]?\d+)?)',                    # loss:8.896761 - 新格式
                     r'loss[\s:=]\s*([\d.]+(?:e[+-]?\d+)?)',           # loss: 4.32
                     r'training_loss[\s:=]\s*([\d.]+(?:e[+-]?\d+)?)',  # training_loss: 4.32
                     r'train_loss[\s:=]\s*([\d.]+(?:e[+-]?\d+)?)',     # train_loss: 4.32
@@ -143,7 +164,7 @@ def calculate_training_progress(process_id, process_info):
                     r'训练损失[\s:=]\s*([\d.]+(?:e[+-]?\d+)?)',        # 训练损失: 4.32
                     r'损失[\s:=]\s*([\d.]+(?:e[+-]?\d+)?)',           # 损失: 4.32
                     r'\s+([\d.]+(?:e[+-]?\d+)?)\s*loss',             # 4.32 loss
-                    r'\s+([\d.]+(?:e[+-]?\d+)?)\s*训练损失',         # 4.32 训练损失
+                    r'\s+([\d.]+(?:e[+-]?\d+)?)\s*训练损失',           # 4.32 训练损失
                     r'(?:loss|损失|training_loss|train_loss)\s*=\s*([\d.]+(?:e[+-]?\d+)?)'  # loss = 4.32
                 ]
                 
@@ -158,8 +179,9 @@ def calculate_training_progress(process_id, process_info):
             
             # 提取学习率信息 - 支持多种格式
             if not current_lr:
-                # 格式: lr: 1e-4, learning_rate: 1e-4, LR: 1e-4, 学习率: 1e-4
+                # 格式: lr:0.000549999999, lr: 1e-4, learning_rate: 1e-4, LR: 1e-4, 学习率: 1e-4
                 lr_patterns = [
+                    r'lr:([\d.e+-]+)',                              # lr:0.000549999999 - 新格式
                     r'lr[\s:=]\s*([\d.e+-]+)',
                     r'learning_rate[\s:=]\s*([\d.e+-]+)',
                     r'LR[\s:=]\s*([\d.e+-]+)',
@@ -208,8 +230,9 @@ def calculate_training_progress(process_id, process_info):
         if current_epoch > 0 and total_epochs > current_epoch:
             # 从日志中提取时间信息
             for line in reversed(lines):
-                # 格式: remaining: 1:30:45, ETA: 1:30:45, 预计剩余: 1小时30分钟
+                # 格式: remaining: 1:30:45, ETA: 1:30:45, 预计剩余: 1小时30分钟, epoch_Time:332.0min:
                 time_patterns = [
+                    r'epoch_Time:([\d.]+)min:',                    # epoch_Time:332.0min: - 新格式
                     r'remaining[\s:=]\s*(\d+):(\d+):(\d+)',      # remaining: 1:30:45
                     r'ETA[\s:=]\s*(\d+):(\d+):(\d+)',            # ETA: 1:30:45
                     r'预计剩余[\s:=]\s*(\d+)[\s小时]*[\s:]?(\d+)?[\s分钟]*',  # 预计剩余: 1小时30分钟
@@ -221,30 +244,45 @@ def calculate_training_progress(process_id, process_info):
                 for pattern in time_patterns:
                     match = re.search(pattern, line, re.IGNORECASE)
                     if match:
-                        groups = match.groups()
-                        if len(groups) >= 3 and all(groups[:3]):
-                            # 小时:分钟:秒格式
-                            hours = int(groups[0])
-                            minutes = int(groups[1])
-                            seconds = int(groups[2])
-                            if hours > 0 or minutes > 0 or seconds > 0:
-                                parts = []
-                                if hours > 0: parts.append(f"{hours}小时")
-                                if minutes > 0: parts.append(f"{minutes}分钟")
-                                if seconds > 0 and hours == 0 and minutes == 0:
-                                    parts.append(f"{seconds}秒")
-                                remaining_time = ''.join(parts)
+                        # 处理epoch_Time格式
+                        if 'epoch_Time:' in pattern:
+                            minutes = float(match.group(1))
+                            if minutes > 0:
+                                if minutes >= 60:
+                                    hours = int(minutes // 60)
+                                    remaining_minutes = int(minutes % 60)
+                                    if hours > 0:
+                                        remaining_time = f"{hours}小时{remaining_minutes}分钟"
+                                    else:
+                                        remaining_time = f"{remaining_minutes}分钟"
+                                else:
+                                    remaining_time = f"{int(minutes)}分钟"
                                 break
-                        elif len(groups) >= 2:
-                            # 小时和分钟格式
-                            hours = int(groups[0])
-                            minutes = int(groups[1]) if groups[1] else 0
-                            if hours > 0 or minutes > 0:
-                                parts = []
-                                if hours > 0: parts.append(f"{hours}小时")
-                                if minutes > 0: parts.append(f"{minutes}分钟")
-                                remaining_time = ''.join(parts)
-                                break
+                        else:
+                            groups = match.groups()
+                            if len(groups) >= 3 and all(groups[:3]):
+                                # 小时:分钟:秒格式
+                                hours = int(groups[0])
+                                minutes = int(groups[1])
+                                seconds = int(groups[2])
+                                if hours > 0 or minutes > 0 or seconds > 0:
+                                    parts = []
+                                    if hours > 0: parts.append(f"{hours}小时")
+                                    if minutes > 0: parts.append(f"{minutes}分钟")
+                                    if seconds > 0 and hours == 0 and minutes == 0:
+                                        parts.append(f"{seconds}秒")
+                                    remaining_time = ''.join(parts)
+                                    break
+                            elif len(groups) >= 2:
+                                # 小时和分钟格式
+                                hours = int(groups[0])
+                                minutes = int(groups[1]) if groups[1] else 0
+                                if hours > 0 or minutes > 0:
+                                    parts = []
+                                    if hours > 0: parts.append(f"{hours}小时")
+                                    if minutes > 0: parts.append(f"{minutes}分钟")
+                                    remaining_time = ''.join(parts)
+                                    break
                 
                 if remaining_time != '计算中...':
                     break
@@ -269,6 +307,8 @@ def calculate_training_progress(process_id, process_info):
             'percentage': percentage,
             'current_epoch': current_epoch,
             'total_epochs': total_epochs,
+            'current_step': progress['current_step'],
+            'total_steps': progress['total_steps'],
             'remaining_time': remaining_time,
             'current_loss': f"{current_loss:.4f}" if current_loss else None,
             'current_lr': current_lr
@@ -439,7 +479,7 @@ def add_test_process():
     
     process_id = f"test_process_{int(time.time())}"
     
-    # 创建测试训练命令 - 包含step进度
+    # 创建测试训练命令 - 包含step进度和新的log格式
     test_command = [
         'python', '-c', '''
 import time
@@ -457,23 +497,23 @@ print("2024-11-21 14:30:02 - Model initialized with 108M parameters")
 sys.stdout.flush()
 time.sleep(2)
 
-# 测试单epoch但多step的情况
-print("2024-11-21 14:30:03 - Starting epoch 1/1")
+# 测试单epoch但多step的情况，使用新的log格式
+print("2024-11-21 14:30:03 - Epoch:[1/1] Starting training")
 sys.stdout.flush()
 time.sleep(1)
 
 total_steps = 20
 for step in range(1, total_steps + 1):
-    # 模拟step进度
+    # 模拟step进度，使用新的格式
     if step % 5 == 0 or step == total_steps:
-        print(f"2024-11-21 14:30:{4 + step} - Step {step}/{total_steps}")
+        print(f"2024-11-21 14:30:{4 + step} - Epoch:[1/1]({step}/{total_steps}) Processing")
         sys.stdout.flush()
     
-    # 模拟训练过程
+    # 模拟训练过程，使用新的格式
     loss = 4.5 - step * 0.1
     lr = 1e-4 * (0.95 ** step)
     if step % 3 == 0:
-        print(f"2024-11-21 14:30:{4 + step} - Loss: {loss:.4f}, lr: {lr:.2e}")
+        print(f"2024-11-21 14:30:{4 + step} - Epoch:[1/1]({step}/{total_steps}) loss:{loss:.6f} lr:{lr:.2e} epoch_Time:{step * 5.5:.1f}min:")
         sys.stdout.flush()
     
     time.sleep(0.5)
