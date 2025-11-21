@@ -68,7 +68,11 @@ function calculateProgress(process) {
       remaining: process.progress.remaining_time || '计算中...',
       loss: process.progress.current_loss || null,
       epoch: process.progress.current_epoch ? `${process.progress.current_epoch}/${process.progress.total_epochs}` : null,
-      lr: process.progress.current_lr || null
+      lr: process.progress.current_lr || null,
+      step: process.progress.current_step && process.progress.total_steps ? 
+            `${process.progress.current_step}/${process.progress.total_steps}` : null,
+      currentStep: process.progress.current_step || 0,
+      totalSteps: process.progress.total_steps || 0
     };
   }
   
@@ -88,6 +92,9 @@ function calculateProgress(process) {
     let current = 0;
     let total = 0;
     let percentage = 0;
+    let currentStep = 0;
+    let totalSteps = 0;
+    let stepInfo = null;
     
     for (const pattern of epochPatterns) {
       const match = logText.match(pattern);
@@ -95,6 +102,28 @@ function calculateProgress(process) {
         current = parseInt(match[1]);
         total = parseInt(match[2]);
         percentage = total > 0 ? Math.round((current / total) * 100) : 0;
+        break;
+      }
+    }
+    
+    // 提取step信息 - 支持多种格式
+    const stepPatterns = [
+      /step\s+(\d+)\s*\/\s*(\d+)/i,                    // step 150/1000
+      /Step\s+(\d+)\s*of\s*(\d+)/i,                   // Step 150 of 1000
+      /\[(\d+)\/(\d+)\]/i,                              // [150/1000]
+      /step\s*[:：]\s*(\d+)\s*\/\s*(\d+)/i,            // step: 150/1000
+      /第\s*(\d+)\s*步\s*\/\s*共\s*(\d+)\s*步/i,        // 第150步/共1000步
+      /步数\s*(\d+)\s*\/\s*(\d+)/i,                     // 步数 150/1000
+      /batch\s+(\d+)\s*\/\s*(\d+)/i,                    // batch 150/1000
+      /Batch\s+(\d+)\s*of\s*(\d+)/i                     // Batch 150 of 1000
+    ];
+    
+    for (const pattern of stepPatterns) {
+      const match = logText.match(pattern);
+      if (match) {
+        currentStep = parseInt(match[1]);
+        totalSteps = parseInt(match[2]);
+        stepInfo = `${currentStep}/${totalSteps}`;
         break;
       }
     }
@@ -149,14 +178,29 @@ function calculateProgress(process) {
     
     // 如果找到了有效的epoch信息，返回进度
     if (total > 0) {
+      // 重新计算百分比 - 支持epoch和step双重进度
+      let finalPercentage = percentage;
+      if (totalSteps > 0 && currentStep > 0) {
+        // 基础epoch进度
+        const epochPercentage = (current / total) * 100;
+        // 当前epoch内的step进度
+        const stepPercentageInEpoch = (currentStep / totalSteps) * 100;
+        // 将step进度加到epoch进度上（每个epoch占总进度的1/total）
+        const stepContribution = stepPercentageInEpoch / total;
+        finalPercentage = Math.min(100, Math.max(0, Math.round(epochPercentage + stepContribution)));
+      }
+      
       return {
-        percentage,
+        percentage: finalPercentage,
         current,
         total,
         remaining: calculateRemainingTime(current, total, logText),
         loss: currentLoss,
         epoch: `${current}/${total}`,
-        lr: currentLr
+        lr: currentLr,
+        step: stepInfo,
+        currentStep,
+        totalSteps
       };
     }
   }
@@ -321,12 +365,13 @@ export function addProcessItemToGroup(parent, process) {
         <div class="progress-fill" style="width: ${progressInfo.percentage}%"></div>
       </div>
       <div class="progress-info">
-        <span>进度: ${progressInfo.current}/${progressInfo.total}</span>
+        <span>进度: ${progressInfo.current}/${progressInfo.total}${progressInfo.step ? ` (${progressInfo.step})` : ''}</span>
         <span>剩余时间: ${progressInfo.remaining}</span>
       </div>
       <div class="progress-metrics">
         ${progressInfo.loss ? `<div class="metric-item"><span class="metric-label">Loss:</span><span class="metric-value">${progressInfo.loss}</span></div>` : ''}
         ${progressInfo.epoch ? `<div class="metric-item"><span class="metric-label">Epoch:</span><span class="metric-value">${progressInfo.epoch}</span></div>` : ''}
+        ${progressInfo.step ? `<div class="metric-item"><span class="metric-label">Step:</span><span class="metric-value">${progressInfo.step}</span></div>` : ''}
         ${progressInfo.lr ? `<div class="metric-item"><span class="metric-label">LR:</span><span class="metric-value">${progressInfo.lr}</span></div>` : ''}
       </div>
     </div>
@@ -379,7 +424,8 @@ export function updateProcessProgress(item, process) {
   }
   
   if (progressText) {
-    progressText.textContent = `进度: ${progressInfo.current}/${progressInfo.total}`;
+    const stepText = progressInfo.step ? ` (${progressInfo.step})` : '';
+    progressText.textContent = `进度: ${progressInfo.current}/${progressInfo.total}${stepText}`;
   }
   
   if (remainingText) {
@@ -390,13 +436,17 @@ export function updateProcessProgress(item, process) {
     // 更新指标 - 只更新有变化的值来减少DOM操作
     const lossItem = metricsContainer.querySelector('.metric-item:nth-child(1) .metric-value');
     const epochItem = metricsContainer.querySelector('.metric-item:nth-child(2) .metric-value');
-    const lrItem = metricsContainer.querySelector('.metric-item:nth-child(3) .metric-value');
+    const stepItem = metricsContainer.querySelector('.metric-item:nth-child(3) .metric-value');
+    const lrItem = metricsContainer.querySelector('.metric-item:nth-child(4) .metric-value');
     
     if (progressInfo.loss && lossItem) {
       lossItem.textContent = progressInfo.loss;
     }
     if (progressInfo.epoch && epochItem) {
       epochItem.textContent = progressInfo.epoch;
+    }
+    if (progressInfo.step && stepItem) {
+      stepItem.textContent = progressInfo.step;
     }
     if (progressInfo.lr && lrItem) {
       lrItem.textContent = progressInfo.lr;

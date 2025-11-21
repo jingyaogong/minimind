@@ -40,6 +40,8 @@ def calculate_training_progress(process_id, process_info):
         'percentage': 0,
         'current_epoch': 0,
         'total_epochs': 0,
+        'current_step': 0,
+        'total_steps': 0,
         'remaining_time': '计算中...',
         'current_loss': None,
         'current_lr': None
@@ -110,6 +112,26 @@ def calculate_training_progress(process_id, process_info):
                         total_epochs = int(match.group(2))
                         break
             
+            # 提取step信息 - 支持多种格式
+            # 格式: step 150/1000, Step 150 of 1000, [150/1000], step: 150/1000
+            step_patterns = [
+                r'step\s+(\d+)\s*/\s*(\d+)',
+                r'Step\s+(\d+)\s*of\s*(\d+)',
+                r'\[(\d+)/(\d+)\]',
+                r'step\s*[:：]\s*(\d+)\s*/\s*(\d+)',
+                r'第\s*(\d+)\s*步\s*/\s*共\s*(\d+)\s*步',
+                r'步数\s*(\d+)\s*/\s*(\d+)',
+                r'batch\s+(\d+)\s*/\s*(\d+)',  # 也支持batch格式
+                r'Batch\s+(\d+)\s*of\s*(\d+)'
+            ]
+            
+            for pattern in step_patterns:
+                match = re.search(pattern, line, re.IGNORECASE)
+                if match:
+                    progress['current_step'] = int(match.group(1))
+                    progress['total_steps'] = int(match.group(2))
+                    break
+            
             # 提取loss信息 - 支持多种格式
             if not current_loss:
                 # 格式: loss: 4.32, training_loss: 4.32, train_loss: 4.32, Loss: 4.32, 训练损失: 4.32
@@ -157,10 +179,29 @@ def calculate_training_progress(process_id, process_info):
             if total_epochs and current_loss and current_lr:
                 break
         
-        # 计算进度百分比
+        # 计算进度百分比 - 支持epoch和step双重进度
         percentage = 0
         if total_epochs > 0:
-            percentage = min(100, max(0, int((current_epoch / total_epochs) * 100)))
+            # 基础epoch进度
+            epoch_percentage = (current_epoch / total_epochs) * 100
+            
+            # 如果有step信息，在当前epoch内计算step进度
+            if progress['total_steps'] > 0 and progress['current_step'] > 0:
+                # 计算当前epoch内的step进度
+                step_percentage_in_epoch = (progress['current_step'] / progress['total_steps']) * 100
+                # 将step进度加到epoch进度上（每个epoch占总进度的1/total_epochs）
+                step_contribution = step_percentage_in_epoch / total_epochs
+                percentage = min(100, max(0, int(epoch_percentage + step_contribution)))
+            else:
+                # 只有epoch信息的传统计算方式
+                percentage = min(100, max(0, int(epoch_percentage)))
+        
+        # 更新进度字典
+        progress['percentage'] = percentage
+        progress['current_epoch'] = current_epoch
+        progress['total_epochs'] = total_epochs
+        progress['current_loss'] = current_loss
+        progress['current_lr'] = current_lr
         
         # 估算剩余时间（增强计算）
         remaining_time = '计算中...'
@@ -398,7 +439,7 @@ def add_test_process():
     
     process_id = f"test_process_{int(time.time())}"
     
-    # 创建测试训练命令
+    # 创建测试训练命令 - 包含step进度
     test_command = [
         'python', '-c', '''
 import time
@@ -416,23 +457,28 @@ print("2024-11-21 14:30:02 - Model initialized with 108M parameters")
 sys.stdout.flush()
 time.sleep(2)
 
-for epoch in range(1, 6):
-    print(f"2024-11-21 14:30:{5 + epoch*5} - Starting epoch {epoch}/5")
-    sys.stdout.flush()
-    time.sleep(1)
-    
-    loss = 4.5 - epoch * 0.3
-    lr = 1e-4 * (0.9 ** epoch)
-    print(f"2024-11-21 14:30:{6 + epoch*5} - Loss: {loss:.4f}, lr: {lr:.2e}")
-    sys.stdout.flush()
-    time.sleep(2)
-    
-    remaining = (5 - epoch) * 15
-    print(f"2024-11-21 14:30:{8 + epoch*5} - Epoch {epoch}/5 completed, remaining: 0:0{remaining}:00")
-    sys.stdout.flush()
-    time.sleep(1)
+# 测试单epoch但多step的情况
+print("2024-11-21 14:30:03 - Starting epoch 1/1")
+sys.stdout.flush()
+time.sleep(1)
 
-print("2024-11-21 14:30:35 - Training completed successfully")
+total_steps = 20
+for step in range(1, total_steps + 1):
+    # 模拟step进度
+    if step % 5 == 0 or step == total_steps:
+        print(f"2024-11-21 14:30:{4 + step} - Step {step}/{total_steps}")
+        sys.stdout.flush()
+    
+    # 模拟训练过程
+    loss = 4.5 - step * 0.1
+    lr = 1e-4 * (0.95 ** step)
+    if step % 3 == 0:
+        print(f"2024-11-21 14:30:{4 + step} - Loss: {loss:.4f}, lr: {lr:.2e}")
+        sys.stdout.flush()
+    
+    time.sleep(0.5)
+
+print("2024-11-21 14:30:25 - Training completed successfully")
 sys.stdout.flush()
         '''
     ]
