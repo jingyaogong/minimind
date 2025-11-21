@@ -2,6 +2,7 @@ import { openTab as _openTab } from './ui/tabs.js';
 import { initTrainForm } from './train/form.js';
 import { startProcessPolling, stopProcessPolling, loadProcesses } from './processes/list.js';
 import { loadLogFiles } from './logfiles/list.js';
+import { refreshLog } from './processes/logs.js';
 
 const hooks = {
   onEnterProcesses: () => {
@@ -336,6 +337,11 @@ window.closeFileBrowser = closeFileBrowser;
 window.confirmFileSelection = confirmFileSelection;
 window.navigateToParent = navigateToParent;
 window.selectCurrentDirectory = selectCurrentDirectory;
+
+// 将进程管理函数暴露到全局作用域
+window.refreshProcesses = loadProcesses;
+window.refreshLogs = loadLogFiles;
+window.refreshLog = refreshLog;
 
 window.addEventListener('load', () => {
   initTrainForm();

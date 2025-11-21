@@ -5,6 +5,46 @@ import { el, clearChildren } from '../utils/dom.js';
 import { showLogs, refreshLog, clearLogTimerFor } from './logs.js';
 
 // 计算训练进度信息
+function calculateRemainingTime(current, total, logText) {
+  // 尝试从日志中提取时间信息
+  const timePatterns = [
+    /remaining[\s:=]\s*(\d+)[\s:]?(\d+)?[\s:]?(\d+)?/i,  // remaining: 1:30:45 or remaining: 90
+    /ETA[\s:=]\s*(\d+):(\d+):(\d+)/i,                      // ETA: 1:30:45
+    /预计剩余[\s:=]\s*(\d+)[\s小时]*[\s:]?(\d+)?[\s分钟]*/i, // 预计剩余: 1小时30分钟
+    /剩余时间[\s:=]\s*(\d+)[\s小时]*[\s:]?(\d+)?[\s分钟]*/i, // 剩余时间: 1小时30分钟
+    /time left[\s:=]\s*(\d+)[\s:]?(\d+)?[\s:]?(\d+)?/i,     // time left: 1:30:45
+    /还需[\s:=]\s*(\d+)[\s小时]*[\s:]?(\d+)?[\s分钟]*/i      // 还需: 1小时30分钟
+  ];
+  
+  for (const pattern of timePatterns) {
+    const match = logText.match(pattern);
+    if (match) {
+      const hours = parseInt(match[1]) || 0;
+      const minutes = parseInt(match[2]) || 0;
+      const seconds = parseInt(match[3]) || 0;
+      
+      if (hours > 0 || minutes > 0 || seconds > 0) {
+        const parts = [];
+        if (hours > 0) parts.push(`${hours}小时`);
+        if (minutes > 0) parts.push(`${minutes}分钟`);
+        if (seconds > 0 && hours === 0 && minutes === 0) parts.push(`${seconds}秒`);
+        
+        return parts.join('');
+      }
+    }
+  }
+  
+  // 如果没有找到时间信息，根据进度估算
+  if (current > 0 && current < total) {
+    const remainingEpochs = total - current;
+    // 假设每个epoch大约需要一定时间，这里使用简单的线性估算
+    // 实际应用中可以根据历史数据更准确地估算
+    return `约${remainingEpochs}个epoch`;
+  }
+  
+  return '计算中...';
+}
+
 function calculateProgress(process) {
   const defaultProgress = {
     percentage: 0,
@@ -32,29 +72,91 @@ function calculateProgress(process) {
     };
   }
   
-  // 尝试从日志中提取进度信息（简化版本）
+  // 尝试从日志中提取进度信息（增强版本）
   if (process.logs) {
-    const logText = process.logs.slice(-1000); // 取最近1000字符
+    const logText = process.logs.slice(-2000); // 取最近2000字符以获取更多上下文
     
-    // 提取epoch信息
-    const epochMatch = logText.match(/epoch\s+(\d+)\/(\d+)/i);
-    if (epochMatch) {
-      const current = parseInt(epochMatch[1]);
-      const total = parseInt(epochMatch[2]);
-      const percentage = total > 0 ? Math.round((current / total) * 100) : 0;
-      
-      // 提取loss信息
-      const lossMatch = logText.match(/loss[\s:=]\s*([\d.]+)/i);
-      const currentLoss = lossMatch ? parseFloat(lossMatch[1]).toFixed(4) : null;
-      
+    // 提取epoch信息 - 支持多种格式
+    const epochPatterns = [
+      /epoch\s+(\d+)\s*\/\s*(\d+)/i,                    // epoch 3/10
+      /Epoch\s+(\d+)\s*of\s*(\d+)/i,                   // Epoch 3 of 10
+      /\[(\d+)\/(\d+)\]/i,                              // [3/10]
+      /epoch\s*[:：]\s*(\d+)\s*\/\s*(\d+)/i,            // epoch: 3/10
+      /第\s*(\d+)\s*轮\s*\/\s*共\s*(\d+)\s*轮/i         // 第3轮/共10轮
+    ];
+    
+    let current = 0;
+    let total = 0;
+    let percentage = 0;
+    
+    for (const pattern of epochPatterns) {
+      const match = logText.match(pattern);
+      if (match) {
+        current = parseInt(match[1]);
+        total = parseInt(match[2]);
+        percentage = total > 0 ? Math.round((current / total) * 100) : 0;
+        break;
+      }
+    }
+    
+    // 提取loss信息 - 支持多种格式
+    const lossPatterns = [
+      /loss[\s:=]\s*([\d.]+(?:e[+-]?\d+)?)/i,           // loss: 4.32 or loss = 4.32
+      /training_loss[\s:=]\s*([\d.]+(?:e[+-]?\d+)?)/i,  // training_loss: 4.32
+      /train_loss[\s:=]\s*([\d.]+(?:e[+-]?\d+)?)/i,     // train_loss: 4.32
+      /Loss[\s:=]\s*([\d.]+(?:e[+-]?\d+)?)/i,          // Loss: 4.32
+      /训练损失[\s:=]\s*([\d.]+(?:e[+-]?\d+)?)/i,        // 训练损失: 4.32
+      /损失[\s:=]\s*([\d.]+(?:e[+-]?\d+)?)/i,           // 损失: 4.32
+      /\s+([\d.]+(?:e[+-]?\d+)?)\s*loss/i,              // 4.32 loss
+      /\s+([\d.]+(?:e[+-]?\d+)?)\s*训练损失/i,           // 4.32 训练损失
+      /(?:loss|损失|training_loss|train_loss)\s*=\s*([\d.]+(?:e[+-]?\d+)?)/i  // loss = 4.32
+    ];
+    
+    let currentLoss = null;
+    for (const pattern of lossPatterns) {
+      const matches = [...logText.matchAll(pattern)];
+      if (matches.length > 0) {
+        // 取最后一个匹配的loss值
+        const lastMatch = matches[matches.length - 1];
+        const lossValue = parseFloat(lastMatch[1]);
+        if (!isNaN(lossValue) && lossValue > 0 && lossValue < 100) { // 合理的loss范围
+          currentLoss = lossValue.toFixed(4);
+          break;
+        }
+      }
+    }
+    
+    // 提取学习率信息
+    const lrPatterns = [
+      /lr[\s:=]\s*([\d.e+-]+)/i,                        // lr: 1e-4
+      /learning_rate[\s:=]\s*([\d.e+-]+)/i,              // learning_rate: 1e-4
+      /LR[\s:=]\s*([\d.e+-]+)/i,                         // LR: 1e-4
+      /学习率[\s:=]\s*([\d.e+-]+)/i                        // 学习率: 1e-4
+    ];
+    
+    let currentLr = null;
+    for (const pattern of lrPatterns) {
+      const matches = [...logText.matchAll(pattern)];
+      if (matches.length > 0) {
+        const lastMatch = matches[matches.length - 1];
+        const lrValue = parseFloat(lastMatch[1]);
+        if (!isNaN(lrValue) && lrValue > 0 && lrValue < 1) { // 合理的lr范围
+          currentLr = lrValue.toExponential(2);
+          break;
+        }
+      }
+    }
+    
+    // 如果找到了有效的epoch信息，返回进度
+    if (total > 0) {
       return {
         percentage,
         current,
         total,
-        remaining: '计算中...',
+        remaining: calculateRemainingTime(current, total, logText),
         loss: currentLoss,
         epoch: `${current}/${total}`,
-        lr: null
+        lr: currentLr
       };
     }
   }

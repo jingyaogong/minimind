@@ -88,24 +88,70 @@ def calculate_training_progress(process_id, process_info):
         current_lr = None
         
         for line in reversed(lines):  # 从最新日志开始
-            # 提取epoch信息 (格式: epoch 3/10)
+            line = line.strip()
+            if not line:
+                continue
+                
+            # 提取epoch信息 - 支持多种格式
             if not total_epochs:
-                epoch_match = re.search(r'epoch\s+(\d+)\s*/\s*(\d+)', line, re.IGNORECASE)
-                if epoch_match:
-                    current_epoch = int(epoch_match.group(1))
-                    total_epochs = int(epoch_match.group(2))
+                # 格式: epoch 3/10, Epoch 3 of 10, [3/10], 第3轮/共10轮
+                epoch_patterns = [
+                    r'epoch\s+(\d+)\s*/\s*(\d+)',
+                    r'Epoch\s+(\d+)\s*of\s*(\d+)',
+                    r'\[(\d+)/(\d+)\]',
+                    r'epoch\s*[:：]\s*(\d+)\s*/\s*(\d+)',
+                    r'第\s*(\d+)\s*轮\s*/\s*共\s*(\d+)\s*轮'
+                ]
+                
+                for pattern in epoch_patterns:
+                    match = re.search(pattern, line, re.IGNORECASE)
+                    if match:
+                        current_epoch = int(match.group(1))
+                        total_epochs = int(match.group(2))
+                        break
             
-            # 提取loss信息 (格式: loss: 4.32 或 loss = 4.32)
+            # 提取loss信息 - 支持多种格式
             if not current_loss:
-                loss_match = re.search(r'loss[\s:=]\s*([\d.]+)', line, re.IGNORECASE)
-                if loss_match:
-                    current_loss = float(loss_match.group(1))
+                # 格式: loss: 4.32, training_loss: 4.32, train_loss: 4.32, Loss: 4.32, 训练损失: 4.32
+                loss_patterns = [
+                    r'loss[\s:=]\s*([\d.]+(?:e[+-]?\d+)?)',           # loss: 4.32
+                    r'training_loss[\s:=]\s*([\d.]+(?:e[+-]?\d+)?)',  # training_loss: 4.32
+                    r'train_loss[\s:=]\s*([\d.]+(?:e[+-]?\d+)?)',     # train_loss: 4.32
+                    r'Loss[\s:=]\s*([\d.]+(?:e[+-]?\d+)?)',          # Loss: 4.32
+                    r'训练损失[\s:=]\s*([\d.]+(?:e[+-]?\d+)?)',        # 训练损失: 4.32
+                    r'损失[\s:=]\s*([\d.]+(?:e[+-]?\d+)?)',           # 损失: 4.32
+                    r'\s+([\d.]+(?:e[+-]?\d+)?)\s*loss',             # 4.32 loss
+                    r'\s+([\d.]+(?:e[+-]?\d+)?)\s*训练损失',         # 4.32 训练损失
+                    r'(?:loss|损失|training_loss|train_loss)\s*=\s*([\d.]+(?:e[+-]?\d+)?)'  # loss = 4.32
+                ]
+                
+                for pattern in loss_patterns:
+                    matches = re.findall(pattern, line, re.IGNORECASE)
+                    if matches:
+                        # 取最后一个匹配的loss值
+                        loss_value = float(matches[-1])
+                        if 0 < loss_value < 100:  # 合理的loss范围
+                            current_loss = loss_value
+                            break
             
-            # 提取学习率信息 (格式: lr: 1e-4 或 learning_rate: 1e-4)
+            # 提取学习率信息 - 支持多种格式
             if not current_lr:
-                lr_match = re.search(r'(?:lr|learning_rate)[\s:=]\s*([\d.e-]+)', line, re.IGNORECASE)
-                if lr_match:
-                    current_lr = lr_match.group(1)
+                # 格式: lr: 1e-4, learning_rate: 1e-4, LR: 1e-4, 学习率: 1e-4
+                lr_patterns = [
+                    r'lr[\s:=]\s*([\d.e+-]+)',
+                    r'learning_rate[\s:=]\s*([\d.e+-]+)',
+                    r'LR[\s:=]\s*([\d.e+-]+)',
+                    r'学习率[\s:=]\s*([\d.e+-]+)'
+                ]
+                
+                for pattern in lr_patterns:
+                    matches = re.findall(pattern, line, re.IGNORECASE)
+                    if matches:
+                        # 取最后一个匹配的lr值
+                        lr_value = float(matches[-1])
+                        if 0 < lr_value < 1:  # 合理的lr范围
+                            current_lr = f"{lr_value:.2e}"
+                            break
             
             # 如果已经收集到足够信息，提前退出
             if total_epochs and current_loss and current_lr:
@@ -116,21 +162,67 @@ def calculate_training_progress(process_id, process_info):
         if total_epochs > 0:
             percentage = min(100, max(0, int((current_epoch / total_epochs) * 100)))
         
-        # 估算剩余时间（简化计算）
+        # 估算剩余时间（增强计算）
         remaining_time = '计算中...'
         if current_epoch > 0 and total_epochs > current_epoch:
-            # 假设每epoch时间大致相同
-            elapsed_time = time.time() - process_info.get('start_timestamp', time.time())
-            time_per_epoch = elapsed_time / current_epoch
-            remaining_epochs = total_epochs - current_epoch
-            remaining_seconds = remaining_epochs * time_per_epoch
+            # 从日志中提取时间信息
+            for line in reversed(lines):
+                # 格式: remaining: 1:30:45, ETA: 1:30:45, 预计剩余: 1小时30分钟
+                time_patterns = [
+                    r'remaining[\s:=]\s*(\d+):(\d+):(\d+)',      # remaining: 1:30:45
+                    r'ETA[\s:=]\s*(\d+):(\d+):(\d+)',            # ETA: 1:30:45
+                    r'预计剩余[\s:=]\s*(\d+)[\s小时]*[\s:]?(\d+)?[\s分钟]*',  # 预计剩余: 1小时30分钟
+                    r'剩余时间[\s:=]\s*(\d+)[\s小时]*[\s:]?(\d+)?[\s分钟]*',  # 剩余时间: 1小时30分钟
+                    r'time left[\s:=]\s*(\d+)[\s:]?(\d+)?[\s:]?(\d+)?',  # time left: 1:30:45
+                    r'还需[\s:=]\s*(\d+)[\s小时]*[\s:]?(\d+)?[\s分钟]*'  # 还需: 1小时30分钟
+                ]
+                
+                for pattern in time_patterns:
+                    match = re.search(pattern, line, re.IGNORECASE)
+                    if match:
+                        groups = match.groups()
+                        if len(groups) >= 3 and all(groups[:3]):
+                            # 小时:分钟:秒格式
+                            hours = int(groups[0])
+                            minutes = int(groups[1])
+                            seconds = int(groups[2])
+                            if hours > 0 or minutes > 0 or seconds > 0:
+                                parts = []
+                                if hours > 0: parts.append(f"{hours}小时")
+                                if minutes > 0: parts.append(f"{minutes}分钟")
+                                if seconds > 0 and hours == 0 and minutes == 0:
+                                    parts.append(f"{seconds}秒")
+                                remaining_time = ''.join(parts)
+                                break
+                        elif len(groups) >= 2:
+                            # 小时和分钟格式
+                            hours = int(groups[0])
+                            minutes = int(groups[1]) if groups[1] else 0
+                            if hours > 0 or minutes > 0:
+                                parts = []
+                                if hours > 0: parts.append(f"{hours}小时")
+                                if minutes > 0: parts.append(f"{minutes}分钟")
+                                remaining_time = ''.join(parts)
+                                break
+                
+                if remaining_time != '计算中...':
+                    break
             
-            if remaining_seconds > 3600:
-                remaining_time = f"{remaining_seconds / 3600:.1f}小时"
-            elif remaining_seconds > 60:
-                remaining_time = f"{remaining_seconds / 60:.1f}分钟"
-            else:
-                remaining_time = f"{int(remaining_seconds)}秒"
+            # 如果没有找到时间信息，根据进度估算
+            if remaining_time == '计算中...':
+                # 假设每epoch时间大致相同
+                elapsed_time = time.time() - process_info.get('start_timestamp', time.time())
+                if current_epoch > 0:
+                    time_per_epoch = elapsed_time / current_epoch
+                    remaining_epochs = total_epochs - current_epoch
+                    remaining_seconds = remaining_epochs * time_per_epoch
+                    
+                    if remaining_seconds > 3600:
+                        remaining_time = f"{remaining_seconds / 3600:.1f}小时"
+                    elif remaining_seconds > 60:
+                        remaining_time = f"{remaining_seconds / 60:.1f}分钟"
+                    else:
+                        remaining_time = f"{int(remaining_seconds)}秒"
         
         return {
             'percentage': percentage,
