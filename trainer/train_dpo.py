@@ -115,6 +115,9 @@ def train_epoch(epoch, loader, iters, ref_model, lm_config, start_step=0, wandb=
             lm_checkpoint(lm_config, weight=args.save_weight, model=model, optimizer=optimizer, scaler=scaler, epoch=epoch, step=step, wandb=wandb, save_dir='../checkpoints')
             model.train()
 
+        del x_chosen, x_rejected, y_chosen, y_rejected, mask_chosen, mask_rejected, x, y, mask
+        del ref_outputs, ref_logits, ref_log_probs, outputs, logits, policy_log_probs, loss
+
 
 if __name__ == "__main__":
     parser = argparse.ArgumentParser(description="MiniMind DPO (Direct Preference Optimization)")

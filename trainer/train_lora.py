@@ -73,6 +73,8 @@ def train_epoch(epoch, loader, iters, lora_params, start_step=0, wandb=None):
             lm_checkpoint(lm_config, weight=args.lora_name, model=model, optimizer=optimizer, scaler=scaler, epoch=epoch, step=step, wandb=wandb, save_dir='../checkpoints')
             model.train()
 
+        del X, Y, loss_mask, res, loss
+
 
 if __name__ == "__main__":
     parser = argparse.ArgumentParser(description="MiniMind LoRA Fine-tuning")

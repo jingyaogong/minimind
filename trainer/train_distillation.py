@@ -128,6 +128,8 @@ def train_epoch(epoch, loader, iters, teacher_model, lm_config_student, start_st
             lm_checkpoint(lm_config_student, weight=args.save_weight, model=model, optimizer=optimizer, scaler=scaler, epoch=epoch, step=step, wandb=wandb, save_dir='../checkpoints')
             model.train()
 
+        del X, Y, loss_mask, res, student_logits, teacher_logits, ce_loss, distill_loss, loss
+
 
 if __name__ == "__main__":
     parser = argparse.ArgumentParser(description="MiniMind Knowledge Distillation")

@@ -233,6 +233,11 @@ def ppo_train_epoch(epoch, loader, iters, old_actor_model, ref_model, actor_sche
                          critic_optimizer=critic_optimizer, critic_scheduler=critic_scheduler)
             actor_model.train()
 
+        del enc, gen_out, responses_text, rewards, full_mask, values_seq, values, advantages
+        del logits, labels, logp_tokens, final_mask, actor_logp, old_logits, old_logp, ref_logits, ref_logp
+        del kl, kl_ref, ratio, surr1, surr2, policy_loss, value_loss, loss
+        torch.cuda.empty_cache()
+
 
 if __name__ == "__main__":
     parser = argparse.ArgumentParser(description="MiniMind PPO (Proximal Policy Optimization)")

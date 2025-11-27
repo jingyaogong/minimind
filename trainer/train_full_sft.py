@@ -78,6 +78,8 @@ def train_epoch(epoch, loader, iters, start_step=0, wandb=None):
                          epoch=epoch, step=step, wandb=wandb, save_dir='../checkpoints', scaler=scaler)
             model.train()
 
+        del X, Y, loss_mask, res, loss
+
 
 if __name__ == "__main__":
     parser = argparse.ArgumentParser(description="MiniMind Full SFT")

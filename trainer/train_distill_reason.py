@@ -90,6 +90,8 @@ def train_epoch(epoch, loader, iters, tokenizer, lm_config, start_step=0, wandb=
             lm_checkpoint(lm_config, weight=args.save_weight, model=model, optimizer=optimizer, scaler=scaler, epoch=epoch, step=step, wandb=wandb, save_dir='../checkpoints')
             model.train()
 
+        del X, Y, loss_mask, res, loss
+
 
 if __name__ == "__main__":
     parser = argparse.ArgumentParser(description="MiniMind Reasoning Distillation")
