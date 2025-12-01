@@ -1,6 +1,7 @@
 """
 训练工具函数集合
 """
+import gc
 import os
 import random
 import math
@@ -53,8 +54,9 @@ def lm_checkpoint(lm_config, weight='full_sft', model=None, optimizer=None, epoc
     if model is not None:
         from torch.nn.parallel import DistributedDataParallel
         state_dict = model.module.state_dict() if isinstance(model, DistributedDataParallel) else model.state_dict()
+        state_dict = {k: v.half().cpu() for k, v in state_dict.items()}
         ckp_tmp = ckp_path + '.tmp'
-        torch.save({k: v.half() for k, v in state_dict.items()}, ckp_tmp)
+        torch.save(state_dict, ckp_tmp)
         os.replace(ckp_tmp, ckp_path)
         wandb_id = None
         if wandb:
@@ -85,6 +87,9 @@ def lm_checkpoint(lm_config, weight='full_sft', model=None, optimizer=None, epoc
         resume_tmp = resume_path + '.tmp'
         torch.save(resume_data, resume_tmp)
         os.replace(resume_tmp, resume_path)
+        del state_dict, resume_data
+        gc.collect()
+        torch.cuda.empty_cache()
     else:  # 加载模式
         if os.path.exists(resume_path):
             ckp_data = torch.load(resume_path, map_location='cpu')

@@ -123,10 +123,11 @@ def train_epoch(epoch, loader, iters, teacher_model, lm_config_student, start_st
                 state_dict = model.module.state_dict()
             else:
                 state_dict = model.state_dict()
-            state_dict = {k: v.half() for k, v in state_dict.items()}  # 半精度保存
+            state_dict = {k: v.half().cpu() for k, v in state_dict.items()}
             torch.save(state_dict, ckp)
             lm_checkpoint(lm_config_student, weight=args.save_weight, model=model, optimizer=optimizer, scaler=scaler, epoch=epoch, step=step, wandb=wandb, save_dir='../checkpoints')
             model.train()
+            del state_dict
 
         del X, Y, loss_mask, res, student_logits, teacher_logits, ce_loss, distill_loss, loss
 
