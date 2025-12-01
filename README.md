@@ -1580,13 +1580,28 @@ DPO和在线PPO的区别在于reject和chosen都是离线准备的，和minimind
 ## Ⅳ RoPE长度外推
 
 MiniMind支持通过YaRN算法进行RoPE位置编码的长度外推，使模型能够处理超出训练长度的文本序列。
-在使用`eval_llm.py`进行推理时，只需添加`--inference_rope_scaling`参数即可启用RoPE外推：
+
+原生torch模型在使用`eval_llm.py`进行推理时，只需添加`--inference_rope_scaling`参数即可启用RoPE外推：
 
 ```bash
 python eval_llm.py --weight full_sft --inference_rope_scaling
 ```
 
-下图展示了在不同文本「西游记」白话文小说长度下，使用RoPE scaling前后的困惑度(PPL)对比。可以看出，启用RoPE scaling后，模型在长文本上的表现显著提升：
+对于Transformers格式的模型，可以在config.json中添加以下配置实现长度外推：
+
+```json
+"rope_scaling": {
+    "type": "yarn",
+    "factor": 16.0,
+    "original_max_position_embeddings": 2048,
+    "beta_fast": 32.0,
+    "beta_slow": 1.0,
+    "attention_factor": 1.0
+}
+```
+
+在MiniMind-Small模型上，测试输入不同长度的「西游记」白话文小说，评估RoPE scaling前后的困惑度(PPL)对比。
+可以看出，启用YaRN外推后，模型在长文本上的PPL表现显著下降：
 
 <div align="center">
 <img src="./images/rope_ppl.png">
