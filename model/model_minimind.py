@@ -34,7 +34,7 @@ class MiniMindConfig(PretrainedConfig):
             n_routed_experts: int = 4,
             n_shared_experts: int = 1,
             scoring_func: str = 'softmax',
-            aux_loss_alpha: float = 0.1,
+            aux_loss_alpha: float = 0.01,
             seq_aux: bool = True,
             norm_topk_prob: bool = True,
             **kwargs
