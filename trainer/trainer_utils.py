@@ -22,8 +22,32 @@ def Logger(content):
         print(content)
 
 
-def get_lr(current_step, total_steps, lr):
-    return lr / 10 + 0.5 * lr * (1 + math.cos(math.pi * current_step / total_steps))
+def get_lr(current_step, total_steps, lr, warmup_steps=0, warmup_ratio=0.01):
+    """
+    学习率调度：Warmup + Cosine Decay
+    
+    Args:
+        current_step: 当前步数
+        total_steps: 总步数
+        lr: 目标学习率
+        warmup_steps: warmup步数，0表示不使用warmup
+        warmup_ratio: warmup起始学习率比例，起始lr = lr * warmup_ratio
+    
+    Returns:
+        当前步数对应的学习率
+    """
+    if warmup_steps > 0 and current_step < warmup_steps:
+        # Warmup阶段：线性从 warmup_ratio * lr 增长到 lr
+        return warmup_ratio * lr + (1 - warmup_ratio) * lr * (current_step / warmup_steps)
+    else:
+        # Cosine Decay阶段：从 lr 按余弦函数衰减到 lr / 10
+        if warmup_steps > 0:
+            cosine_steps = current_step - warmup_steps
+            cosine_total = total_steps - warmup_steps
+        else:
+            cosine_steps = current_step
+            cosine_total = total_steps
+        return lr / 10 + 0.5 * lr * (1 + math.cos(math.pi * cosine_steps / cosine_total))
 
 
 def init_distributed_mode():
