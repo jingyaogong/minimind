@@ -1547,13 +1547,32 @@ Personal subjective evaluation basically aligns with DeepSeek-R1, where:
 ## Ⅳ RoPE Long-text Extrapolation
 
 MiniMind supports RoPE position encoding length extrapolation through YaRN algorithm, enabling models to handle text sequences exceeding training length.
-When using `eval_llm.py` for inference, just add `--inference_rope_scaling` parameter to enable RoPE extrapolation:
+
+For native torch models, when using `eval_llm.py` for inference, just add `--inference_rope_scaling` parameter to enable RoPE extrapolation:
 
 ```bash
 python eval_llm.py --weight full_sft --inference_rope_scaling
 ```
 
-The chart below shows perplexity (PPL) comparison before and after RoPE scaling on different lengths of "Journey to the West" vernacular fiction text. You can see that after enabling RoPE scaling, model performance on long texts is significantly improved.
+For Transformers format models, add the following configuration to config.json to enable length extrapolation:
+
+```json
+"rope_scaling": {
+    "type": "yarn",
+    "factor": 16.0,
+    "original_max_position_embeddings": 2048,
+    "beta_fast": 32.0,
+    "beta_slow": 1.0,
+    "attention_factor": 1.0
+}
+```
+
+Testing on MiniMind-Small model with different lengths of "Journey to the West" vernacular fiction text to evaluate perplexity (PPL) comparison before and after RoPE scaling.
+You can see that after enabling YaRN extrapolation, the model's PPL performance on long texts significantly decreases:
+
+<div align="center">
+<img src="./images/rope_ppl.png">
+</div>
 
 ## Ⅴ Objective Benchmarks
 

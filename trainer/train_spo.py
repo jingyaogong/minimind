@@ -223,10 +223,11 @@ def spo_train_epoch(epoch, loader, iters, ref_model, reward_model, reward_tokeni
             moe_suffix = '_moe' if lm_config.use_moe else ''
             ckp = f'{args.save_dir}/{args.save_weight}_{lm_config.hidden_size}{moe_suffix}.pth'
             state_dict = model.module.state_dict() if isinstance(model, DistributedDataParallel) else model.state_dict()
-            torch.save({k: v.half() for k, v in state_dict.items()}, ckp)
+            torch.save({k: v.half().cpu() for k, v in state_dict.items()}, ckp)
             lm_checkpoint(lm_config, weight=args.save_weight, model=model, optimizer=optimizer, 
                          epoch=epoch, step=step, wandb=wandb, save_dir='../checkpoints', scheduler=scheduler)
             model.train()
+            del state_dict
 
         del prompt_inputs, outputs, completion_ids, per_token_logps, ref_per_token_logps
         del completions, rewards, advantages, completion_mask, baselines, response_masks

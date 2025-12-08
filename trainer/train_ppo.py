@@ -224,7 +224,7 @@ def ppo_train_epoch(epoch, loader, iters, old_actor_model, ref_model, actor_sche
             moe_suffix = '_moe' if lm_config.use_moe else ''
             ckp = f'{args.save_dir}/{args.save_weight}_{lm_config.hidden_size}{moe_suffix}.pth'
             actor_state = actor_model.module.state_dict() if isinstance(actor_model, DistributedDataParallel) else actor_model.state_dict()
-            torch.save({k: v.half() for k, v in actor_state.items()}, ckp)
+            torch.save({k: v.half().cpu() for k, v in actor_state.items()}, ckp)
             
             # 使用 lm_checkpoint 保存完整状态（包括 critic）
             lm_checkpoint(lm_config, weight=args.save_weight, model=actor_model, optimizer=actor_optimizer, 
@@ -232,6 +232,7 @@ def ppo_train_epoch(epoch, loader, iters, old_actor_model, ref_model, actor_sche
                          scheduler=actor_scheduler, critic_model=critic_model, 
                          critic_optimizer=critic_optimizer, critic_scheduler=critic_scheduler)
             actor_model.train()
+            del actor_state
 
         del enc, gen_out, responses_text, rewards, full_mask, values_seq, values, advantages
         del logits, labels, logp_tokens, final_mask, actor_logp, old_logits, old_logp, ref_logits, ref_logp
