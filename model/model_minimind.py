@@ -313,7 +313,7 @@ class MOEFeedForward(nn.Module):
         flat_topk_idx = topk_idx.view(-1)
         if self.training:
             x = x.repeat_interleave(self.config.num_experts_per_tok, dim=0)
-            y = torch.empty_like(x, dtype=torch.float16)
+            y = torch.empty_like(x, dtype=x.dtype)
             for i, expert in enumerate(self.experts):
                 y[flat_topk_idx == i] = expert(x[flat_topk_idx == i]).to(y.dtype)  # 确保类型一致
             y = (y.view(*topk_weight.shape, -1) * topk_weight.unsqueeze(-1)).sum(dim=1)

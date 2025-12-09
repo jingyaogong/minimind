@@ -23,8 +23,7 @@ def Logger(content):
 
 
 def get_lr(current_step, total_steps, lr):
-    min_lr = lr / 10
-    return min_lr + 0.5 * (lr - min_lr) * (1 + math.cos(math.pi * current_step / total_steps))
+    return lr*(0.1 + 0.45*(1 + math.cos(math.pi * current_step / total_steps)))
 
 
 def init_distributed_mode():
