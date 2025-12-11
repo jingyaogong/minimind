@@ -1193,7 +1193,7 @@ In early 2025, DeepSeek-R1 became extremely popular, and equally popular was the
 $$\mathcal{L}_{GRPO} = -\mathbb{E}\left[r_t \cdot A_t - \beta \cdot \text{KL}_t\right]$$
 
 Where:
-- **Policy term**: $f(r_t) = r_t$ (directly use probability ratio, no clip clipping)
+- **Policy term**: $f(r_t) = \min(r_t, \text{clip}(r_t))$ (use probability ratio with clip clipping)
 - **Advantage term**: $g(A_t) = \frac{R - \mu_{group}}{\sigma_{group}}$ (within-group normalization, eliminate Critic network)
 - **Regularization term**: $h(\text{KL}_t) = \beta \cdot \text{KL}_t$ (token-level KL divergence constraint)
 
@@ -1271,7 +1271,7 @@ We return to the "**unified framework**", reorganizing the table showing all dif
 |-----------|----------------|----------------|----------------------|----------|
 | **DPO** | $\log r_w - \log r_l$ | Implicit (preference contrast) | Implicit in $\beta$ | 2 |
 | **PPO** | $\min(r, \text{clip}(r))$ | $R - V(s)$ | $\beta \cdot \mathbb{E}[\text{KL}]$ | 4 |
-| **GRPO** | $r$ | $\frac{R - \mu}{\sigma}$ | $\beta \cdot \text{KL}_t$ | 2 |
+| **GRPO** | $\min(r, \text{clip}(r))$ | $\frac{R - \mu}{\sigma}$ | $\beta \cdot \text{KL}_t$ | 2 |
 | **SPO** | $\log \pi_\theta$ | $R - B_t^{adaptive}$ | $\beta \cdot \text{KL}_t$ | 2 |
 
 **RL is Elegant and Self-Consistent**

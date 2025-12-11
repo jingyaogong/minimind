@@ -1211,7 +1211,7 @@ python train_ppo.py
 $$\mathcal{L}_{GRPO} = -\mathbb{E}\left[r_t \cdot A_t - \beta \cdot \text{KL}_t\right]$$
 
 其中：
-- **策略项**: $f(r_t) = r_t$ (直接使用概率比，无clip裁剪)
+- **策略项**: $f(r_t) = \min(r_t, \text{clip}(r_t))$ (使用概率比的clip裁剪)
 - **优势项**: $g(A_t) = \frac{R - \mu_{group}}{\sigma_{group}}$ (组内归一化，消除Critic网络)
 - **正则项**: $h(\text{KL}_t) = \beta \cdot \text{KL}_t$ (token级KL散度约束)
 
@@ -1294,7 +1294,7 @@ python train_spo.py
 |------|----------------|----------------|----------------------|----------|
 | **DPO** | $\log r_w - \log r_l$ | 隐式（偏好对比） | 隐含在 $\beta$ 中 | 2 | 
 | **PPO** | $\min(r, \text{clip}(r))$ | $R - V(s)$ | $\beta \cdot \mathbb{E}[\text{KL}]$ | 4 | 
-| **GRPO** | $r$ | $\frac{R - \mu}{\sigma}$ | $\beta \cdot \text{KL}_t$ | 2 |
+| **GRPO** | $\min(r, \text{clip}(r))$ | $\frac{R - \mu}{\sigma}$ | $\beta \cdot \text{KL}_t$ | 2 |
 | **SPO** | $\log \pi_\theta$ | $R - B_t^{adaptive}$ | $\beta \cdot \text{KL}_t$ | 2 | 
 
 **RL是优美且自洽的**
