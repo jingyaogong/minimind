@@ -80,6 +80,8 @@ if __name__ == "__main__":
     parser = argparse.ArgumentParser(description="MiniMind LoRA Fine-tuning")
     parser.add_argument("--save_dir", type=str, default="../out/lora", help="模型保存目录")
     parser.add_argument("--lora_name", type=str, default="lora_identity", help="LoRA权重名称(如lora_identity/lora_medical等)")
+    parser.add_argument("--lora_rank", type=int, default=8, help="LoRA秩 rank")
+    parser.add_argument("--lora_alpha", type=int, default=16, help="LoRA缩放系数 alpha")
     parser.add_argument("--epochs", type=int, default=50, help="训练轮数")
     parser.add_argument("--batch_size", type=int, default=32, help="batch size")
     parser.add_argument("--learning_rate", type=float, default=1e-4, help="初始学习率")
@@ -127,7 +129,7 @@ if __name__ == "__main__":
     
     # ========== 5. 定义模型、应用LoRA、冻结非LoRA参数 ==========
     model, tokenizer = init_model(lm_config, args.from_weight, device=args.device)
-    apply_lora(model)
+    apply_lora(model, rank=args.lora_rank, alpha=args.lora_alpha)
     
     # 统计参数
     total_params = sum(p.numel() for p in model.parameters())
