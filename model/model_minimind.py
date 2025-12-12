@@ -160,6 +160,7 @@ class Attention(nn.Module):
         self.k_proj = nn.Linear(args.hidden_size, self.num_key_value_heads * self.head_dim, bias=False)
         self.v_proj = nn.Linear(args.hidden_size, self.num_key_value_heads * self.head_dim, bias=False)
         self.o_proj = nn.Linear(args.num_attention_heads * self.head_dim, args.hidden_size, bias=False)
+        self.gate_proj = nn.Linear(args.hidden_size, args.num_attention_heads, bias=False)
         self.attn_dropout = nn.Dropout(args.dropout)
         self.resid_dropout = nn.Dropout(args.dropout)
         self.dropout = args.dropout
@@ -211,8 +212,15 @@ class Attention(nn.Module):
             scores = self.attn_dropout(scores)
             output = scores @ xv
 
-        output = output.transpose(1, 2).reshape(bsz, seq_len, -1)
+        output = output.transpose(1, 2).contiguous()
+
+        gate_logits = self.gate_proj(x)
+        gate_scores = torch.sigmoid(gate_logits)
+
+        output = output * gate_scores.unsqueeze(-1)
+        output = output.view(bsz, seq_len, -1)
         output = self.resid_dropout(self.o_proj(output))
+
         return output, past_kv
 
 
