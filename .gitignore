@@ -1,4 +1,8 @@
+__pycache__
 model/__pycache__
 out
 website/
 docs-minimind/
+logfile
+dataset
+checkpoints
