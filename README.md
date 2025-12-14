@@ -565,7 +565,7 @@ MiniMind训练数据集下载地址： [ModelScope](https://www.modelscope.cn/da
 ├── lora_medical.jsonl (34MB)
 ├── pretrain_hq.jsonl (1.6GB, ✨)
 ├── r1_mix_1024.jsonl (340MB)
-├── rlaif-mini.jsonl (1MB)
+├── rlaif-mini.jsonl (1MB, ✨)
 ├── sft_1024.jsonl (5.6GB)
 ├── sft_2048.jsonl (9GB)
 ├── sft_512.jsonl (7.5GB)
@@ -578,13 +578,28 @@ MiniMind训练数据集下载地址： [ModelScope](https://www.modelscope.cn/da
 * `dpo.jsonl`✨ --RLHF阶段数据集（已精简优化，适合快速训练）
 * `lora_identity.jsonl` --自我认知数据集（例如：你是谁？我是minimind...），推荐用于lora训练（亦可用于全参SFT，勿被名字局限）
 * `lora_medical.jsonl` --医疗问答数据集，推荐用于lora训练（亦可用于全参SFT，勿被名字局限）
-* `pretrain_hq.jsonl`✨ --预训练数据集，整合自匠数科技
-* `r1_mix_1024.jsonl` --DeepSeek-R1-1.5B蒸馏数据，每条数据字符最大长度为1024（因此训练时设置max_seq_len=1024）
+* `pretrain_hq.jsonl`✨ --预训练数据集，整合自匠数科技（推荐设置`max_seq_len≈320`）
+* `r1_mix_1024.jsonl` --DeepSeek-R1-1.5B蒸馏数据，每条数据字符最大长度为1024（推荐设置`max_seq_len≈720`）
 * `rlaif-mini.jsonl` --RLAIF训练数据集，从SFT数据集中随机采样1万条高质量对话，用于PPO/GRPO/SPO等强化学习算法训练
-* `sft_1024.jsonl` --整合自Qwen2.5蒸馏数据（是sft_2048的子集），每条数据字符最大长度为1024（因此训练时设置max_seq_len=1024）
-* `sft_2048.jsonl` --整合自Qwen2.5蒸馏数据，每条数据字符最大长度为2048（因此训练时设置max_seq_len=2048）
-* `sft_512.jsonl` --整合自匠数科技SFT数据，每条数据字符最大长度为512（因此训练时设置max_seq_len=512）
-* `sft_mini_512.jsonl`✨ --极简整合自匠数科技SFT数据+Qwen2.5蒸馏数据（用于快速训练Zero模型），每条数据字符最大长度为512（因此训练时设置max_seq_len=512）
+* `sft_1024.jsonl` --整合自Qwen2.5蒸馏数据（是sft_2048的子集），每条数据字符最大长度为1024（推荐设置`max_seq_len≈650`）
+* `sft_2048.jsonl` --整合自Qwen2.5蒸馏数据，每条数据字符最大长度为2048（推荐设置`max_seq_len≈1400`）
+* `sft_512.jsonl` --整合自匠数科技SFT数据，每条数据字符最大长度为512（推荐设置`max_seq_len≈350`）
+* `sft_mini_512.jsonl`✨ --极简整合自匠数科技SFT数据+Qwen2.5蒸馏数据（用于快速训练Zero模型），每条数据字符最大长度为512（推荐设置`max_seq_len≈340`）
+
+
+训练参数`max_seq_len`目前指的是tokens长度，而非绝对字符数。
+本项目tokenizer在中文文本上大约`1.5~1.7 字符/token`，纯英文的压缩比在`4~5 字符/token`，不同数据分布会有波动。
+数据集命名标注的“最大长度”均为字符数，100长度的字符串可粗略换算成`100/1.5≈67`的tokens长度。
+
+例如：
+
+* 中文：`白日依山尽`5个字符可能被拆分为[`白日`,`依`,`山`,`尽`] 4个tokens；
+* 英文：`The sun sets in the west`24个字符可能被拆分为[`The `,`sun `,`sets `,`in `,`the`,`west`] 6个tokens
+
+“推荐设置”给出了各个数据集上最大tokens长度的粗略估计。
+须知max_seq_len可以激进/保守/均衡地调整，因为更大或更小均无法避免副作用：一些样本短于max_seq_len后被padding浪费算力，一些样本长于max_seq_len后被截断语意。
+
+在 `算力效率` <---> `语义完整性` 之间找到一个平衡点即可
 
 </details>
 
