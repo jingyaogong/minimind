@@ -18,10 +18,19 @@ class LoRA(nn.Module):
         return self.B(self.A(x))
 
 
-def apply_lora(model, rank=8):
+def apply_lora(model, rank=8, rank_map=None):
+    """
+    Attach LoRA adapters to q/k/v/o projection matrices.
+
+    Args:
+        model: target model.
+        rank: default LoRA rank when ``rank_map`` is not provided.
+        rank_map: optional dict mapping module names to specific ranks.
+    """
     for name, module in model.named_modules():
         if 'lora' not in name and ('q_proj' in name or 'k_proj' in name or 'v_proj' in name or 'o_proj' in name):
-            lora = LoRA(module.weight.shape[1], module.weight.shape[0], rank=rank).to(model.device)
+            target_rank = rank_map.get(name, rank) if rank_map is not None else rank
+            lora = LoRA(module.weight.shape[1], module.weight.shape[0], rank=target_rank).to(model.device)
             setattr(module, "lora", lora)
             original_forward = module.forward
 
