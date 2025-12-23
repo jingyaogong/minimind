@@ -41,6 +41,20 @@ def load_lora(model, path):
             lora_state = {k.replace(f'{name}.lora.', ''): v for k, v in state_dict.items() if f'{name}.lora.' in k}
             module.lora.load_state_dict(lora_state)
 
+def merge_lora(model, path):
+    state_dict = torch.load(path, map_location=model.device)
+    # 移除可能的module前缀，确保key与模型层级名称一致
+    state_dict = {(k[7:] if k.startswith('module.') else k): v for k, v in state_dict.items()}
+
+    for name, module in model.named_modules():
+        if isinstance(module, nn.Linear):
+            key_A = f"{name}.lora.A.weight"
+            key_B = f"{name}.lora.B.weight"
+            if key_A in state_dict and key_B in state_dict:
+                # 直接合并权重: W_new = W_old + B @ A
+                module.weight.data += state_dict[key_B] @ state_dict[key_A]
+                
+    return model
 
 def save_lora(model, path):
     state_dict = {}
