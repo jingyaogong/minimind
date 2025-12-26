@@ -149,7 +149,6 @@ def grpo_train_epoch(epoch, loader, iters, ref_model, reward_model, reward_token
             optimizer.step()
             scheduler.step()
             optimizer.zero_grad()
-            torch.cuda.empty_cache()
 
         if step % args.log_interval == 0 or step == iters:
             policy_loss_val = loss.item()
@@ -183,8 +182,6 @@ def grpo_train_epoch(epoch, loader, iters, ref_model, reward_model, reward_token
 
         del prompt_inputs, outputs, completion_ids, per_token_logps, ref_per_token_logps
         del completions, rewards, grouped_rewards, mean_r, std_r, advantages, completion_mask
-        torch.cuda.empty_cache()
-        gc.collect()
 
 
 if __name__ == "__main__":
@@ -196,7 +193,7 @@ if __name__ == "__main__":
     parser.add_argument("--learning_rate", type=float, default=8e-8, help="初始学习率")
     parser.add_argument("--device", type=str, default="cuda:0" if torch.cuda.is_available() else "cpu", help="训练设备")
     parser.add_argument("--dtype", type=str, default="bfloat16", help="混合精度类型")
-    parser.add_argument("--num_workers", type=int, default=1, help="数据加载线程数")
+    parser.add_argument("--num_workers", type=int, default=8, help="数据加载线程数")
     parser.add_argument("--accumulation_steps", type=int, default=1, help="梯度累积步数")
     parser.add_argument("--grad_clip", type=float, default=1.0, help="梯度裁剪阈值")
     parser.add_argument("--log_interval", type=int, default=1, help="日志打印间隔")

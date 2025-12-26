@@ -88,7 +88,6 @@ def lm_checkpoint(lm_config, weight='full_sft', model=None, optimizer=None, epoc
         torch.save(resume_data, resume_tmp)
         os.replace(resume_tmp, resume_path)
         del state_dict, resume_data
-        gc.collect()
         torch.cuda.empty_cache()
     else:  # 加载模式
         if os.path.exists(resume_path):

@@ -179,7 +179,6 @@ def ppo_train_epoch(epoch, loader, iters, old_actor_model, ref_model, actor_sche
             critic_scheduler.step()
             actor_optimizer.zero_grad()
             critic_optimizer.zero_grad()
-            torch.cuda.empty_cache()
 
         if is_main_process():
             response_ids = gen_out[:, enc.input_ids.shape[1]:]
@@ -237,7 +236,6 @@ def ppo_train_epoch(epoch, loader, iters, old_actor_model, ref_model, actor_sche
         del enc, gen_out, responses_text, rewards, full_mask, values_seq, values, advantages
         del logits, labels, logp_tokens, final_mask, actor_logp, old_logits, old_logp, ref_logits, ref_logp
         del kl, kl_ref, ratio, surr1, surr2, policy_loss, value_loss, loss
-        torch.cuda.empty_cache()
 
 
 if __name__ == "__main__":
@@ -250,7 +248,7 @@ if __name__ == "__main__":
     parser.add_argument("--critic_learning_rate", type=float, default=8e-8, help="Critic学习率")
     parser.add_argument("--device", type=str, default="cuda:0" if torch.cuda.is_available() else "cpu", help="训练设备")
     parser.add_argument("--dtype", type=str, default="bfloat16", help="混合精度类型")
-    parser.add_argument("--num_workers", type=int, default=1, help="数据加载线程数")
+    parser.add_argument("--num_workers", type=int, default=8, help="数据加载线程数")
     parser.add_argument("--accumulation_steps", type=int, default=1, help="梯度累积步数")
     parser.add_argument("--grad_clip", type=float, default=1.0, help="梯度裁剪阈值")
     parser.add_argument("--log_interval", type=int, default=1, help="日志打印间隔")
