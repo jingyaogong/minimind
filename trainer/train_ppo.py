@@ -344,8 +344,8 @@ if __name__ == "__main__":
     if dist.is_initialized():
         actor_model._ddp_params_and_buffers_to_ignore = {"freqs_cos", "freqs_sin"}
         critic_model._ddp_params_and_buffers_to_ignore = {"freqs_cos", "freqs_sin"}
-        actor_model = DistributedDataParallel(actor_model, device_ids=[local_rank], find_unused_parameters=getattr(lm_config, 'use_moe', False))
-        critic_model = DistributedDataParallel(critic_model, device_ids=[local_rank], find_unused_parameters=getattr(lm_config, 'use_moe', False))
+        actor_model = DistributedDataParallel(actor_model, device_ids=[local_rank])
+        critic_model = DistributedDataParallel(critic_model, device_ids=[local_rank])
         old_actor_model.to(args.device)
     
     # ========== 8. 开始训练 ==========

@@ -315,7 +315,9 @@ class MOEFeedForward(nn.Module):
             x = x.repeat_interleave(self.config.num_experts_per_tok, dim=0)
             y = torch.empty_like(x, dtype=x.dtype)
             for i, expert in enumerate(self.experts):
-                y[flat_topk_idx == i] = expert(x[flat_topk_idx == i]).to(y.dtype)  # 确保类型一致
+                expert_out = expert(x[flat_topk_idx == i])
+                if expert_out.shape[0] > 0: y[flat_topk_idx == i] = expert_out.to(y.dtype)
+                else: y[flat_topk_idx == i] = expert_out.to(y.dtype) + 0 * sum(p.sum() for p in expert.parameters())
             y = (y.view(*topk_weight.shape, -1) * topk_weight.unsqueeze(-1)).sum(dim=1)
             y = y.view(*orig_shape)
         else:
