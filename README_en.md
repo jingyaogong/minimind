@@ -472,7 +472,7 @@ quality (of course it's not yet high, improving data quality is endless).
 The file `pretrain_hq.jsonl` data format is
 
 ```json
-{"text": "How can I get rid of procrastination? Curing procrastination is not easy, but the following suggestions may help..."}
+{"text": "<|im_start|>鉴别一组中文文章的风格和特点，例如官方、口语、文言等。需要提供样例文章才能准确鉴别不同的风格和特点。<|im_end|> <|im_start|>好的，现在帮我查一下今天的天气怎么样?今天的天气依据地区而异。请问你需要我帮你查询哪个地区的天气呢？<|im_end|>"}
 ```
 
 ## Ⅲ SFT Data
