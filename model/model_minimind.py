@@ -284,7 +284,7 @@ class MoEGate(nn.Module):
                 fi = ce * self.n_routed_experts
                 aux_loss = (Pi * fi).sum() * self.alpha
         else:
-            aux_loss = 0
+            aux_loss = scores.new_zeros(1).squeeze()
         return topk_idx, topk_weight, aux_loss
 
 
@@ -423,12 +423,7 @@ class MiniMindModel(nn.Module):
 
         hidden_states = self.norm(hidden_states)
 
-        aux_loss = sum(
-            layer.mlp.aux_loss
-            for layer in self.layers
-            if isinstance(layer.mlp, MOEFeedForward)
-        )
-
+        aux_loss = sum([l.mlp.aux_loss for l in self.layers if isinstance(l.mlp, MOEFeedForward)], hidden_states.new_zeros(1).squeeze())
         return hidden_states, presents, aux_loss
 
 

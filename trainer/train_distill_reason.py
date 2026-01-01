@@ -53,8 +53,8 @@ def train_epoch(epoch, loader, iters, tokenizer, lm_config, start_step=0, wandb=
             loss_mask_sum = loss_mask.sum()
             loss_mask[sp_ids] = 10  # 对思考标签增加10倍权重
             loss_mask = loss_mask.view(Y.size())
-            loss = (loss * loss_mask).sum() / loss_mask_sum
-            loss += res.aux_loss
+            logits_loss = (loss * loss_mask).sum() / loss_mask_sum
+            loss = logits_loss + res.aux_loss
             loss = loss / args.accumulation_steps
 
         scaler.scale(loss).backward()
@@ -69,12 +69,14 @@ def train_epoch(epoch, loader, iters, tokenizer, lm_config, start_step=0, wandb=
         if step % args.log_interval == 0 or step == iters - 1:
             spend_time = time.time() - start_time
             current_loss = loss.item() * args.accumulation_steps
+            current_logits_loss = logits_loss.item()
+            current_aux_loss = res.aux_loss.item()
             current_lr = optimizer.param_groups[-1]['lr']
             eta_min = spend_time / (step + 1) * iters // 60 - spend_time // 60
             
-            Logger(f'Epoch:[{epoch+1}/{args.epochs}]({step}/{iters}) loss:{current_loss:.6f} lr:{current_lr:.12f} epoch_Time:{eta_min}min:')
+            Logger(f'Epoch:[{epoch + 1}/{args.epochs}]({step}/{iters}), loss: {current_loss:.4f}, logits_loss: {current_logits_loss:.4f}, aux_loss: {current_aux_loss:.4f}, learning_rate: {current_lr:.8f}, epoch_time: {eta_min:.3f}min')
             
-            if wandb: wandb.log({"loss": current_loss, "lr": current_lr, "epoch_Time": eta_min})
+            if wandb: wandb.log({"loss": current_loss, "logits_loss": current_logits_loss, "aux_loss": current_aux_loss, "learning_rate": current_lr, "epoch_time": eta_min})
 
         if (step % args.save_interval == 0 or step == iters - 1) and is_main_process():
             model.eval()

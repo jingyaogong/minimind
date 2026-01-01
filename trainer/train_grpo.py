@@ -119,7 +119,11 @@ def grpo_train_epoch(epoch, loader, iters, ref_model, reward_model, reward_token
                 per_token_logps.append(torch.gather(logits_row.log_softmax(dim=-1), 1, ids_row.unsqueeze(1)).squeeze(1))
             return torch.stack(per_token_logps)
 
-        per_token_logps = get_per_token_logps(model, outputs, completion_ids.size(1))  # [B*num_gen, R]
+        with autocast_ctx:
+            per_token_logps = get_per_token_logps(model, outputs, completion_ids.size(1))  # [B*num_gen, R]
+            res = model(outputs) if lm_config.use_moe else None
+            aux_loss = res.aux_loss if res is not None else torch.tensor(0.0, device=args.device)
+        
         with torch.no_grad():
             ref_per_token_logps = get_per_token_logps(ref_model, outputs, completion_ids.size(1))  # [B*num_gen, R]
 
@@ -140,7 +144,8 @@ def grpo_train_epoch(epoch, loader, iters, ref_model, reward_model, reward_token
         kl_div = ref_per_token_logps - per_token_logps
         per_token_kl = torch.exp(kl_div) - kl_div - 1  # [B*num_gen, R]
         per_token_loss = -(torch.exp(per_token_logps - per_token_logps.detach()) * advantages.unsqueeze(1) - args.beta * per_token_kl)  # [B*num_gen, R]
-        loss = ((per_token_loss * completion_mask).sum(dim=1) / completion_mask.sum(dim=1)).mean() / args.accumulation_steps  # scalar
+        policy_loss = ((per_token_loss * completion_mask).sum(dim=1) / completion_mask.sum(dim=1)).mean()
+        loss = (policy_loss + aux_loss) / args.accumulation_steps  # scalar
         loss.backward()
 
         if (step + 1) % args.accumulation_steps == 0:
@@ -151,18 +156,20 @@ def grpo_train_epoch(epoch, loader, iters, ref_model, reward_model, reward_token
             optimizer.zero_grad()
 
         if step % args.log_interval == 0 or step == iters:
-            policy_loss_val = loss.item()
+            policy_loss_val = loss.item() * args.accumulation_steps
+            current_aux_loss = aux_loss.item()
             avg_reward_val = rewards.mean().item()
             avg_len_val = completion_mask.sum(dim=1).float().mean().item()
             current_lr = optimizer.param_groups[0]['lr']
 
-            Logger(f'Epoch: {epoch+1}, Step: {step}/{iters}, '
-                   f'Actor Loss: {policy_loss_val:.6f}, Reward: {avg_reward_val:.6f}, '
-                   f'Avg Response Len: {avg_len_val:.2f}, LR: {current_lr:.2e}')
+            Logger(f'Epoch:[{epoch + 1}/{args.epochs}]({step}/{iters}), '
+                   f'Actor Loss: {policy_loss_val:.4f}, Aux Loss: {current_aux_loss:.4f}, Reward: {avg_reward_val:.4f}, '
+                   f'Avg Response Len: {avg_len_val:.2f}, Learning Rate: {current_lr:.8f}')
 
             if wandb and is_main_process():
                 wandb.log({
                     "policy_loss": policy_loss_val,
+                    "aux_loss": current_aux_loss,
                     "reward": avg_reward_val,
                     "avg_response_len": avg_len_val,
                     "advantages_mean": advantages.mean().item(),

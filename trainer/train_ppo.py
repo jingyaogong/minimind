@@ -143,7 +143,11 @@ def ppo_train_epoch(epoch, loader, iters, old_actor_model, ref_model, actor_sche
         values = values_seq[torch.arange(values_seq.size(0), device=values_seq.device), last_indices]  # [B]
         advantages = rewards - values.detach()  # [B]
 
-        logits = actor_model(input_ids=gen_out, attention_mask=full_mask).logits  # [B, P+R, V]
+        with autocast_ctx:
+            res = actor_model(input_ids=gen_out, attention_mask=full_mask)
+            logits = res.logits  # [B, P+R, V]
+            aux_loss = res.aux_loss if lm_config.use_moe else torch.tensor(0.0, device=args.device)
+        
         labels = gen_out[:, 1:].clone()  # [B, P+R-1]
         logp_tokens = F.log_softmax(logits[:, :-1], dim=-1).gather(2, labels.unsqueeze(-1)).squeeze(-1)  # [B, P+R-1]
         seq_len = gen_out.size(1) - 1
@@ -167,7 +171,7 @@ def ppo_train_epoch(epoch, loader, iters, old_actor_model, ref_model, actor_sche
         surr2 = torch.clamp(ratio, 1.0 - args.clip_epsilon, 1.0 + args.clip_epsilon) * advantages  # [B]
         policy_loss = -torch.min(surr1, surr2).mean()  # scalar
         value_loss = F.mse_loss(values, rewards)  # scalar
-        loss = policy_loss + args.vf_coef * value_loss + args.kl_coef * kl_ref  # scalar
+        loss = (policy_loss + args.vf_coef * value_loss + args.kl_coef * kl_ref + aux_loss) / args.accumulation_steps  # scalar
         loss.backward()
 
         if (step + 1) % args.accumulation_steps == 0:
@@ -190,6 +194,7 @@ def ppo_train_epoch(epoch, loader, iters, old_actor_model, ref_model, actor_sche
 
             actor_loss_val = policy_loss.item()
             critic_loss_val = value_loss.item()
+            current_aux_loss = aux_loss.item()
             reward_val = rewards.mean().item()
             kl_val = kl.item()
             kl_ref_val = kl_ref.item()
@@ -201,6 +206,7 @@ def ppo_train_epoch(epoch, loader, iters, old_actor_model, ref_model, actor_sche
                 wandb.log({
                     "actor_loss": actor_loss_val,
                     "critic_loss": critic_loss_val,
+                    "aux_loss": current_aux_loss,
                     "reward": reward_val,
                     "kl": kl_val,
                     "kl_ref": kl_ref_val,
@@ -208,10 +214,10 @@ def ppo_train_epoch(epoch, loader, iters, old_actor_model, ref_model, actor_sche
                     "actor_lr": actor_lr,
                 })
 
-            Logger(f"Epoch: {epoch+1}, Step: {step}/{iters}, "
-                   f"Actor Loss: {actor_loss_val:.6f}, Critic Loss: {critic_loss_val:.6f}, "
-                   f"Reward: {reward_val:.6f}, KL: {kl_val:.6f}, KL_ref: {kl_ref_val:.6f}, "
-                   f"Avg Response Len: {avg_len_val:.2f}, Actor LR: {actor_lr:.2e}, Critic LR: {critic_lr:.2e}")
+            Logger(f"Epoch:[{epoch + 1}/{args.epochs}]({step}/{iters}), "
+                   f"Actor Loss: {actor_loss_val:.4f}, Critic Loss: {critic_loss_val:.4f}, Aux Loss: {current_aux_loss:.4f}, "
+                   f"Reward: {reward_val:.4f}, KL: {kl_val:.4f}, KL_ref: {kl_ref_val:.4f}, "
+                   f"Avg Response Len: {avg_len_val:.2f}, Actor LR: {actor_lr:.8f}, Critic LR: {critic_lr:.8f}")
 
         if (step + 1) % args.update_old_actor_freq == 0:
             state_dict = actor_model.module.state_dict() if isinstance(actor_model, DistributedDataParallel) else actor_model.state_dict()

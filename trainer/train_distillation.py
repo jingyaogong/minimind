@@ -71,9 +71,9 @@ def train_epoch(epoch, loader, iters, teacher_model, lm_config_student, start_st
             ignore_index=0,
             reduction='none'
         )
-        ce_loss = torch.sum(ce_loss * loss_mask_flat) / loss_mask_flat.sum()
-        if lm_config_student.use_moe:
-            ce_loss += res.aux_loss
+        ce_loss_raw = torch.sum(ce_loss * loss_mask_flat) / loss_mask_flat.sum()
+        if lm_config_student.use_moe: ce_loss = ce_loss_raw + res.aux_loss
+        else: ce_loss = ce_loss_raw
 
         # 2) Distillation Loss
         if teacher_model is not None:
@@ -100,18 +100,21 @@ def train_epoch(epoch, loader, iters, teacher_model, lm_config_student, start_st
         if step % args.log_interval == 0 or step == iters - 1:
             spend_time = time.time() - start_time
             current_loss = loss.item() * args.accumulation_steps
+            current_ce_loss = ce_loss_raw.item()
+            current_aux_loss = res.aux_loss.item() if lm_config_student.use_moe else 0.0
             current_lr = optimizer.param_groups[-1]['lr']
             eta_min = spend_time / (step + 1) * iters // 60 - spend_time // 60
             
-            Logger(f'Epoch:[{epoch+1}/{args.epochs}]({step}/{iters}) loss:{current_loss:.6f} ce:{ce_loss.item():.4f} distill:{distill_loss.item():.4f} lr:{current_lr:.12f} epoch_Time:{eta_min}min:')
+            Logger(f'Epoch:[{epoch + 1}/{args.epochs}]({step}/{iters}), loss: {current_loss:.4f}, ce: {current_ce_loss:.4f}, aux_loss: {current_aux_loss:.4f}, distill: {distill_loss.item():.4f}, learning_rate: {current_lr:.8f}, epoch_time: {eta_min:.3f}min')
             
             if wandb:
                 wandb.log({
                     "loss": current_loss,
-                    "ce_loss": ce_loss.item(),
+                    "ce_loss": current_ce_loss,
+                    "aux_loss": current_aux_loss,
                     "distill_loss": distill_loss.item() if teacher_model is not None else 0.0,
-                    "lr": current_lr,
-                    "epoch_Time": eta_min
+                    "learning_rate": current_lr,
+                    "epoch_time": eta_min
                 })
 
         if (step % args.save_interval == 0 or step == iters - 1) and is_main_process():
