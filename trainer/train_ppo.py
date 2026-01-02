@@ -368,3 +368,6 @@ if __name__ == "__main__":
                               sampler=train_sampler, num_workers=args.num_workers, pin_memory=True)
             ppo_train_epoch(epoch, loader, len(loader), old_actor_model, ref_model, 
                            actor_scheduler, critic_scheduler, reward_model, reward_tokenizer, 0, wandb)
+    
+    # ========== 9. 清理分布进程 ==========
+    if dist.is_initialized(): dist.destroy_process_group()

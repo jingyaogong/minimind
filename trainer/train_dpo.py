@@ -211,3 +211,6 @@ if __name__ == "__main__":
         else: # 默认从头开始
             loader = DataLoader(train_ds, batch_size=args.batch_size, shuffle=(train_sampler is None), sampler=train_sampler, num_workers=args.num_workers, pin_memory=True)
             train_epoch(epoch, loader, len(loader), ref_model, lm_config, 0, wandb, args.beta)
+    
+    # ========== 9. 清理分布进程 ==========
+    if dist.is_initialized(): dist.destroy_process_group()

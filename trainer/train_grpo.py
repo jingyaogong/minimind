@@ -294,3 +294,6 @@ if __name__ == "__main__":
                               drop_last=False, shuffle=(train_sampler is None),
                               num_workers=args.num_workers, sampler=train_sampler)
             grpo_train_epoch(epoch, loader, len(loader), ref_model, reward_model, reward_tokenizer, 0, wandb)
+    
+    # ========== 9. 清理分布进程 ==========
+    if dist.is_initialized(): dist.destroy_process_group()
