@@ -43,13 +43,11 @@
 
 ---
 
-
 <div align="center">
 
 ![minimind2](./images/minimind2.gif)
 
 [🔗🍓推理模型](https://www.modelscope.cn/studios/gongjy/MiniMind-Reasoning) | [🔗🤖常规模型](https://www.modelscope.cn/studios/gongjy/MiniMind) | [🔗🎞️视频介绍](https://www.bilibili.com/video/BV12dHPeqE72/?share_source=copy_web&vd_source=670c2504f88726f8cf4a21ef6147c0e8)
-
 
 <div align="center">
   <table>
@@ -67,7 +65,6 @@
     </tr>
   </table>
 </div>
-
 
 </div>
 
@@ -95,14 +92,15 @@
 <details style="color:rgb(128,128,128)">
 <summary>Models List</summary>
 
-| 模型 (大小)                 | 推理占用 (约) | Release    | 
-|-------------------------|----------|------------|
-| MiniMind2-small (26M)   | 0.5 GB   | 2025.04.26 |
-| MiniMind2-MoE (145M)    | 1.0 GB   | 2025.04.26 |
-| MiniMind2 (104M)        | 1.0 GB   | 2025.04.26 |
-| minimind-v1-small (26M) | 0.5 GB   | 2024.08.28 |
-| minimind-v1-moe (4×26M) | 1.0 GB   | 2024.09.17 |
-| minimind-v1 (108M)      | 1.0 GB   | 2024.09.01 |
+
+| 模型 (大小)              | 推理占用 (约) | Release    |
+| ------------------------ | ------------- | ---------- |
+| MiniMind2-small (26M)    | 0.5 GB        | 2025.04.26 |
+| MiniMind2-MoE (145M)     | 1.0 GB        | 2025.04.26 |
+| MiniMind2 (104M)         | 1.0 GB        | 2025.04.26 |
+| minimind-v1-small (26M)  | 0.5 GB        | 2024.08.28 |
+| minimind-v1-moe (4×26M) | 1.0 GB        | 2024.09.17 |
+| minimind-v1 (108M)       | 1.0 GB        | 2024.09.01 |
 
 </details>
 
@@ -183,24 +181,29 @@ MiniMind2系列旧模型均经过权重映射+（微调训练）QKVO线性层校
 <summary> <b>More...</b> </summary>
 
 **2024-10-05**
+
 - 为MiniMind拓展了多模态能力之---视觉
 - 移步孪生项目[minimind-v](https://github.com/jingyaogong/minimind-v)查看详情！
 
 **2024-09-27**
+
 - 09-27更新pretrain数据集的预处理方式，为了保证文本完整性，放弃预处理成.bin训练的形式（轻微牺牲训练速度）。
 - 目前pretrain预处理后的文件命名为：pretrain_data.csv。
 - 删除了一些冗余的代码。
 
 **2024-09-17**
+
 - 更新minimind-v1-moe模型
 - 为了防止歧义，不再使用mistral_tokenizer分词，全部采用自定义的minimind_tokenizer作为分词器。
 
 **2024-09-01**
+
 - 更新minimind-v1 (108M)模型，采用minimind_tokenizer，预训练轮次3 + SFT轮次10，更充分训练，性能更强。
 - 项目已部署至ModelScope创空间，可以在此网站上体验：
 - [🔗ModelScope在线体验🔗](https://www.modelscope.cn/studios/gongjy/minimind)
 
 **2024-08-27**
+
 - 项目首次开源
 
 </details>
@@ -317,6 +320,7 @@ python train_full_sft.py --from_resume 1
 ```
 
 **断点续训机制说明：**
+
 - 训练过程自动在 `./checkpoints/` 目录保存完整检查点（模型、优化器、训练进度等）
 - 检查点文件命名：`<权重名>_<维度>_resume.pth`（如：`full_sft_512_resume.pth`）
 - 支持跨不同GPU数量恢复（自动调整step）
@@ -333,7 +337,6 @@ python train_pretrain.py
 ```
 
 > 执行预训练，得到 `pretrain_*.pth` 作为预训练的输出权重（其中*为模型的dimension，默认为512）
-
 
 **3.2 监督微调（学对话方式）**
 
@@ -352,7 +355,6 @@ python train_full_sft.py
 
 </details>
 
-
 ---
 
 ### 4.测试自己训练的模型效果
@@ -370,6 +372,7 @@ python eval_llm.py --weight full_sft # 或 pretrain/dpo/ppo/grpo...
 `--weight` 参数指定权重名称前缀，可选：`pretrain`, `full_sft`, `dpo`, `reason`, `ppo_actor`, `grpo`, `spo` 等
 
 其他常用参数：
+
 - `--load_from`: 模型加载路径（`model`=原生torch权重，其他路径=transformers格式）
 - `--save_dir`: 模型权重目录（默认`out`）
 - `--lora_weight`: LoRA权重名称（`None`表示不使用）
@@ -378,11 +381,9 @@ python eval_llm.py --weight full_sft # 或 pretrain/dpo/ppo/grpo...
 - `--temperature`: 生成温度（默认0.85）
 - `--top_p`: nucleus采样阈值（默认0.85）
 
-
 使用方式直接查看`eval_llm.py`代码即可。
 
 </details>
-
 
 ---
 
@@ -404,6 +405,7 @@ torchrun --nproc_per_node N train_xxx.py
 ```bash
 deepspeed --master_port 29500 --num_gpus=N train_xxx.py
 ```
+
 </del>
 
 可根据需要开启wandb记录训练过程（需可直连）
@@ -473,7 +475,7 @@ quality（当然也还不算high，提升数据质量无止尽）。
 文件`pretrain_hq.jsonl` 数据格式为
 
 ```json
-{"text": "如何才能摆脱拖延症？ 治愈拖延症并不容易，但以下建议可能有所帮助..."}
+{"text": "<|im_start|>鉴别一组中文文章的风格和特点，例如官方、口语、文言等。需要提供样例文章才能准确鉴别不同的风格和特点。<|im_end|> <|im_start|>好的，现在帮我查一下今天的天气怎么样?今天的天气依据地区而异。请问你需要我帮你查询哪个地区的天气呢？<|im_end|>"}
 ```
 
 ## Ⅲ SFT数据
@@ -586,7 +588,6 @@ MiniMind训练数据集下载地址： [ModelScope](https://www.modelscope.cn/da
 * `sft_512.jsonl` --整合自匠数科技SFT数据，每条数据字符最大长度为512（推荐设置`max_seq_len≈350`）
 * `sft_mini_512.jsonl`✨ --极简整合自匠数科技SFT数据+Qwen2.5蒸馏数据（用于快速训练Zero模型），每条数据字符最大长度为512（推荐设置`max_seq_len≈340`）
 
-
 训练参数`max_seq_len`目前指的是tokens长度，而非绝对字符数。
 本项目tokenizer在中文文本上大约`1.5~1.7 字符/token`，纯英文的压缩比在`4~5 字符/token`，不同数据分布会有波动。
 数据集命名标注的“最大长度”均为字符数，100长度的字符串可粗略换算成`100/1.5≈67`的tokens长度。
@@ -603,18 +604,14 @@ MiniMind训练数据集下载地址： [ModelScope](https://www.modelscope.cn/da
 
 </details>
 
-
 ![dataset](./images/dataset.jpg)
 
 <details style="color:rgb(128,128,128)">
 <summary>说明 & 推荐训练方案</summary>
 
 * MiniMind2 Series均经过共约20GB语料训练，大约4B tokens，即对应上面的数据组合训练结果（开销：💰💰💰💰💰💰💰💰，效果：😊😊😊😊😊😊）
-
 * 想要最快速度从0实现Zero模型，推荐使用`pretrain_hq.jsonl` + `sft_mini_512.jsonl` 的数据组合，具体花销和效果可查看下文表格（开销：💰，效果：😊😊）
-
 * 推荐具备一定算力资源或更在意效果的朋友可以考虑前者完整复现MiniMind2；仅有单卡GPU或在乎短时间快速复现的朋友强烈推荐后者；
-
 * 【折中方案】亦可选择例如`sft_mini_512.jsonl`、`sft_1024.jsonl`中等规模数据进行自由组合训练（开销：💰💰💰，效果：😊😊😊😊）。
 
 </details>
@@ -646,15 +643,15 @@ MiniMind的整体结构一致，只是在RoPE计算、推理函数和FFN层的�
 修改模型配置见[./model/model_minimind.py](./model/model_minimind.py)。
 参考模型参数版本见下表：
 
+
 | Model Name        | params | len_vocab | rope_theta | n_layers | d_model | kv_heads | q_heads | share+route |
-|-------------------|--------|-----------|------------|----------|---------|----------|---------|-------------|
+| ----------------- | ------ | --------- | ---------- | -------- | ------- | -------- | ------- | ----------- |
 | MiniMind2-Small   | 26M    | 6400      | 1e6        | 8        | 512     | 2        | 8       | -           |
 | MiniMind2-MoE     | 145M   | 6400      | 1e6        | 8        | 640     | 2        | 8       | 1+4         |
 | MiniMind2         | 104M   | 6400      | 1e6        | 16       | 768     | 2        | 8       | -           |
 | minimind-v1-small | 26M    | 6400      | 1e4        | 8        | 512     | 8        | 16      | -           |
-| minimind-v1-moe   | 4×26M  | 6400      | 1e4        | 8        | 512     | 8        | 16      | 1+4         |
+| minimind-v1-moe   | 4×26M | 6400      | 1e4        | 8        | 512     | 8        | 16      | 1+4         |
 | minimind-v1       | 108M   | 6400      | 1e4        | 16       | 768     | 8        | 16      | -           |
-
 
 ## Model Configuration
 
@@ -695,8 +692,9 @@ MobileLLM提出架构的深度比宽度更重要，「深而窄」的「瘦长�
 
 > 基于 3090 （单卡）成本计算
 
-| Model Name      | params | pretrain         | sft_mini_512     | sft_512       | sft_1024          | sft_2048         | RLHF          |
-|-----------------|--------|------------------|------------------|---------------|-------------------|------------------|---------------|
+
+| Model Name      | params | pretrain            | sft_mini_512        | sft_512          | sft_1024             | sft_2048            | RLHF             |
+| --------------- | ------ | ------------------- | ------------------- | ---------------- | -------------------- | ------------------- | ---------------- |
 | MiniMind2-Small | 26M    | ≈1.1h<br/>≈1.43￥ | ≈1h<br/>≈1.3￥    | ≈6h<br/>≈7.8￥ | ≈4.58h<br/>≈5.95￥ | ≈7.5h<br/>≈9.75￥ | ≈1h<br/>≈1.3￥ |
 | MiniMind2       | 104M   | ≈3.9h<br/>≈5.07￥ | ≈3.3h<br/>≈4.29￥ | ≈20h<br/>≈26￥ | ≈15h<br/>≈19.5￥   | ≈25h<br/>≈32.5￥  | ≈3h<br/>≈3.9￥ |
 
@@ -705,25 +703,28 @@ MobileLLM提出架构的深度比宽度更重要，「深而窄」的「瘦长�
 <details style="color:rgb(128,128,128)">
 <summary>训练开销总结&预测</summary>
 
-
 > MiniMind2-Small参数
+>
 >> `pretrain_hq`+`sft_mini_512`数据集
-<br/>单卡3090 (1 epoch) + 2.1小时 + 花费2.73元人民币
-<br/>即可从0训练出MiniMind-Zero-0.025B模型!!!
+>> <br/>单卡3090 (1 epoch) + 2.1小时 + 花费2.73元人民币
+>> <br/>即可从0训练出MiniMind-Zero-0.025B模型!!!
+>>
 
 > MiniMind2-Small参数
+>
 >> `pretrain_hq`+`sft_512`+`sft_2048`+`dpo`数据集
-<br/>单卡3090 (2 epochs) + 大约38.16小时 + 花费49.61元人民币
-<br/>即可从0训练出MiniMind2-Small-0.025B模型!!!
+>> <br/>单卡3090 (2 epochs) + 大约38.16小时 + 花费49.61元人民币
+>> <br/>即可从0训练出MiniMind2-Small-0.025B模型!!!
+>>
 
 > MiniMind2参数
+>
 >> `pretrain_hq`+`sft_512`+`sft_2048`+`dpo`数据集
-<br/>单卡3090 (2 epochs) + 大约122小时 + 花费158.6元人民币
-<br/>即可从0训练出MiniMind2-0.1B模型!!!
+>> <br/>单卡3090 (2 epochs) + 大约122小时 + 花费158.6元人民币
+>> <br/>即可从0训练出MiniMind2-0.1B模型!!!
+>>
 
 </details>
-
-
 
 ✨基于单卡NVIDIA 3090的`MiniMind-Zero`从0训练仅需`2小时` + `3块钱`，实现ChatBot效果！
 
@@ -750,7 +751,6 @@ MobileLLM提出架构的深度比宽度更重要，「深而窄」的「瘦长�
 极速且初具效果，甚至仍然可以进一步压缩获取更小更优质的训练数据。
 Zero模型权重保存为 `full_sft_512_zero.pth`（见下文MiniMind模型文件链接），如有兴趣可下载检验此模型效果。
 
-
 ---
 
 ## Ⅱ 主要训练（必须）
@@ -774,8 +774,8 @@ python train_pretrain.py
 > 为模型具体dimension，每次保存时新文件会覆盖旧文件）
 
 
-| MiniMind2-Small (512dim) | MiniMind2 (768dim) |
-|---|---|
+| MiniMind2-Small (512dim)              | MiniMind2 (768dim)                    |
+| ------------------------------------- | ------------------------------------- |
 | <img src="./images/pre_512_loss.png"> | <img src="./images/pre_768_loss.png"> |
 
 ### **2. 有监督微调 (Supervised Fine-Tuning)**:
@@ -786,6 +786,7 @@ SFT阶段就需要把半成品LLM施加一个自定义的聊天模板进行微�
 称这个过程为指令微调，就如同让已经学富五车的「牛顿」先生适应21世纪智能手机的聊天习惯，学习屏幕左侧是对方消息，右侧是本人消息这个规律。
 在训练时，MiniMind的指令和回答长度被截断在512，是为了节省显存空间。就像学习写作时，会先从短的文章开始，当学会写作200字作文后，800字文章也可以手到擒来。
 在需要长度拓展时，只需要准备少量的2k/4k/8k长度对话数据进行进一步微调即可（此时最好配合RoPE-NTK的基准差值）。
+
 > 在推理时通过调整RoPE线性差值，实现免训练长度外推到2048及以上将会很方便。
 
 ```bash
@@ -798,8 +799,8 @@ python train_full_sft.py
 > 为模型具体dimension，每次保存时新文件会覆盖旧文件）
 
 
-| MiniMind2-Small (512dim) | MiniMind2 (768dim) |
-|---|---|
+| MiniMind2-Small (512dim)              | MiniMind2 (768dim)                    |
+| ------------------------------------- | ------------------------------------- |
 | <img src="./images/sft_512_loss.png"> | <img src="./images/sft_768_loss.png"> |
 
 ## Ⅲ 其它训练阶段（可选）
@@ -857,7 +858,6 @@ python train_lora.py
 > 训练后的模型权重文件默认每隔`100步`保存为: `lora_xxx_*.pth`（*
 > 为模型具体dimension，每次保存时新文件会覆盖旧文件）
 
-
 非常多的人困惑，如何使模型学会自己私有领域的知识？如何准备数据集？如何迁移通用领域模型打造垂域模型？
 这里举几个例子，对于通用模型，医学领域知识欠缺，可以尝试在原有模型基础上加入领域知识，以获得更好的性能。
 同时，通常不希望学会领域知识的同时损失原有基础模型的其它能力，此时LoRA可以很好的改善这个问题。
@@ -914,7 +914,7 @@ MiniMind2第一时间只能坚定不移的选择做蒸馏派，日后基于0.1B�
 
 做蒸馏需要准备的依然是和SFT阶段同样格式的数据即可，数据集来源已如上文介绍。数据格式例如：
 
-```json lines
+```json
 {
   "conversations": [
     {
@@ -996,15 +996,15 @@ LLM里的强化学习方法可分两类：
 - 使用**AI模型**（通常是预训练的语言奖励模型）来提供反馈，而不直接依赖人类的人工标注。
 - 这里的“AI”也可以是某些规则奖励，例如数学答案/代码解释器...
 
-| 类型    | 裁判 | 优点        | 缺点         |
-|-------|----|-----------|------------|
-| RLHF  | 人类 | 更贴近真实人类偏好 | 成本高、效率低    |
+
+| 类型  | 裁判 | 优点               | 缺点                 |
+| ----- | ---- | ------------------ | -------------------- |
+| RLHF  | 人类 | 更贴近真实人类偏好 | 成本高、效率低       |
 | RLAIF | 模型 | 自动化、可扩展性强 | 可能偏离人类真实偏好 |
 
 二者本质上是一样的，都是通过**强化学习的方式**，利用某种形式的"**反馈**"来优化模型的行为。
 
 除了**反馈**的来源不同，其他并无任何区别。
-
 
 ### 👀 PO算法的统一视角
 
@@ -1012,11 +1012,14 @@ LLM里的强化学习方法可分两类：
 
 所有RL算法的本质都只是在优化一个期望：
 
-$$\mathcal{J}_{PO} = \mathbb{E}_{q \sim P(Q), o \sim \pi(O|q)} \left[ \underbrace{f(r_t)}_{\text{策略项}} \cdot \underbrace{g(A_t)}_{\text{优势项}} - \underbrace{h(\text{KL}_t)}_{\text{正则项}} \right]$$
+$$
+\mathcal{J}_{PO} = \mathbb{E}_{q \sim P(Q), o \sim \pi(O|q)} \left[ \underbrace{f(r_t)}_{\text{策略项}} \cdot \underbrace{g(A_t)}_{\text{优势项}} - \underbrace{h(\text{KL}_t)}_{\text{正则项}} \right]
+$$
 
 训练时，只需**最小化负目标函数**，即: $\mathcal{L_{PO}}=-\mathcal{J_{PO}}$
 
 这个框架只包含三个核心组件：
+
 * **策略项** $f(r_t)$: 如何使用概率比 $r_t$? 即告诉模型新旧策略偏差有多大，是否探索到了更好的token
 * **优势项** $g(A_t)$: 如何计算优势 $A_t$, 这很重要！大模型算对定积分也不足为奇，小模型回答对加减法优势通常都是正的
 * **正则项** $h(\text{KL}_t)$: 如何约束变化幅度 $\text{KL}_t$, 既防止跑偏又防止管的太死
@@ -1024,13 +1027,14 @@ $$\mathcal{J}_{PO} = \mathbb{E}_{q \sim P(Q), o \sim \pi(O|q)} \left[ \underbrac
 <details>
 <summary>（展开）符号说明</summary>
 
-| 符号 | 含义 | 说明 | 值域 |
-|------|------|------|------|
-| $q$ | 问题/提示词 | 从数据集 $P(Q)$ 中采样 | - |
-| $o$ | 模型输出序列 | 由策略 $\pi$ 生成 | - |
-| $r_t$ | 概率比 | $r_t = \frac{\pi_\theta(o_t\|q, o_{<t})}{\pi_{ref}(o_t\|q, o_{<t})}$ | $(0, +\infty)$ |
-| $A_t$ | 优势函数 | 衡量某个动作相比基线有多好 | $(-\infty, +\infty)$ |
-| $\text{KL}_t$ | KL散度 | 防止策略偏离参考模型太远 | $[0, +\infty)$ |
+
+| 符号          | 含义         | 说明                                                                 | 值域                 |
+| ------------- | ------------ | -------------------------------------------------------------------- | -------------------- |
+| $q$           | 问题/提示词  | 从数据集$P(Q)$ 中采样                                                | -                    |
+| $o$           | 模型输出序列 | 由策略$\pi$ 生成                                                     | -                    |
+| $r_t$         | 概率比       | $r_t = \frac{\pi_\theta(o_t\|q, o_{<t})}{\pi_{ref}(o_t\|q, o_{<t})}$ | $(0, +\infty)$       |
+| $A_t$         | 优势函数     | 衡量某个动作相比基线有多好                                           | $(-\infty, +\infty)$ |
+| $\text{KL}_t$ | KL散度       | 防止策略偏离参考模型太远                                             | $[0, +\infty)$       |
 
 </details>
 
@@ -1045,16 +1049,21 @@ $$\mathcal{J}_{PO} = \mathbb{E}_{q \sim P(Q), o \sim \pi(O|q)} \left[ \underbrac
 这个过程就像是让模型参加新的培训，从优秀员工的作为例子，消极员工作为反例，学习如何更好地回复。
 
 #### 6.1 Direct Preference Optimization
+
 直接偏好优化（DPO）算法，损失为：
 
-$$\mathcal{L}_{DPO} = -\mathbb{E}\left[\log \sigma\left(\beta \left[\log \frac{\pi_\theta(y_w|x)}{\pi_{ref}(y_w|x)} - \log \frac{\pi_\theta(y_l|x)}{\pi_{ref}(y_l|x)}\right]\right)\right]$$
+$$
+\mathcal{L}_{DPO} = -\mathbb{E}\left[\log \sigma\left(\beta \left[\log \frac{\pi_\theta(y_w|x)}{\pi_{ref}(y_w|x)} - \log \frac{\pi_\theta(y_l|x)}{\pi_{ref}(y_l|x)}\right]\right)\right]
+$$
 
 其中：
+
 - **策略项**: $f(r_t) = \log r_w - \log r_l$ (对比chosen vs rejected的概率比)
 - **优势项**: $g(A_t)$ = / (通过偏好对比，无需显式计算优势)
 - **正则项**: $h(\text{KL}_t)$ = 隐含在 $\beta$ 中 (控制偏离参考模型程度)
 
 特别地，
+
 - DPO从PPO带KL约束的目标推导出对偏好对的解析训练目标，直接最大化"chosen优于rejected"的对数几率；无需同步训练Reward/Value模型。DPO只需跑`actor`与`ref`两个模型，显存占用低、收敛稳定、实现简单。
 - 训练范式：off‑policy，使用静态偏好数据集，可反复多轮epoch；Ref模型固定（预先缓存输出）。
 - DPO的局限在于不做在线探索，更多用于"偏好/安全"的人类价值对齐；对"能不能做对题"的智力能力提升有限（当然这也取决于数据集，大规模收集正反样本并人类评估很困难）。
@@ -1075,6 +1084,7 @@ python train_dpo.py
 RLAIF的最大优势在于**可扩展性**和**On-Policy**的特点——不需要昂贵的人工标注，可以生成海量的训练样本，让模型在在线大量试错中快速进化。
 
 MiniMind 着手实现**2+N**种基本+前沿的RLAIF方法：
+
 * **PPO**、**GRPO** 被大规模验证的经典RL算法；
 * N种前沿RL算法（不定期以Exp性质更新）。
 
@@ -1100,8 +1110,8 @@ RLAIF的训练过程中，模型会基于user的问题生成1或多个候选回�
 
 已知RLAIF训练需要“奖励模型 (Reward Model)”对生成的回答进行打分。
 
-此处选取小型且高质量的InternLM2-1.8B-Reward 
-([ModelScope](https://modelscope.cn/models/Shanghai_AI_Laboratory/internlm2-1_8b-reward) | [HuggingFace](https://huggingface.co/internlm/internlm2-1_8b-reward)) 
+此处选取小型且高质量的InternLM2-1.8B-Reward
+([ModelScope](https://modelscope.cn/models/Shanghai_AI_Laboratory/internlm2-1_8b-reward) | [HuggingFace](https://huggingface.co/internlm/internlm2-1_8b-reward))
 作为基础奖励模型。
 
 下载奖励模型后需要放置在minimind项目的**同级目录**下，推荐结构如下：
@@ -1125,15 +1135,14 @@ project/
 RLAIF中的"奖励信号"来源可以非常灵活：
 
 - **Model-based奖励**：可使用专门的Reward Model（如InternLM2-Reward），也可使用通用LLM+提示词进行打分（如Qwen3-as-a-Judge）。奖励模型规模和架构均可自由选择。
-
 - **Rule-based奖励**：可以基于规则函数构造奖励信号，例如：
+
   - 数学题答案正确性验证（Ground Truth对比）
   - SQL执行成功率与结果准确性
   - 代码解释器运行结果（pass@k）
   - 工具调用返回状态（API成功/失败）
   - 格式合规性检查（JSON/XML解析）
   - 推理链完整性评估（CoT步骤数）
-
 - **Environment-based奖励**：在Agent场景中，环境反馈本身即为天然奖励（如游戏得分、Research完整度、任务完成度）。
 
 任何能够量化"回答质量"的机制都可作为RL的奖励来源。DeepSeek R1就是典型案例：使用规则函数验证数学答案正确性作为奖励，无需额外的Reward Model。
@@ -1170,7 +1179,6 @@ RLAIF训练既可以针对推理模型也可以针对非推理模型，区别仅
 - **环境交互反馈**：最终以执行结果为准（代码是否跑通、API是否返回成功、子目标是否完成）；
 - **Model-based奖励局限**：对长链路、可执行语义的全貌捕捉有限，且大概率和真实环境反馈不一致（reward hacking）。
 
-
 </details>
 
 ---
@@ -1180,14 +1188,19 @@ RLAIF训练既可以针对推理模型也可以针对非推理模型，区别仅
 PPO 是2017年OpenAI提出的非常经典强化学习算法，也是LLM RL通用的基线方法，甚至不需要加之一。
 
 **PPO损失**：
-$$\mathcal{L}_{PPO} = -\mathbb{E}\left[\min(r_t \cdot A_t, \text{clip}(r_t, 1-\varepsilon, 1+\varepsilon) \cdot A_t)\right] + \beta \cdot \mathbb{E}[\text{KL}]$$
+
+$$
+\mathcal{L}_{PPO} = -\mathbb{E}\left[\min(r_t \cdot A_t, \text{clip}(r_t, 1-\varepsilon, 1+\varepsilon) \cdot A_t)\right] + \beta \cdot \mathbb{E}[\text{KL}]
+$$
 
 其中：
+
 - **策略项**: $f(r_t) = \min(r_t, \text{clip}(r_t, 1-\varepsilon, 1+\varepsilon))$ (裁剪概率比防止更新过激)
 - **优势项**: $g(A_t) = R - V(s)$ (通过Critic网络估计价值函数)
 - **正则项**: $h(\text{KL}_t) = \beta \cdot \mathbb{E}[\text{KL}]$ (全局KL散度约束)
 
 对比DPO而言，
+
 - DPO (Off-Policy)：训练数据是静态的偏好数据集（chosen vs rejected），可以反复使用同一批数据训练多个epoch，就像传统监督学习一样。数据效率高，训练成本低。它直接优化偏好对的对数似然，无需Reward Model。
 - PPO (On-Policy)：必须用当前策略实时采样生成新数据，旧策略采集的数据不能用（会有distribution shift问题）。虽然通过importance sampling和clip机制允许轻微的分布偏移，但本质上要求数据来自相对新鲜的策略。数据效率低，但适合探索式学习。
 
@@ -1209,8 +1222,8 @@ python train_ppo.py
 > 训练后的模型权重文件默认每隔`100步`保存为: `ppo_actor_*.pth`（*为模型具体dimension）
 
 
-| MiniMind2-Small (512dim) | MiniMind2 (768dim) |
-|---|---|
+| MiniMind2-Small (512dim)               | MiniMind2 (768dim)                     |
+| -------------------------------------- | -------------------------------------- |
 | <img src="./images/train_ppo_512.png"> | <img src="./images/train_ppo_768.png"> |
 
 从训练曲线可以看出，PPO存在**reward提升缓慢**的问题。私以为这主要源于**PPO双网络联合优化**方法：Critic需要逐步收敛以准确估计价值函数，而Actor的策略更新依赖Critic提供的优势估计，两者相互依赖形成复杂的优化过程。训练初期Critic估计不准会影响Actor梯度方向，导致整体收敛缓慢。此外，PPO需要同时维护两个网络，显存占用约为单网络方法的1.5-2倍。
@@ -1223,9 +1236,12 @@ python train_ppo.py
 
 **GRPO损失**：
 
-$$\mathcal{L}_{GRPO} = -\mathbb{E}\left[r_t \cdot A_t - \beta \cdot \text{KL}_t\right]$$
+$$
+\mathcal{L}_{GRPO} = -\mathbb{E}\left[r_t \cdot A_t - \beta \cdot \text{KL}_t\right]
+$$
 
 其中：
+
 - **策略项**: $f(r_t) = \min(r_t, \text{clip}(r_t))$ (使用概率比的clip裁剪)
 - **优势项**: $g(A_t) = \frac{R - \mu_{group}}{\sigma_{group}}$ (组内归一化，消除Critic网络)
 - **正则项**: $h(\text{KL}_t) = \beta \cdot \text{KL}_t$ (token级KL散度约束)
@@ -1239,7 +1255,6 @@ $$\mathcal{L}_{GRPO} = -\mathbb{E}\left[r_t \cdot A_t - \beta \cdot \text{KL}_t\
 在MiniMind这种超小模型上，这个问题尤为明显，求解数学问题99.99%的情况下整组回答质量都很差，那么将无法学习。
 因此必须为模型指定合理的domain，即必须限制在能力边界内。
 
-
 **训练方式**：
 
 ```bash
@@ -1251,8 +1266,8 @@ python train_grpo.py
 > 训练后的模型权重文件默认每隔`100步`保存为: `grpo_*.pth`
 
 
-| MiniMind2-Small (512dim) | MiniMind2 (768dim) |
-|---|---|
+| MiniMind2-Small (512dim)                | MiniMind2 (768dim)                      |
+| --------------------------------------- | --------------------------------------- |
 | <img src="./images/train_grpo_512.png"> | <img src="./images/train_grpo_768.png"> |
 
 从训练曲线可以看出，GRPO的**reward呈现更加稳定的上升趋势**，达到4左右，说明GRPO本身能更好地利用RLAIF信号。Policy Loss整体下降平稳，相比PPO的双网络优化，GRPO单网络架构训练更稳定且收敛上限更高。
@@ -1267,16 +1282,18 @@ SPO的动机就是回到RL的本质—**1个输入，1个输出，就是1个训�
 
 **SPO损失**:
 
-$$\mathcal{L}_{SPO} = -\mathbb{E}\left[\log \pi_\theta(a_t|s) \cdot A_t - \beta \cdot \text{KL}_t\right]$$
+$$
+\mathcal{L}_{SPO} = -\mathbb{E}\left[\log \pi_\theta(a_t|s) \cdot A_t - \beta \cdot \text{KL}_t\right]
+$$
 
 其中：
+
 - **策略项**: $f(r_t) = \log \pi_\theta(a_t|s)$ (直接使用log概率，不计算ratio)
 - **优势项**: $g(A_t) = R - B_t^{adaptive}$ (自适应baseline，Beta分布动态跟踪)
 - **正则项**: $h(\text{KL}_t) = \beta \cdot \text{KL}_t$ (token级KL + 动态 $\rho$ 调整)
 
 落到实现层面：SPO采用无分组设计，用持久化的KL自适应value tracker替代组内baseline，优势函数在整个batch上全局归一化。这样每个样本独立处理，无需等待同组其他样本，且能为每个样本提供稳定的学习信号。
 论文在Qwen3-8B的5个困难数学数据集上，SPO平均比GRPO高出3.4个百分点，其中BRUMO 25数据集+7.3pp、AIME 25数据集+4.4pp。
-
 
 > 注：SPO是实验性前沿算法，MiniMind的实现用于探索学习。由于模型参数量极小，无法完全复现论文的8B模型效果。
 
@@ -1290,7 +1307,6 @@ python train_spo.py
 
 > 训练后的模型权重文件默认每隔`100步`保存为: `spo_*.pth`
 
-
 <div align="center">
 <img src="./images/train_spo_768.png">
 <p><i>MiniMind2 (768dim) 训练曲线</i></p>
@@ -1300,17 +1316,17 @@ python train_spo.py
 
 **实验性说明**：当前SPO手搓实现可能在value_tracker配置、reward归一化策略上还存在问题。尚需排查算法本身在小模型上的适应性/或是实现上存在差异。
 
-
 ### RL算法小结
 
 我们收束回“**统一框架**”, 重新整理所有不同PO算法只是对三个核心组件的不同实例化的表格：
 
-| 算法 | 策略项 $f(r_t)$ | 优势项 $g(A_t)$ | 正则项 $h(\text{KL}_t)$ | 优化模型 |
-|------|----------------|----------------|----------------------|----------|
-| **DPO** | $\log r_w - \log r_l$ | 隐式（偏好对比） | 隐含在 $\beta$ 中 | 2 | 
-| **PPO** | $\min(r, \text{clip}(r))$ | $R - V(s)$ | $\beta \cdot \mathbb{E}[\text{KL}]$ | 4 | 
-| **GRPO** | $\min(r, \text{clip}(r))$ | $\frac{R - \mu}{\sigma}$ | $\beta \cdot \text{KL}_t$ | 2 |
-| **SPO** | $\log \pi_\theta$ | $R - B_t^{adaptive}$ | $\beta \cdot \text{KL}_t$ | 2 | 
+
+| 算法     | 策略项$f(r_t)$            | 优势项$g(A_t)$           | 正则项$h(\text{KL}_t)$              | 优化模型 |
+| -------- | ------------------------- | ------------------------ | ----------------------------------- | -------- |
+| **DPO**  | $\log r_w - \log r_l$     | 隐式（偏好对比）         | 隐含在$\beta$ 中                    | 2        |
+| **PPO**  | $\min(r, \text{clip}(r))$ | $R - V(s)$               | $\beta \cdot \mathbb{E}[\text{KL}]$ | 4        |
+| **GRPO** | $\min(r, \text{clip}(r))$ | $\frac{R - \mu}{\sigma}$ | $\beta \cdot \text{KL}_t$           | 2        |
+| **SPO**  | $\log \pi_\theta$         | $R - B_t^{adaptive}$     | $\beta \cdot \text{KL}_t$           | 2        |
 
 **RL是优美且自洽的**
 
@@ -1328,15 +1344,15 @@ python train_spo.py
 
 MiniMind2模型权重 ([ModelScope](https://www.modelscope.cn/models/gongjy/MiniMind2-PyTorch) | [HuggingFace](https://huggingface.co/jingyaogong/MiniMind2-Pytorch))
 
-
 <details style="color:rgb(128,128,128)">
 <summary>Torch文件命名对照</summary>
 
-| Model Name      | params | pretrain_model         | sft_model              | rlhf_model (DPO)    | reason_model     | rlaif_model (PPO/GRPO/SPO)                    | lora_model         |
-|-----------------|--------|------------------------|------------------------|--------------------|------------------|----------------------------------------------|--------------------|
-| MiniMind2-small | 26M    | `pretrain_512.pth`     | `full_sft_512.pth`     | `dpo_512.pth`     | `reason_512.pth` | `xxpo_512.pth` | `lora_xxx_512.pth` |
-| MiniMind2-MoE   | 145M   | `pretrain_640_moe.pth` | `full_sft_640_moe.pth` | `dpo_640_moe.pth` | -                | -                                            | -                  |
-| MiniMind2       | 104M   | `pretrain_768.pth`     | `full_sft_768.pth`     | `dpo_768.pth`     | `reason_768.pth` | `xxpo_768.pth` | `lora_xxx_768.pth` |
+
+| Model Name      | params | pretrain_model         | sft_model              | rlhf_model (DPO)  | reason_model     | rlaif_model (PPO/GRPO/SPO) | lora_model         |
+| --------------- | ------ | ---------------------- | ---------------------- | ----------------- | ---------------- | -------------------------- | ------------------ |
+| MiniMind2-small | 26M    | `pretrain_512.pth`     | `full_sft_512.pth`     | `dpo_512.pth`     | `reason_512.pth` | `xxpo_512.pth`             | `lora_xxx_512.pth` |
+| MiniMind2-MoE   | 145M   | `pretrain_640_moe.pth` | `full_sft_640_moe.pth` | `dpo_640_moe.pth` | -                | -                          | -                  |
+| MiniMind2       | 104M   | `pretrain_768.pth`     | `full_sft_768.pth`     | `dpo_768.pth`     | `reason_768.pth` | `xxpo_768.pth`             | `lora_xxx_768.pth` |
 
 </details>
 
@@ -1356,23 +1372,23 @@ MiniMind系列 ([ModelScope](https://www.modelscope.cn/collections/MiniMind-b72f
 [A] MiniMind2：full_sft_640<br/>
 [B] MiniMind2：dpo_640
 
-  ```text
-  [Q]: 你叫什么名字？
+```text
+[Q]: 你叫什么名字？
 [A]: 我是一个大型语言模型，可以回答各种问题，提供信息和帮助。我可以回答各种问题，提供信息和帮助，帮助你解决各种问题。
 [B]: 我是一种基于文本的AI模型，我并没有个人经历或情感，所以无法感受和体验情感。我的设计目的是为了帮助用户解决问题、提供信息和进行对话。如果您有任何问题或需要帮助，请随时告诉我！
 
-  [Q]: 你更擅长哪一个学科？
+[Q]: 你更擅长哪一个学科？
 [A]: 作为一个AI模型，我并没有真正的“擅长”这个学科。我被设计成能够提供信息、解答问题、进行对话、执行任务和与用户进行对话。不过，我可以提供信息、解答问题、进行对话、提供建议、处理问题、进行对话、提供建议、学习新知识、编写代码、回答问题、提供建议等多种学科的功能。如果你有具体的学科需求或主题，欢迎提供详细信息。
 [B]: 作为AI，我并没有个人能力或兴趣，但我可以提供一些关于数学、科学、计算机科学、语言学、心理学等学科的知识。如果你对数学感兴趣，我可以提供一些基础知识，例如代数、几何、概率、统计学等。如果你需要更深入的学习，我也可以提供相关的在线课程、书籍、论文等资源。请告诉我你具体需要什么帮助，我会尽力提供帮助。
 
-  [Q]: 鲁迅的《狂人日记》是如何批判封建礼教的？
+[Q]: 鲁迅的《狂人日记》是如何批判封建礼教的？
 [A]: 鲁迅的《狂人日记》是一部讲述了鲁迅对人类价值和道德责任的倡导。在这部作品中，鲁迅通过细腻的笔触，探讨了人性、道德、正义、牺牲与责任等深刻的主题。以下是鲁迅在《狂人日记》中如何批判封建礼教的几个方面：1. **社会现实与道德观念**：鲁迅通过讲述鲁迅的故事，探讨了社会的不平等、权力的流动、人性的演变等社会问题。他认为，社会不平等不仅仅是不公正的，更是每个人在社会中的不公正。他呼吁社会各界共同努力，通过教育、宣传、法律等手段，为构建和谐社会做出贡献。2. **道德与责任**：鲁迅通过讲述鲁迅的故事，展现了道德和责任的重要性。他提倡通过道德教育来培养人们的道德品质，同时也强调了道德和责任的重要性。鲁迅通过讲述鲁迅的故事，揭示了社会的不平等和人性的复杂性，体现了对人性的深刻理解。3. **道德与责任**：鲁迅通过讲述鲁迅的故事，强调了道德责任的重要性。他提倡通过自己的行为来体现对社会的尊重和对人性的深刻理解。鲁迅通过讲述鲁迅的故事，强调了道德和责任的重要性。4. **道德与道德**：鲁迅通过讲述鲁迅的故事，揭示了道德和责任的真正意义。鲁迅通过讲述鲁迅的故事，揭示了道德和责任的本质，强调了道德和责任的重要性。5. **个人与社会**：鲁迅通过讲述鲁迅的故事，揭示了个人与社会之间的复杂关系。他呼吁社会各界共同努力，通过教育和宣传，为构建和谐社会做出贡献。鲁迅的《狂人日记》通过其丰富的故事和深刻的道德寓言，传达了关于人性、道德、正义、道德以及个人与社会的复杂关系。这部作品不仅在文学价值上取得了巨大成就，更在思想层面上启发了后来的文学创作，对后世产生了深远的影响。
 [B]: 鲁迅的《狂人日记》是一部描绘战争和自由精神的作品，它批判了封建社会的种种问题和冲突，反映了社会的不平等和人性本质。在这部作品中，鲁迅通过对封建社会的诸多现象进行批判，如“弗雷德里克·约翰逊的“鹰迪伦”、“纳扎特的”、“贝克汉姆”、“乔治·威尔逊”等，对封建社会的种种问题进行了批判，强调了封建社会的不平等、人性本质以及人性本质。鲁迅通过他的“鹰迪伦”、“纳扎特的”、“贝克汉姆”、“乔治·威尔逊”等，对封建社会的种种问题进行了批判。在小说中，鲁迅通过对封建社会的诸多现象进行批判，揭示了封建社会的腐败、人性本质以及人性本质的复杂性。这种批判体现了对封建社会的尊重和对人性的复杂性，同时也反映了现代社会中普遍存在的不平等和人性本质。鲁迅的《狂人日记》不仅是一部关于封建社会的小说，也是一部具有深刻社会意义的作品，对后世的审判和批判起到了关键作用。
 
-  [Q]: 我咳嗽已经持续了两周，需要去医院检查吗？
+[Q]: 我咳嗽已经持续了两周，需要去医院检查吗？
 [A]: 咳嗽确实需要一定的检查，但如果您的咳嗽持续时间过长，或者有其他不适症状（如持续咳嗽、呼吸困难等），建议尽快就医。医生会根据您的症状、体检结果和可能的影像学检查（如X光、MRI或CT扫描）来诊断您的症状。在等待就医期间，您可以尝试以下方法来帮助缓解症状：1. **休息**：确保您有足够的睡眠。2. **保持水分**：脱水可能会加重咳嗽。3. **热敷**：使用热敷袋或热毛巾敷在疼痛的部位，有助于缓解喉咙痛。4. **避免刺激**：避免使用可能刺激喉咙的化学物质，如某些化学物质。5. **保持室内湿润**：确保您的卧室有良好的通风，可以使用加湿器帮助保持空气湿度。6. **保持室内湿度**：使用加湿器可以帮助缓解喉咙干燥和咳嗽。如果症状持续不缓解或有其他不适症状，请立即就医。希望您早日康复！
 [B]: 如果您的咳嗽持续了两周，通常建议您尽快就医，因为这可能会影响您的呼吸和心跳。您可以通过以下步骤来检查咳嗽：1. **休息**：用纸巾或肘部轻轻按压咳嗽的位置。2. **使用药物**：在可能的情况下，使用药物（如抗过敏药、抗过敏药等）来缓解咳嗽。请在医生的指导下使用药物。3. **热敷**：在咳嗽期间，可以使用热敷来缓解疼痛和肿胀。4. **药物治疗**：如果咳嗽持续了两周，可以使用一些消炎药或抗过敏药来缓解症状。请务必在医生的指导下使用。5. **保持健康的生活方式**：保持充足的睡眠、均衡的饮食、适量的运动和避免吸烟和限酒，这些都有助于提高咳嗽的几率。请记住，这些建议不能替代专业医疗意见。如果您的症状持续或加重，强烈建议您尽快就医。
-  ```
+```
 
 👉效果总结
 
@@ -1502,7 +1518,6 @@ DPO和在线PPO的区别在于reject和chosen都是离线准备的，和minimind
 
 🙋‍直接把以上所有问题和模型的回答丢给DeepSeek-R1，让它帮忙点评和排名打分：
 
-
 <details style="color:rgb(128,128,128)">
 <summary>具体点评</summary>
 
@@ -1516,44 +1531,45 @@ DPO和在线PPO的区别在于reject和chosen都是离线准备的，和minimind
 ### 点评：
 
 1. **A模型**：
-    - **优点**：回答非常全面，信息量大，逻辑清晰，尤其在长江、大熊猫、海水咸味等问题上表现优异。代码虽然有小瑕疵，但整体思路正确。
-    - **缺点**：部分回答稍显冗长，但不影响整体质量。
-    - **总评**：综合表现最佳，得分最高。
 
+   - **优点**：回答非常全面，信息量大，逻辑清晰，尤其在长江、大熊猫、海水咸味等问题上表现优异。代码虽然有小瑕疵，但整体思路正确。
+   - **缺点**：部分回答稍显冗长，但不影响整体质量。
+   - **总评**：综合表现最佳，得分最高。
 2. **H模型**：
-    - **优点**：回答较为准确，尤其在珠穆朗玛峰、万有引力等问题上表现出色。代码虽未完全展示，但解释较为详细。
-    - **缺点**：部分回答略显啰嗦，但逻辑性较强。
-    - **总评**：仅次于A模型，表现稳定。
 
+   - **优点**：回答较为准确，尤其在珠穆朗玛峰、万有引力等问题上表现出色。代码虽未完全展示，但解释较为详细。
+   - **缺点**：部分回答略显啰嗦，但逻辑性较强。
+   - **总评**：仅次于A模型，表现稳定。
 3. **C模型**：
-    - **优点**：回答简洁明了，尤其在大熊猫、快速排序代码等问题上表现较好。
-    - **缺点**：部分回答略显简短，缺乏深入解释。
-    - **总评**：整体表现不错，但细节上略逊于A和H。
 
+   - **优点**：回答简洁明了，尤其在大熊猫、快速排序代码等问题上表现较好。
+   - **缺点**：部分回答略显简短，缺乏深入解释。
+   - **总评**：整体表现不错，但细节上略逊于A和H。
 4. **F模型**：
-    - **优点**：回答较为准确，尤其在长江、万有引力等问题上表现尚可。代码部分有一定逻辑性。
-    - **缺点**：部分回答不够深入，代码存在一些小问题。
-    - **总评**：表现中规中矩，仍有提升空间。
 
+   - **优点**：回答较为准确，尤其在长江、万有引力等问题上表现尚可。代码部分有一定逻辑性。
+   - **缺点**：部分回答不够深入，代码存在一些小问题。
+   - **总评**：表现中规中矩，仍有提升空间。
 5. **D模型**：
-    - **优点**：回答基本准确，尤其在万有引力、长江等问题上表现尚可。
-    - **缺点**：部分回答过于简略，代码存在明显错误。
-    - **总评**：表现一般，需改进代码部分。
 
+   - **优点**：回答基本准确，尤其在万有引力、长江等问题上表现尚可。
+   - **缺点**：部分回答过于简略，代码存在明显错误。
+   - **总评**：表现一般，需改进代码部分。
 6. **B模型**：
-    - **优点**：回答较为准确，尤其在长江、海水咸味等问题上表现尚可。
-    - **缺点**：部分回答逻辑性较差，代码存在较大问题。
-    - **总评**：表现平平，需进一步优化。
 
+   - **优点**：回答较为准确，尤其在长江、海水咸味等问题上表现尚可。
+   - **缺点**：部分回答逻辑性较差，代码存在较大问题。
+   - **总评**：表现平平，需进一步优化。
 7. **E模型**：
-    - **优点**：部分回答较为准确，尤其在海水咸味、大熊猫等问题上表现尚可。
-    - **缺点**：回答过于简略，代码部分几乎无法运行。
-    - **总评**：表现不佳，需大幅提升。
 
+   - **优点**：部分回答较为准确，尤其在海水咸味、大熊猫等问题上表现尚可。
+   - **缺点**：回答过于简略，代码部分几乎无法运行。
+   - **总评**：表现不佳，需大幅提升。
 8. **G模型**：
-    - **优点**：几乎没有明显的优点。
-    - **缺点**：回答严重偏离主题，代码部分完全无法运行。
-    - **总评**：表现最差，需大幅改进。
+
+   - **优点**：几乎没有明显的优点。
+   - **缺点**：回答严重偏离主题，代码部分完全无法运行。
+   - **总评**：表现最差，需大幅改进。
 
 ---
 
@@ -1567,27 +1583,25 @@ DPO和在线PPO的区别在于reject和chosen都是离线准备的，和minimind
 
 ### 打分排序
 
+
 | 排名 | 模型 | 准确性 (30分) | 完整性 (30分) | 逻辑性 (20分) | 代码质量 (20分) | 总分 (100分) |
-|----|----|-----------|-----------|-----------|------------|-----------|
-| 1  | A  | 28        | 29        | 19        | 20         | 96        |
-| 2  | H  | 27        | 28        | 18        | 20         | 93        |
-| 3  | C  | 26        | 27        | 18        | 18         | 89        |
-| 4  | F  | 25        | 26        | 17        | 18         | 86        |
-| 5  | D  | 24        | 25        | 17        | 16         | 82        |
-| 6  | B  | 23        | 24        | 16        | 15         | 78        |
-| 7  | E  | 22        | 23        | 15        | 14         | 74        |
-| 8  | G  | 10        | 12        | 10        | 10         | 42        |
+| ---- | ---- | ------------- | ------------- | ------------- | --------------- | ------------ |
+| 1    | A    | 28            | 29            | 19            | 20              | 96           |
+| 2    | H    | 27            | 28            | 18            | 20              | 93           |
+| 3    | C    | 26            | 27            | 18            | 18              | 89           |
+| 4    | F    | 25            | 26            | 17            | 18              | 86           |
+| 5    | D    | 24            | 25            | 17            | 16              | 82           |
+| 6    | B    | 23            | 24            | 16            | 15              | 78           |
+| 7    | E    | 22            | 23            | 15            | 14              | 74           |
+| 8    | G    | 10            | 12            | 10            | 10              | 42           |
 
 ### 👉主观效果总结
 
 个人主观评价与DeepSeek-R1基本相符，其中：
 
 * MiniMind系列的排序非常符合直觉，参数越大+训练数据越充分评分越高，幻觉和错误都会比小模型肉眼可见的好。
-
 * H模型的回答肉眼看起来是不错的，尽管存在些许幻觉瞎编的情况。
-
 * G模型可能训练数据不够完备，给出的权重经过测试效果不佳。
-
 * 再复诵一遍经久不衰的Scaling Law: 参数越大，训练数据越多模型的性能越强。
 
 ---
@@ -1630,7 +1644,6 @@ python eval_llm.py --weight full_sft --inference_rope_scaling
 这里选取了一些微型模型进行横评比较，
 测试集选择C-Eval、CMMLU、A-CLUE、TMMLU+这几个纯中文语言榜单。
 
-
 <details style="color:rgb(128,128,128)">
 <summary>测评框架</summary>
 
@@ -1643,23 +1656,22 @@ lm_eval --model hf --model_args pretrained=<填写模型路径>,device=cuda,dtyp
 
 </details>
 
-
-
 PS: 在这种全是选择题的测评集中，为了避免回复格式的难以固定的特点，
 所以常用做法是直接把`A`,`B`,`C`,`D`四个字母对应token的预测概率取出来，将其中概率最大的字母与标准答案计算正确率。
 选择题1/4乱选的正确率是25%，然而这个量级的所有模型都集中在25附近，甚至很多时候不如瞎选，是不是像极了高中完形填空的滑铁卢正确率...
 MiniMind模型本身预训练数据集小的可怜，也没有针对性的对测试集做刷榜微调，因此结果纯娱乐：
 
+
 | models                                                                        | from          | params↓ | ceval↑ | cmmlu↑ | aclue↑ | tmmlu+↑ |
-|-------------------------------------------------------------------------------|---------------|---------|--------|---------|--------|---------|
-| MiniMind2                                                                     | JingyaoGong   | 104M    | 26.52  | 24.42   | 24.97  | 25.27   |
-| MiniMind2-Small                                                               | JingyaoGong   | 26M     | 26.37  | 24.97   | 25.39  | 24.63   |
-| MiniMind2-MoE                                                                 | JingyaoGong   | 145M    | 26.6   | 25.01   | 24.83  | 25.01   |
-| [Steel-LLM](https://github.com/zhanshijinwat/Steel-LLM)                       | ZhanShiJin    | 1121M   | 24.81  | 25.32   | 26     | 24.39   |
-| [GPT2-medium](https://huggingface.co/openai-community/gpt2-medium)            | OpenAI        | 360M    | 23.18  | 25      | 18.6   | 25.19   |
-| [TinyLlama-1.1B-Chat-V1.0](https://github.com/jzhang38/TinyLlama)             | TinyLlama     | 1100M   | 25.48  | 25      | 25.4   | 25.13   |
-| [SmolLM2](https://github.com/huggingface/smollm)                              | HuggingFaceTB | 135M    | 24.37  | 25.02   | 25.37  | 25.06   |
-| [Aquila-Instruct](https://www.modelscope.cn/models/BAAI/Aquila-135M-Instruct) | BAAI          | 135M    | 25.11  | 25.1    | 24.43  | 25.05   |
+| ----------------------------------------------------------------------------- | ------------- | -------- | ------- | ------- | ------- | -------- |
+| MiniMind2                                                                     | JingyaoGong   | 104M     | 26.52   | 24.42   | 24.97   | 25.27    |
+| MiniMind2-Small                                                               | JingyaoGong   | 26M      | 26.37   | 24.97   | 25.39   | 24.63    |
+| MiniMind2-MoE                                                                 | JingyaoGong   | 145M     | 26.6    | 25.01   | 24.83   | 25.01    |
+| [Steel-LLM](https://github.com/zhanshijinwat/Steel-LLM)                       | ZhanShiJin    | 1121M    | 24.81   | 25.32   | 26      | 24.39    |
+| [GPT2-medium](https://huggingface.co/openai-community/gpt2-medium)            | OpenAI        | 360M     | 23.18   | 25      | 18.6    | 25.19    |
+| [TinyLlama-1.1B-Chat-V1.0](https://github.com/jzhang38/TinyLlama)             | TinyLlama     | 1100M    | 25.48   | 25      | 25.4    | 25.13    |
+| [SmolLM2](https://github.com/huggingface/smollm)                              | HuggingFaceTB | 135M     | 24.37   | 25.02   | 25.37   | 25.06    |
+| [Aquila-Instruct](https://www.modelscope.cn/models/BAAI/Aquila-135M-Instruct) | BAAI          | 135M     | 25.11   | 25.1    | 24.43   | 25.05    |
 
 ![compare_radar](./images/compare_radar.png)
 
@@ -1670,47 +1682,48 @@ MiniMind模型本身预训练数据集小的可怜，也没有针对性的对测
 * [./scripts/convert_model.py](./scripts/convert_model.py)可以实现`torch / transformers`模型的互相转换
 * 如无特别说明，`MiniMind2`模型均默认为`Transformers`格式的模型，需提前`t2t`转换！
 
-
 ## 基于MiniMind-API服务接口
 
 * [./scripts/serve_openai_api.py](./scripts/serve_openai_api.py)完成了兼容openai-api的最简聊天接口，方便将自己的模型接入第三方UI
   例如FastGPT、OpenWebUI、Dify等等。
-
 * 从[Huggingface](https://huggingface.co/collections/jingyaogong/minimind-66caf8d999f5c7fa64f399e5)下载模型权重文件，文件树：
-    ```
-    minimind (root dir)
-    ├─<MiniMind-Model-Name>（例如MiniMind2）
-    |  ├── config.json
-    |  ├── generation_config.json
-    |  ├── model_minimind.py or w/o
-    |  ├── pytorch_model.bin or model.safetensors
-    |  ├── special_tokens_map.json
-    |  ├── tokenizer_config.json
-    |  ├── tokenizer.json
-    ```
 
+  ```
+  minimind (root dir)
+  ├─<MiniMind-Model-Name>（例如MiniMind2）
+  |  ├── config.json
+  |  ├── generation_config.json
+  |  ├── model_minimind.py or w/o
+  |  ├── pytorch_model.bin or model.safetensors
+  |  ├── special_tokens_map.json
+  |  ├── tokenizer_config.json
+  |  ├── tokenizer.json
+  ```
 * 启动聊天服务端
-    ```bash
-    python serve_openai_api.py
-    ```
+
+  ```bash
+  python serve_openai_api.py
+  ```
 * 测试服务接口
-    ```bash
-    python chat_openai_api.py
-    ```
+
+  ```bash
+  python chat_openai_api.py
+  ```
 * API接口示例，兼容openai api格式
-    ```bash
-    curl http://ip:port/v1/chat/completions \
-      -H "Content-Type: application/json" \
-      -d '{ 
-        "model": "model-identifier",
-        "messages": [ 
-          { "role": "user", "content": "世界上最高的山是什么？" }
-        ], 
-        "temperature": 0.7, 
-        "max_tokens": 512,
-        "stream": true
-    }'
-    ```
+
+  ```bash
+  curl http://ip:port/v1/chat/completions \
+    -H "Content-Type: application/json" \
+    -d '{ 
+      "model": "model-identifier",
+      "messages": [ 
+        { "role": "user", "content": "世界上最高的山是什么？" }
+      ], 
+      "temperature": 0.7, 
+      "max_tokens": 512,
+      "stream": true
+  }'
+  ```
 
 ## <img src="https://avatars.githubusercontent.com/u/136984999" height="28" style="vertical-align: middle;"/> [vllm](https://github.com/vllm-project/vllm)
 
@@ -1818,6 +1831,7 @@ ollama cp minimind-local:latest your_username/minimind:latest
 # 2. 推送模型
 ollama push your_username/minimind:latest
 ```
+
 </details>
 <br/>
 
@@ -1834,6 +1848,7 @@ ollama run jingyaogong/minimind2 # 其他可选 minimind2-r1 / minimind2-small /
 MNN是面向端侧的AI推理引擎，支持多种开源LLM模型推理，轻量化、高性能。
 
 1. 模型转换
+
 ```
 cd MNN/transformers/llm/export
 # 导出4bit HQQ量化的MNN模型
@@ -1841,9 +1856,11 @@ python llmexport.py --path /path/to/MiniMind2/  --export mnn --hqq --dst_path Mi
 ```
 
 2. 在Mac或手机上测试
+
 ```
 ./llm_demo /path/to/MiniMind2-MNN/config.json prompt.txt
 ```
+
 或者下载APP测试
 
 > 以上三方框架的更多用法请参考对应官方文档😊
@@ -1877,7 +1894,6 @@ python llmexport.py --path /path/to/MiniMind2/  --export mnn --hqq --dst_path Mi
 
 <a href="https://github.com/Nijikadesu"><b>@Nijikadesu</b></a>:
 <a href="https://github.com/jingyaogong/minimind/issues/213">🔗以交互笔记本方式分解项目代码</a>
-
 
 <details close> 
 <summary> <b>参考链接 & 感谢以下优秀的论文或项目</b> </summary>
@@ -1927,19 +1943,12 @@ python llmexport.py --path /path/to/MiniMind2/  --export mnn --hqq --dst_path Mi
 本模型抛砖引玉地促成了一些可喜成果的落地，感谢研究者们的认可：
 
 - ECG-Expert-QA: A Benchmark for Evaluating Medical Large Language Models in Heart Disease Diagnosis [[arxiv](https://arxiv.org/pdf/2502.17475)]
-
 - Binary-Integer-Programming Based Algorithm for Expert Load Balancing in Mixture-of-Experts Models [[arxiv](https://arxiv.org/pdf/2502.15451)]
-
 - LegalEval-Q: A New Benchmark for The Quality Evaluation of LLM-Generated Legal Text [[arxiv](https://arxiv.org/pdf/2505.24826)]
-
 - On the Generalization Ability of Next-Token-Prediction Pretraining [[ICML 2025](https://openreview.net/forum?id=hLGJ1qZPdu)]
-
 - 《从零开始写大模型：从神经网络到Transformer》王双、牟晨、王昊怡 编著 - 清华大学出版社
-
 - FedBRB: A Solution to the Small-to-Large Scenario in Device-Heterogeneity Federated Learning [[TMC 2025](https://ieeexplore.ieee.org/abstract/document/11168259)]
-
 - 进行中...
-
 
 # 🎓 Citation
 
@@ -1957,5 +1966,3 @@ If you find MiniMind helpful in your research or work, please cite:
 # License
 
 This repository is licensed under the [Apache-2.0 License](LICENSE).
-
-
