@@ -77,9 +77,12 @@ def main():
         print('🤖️: ', end='')
         generated_ids = model.generate(
             inputs=inputs["input_ids"], attention_mask=inputs["attention_mask"],
-            max_new_tokens=args.max_new_tokens, do_sample=True, streamer=streamer,
+            max_new_tokens=min(args.max_new_tokens, 200),
+            do_sample=True, streamer=streamer,
             pad_token_id=tokenizer.pad_token_id, eos_token_id=tokenizer.eos_token_id,
-            top_p=args.top_p, temperature=args.temperature, repetition_penalty=1.0
+            top_p=args.top_p, temperature=args.temperature,
+            repetition_penalty=1.15,          # ← 只保留这一行
+            early_stopping=True,
         )
         response = tokenizer.decode(generated_ids[0][len(inputs["input_ids"][0]):], skip_special_tokens=True)
         conversation.append({"role": "assistant", "content": response})
