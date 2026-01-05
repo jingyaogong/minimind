@@ -33,9 +33,14 @@ class PretrainDataset(Dataset):
         input_ids = encoding.input_ids.squeeze()
         loss_mask = (input_ids != self.tokenizer.pad_token_id)
 
-        X = torch.tensor(input_ids[:-1], dtype=torch.long)
-        Y = torch.tensor(input_ids[1:], dtype=torch.long)
-        loss_mask = torch.tensor(loss_mask[1:], dtype=torch.long)
+        # 重复包装 tensor, 影响性能
+        # X = torch.tensor(input_ids[:-1], dtype=torch.long)
+        # Y = torch.tensor(input_ids[1:], dtype=torch.long)
+        # loss_mask = torch.tensor(loss_mask[1:], dtype=torch.long)
+        X = input_ids[:-1].long()
+        Y = input_ids[1:].long()
+        loss_mask = loss_mask[1:].long()
+
         return X, Y, loss_mask
 
 
@@ -213,4 +218,29 @@ class RLAIFDataset(Dataset):
 
 
 if __name__ == "__main__":
-    pass
+    import os
+    from transformers import AutoTokenizer
+    script_dir = os.path.dirname(os.path.abspath(__file__))
+
+    tokenizer_path = os.path.join(os.path.dirname(script_dir), "model")
+    tokenizer = AutoTokenizer.from_pretrained(tokenizer_path,local_files_only=True,trust_remote_code=True)
+    
+    pretrain_path = os.path.join(script_dir, "pretrain_hq.jsonl")
+    pretrain_dataset = PretrainDataset(pretrain_path, tokenizer)
+    x,y,loss_mask=pretrain_dataset[0]
+    print(f"x:{x}\ny:{y}\nloss mask:{loss_mask}")
+
+    sft_path = os.path.join(script_dir,"sft_mini_512.jsonl")
+    sft_dataset = SFTDataset(sft_path, tokenizer)
+    x, y, loss_mask = sft_dataset[0]
+    print(f"x:{x}\ny:{y}\nloss mask:{loss_mask}")
+
+    dpo_path = os.path.join(script_dir, "dpo.jsonl")
+    dpo_dataset = DPODataset(dpo_path, tokenizer)
+    results = dpo_dataset[0]
+    print(results)
+
+    rlaif_path = os.path.join(script_dir, "rlaif-mini.jsonl")
+    rlaif_dataset = RLAIFDataset(rlaif_path, tokenizer)
+    results = rlaif_dataset[0]
+    print(results)
