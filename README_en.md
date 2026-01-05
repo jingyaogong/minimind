@@ -426,7 +426,7 @@ By adding the `--use_wandb` parameter, you can record the training process. Afte
 ## Ⅰ Tokenizer
 
 Tokenizer maps words from natural language to numbers like `0, 1, 36` through a "dictionary," which can be understood as numbers representing the page number of the word in the "dictionary."
-You can choose to construct your own vocabulary table to train a "dictionary." The code can be found in `./scripts/train_tokenizer.py` (for learning reference only. It's not necessary to train one yourself unless required. MiniMind comes with a built-in tokenizer).
+You can choose to construct your own vocabulary table to train a "dictionary." The code can be found in `./trainer/train_tokenizer.py` (for learning reference only. It's not necessary to train one yourself unless required. MiniMind comes with a built-in tokenizer).
 Or you can choose tokenizers from well-known open-source large models.
 Just as using Xinhua/Oxford dictionaries directly has the advantage of good token encoding compression, but the disadvantage of having too many pages—tens of thousands of word phrases;
 A self-trained tokenizer has the advantage of freely controlling vocabulary length and content, but the disadvantage of low compression ratio (for example, "hello" might be split into "h e l l o"
