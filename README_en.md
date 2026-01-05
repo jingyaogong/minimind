@@ -928,7 +928,7 @@ The reply template for reasoning model R1 is:
 This is constrained by setting a rule-based reward function in GRPO to make the model comply with thinking tags and reply tags (in the early stages of cold starts, reward values should be increased).
 
 Another issue is that although the distillation process is the same as SFT, experimental results show that models have difficulty consistently complying with template-compliant replies every time, i.e., deviating from thinking and reply tag constraints.
-A small trick here is to increase the loss penalty for marker position tokens. See details in `train_distill_reason.py`:
+A small trick here is to increase the loss penalty for marker position tokens. See details in `train_reason.py`:
 
 ```text
 # Add extra penalty to positions corresponding to sp_ids
@@ -942,9 +942,9 @@ Therefore, `r1_mix_1024.jsonl` mixed approximately 10k multi-turn conversations 
 The script defaults to reasoning ability distillation fine-tuning based on the rlhf model. You can directly start training:
 
 ```bash
-torchrun --nproc_per_node 1 train_distill_reason.py
+torchrun --nproc_per_node 1 train_reason.py
 # or
-python train_distill_reason.py
+python train_reason.py
 ```
 
 > After training, model weight files are saved by default every `100 steps` as: `reason_*.pth` (where * is the model's specific dimension, new files overwrite old ones on each save)
