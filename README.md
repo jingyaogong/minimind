@@ -1665,13 +1665,13 @@ MiniMind模型本身预训练数据集小的可怜，也没有针对性的对测
 
 # 📌 Others
 
-## 模型转换
+## 🔧 模型转换
 
 * [./scripts/convert_model.py](./scripts/convert_model.py)可以实现`torch / transformers`模型的互相转换
 * 如无特别说明，`MiniMind2`模型均默认为`Transformers`格式的模型，需提前`t2t`转换！
 
 
-## 基于MiniMind-API服务接口
+## 🖥️ 基于MiniMind-API服务接口
 
 * [./scripts/serve_openai_api.py](./scripts/serve_openai_api.py)完成了兼容openai-api的最简聊天接口，方便将自己的模型接入第三方UI
   例如FastGPT、OpenWebUI、Dify等等。
@@ -1711,6 +1711,14 @@ MiniMind模型本身预训练数据集小的可怜，也没有针对性的对测
         "stream": true
     }'
     ```
+
+## 👨‍💻 更多
+
+* <a href="https://github.com/jingyaogong/minimind/discussions/618">🔗从MiniMind-LLM微调扩散语言模型</a>
+
+* <a href="https://github.com/jingyaogong/minimind/discussions/611">🔗模型的generate方法说明</a>
+
+---
 
 ## <img src="https://avatars.githubusercontent.com/u/136984999" height="28" style="vertical-align: middle;"/> [vllm](https://github.com/vllm-project/vllm)
 

@@ -1599,14 +1599,14 @@ Models generally achieve baseline performance due to small parameter scales and 
 
 # 📌 Others
 
-## Model Conversion
+## 🔧 Model Conversion
 
 * [./scripts/convert_model.py](./scripts/convert_model.py) enables mutual conversion of `torch / transformers` models
 * Unless otherwise specified, `MiniMind2` models are by default in `Transformers` format and require `t2t` conversion beforehand!
 
 
 
-## OpenAI-API Based MiniMind Service Interface
+## 🖥️ OpenAI-API Based MiniMind Service Interface
 
 * [./scripts/serve_openai_api.py](./scripts/serve_openai_api.py) provides extremely simple OpenAI-API compatible chat interface, convenient for integration with third-party UIs like FastGPT, Open-WebUI, Dify, etc.
 
@@ -1645,6 +1645,13 @@ Models generally achieve baseline performance due to small parameter scales and 
         "stream": true
     }'
     ```
+
+## 👨‍💻 More
+
+* <a href="https://github.com/jingyaogong/minimind/discussions/618">🔗Fine-tuning Diffusion Language Models from MiniMind-LLM</a>
+* <a href="https://github.com/jingyaogong/minimind/discussions/611">🔗Model generate method explanation</a>
+
+---
 
 ## <img src="https://avatars.githubusercontent.com/u/136984999" height="28" style="vertical-align: middle;"/> [vllm](https://github.com/vllm-project/vllm)
 
