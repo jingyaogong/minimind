@@ -220,7 +220,9 @@ def ppo_train_epoch(epoch, loader, iters, old_actor_model, ref_model, actor_sche
                    f"Avg Response Len: {avg_len_val:.2f}, Actor LR: {actor_lr:.8f}, Critic LR: {critic_lr:.8f}")
 
         if (step + 1) % args.update_old_actor_freq == 0:
-            state_dict = actor_model.module.state_dict() if isinstance(actor_model, DistributedDataParallel) else actor_model.state_dict()
+            raw_actor = actor_model.module if isinstance(actor_model, DistributedDataParallel) else actor_model
+            raw_actor = getattr(raw_actor, '_orig_mod', raw_actor)
+            state_dict = raw_actor.state_dict()
             old_actor_model.load_state_dict({k: v.detach().cpu() for k, v in state_dict.items()})
             old_actor_model.to(args.device)
 
@@ -228,7 +230,9 @@ def ppo_train_epoch(epoch, loader, iters, old_actor_model, ref_model, actor_sche
             actor_model.eval()
             moe_suffix = '_moe' if lm_config.use_moe else ''
             ckp = f'{args.save_dir}/{args.save_weight}_{lm_config.hidden_size}{moe_suffix}.pth'
-            actor_state = actor_model.module.state_dict() if isinstance(actor_model, DistributedDataParallel) else actor_model.state_dict()
+            raw_actor = actor_model.module if isinstance(actor_model, DistributedDataParallel) else actor_model
+            raw_actor = getattr(raw_actor, '_orig_mod', raw_actor)
+            actor_state = raw_actor.state_dict()
             torch.save({k: v.half().cpu() for k, v in actor_state.items()}, ckp)
             
             # 使用 lm_checkpoint 保存完整状态（包括 critic）

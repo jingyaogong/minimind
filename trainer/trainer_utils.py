@@ -10,6 +10,7 @@ import math
 import numpy as np
 import torch
 import torch.distributed as dist
+from torch.nn.parallel import DistributedDataParallel
 from torch.utils.data import Sampler
 from transformers import AutoTokenizer
 from model.model_minimind import MiniMindForCausalLM
@@ -66,8 +67,9 @@ def lm_checkpoint(lm_config, weight='full_sft', model=None, optimizer=None, epoc
     resume_path = f'{save_dir}/{weight}_{lm_config.hidden_size}{moe_path}_resume.pth'
 
     if model is not None:
-        from torch.nn.parallel import DistributedDataParallel
-        state_dict = model.module.state_dict() if isinstance(model, DistributedDataParallel) else model.state_dict()
+        raw_model = model.module if isinstance(model, DistributedDataParallel) else model
+        raw_model = getattr(raw_model, '_orig_mod', raw_model)
+        state_dict = raw_model.state_dict()
         state_dict = {k: v.half().cpu() for k, v in state_dict.items()}
         ckp_tmp = ckp_path + '.tmp'
         torch.save(state_dict, ckp_tmp)
@@ -91,10 +93,9 @@ def lm_checkpoint(lm_config, weight='full_sft', model=None, optimizer=None, epoc
         for key, value in kwargs.items():
             if value is not None:
                 if hasattr(value, 'state_dict'):
-                    if isinstance(value, DistributedDataParallel):
-                        resume_data[key] = value.module.state_dict()
-                    else:
-                        resume_data[key] = value.state_dict()
+                    raw_value = value.module if isinstance(value, DistributedDataParallel) else value
+                    raw_value = getattr(raw_value, '_orig_mod', raw_value)
+                    resume_data[key] = raw_value.state_dict()
                 else:
                     resume_data[key] = value
 

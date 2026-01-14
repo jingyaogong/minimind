@@ -43,8 +43,9 @@ def load_lora(model, path):
 
 
 def save_lora(model, path):
+    raw_model = getattr(model, '_orig_mod', model)
     state_dict = {}
-    for name, module in model.named_modules():
+    for name, module in raw_model.named_modules():
         if hasattr(module, 'lora'):
             clean_name = name[7:] if name.startswith("module.") else name
             lora_state = {f'{clean_name}.lora.{k}': v for k, v in module.lora.state_dict().items()}
