@@ -162,6 +162,7 @@ if __name__ == "__main__":
     parser.add_argument('--temperature', default=1.5, type=float, help="蒸馏温度（推荐范围1.0-2.0）")
     parser.add_argument("--use_wandb", action="store_true", help="是否使用wandb")
     parser.add_argument("--wandb_project", type=str, default="MiniMind-Distillation", help="wandb项目名")
+    parser.add_argument("--use_compile", default=0, type=int, choices=[0, 1], help="是否使用torch.compile加速（0=否，1=是）")
     args = parser.parse_args()
 
     # ========== 1. 初始化环境和随机种子 ==========
@@ -191,6 +192,9 @@ if __name__ == "__main__":
     
     # ========== 5. 定义学生和教师模型 ==========
     model, tokenizer = init_model(lm_config_student, args.from_student_weight, device=args.device)
+    if args.use_compile == 1:
+        model = torch.compile(model)
+        Logger('torch.compile enabled')
     Logger(f'学生模型总参数量：{sum(p.numel() for p in model.parameters()) / 1e6:.3f} M')
     teacher_model, _ = init_model(lm_config_teacher, args.from_teacher_weight, device=args.device)
     teacher_model.eval()
