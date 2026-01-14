@@ -111,8 +111,7 @@ def train_epoch(epoch, loader, iters, ref_model, lm_config, start_step=0, wandb=
             raw_model = model.module if isinstance(model, DistributedDataParallel) else model
             raw_model = getattr(raw_model, '_orig_mod', raw_model)
             state_dict = raw_model.state_dict()
-            state_dict = {k: v.half().cpu() for k, v in state_dict.items()}
-            torch.save(state_dict, ckp)
+            torch.save({k: v.half().cpu() for k, v in state_dict.items()}, ckp)
             lm_checkpoint(lm_config, weight=args.save_weight, model=model, optimizer=optimizer, scaler=scaler, epoch=epoch, step=step, wandb=wandb, save_dir='../checkpoints')
             model.train()
             del state_dict

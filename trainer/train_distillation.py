@@ -42,36 +42,37 @@ def train_epoch(epoch, loader, iters, teacher_model, lm_config_student, start_st
         teacher_model.eval()
         teacher_model.requires_grad_(False)
 
-    for step, (X, Y, loss_mask) in enumerate(loader, start=start_step + 1):
-        X = X.to(args.device)
-        Y = Y.to(args.device)
-        loss_mask = loss_mask.to(args.device)
+    for step, (input_ids, labels) in enumerate(loader, start=start_step + 1):
+        input_ids = input_ids.to(args.device)
+        labels = labels.to(args.device)
+        loss_mask = (labels[..., 1:] != -100).float()
         lr = get_lr(epoch * iters + step, args.epochs * iters, args.learning_rate)
         for param_group in optimizer.param_groups:
             param_group['lr'] = lr
 
         # 前向传播（学生模型）
         with autocast_ctx:
-            res = model(X)
-            student_logits = res.logits
+            res = model(input_ids)
+            student_logits = res.logits[..., :-1, :].contiguous()
 
         # 教师模型前向传播（只在eval & no_grad）
         if teacher_model is not None:
             with torch.no_grad():
-                teacher_logits = teacher_model(X).logits
+                teacher_logits = teacher_model(input_ids).logits[..., :-1, :].contiguous()
                 vocab_size_student = student_logits.size(-1)
                 teacher_logits = teacher_logits[..., :vocab_size_student]
 
         # ========== 计算损失 ==========
         # 1) Ground-Truth CE Loss
+        shift_labels = labels[..., 1:].contiguous()
         loss_mask_flat = loss_mask.view(-1)
         ce_loss = F.cross_entropy(
             student_logits.view(-1, student_logits.size(-1)),
-            Y.view(-1),
-            ignore_index=0,
+            shift_labels.view(-1),
+            ignore_index=-100,
             reduction='none'
         )
-        ce_loss_raw = torch.sum(ce_loss * loss_mask_flat) / loss_mask_flat.sum()
+        ce_loss_raw = torch.sum(ce_loss * loss_mask_flat) / (loss_mask_flat.sum() + 1e-8)
         if lm_config_student.use_moe: ce_loss = ce_loss_raw + res.aux_loss
         else: ce_loss = ce_loss_raw
 
@@ -124,13 +125,12 @@ def train_epoch(epoch, loader, iters, teacher_model, lm_config_student, start_st
             raw_model = model.module if isinstance(model, DistributedDataParallel) else model
             raw_model = getattr(raw_model, '_orig_mod', raw_model)
             state_dict = raw_model.state_dict()
-            state_dict = {k: v.half().cpu() for k, v in state_dict.items()}
-            torch.save(state_dict, ckp)
+            torch.save({k: v.half().cpu() for k, v in state_dict.items()}, ckp)
             lm_checkpoint(lm_config_student, weight=args.save_weight, model=model, optimizer=optimizer, scaler=scaler, epoch=epoch, step=step, wandb=wandb, save_dir='../checkpoints')
             model.train()
             del state_dict
 
-        del X, Y, loss_mask, res, student_logits, teacher_logits, ce_loss, distill_loss, loss
+        del input_ids, labels, loss_mask, res, student_logits, ce_loss, distill_loss, loss
 
 
 if __name__ == "__main__":

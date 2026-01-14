@@ -16,8 +16,6 @@ class PretrainDataset(Dataset):
 
     def __getitem__(self, index):
         sample = self.samples[index]
-
-        # 构建输入文本
         encoding = self.tokenizer(
             str(sample['text']),
             max_length=self.max_length,
@@ -26,12 +24,9 @@ class PretrainDataset(Dataset):
             return_tensors='pt'
         )
         input_ids = encoding.input_ids.squeeze()
-        loss_mask = (input_ids != self.tokenizer.pad_token_id)
-
-        X = torch.tensor(input_ids[:-1], dtype=torch.long)
-        Y = torch.tensor(input_ids[1:], dtype=torch.long)
-        loss_mask = torch.tensor(loss_mask[1:], dtype=torch.long)
-        return X, Y, loss_mask
+        labels = input_ids.clone()
+        labels[input_ids == self.tokenizer.pad_token_id] = -100
+        return input_ids, labels
 
 
 class SFTDataset(Dataset):
@@ -56,8 +51,8 @@ class SFTDataset(Dataset):
             tools=tools
         )
 
-    def generate_loss_mask(self, input_ids):
-        loss_mask = [0] * len(input_ids)
+    def generate_labels(self, input_ids):
+        labels = [-100] * len(input_ids)
         i = 0
         while i < len(input_ids):
             if input_ids[i:i + len(self.bos_id)] == self.bos_id:
@@ -68,29 +63,24 @@ class SFTDataset(Dataset):
                         break
                     end += 1
                 for j in range(start + 1, min(end + len(self.eos_id) + 1, self.max_length)):
-                    loss_mask[j] = 1
+                    labels[j] = input_ids[j]
                 i = end + len(self.eos_id) if end < len(input_ids) else len(input_ids)
             else:
                 i += 1
-        return loss_mask
+        return labels
 
     def __getitem__(self, index):
         sample = self.samples[index]
         prompt = self.create_chat_prompt(sample['conversations'])
         input_ids = self.tokenizer(prompt).input_ids[:self.max_length]
         input_ids += [self.tokenizer.pad_token_id] * (self.max_length - len(input_ids))
-        loss_mask = self.generate_loss_mask(input_ids)
-
-        # 构建训练数据
-        X = torch.tensor(input_ids[:-1], dtype=torch.long)
-        Y = torch.tensor(input_ids[1:], dtype=torch.long)
-        loss_mask = torch.tensor(loss_mask[1:], dtype=torch.long)  # 对齐预测位置
-        # # === 打印每个token的掩码情况 ===
+        labels = self.generate_labels(input_ids)
+        # # === 调试打印 ===
         # print(f"\n--- Sample {index} ---")
-        # for i, (x, y, m) in enumerate(zip(X, Y, loss_mask)):
-        #     print(f"{i:3d}: X={self.tokenizer.decode([x])!r:16s} ---> Y={self.tokenizer.decode([y])!r:16s} mask={m}")
-        # # ================================
-        return X, Y, loss_mask
+        # for i, (x, y) in enumerate(zip(input_ids[:-1], labels[1:])):
+        #     print(f"{i:3d}: X={self.tokenizer.decode([x])!r:16s} ---> Y={self.tokenizer.decode([input_ids[i+1]])!r:16s} label={y}")
+        # # ================
+        return torch.tensor(input_ids, dtype=torch.long), torch.tensor(labels, dtype=torch.long)
 
 
 class DPODataset(Dataset):
