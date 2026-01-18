@@ -161,13 +161,14 @@ if __name__ == "__main__":
     # ========== 9. 开始训练 ==========
     for epoch in range(start_epoch, args.epochs):
         train_sampler and train_sampler.set_epoch(epoch)
-        if epoch == start_epoch and start_step > 0: # 第一个epoch且存在检查点
-            batch_sampler = SkipBatchSampler(train_sampler or range(len(train_ds)), args.batch_size, start_step + 1)
-            loader = DataLoader(train_ds, batch_sampler=batch_sampler, num_workers=args.num_workers, pin_memory=True)
+        setup_seed(42 + epoch); indices = torch.randperm(len(train_ds)).tolist()
+        skip = start_step + 1 if (epoch == start_epoch and start_step > 0) else 0
+        batch_sampler = SkipBatchSampler(train_sampler or indices, args.batch_size, skip)
+        loader = DataLoader(train_ds, batch_sampler=batch_sampler, num_workers=args.num_workers, pin_memory=True)
+        if skip > 0: 
             Logger(f'Epoch [{epoch + 1}/{args.epochs}]: 跳过前{start_step}个step，从step {start_step + 1}开始')
-            train_epoch(epoch, loader, len(loader) + start_step + 1, lora_params, start_step, wandb)
-        else: # 默认从头开始
-            loader = DataLoader(train_ds, batch_size=args.batch_size, shuffle=(train_sampler is None), sampler=train_sampler, num_workers=args.num_workers, pin_memory=True)
+            train_epoch(epoch, loader, len(loader) + skip, lora_params, start_step, wandb)
+        else:
             train_epoch(epoch, loader, len(loader), lora_params, 0, wandb)
     
     # ========== 10. 清理分布进程 ==========
