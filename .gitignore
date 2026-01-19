@@ -2,3 +2,9 @@ model/__pycache__
 out
 website/
 docs-minimind/
+cli.txt
+dataset/out/
+dataset/__pycache__
+dataset/corpus/__pycache__
+dataset/scrapers/__pycache__
+dataset/utils/__pycache__
