@@ -138,7 +138,7 @@ if __name__ == "__main__":
         nonhidden_params = [p for p in model.parameters() if p.ndim < 2]
         param_groups = [
             dict(params=hidden_weights, use_muon=True, lr=args.learning_rate, weight_decay=0.01),
-            dict(params=nonhidden_params, use_muon=False, lr=args.learning_rate, betas=(0.9, 0.95)),
+            dict(params=nonhidden_params, use_muon=False, lr=5e-4, betas=(0.9, 0.95)),
         ]
         if dist.is_initialized():
             optimizer = MuonWithAuxAdam(param_groups)
