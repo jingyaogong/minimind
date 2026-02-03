@@ -141,7 +141,7 @@ def grpo_train_epoch(epoch, loader, iters, ref_model, reward_model, reward_token
         per_token_kl = torch.exp(kl_div) - kl_div - 1  # [B*num_gen, R]
 
         # 修改部分：添加门控
-        per_token_loss = -((torch.exp(per_token_logps - per_token_logps.detach()) * torch.sigmoid(0.5 * torch.exp(per_token_logps - per_token_logps.detach()))) * advantages.unsqueeze(1) - args.beta * per_token_kl)  # [B*num_gen, R]
+        per_token_loss = -((torch.exp(per_token_logps - per_token_logps.detach()) * torch.sigmoid(0.1 * torch.exp(per_token_logps - per_token_logps.detach()))) * advantages.unsqueeze(1) - args.beta * per_token_kl)  # [B*num_gen, R]
         
         
         loss = ((per_token_loss * completion_mask).sum(dim=1) / completion_mask.sum(dim=1)).mean() / args.accumulation_steps  # scalar
