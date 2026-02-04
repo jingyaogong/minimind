@@ -1,13 +1,14 @@
 import os
 import sys
 
+# 设置包名, 用于相对导入
 __package__ = "trainer"
+# 将项目根目录添加到系统路径, 确保能够导入同级目录的模块
 sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), '..')))
 
 import argparse
 import re
 import gc
-import warnings
 import torch
 import torch.distributed as dist
 from transformers import AutoTokenizer
@@ -21,36 +22,84 @@ from model.model_minimind import MiniMindConfig, MiniMindForCausalLM
 from dataset.lm_dataset import RLAIFDataset
 from trainer.trainer_utils import Logger, is_main_process, lm_checkpoint, init_distributed_mode, setup_seed, SkipBatchSampler, init_model
 
+# 忽略警告信息, 保持输出整洁
+import warnings
 warnings.filterwarnings('ignore')
 
 
 class AutoAdaptiveValueTracker:
-    """SPO自适应价值追踪器"""
+    """
+    SPO 自适应价值追踪器
+
+    使用 Beta 分布来估计奖励基线, 支持基于 KL 散度的自适应 rho 更新
+    """
     def __init__(self, rho_mode='kl', rho_const=0.9, D_half=0.06, clip_lower=0.5, clip_upper=0.96):
+        # rho 计算模式: 'kl' 表示基于 KL 散度, 'constant' 表示固定值
         self.rho_mode = rho_mode
+        # 固定 rho 模式下的常数值
         self.rho_const = rho_const
+        # KL 散度半衰期参数, 用于控制 rho 随 KL 变化的敏感度
         self.D_half = D_half
+        # rho 值的裁剪上下限, 防止更新过快或过慢
         self.clip_lower = clip_lower
         self.clip_upper = clip_upper
+        # 初始化 Beta 分布的参数 alpha 和 beta
         N_init = 1.0 / (1.0 - self.clip_lower)
         self.alpha = 0.5 * N_init
         self.beta = 0.5 * N_init
+        # 保存上一轮迭代的平均对数概率, 用于计算 KL 散度
         self.old_mean_logprob = None
 
     def get_baselines(self, batch_size):
+        """
+        计算当前批次样本的基线值
+
+        Args:
+        - batch_size: 批次大小
+
+        Returns:
+        - Tensor: 形状为 (batch_size,) 的基线值张量
+        """
+        # Beta 分布的期望值作为基线
         baseline = self.alpha / (self.alpha + self.beta)
         return torch.full((batch_size,), baseline, dtype=torch.float32)
 
     def compute_rho(self, cur_mean_logprob):
+        """
+        计算自适应 rho 值
+
+        Args:
+        - cur_mean_logprob: 当前平均对数概率
+
+        Returns:
+        - float: rho 值, 介于 clip_lower 和 clip_upper 之间
+        """
+        # 固定模式下返回常量
         if self.rho_mode == 'constant':
             return self.rho_const
+        # 首次迭代时返回默认值
         if self.old_mean_logprob is None:
             return self.rho_const
+        # 计算当前与上一轮的对数概率差值 (KL 散度的近似)
         kl = abs(self.old_mean_logprob - cur_mean_logprob)
+        # 使用指数衰减公式计算 rho
         rho = 2 ** (-kl / self.D_half)
+        # 裁剪到合理范围内
         return max(min(rho, self.clip_upper), self.clip_lower)
 
     def update(self, rewards, cur_logprobs=None, response_masks=None):
+        """
+        根据奖励值更新 Beta 分布参数
+
+        Args:
+        - rewards: 奖励值张量, 形状为 (batch_size,)
+        - cur_logprobs: 当前策略的对数概率 (可选)
+        - response_masks: 响应序列的掩码 (可选)
+
+        Returns:
+        - float: 本次更新使用的 rho 值
+        """
+        # 如果提供了对数概率和掩码, 计算平均对数概率并更新 rho
         if cur_logprobs is not None and response_masks is not None:
             mean_logprob = ((cur_logprobs * response_masks).sum() / response_masks.sum()).item()
             rho = self.compute_rho(mean_logprob)
@@ -58,22 +107,50 @@ class AutoAdaptiveValueTracker:
         else:
             rho = self.rho_const
 
+        # 将奖励值归一化到 [0, 1] 区间, 与 Beta 分布匹配
         scale = 3.0
         normalized_rewards = (rewards + scale) / (2 * scale)
         avg_normalized_reward = normalized_rewards.mean().item()
+        # 使用 rho 进行指数移动平均更新 Beta 分布参数
         self.alpha = rho * self.alpha + avg_normalized_reward
         self.beta = rho * self.beta + (1 - avg_normalized_reward)
         return rho
 
 
 def calculate_rewards(prompts, responses, reward_model, reward_tokenizer):
-    """整合所有奖励函数计算总奖励"""
+    """
+    整合所有奖励函数计算总奖励
+
+    Args:
+    - prompts: 输入提示列表, 字符串列表
+    - responses: 模型生成的响应列表, 字符串列表
+    - reward_model: 奖励模型, 用于评估响应质量
+    - reward_tokenizer: 奖励模型的分词器
+
+    Returns:
+    - Tensor: 每个响应的奖励值, 形状为 (batch_size,)
+    """
     def reasoning_model_reward(rewards):
+        """
+        为推理模型计算格式奖励
+
+        检查响应是否符合 CoT (Chain of Thought) 格式要求:
+        <think>...</think><answer>...</answer>
+
+        Args:
+        - rewards: 基础奖励张量
+
+        Returns:
+        - Tensor: 添加了格式奖励后的奖励张量
+        """
+        # 定义两种合法的格式模式 (带换行或不带换行)
         pattern = r"^<think>\n.*?\n</think>\n<answer>\n.*?\n</answer>$"
         pattern2 = r"^<think>\n.*?\n</think>\n\n<answer>\n.*?\n</answer>$"
+        # 检查每个响应是否匹配格式模式
         matches_pattern = [re.match(pattern, response, re.S) for response in responses]
         matches_pattern2 = [re.match(pattern2, response, re.S) for response in responses]
 
+        # 格式完全正确时奖励 0.5 分
         format_rewards = []
         for match_pattern, match_pattern2 in zip(matches_pattern, matches_pattern2):
             if match_pattern or match_pattern2:
@@ -83,34 +160,44 @@ def calculate_rewards(prompts, responses, reward_model, reward_tokenizer):
         rewards += torch.tensor(format_rewards, device=args.device)
 
         def mark_num(text):
+            """计算响应中特殊标记的数量奖励"""
             reward = 0
+            # 每个特殊标记正确出现一次奖励 0.25 分, 最多 1.0 分
             if text.count("<think>") == 1: reward += 0.25
             if text.count("</think>") == 1: reward += 0.25
             if text.count("<answer>") == 1: reward += 0.25
             if text.count("</answer>") == 1: reward += 0.25
             return reward
 
+        # 统计所有响应的标记奖励
         mark_rewards = [mark_num(response) for response in responses]
         rewards += torch.tensor(mark_rewards, device=args.device)
         return rewards
 
+    # 初始化奖励值为零
     rewards = torch.zeros(len(responses), device=args.device)
+    # 如果启用了推理模式, 先计算格式奖励
     if args.reasoning == 1:
         rewards = reasoning_model_reward(rewards)
 
+    # 使用奖励模型评估响应质量 (不计算梯度)
     with torch.no_grad():
         reward_model_scores = []
         scale = 3.0
 
         for i, (prompt, response) in enumerate(zip(prompts, responses)):
+            # 从 prompt 中提取对话历史
             pattern = r"<\|im_start\|>(system|user|assistant)\s+(.*?)<\|im_end\|>"
             matches = re.findall(pattern, prompt, re.DOTALL)
             messages = [{"role": role, "content": content.strip()} for role, content in matches]
 
+            # 将当前响应添加到对话历史中
             tmp_chat = messages + [{"role": "assistant", "content": response}]
+            # 获取奖励模型评分并裁剪到合理范围
             score = reward_model.get_score(reward_tokenizer, tmp_chat)
             score = max(min(score, scale), -scale)
 
+            # 如果是推理模型, 额外评估 <answer> 部分的内容质量
             if args.reasoning == 1:
                 answer_match = re.search(r'<answer>(.*?)</answer>', response, re.DOTALL)
                 if answer_match:
@@ -118,10 +205,12 @@ def calculate_rewards(prompts, responses, reward_model, reward_tokenizer):
                     tmp_chat = messages + [{"role": "assistant", "content": answer_content}]
                     answer_score = reward_model.get_score(reward_tokenizer, tmp_chat)
                     answer_score = max(min(answer_score, scale), -scale)
+                    # 综合评分: 整体响应占 40%, 答案内容占 60%
                     score = score * 0.4 + answer_score * 0.6
 
             reward_model_scores.append(score)
 
+        # 将奖励模型评分加入总奖励
         reward_model_scores = torch.tensor(reward_model_scores, device=args.device)
         rewards += reward_model_scores
 
@@ -129,14 +218,32 @@ def calculate_rewards(prompts, responses, reward_model, reward_tokenizer):
 
 
 def spo_train_epoch(epoch, loader, iters, ref_model, reward_model, reward_tokenizer, value_tracker, start_step=0, wandb=None):
+    """
+    SPO 训练的单 epoch 循环
+
+    Args:
+    - epoch:                当前训练轮次
+    - loader:               数据加载器
+    - iters:                当前 epoch 的总步数
+    - ref_model:            参考模型 (Policy 模型的旧版本)
+    - reward_model:         奖励模型
+    - reward_tokenizer:     奖励模型的分词器
+    - value_tracker:        价值追踪器, 用于计算基线和更新
+    - start_step:           起始步数 (用于断点续训)
+    - wandb:                Weights & Biases 日志对象 (可选)
+    """
     for step, batch in enumerate(loader, start=start_step + 1):
+        # 从批次中获取提示文本
         prompts = batch['prompt']  # list[str], length B
+        # 对提示进行分词和填充, 左填充以保留序列末尾的重要信息
         prompt_inputs = tokenizer(prompts, return_tensors="pt", padding=True, return_token_type_ids=False,
                                   padding_side="left", add_special_tokens=False).to(args.device)  # input_ids: [B, P], attention_mask: [B, P]
+        # 裁剪提示长度, 只保留最后 max_seq_len 个 token
         if args.max_seq_len:
             prompt_inputs["input_ids"] = prompt_inputs["input_ids"][:, -args.max_seq_len:]
             prompt_inputs["attention_mask"] = prompt_inputs["attention_mask"][:, -args.max_seq_len:]
 
+        # 使用 Policy 模型生成响应 (不计算梯度)
         with torch.no_grad():
             # DDP 模型需要使用 .module 访问 generate 方法
             model_for_gen = model.module if isinstance(model, DistributedDataParallel) else model
@@ -144,53 +251,82 @@ def spo_train_epoch(epoch, loader, iters, ref_model, reward_model, reward_tokeni
                 **prompt_inputs, max_new_tokens=args.max_gen_len, do_sample=True, temperature=0.8,
                 num_return_sequences=1, pad_token_id=tokenizer.pad_token_id)  # [B, P+R]
 
+        # 提取生成的响应部分 (去掉提示部分)
         completion_ids = outputs[:, prompt_inputs["input_ids"].size(1):]  # [B, R]
 
         def get_per_token_logps(mdl, input_ids, n_keep):
+            """
+            计算每个 token 的对数概率
+
+            Args:
+            - mdl:          模型对象
+            - input_ids:    输入 token ID 张量
+            - n_keep:       需要计算对数概率的最后 n_keep 个 token
+
+            Returns:
+            - Tensor: 形状为 (batch_size, n_keep) 的对数概率张量
+            """
+            # 分离输入以避免梯度计算 (仅在推理模式下)
             input_ids = input_ids.detach().clone() if input_ids.is_inference() else input_ids
+            # 前向传播获取 logits, 去掉最后一个位置 (因为没有下一个 token 作为标签)
             logits = mdl(input_ids, logits_to_keep=n_keep + 1).logits[:, :-1, :]
             per_token_logps = []
+            # 对每个样本, 计算其在序列中每个 token 的对数概率
             for logits_row, ids_row in zip(logits, input_ids[:, -n_keep:]):
                 ids_row = ids_row.detach().clone() if ids_row.is_inference() else ids_row
+                # 使用 gather 获取对应 token 的对数概率
                 per_token_logps.append(torch.gather(logits_row.log_softmax(dim=-1), 1, ids_row.unsqueeze(1)).squeeze(1))
             return torch.stack(per_token_logps)
 
+        # 计算 Policy 模型的对数概率和 MoE 辅助损失 (如果有)
         with autocast_ctx:
             per_token_logps = get_per_token_logps(model, outputs, completion_ids.size(1))  # [B, R]
             res = model(outputs) if lm_config.use_moe else None
             aux_loss = res.aux_loss if res is not None else torch.tensor(0.0, device=args.device)
         
+        # 计算参考模型的对数概率 (不计算梯度)
         with torch.no_grad():
             ref_per_token_logps = get_per_token_logps(ref_model, outputs, completion_ids.size(1))  # [B, R]
 
+        # 将 token ID 解码为文本响应
         completions = tokenizer.batch_decode(completion_ids, skip_special_tokens=True)  # list[str], length B
+        # 计算奖励值
         rewards = calculate_rewards(prompts, completions, reward_model, reward_tokenizer).to(args.device)  # [B]
 
+        # 获取基线值 (用于优势估计)
         baselines = value_tracker.get_baselines(len(prompts)).to(args.device)  # [B]
 
         scale = 3.0
-        # Un-normalize baselines to be in the same scale as raw rewards [-3, 3]
+        # 将归一化的基线值反归一化到原始奖励范围 [-3, 3]
         unnormalized_baselines = baselines * (2 * scale) - scale  # [B]
+        # 计算优势函数: 奖励 - 基线
         advantages = rewards - unnormalized_baselines  # [B]
 
-        # 直接使用 baseline 提供的优势估计，只做裁剪防止梯度爆炸。不再做 batch 内归一化，因为 baseline 已经提供了跨 batch 的稳定基线
+        # 直接使用 baseline 提供的优势估计, 只做裁剪防止梯度爆炸
         advantages = advantages.clamp(-5.0, 5.0)
 
+        # 构建 completion mask, 标记有效响应序列的位置
         is_eos = completion_ids == tokenizer.eos_token_id  # [B, R]
         eos_idx = torch.full((is_eos.size(0),), is_eos.size(1), dtype=torch.long, device=args.device)  # [B]
         eos_idx[is_eos.any(dim=1)] = is_eos.int().argmax(dim=1)[is_eos.any(dim=1)]
         completion_mask = (torch.arange(is_eos.size(1), device=args.device).expand(is_eos.size(0), -1) <= eos_idx.unsqueeze(1)).int()  # [B, R]
 
+        # 计算 KL 散度 (Policy 与参考模型之间的差异)
         kl_div = ref_per_token_logps - per_token_logps  # [B, R]
-        per_token_kl = torch.exp(kl_div) - kl_div - 1  # [B, R]
+        per_token_kl = torch.exp(kl_div) - kl_div - 1  # [B, R], 使用反向 KL 估计
+        # 计算每个 token 的损失: 策略梯度 + KL 惩罚
         per_token_loss = -per_token_logps * advantages.unsqueeze(1) + args.beta * per_token_kl  # [B, R]
+        # 对响应长度取平均, 再对 batch 取平均得到策略损失
         policy_loss = ((per_token_loss * completion_mask).sum(dim=1) / completion_mask.sum(dim=1)).mean()
+        # 总损失包含策略损失和辅助损失 (MoE 负载均衡损失), 除以累积步数用于梯度累积
         loss = (policy_loss + aux_loss) / args.accumulation_steps  # scalar
         loss.backward()
 
+        # 更新价值追踪器, 获取当前的 rho 值
         response_masks = completion_mask.float()  # [B, R]
         rho = value_tracker.update(rewards, per_token_logps.detach(), response_masks)
 
+        # 梯度累积: 每 accumulation_steps 步更新一次模型参数
         if (step + 1) % args.accumulation_steps == 0:
             if args.grad_clip > 0:
                 torch.nn.utils.clip_grad_norm_(model.parameters(), args.grad_clip)
@@ -198,6 +334,7 @@ def spo_train_epoch(epoch, loader, iters, ref_model, reward_model, reward_tokeni
             scheduler.step()
             optimizer.zero_grad()
 
+        # 打印日志并记录到 wandb
         if step % args.log_interval == 0 or step == iters:
             policy_loss_val = loss.item() * args.accumulation_steps
             current_aux_loss = aux_loss.item()
@@ -224,19 +361,23 @@ def spo_train_epoch(epoch, loader, iters, ref_model, reward_model, reward_tokeni
                     "learning_rate": current_lr
                 })
 
+        # 定期保存模型检查点
         if (step % args.save_interval == 0 or step == iters - 1) and is_main_process():
             model.eval()
             moe_suffix = '_moe' if lm_config.use_moe else ''
             ckp = f'{args.save_dir}/{args.save_weight}_{lm_config.hidden_size}{moe_suffix}.pth'
             raw_model = model.module if isinstance(model, DistributedDataParallel) else model
             raw_model = getattr(raw_model, '_orig_mod', raw_model)
+            # 获取模型状态字典并转为半精度, 保存到 CPU
             state_dict = raw_model.state_dict()
             torch.save({k: v.half().cpu() for k, v in state_dict.items()}, ckp)
+            # 同时保存完整检查点 (包含优化器状态等)
             lm_checkpoint(lm_config, weight=args.save_weight, model=model, optimizer=optimizer, 
                          epoch=epoch, step=step, wandb=wandb, save_dir='../checkpoints', scheduler=scheduler)
             model.train()
             del state_dict
 
+        # 清理本轮迭代的中间变量以释放内存
         del prompt_inputs, outputs, completion_ids, per_token_logps, ref_per_token_logps
         del completions, rewards, advantages, completion_mask, baselines, response_masks
 
@@ -257,36 +398,43 @@ if __name__ == "__main__":
     parser.add_argument("--save_interval", type=int, default=10, help="模型保存间隔")
     parser.add_argument('--hidden_size', default=512, type=int, help="隐藏层维度")
     parser.add_argument('--num_hidden_layers', default=8, type=int, help="隐藏层数量")
-    parser.add_argument('--use_moe', default=0, type=int, choices=[0, 1], help="是否使用MoE架构（0=否，1=是）")
+    parser.add_argument('--use_moe', default=0, type=int, choices=[0, 1], help="是否使用MoE架构 (0=否, 1=是)")
     parser.add_argument('--max_seq_len', default=66, type=int, help="Prompt最大长度")
     parser.add_argument("--max_gen_len", type=int, default=1536, help="生成的最大长度")
     parser.add_argument("--data_path", type=str, default="../dataset/rlaif-mini.jsonl", help="RLAIF数据路径")
     parser.add_argument("--beta", type=float, default=0.02, help="KL惩罚系数")
-    parser.add_argument("--reasoning", type=int, default=1, choices=[0, 1], help='推理模型类型（0=普通模型，1=推理模型）')
+    parser.add_argument("--reasoning", type=int, default=1, choices=[0, 1], help='推理模型类型 (0=普通模型, 1=推理模型)')
     parser.add_argument("--reward_model_path", type=str, default="../../internlm2-1_8b-reward", help="Reward模型路径")
-    parser.add_argument('--from_resume', default=0, type=int, choices=[0, 1], help="是否自动检测&续训（0=否，1=是）")
+    parser.add_argument('--from_resume', default=0, type=int, choices=[0, 1], help="是否自动检测&续训(0=否, 1=是)")
     parser.add_argument("--use_wandb", action="store_true", help="是否使用wandb")
     parser.add_argument("--wandb_project", type=str, default="MiniMind-SPO", help="wandb项目名")
-    parser.add_argument("--use_compile", default=0, type=int, choices=[0, 1], help="是否使用torch.compile加速（0=否，1=是）")
+    parser.add_argument("--use_compile", default=0, type=int, choices=[0, 1], help="是否使用torch.compile加速 (0=否, 1=是)")
     args = parser.parse_args()
 
-    # ========== 1. 初始化环境和随机种子 ==========
+    # ========== 1.初始化环境和随机种子 ==========
     local_rank = init_distributed_mode()
     if dist.is_initialized(): args.device = f"cuda:{local_rank}"
     setup_seed(42 + (dist.get_rank() if dist.is_initialized() else 0))
     
-    # ========== 2. 配置目录、模型参数、检查ckp ==========
+    # ========== 2.配置目录、模型参数、检查 ckp ==========
     os.makedirs(args.save_dir, exist_ok=True)
-    lm_config = MiniMindConfig(hidden_size=args.hidden_size, num_hidden_layers=args.num_hidden_layers,
-                               max_seq_len=args.max_seq_len + args.max_gen_len, use_moe=bool(args.use_moe))
+    lm_config = MiniMindConfig(
+        hidden_size=args.hidden_size, 
+        num_hidden_layers=args.num_hidden_layers,
+        max_seq_len=args.max_seq_len + args.max_gen_len, 
+        use_moe=bool(args.use_moe)
+    )
+    # 如果启用续训, 检查是否存在检查点
     ckp_data = lm_checkpoint(lm_config, weight=args.save_weight, save_dir='../checkpoints') if args.from_resume==1 else None
     
-    # ========== 3. 设置混合精度 ==========
+    # ========== 3.设置混合精度 ==========
     device_type = "cuda" if "cuda" in args.device else "cpu"
     dtype = torch.bfloat16 if args.dtype == "bfloat16" else torch.float16
-    autocast_ctx = nullcontext() if device_type == "cpu" else torch.cuda.amp.autocast(dtype=dtype)
+    # https://docs.pytorch.ac.cn/docs/stable/amp
+    # 新版废弃: autocast_ctx = nullcontext() if device_type == "cpu" else torch.cuda.amp.autocast(dtype=dtype)
+    autocast_ctx = nullcontext() if device_type == "cpu" else torch.amp.autocast(device_type=device_type, dtype=dtype)
     
-    # ========== 4. 配wandb ==========
+    # ========== 4.配置 wandb ==========
     wandb = None
     if args.use_wandb and is_main_process():
         import swanlab as wandb
@@ -295,35 +443,37 @@ if __name__ == "__main__":
         wandb_run_name = f"MiniMind-SPO-Epoch-{args.epochs}-BS-{args.batch_size}-LR-{args.learning_rate}"
         wandb.init(project=args.wandb_project, name=wandb_run_name, id=wandb_id, resume=resume)
     
-    # ========== 5. 初始化模型（Policy, Ref, Reward）和Value Tracker、数据 ==========
+    # ========== 5.初始化模型(Policy, Ref, Reward)和 Value Tracker、数据 ==========
     base_weight = "reason" if args.reasoning == 1 else "full_sft"
-    # Policy模型
+    # Policy 模型 (要训练的模型)
     model, tokenizer = init_model(lm_config, base_weight, device=args.device)
     if args.use_compile == 1:
         model = torch.compile(model)
         Logger('torch.compile enabled')
-    # Reference模型
+    # Reference 模型 (固定参数, 用于计算 KL 散度)
     ref_model, _ = init_model(lm_config, base_weight, device=args.device)
     ref_model = ref_model.eval().requires_grad_(False)
-    # Reward模型
+    # Reward 模型 (固定参数, 用于评估响应质量)
     reward_model = AutoModel.from_pretrained(
         args.reward_model_path, torch_dtype=torch.float16, trust_remote_code=True
     )
     reward_model = reward_model.to(args.device).eval().requires_grad_(False)
     reward_tokenizer = AutoTokenizer.from_pretrained(args.reward_model_path, trust_remote_code=True)
-    # Value Tracker
+    # Value Tracker (自适应基线估计器)
     value_tracker = AutoAdaptiveValueTracker(rho_mode='kl', rho_const=0.9, D_half=0.06, clip_lower=0.5, clip_upper=0.96)
     
+    # 加载 RLAIF 数据集
     train_ds = RLAIFDataset(args.data_path, tokenizer, max_length=lm_config.max_seq_len)
     train_sampler = DistributedSampler(train_ds) if dist.is_initialized() else None
     optimizer = optim.AdamW(model.parameters(), lr=args.learning_rate)
     
+    # 计算训练步数和学习率调度器
     loader_for_count = DataLoader(train_ds, batch_size=args.batch_size, sampler=train_sampler)
     iters = len(loader_for_count)
     total_optimizer_steps = (iters // args.accumulation_steps) * args.epochs
     scheduler = CosineAnnealingLR(optimizer, T_max=total_optimizer_steps, eta_min=args.learning_rate / 10)
     
-    # ========== 6. 从ckp恢复状态 ==========
+    # ========== 6.从检查点恢复状态 ==========
     start_epoch, start_step = 0, 0
     if ckp_data:
         model.load_state_dict(ckp_data['model'])
@@ -332,15 +482,19 @@ if __name__ == "__main__":
         start_epoch = ckp_data['epoch']
         start_step = ckp_data.get('step', 0)
     
-    # ========== 7. DDP包模型 ==========
+    # ========== 7.DDP 包装模型 ==========
     if dist.is_initialized():
+        # 忽略位置编码相关的缓冲区, 避免 DDP 同步
         model._ddp_params_and_buffers_to_ignore = {"freqs_cos", "freqs_sin"}
         model = DistributedDataParallel(model, device_ids=[local_rank])
     
-    # ========== 8. 开始训练 ==========
+    # ========== 8.开始训练 ==========
     for epoch in range(start_epoch, args.epochs):
+        # 分布式采样器设置当前 epoch, 确保不同进程使用不同的数据
         train_sampler and train_sampler.set_epoch(epoch)
+        # 为每个 epoch 设置不同的随机种子, 保证数据顺序不同
         setup_seed(42 + epoch); indices = torch.randperm(len(train_ds)).tolist()
+        # 如果是续训的第一轮, 跳过已经训练过的步数
         skip = start_step if (epoch == start_epoch and start_step > 0) else 0
         batch_sampler = SkipBatchSampler(train_sampler or indices, args.batch_size, skip)
         loader = DataLoader(train_ds, batch_sampler=batch_sampler, num_workers=args.num_workers, pin_memory=True)
@@ -350,5 +504,5 @@ if __name__ == "__main__":
         else:
             spo_train_epoch(epoch, loader, len(loader), ref_model, reward_model, reward_tokenizer, value_tracker, 0, wandb)
     
-    # ========== 9. 清理分布进程 ==========
+    # ========== 9.清理分布式进程 ==========
     if dist.is_initialized(): dist.destroy_process_group()
