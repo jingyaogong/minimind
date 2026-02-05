@@ -23,7 +23,7 @@ def pre_processing_chat(conversations, add_system_ratio=0.2):
             return [{'role': 'system', 'content': random.choice(SYSTEM_PROMPTS)}] + conversations
     return conversations
 
-def post_processing_chat(prompt_content, empty_think_ratio=0.1):
+def post_processing_chat(prompt_content, empty_think_ratio=0.02):
     if '<think>\n\n</think>\n\n' in prompt_content and random.random() > empty_think_ratio:
         prompt_content = prompt_content.replace('<think>\n\n</think>\n\n', '')
     return prompt_content
