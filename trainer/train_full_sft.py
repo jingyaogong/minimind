@@ -16,6 +16,7 @@ from torch.utils.data import DataLoader, DistributedSampler
 from model.model_minimind import MiniMindConfig
 from dataset.lm_dataset import SFTDataset
 from trainer.trainer_utils import get_lr, Logger, is_main_process, lm_checkpoint, init_distributed_mode, setup_seed, init_model, SkipBatchSampler
+from trainer.muon import MuonWithAuxAdam, SingleDeviceMuonWithAuxAdam
 
 warnings.filterwarnings('ignore')
 
@@ -95,6 +96,7 @@ if __name__ == "__main__":
     parser.add_argument("--use_wandb", action="store_true", help="是否使用wandb")
     parser.add_argument("--wandb_project", type=str, default="MiniMind-Full-SFT", help="wandb项目名")
     parser.add_argument("--use_compile", default=0, type=int, choices=[0, 1], help="是否使用torch.compile加速（0=否，1=是）")
+    parser.add_argument("--optimizer", type=str, default="adamw", choices=["adamw", "muon"], help="优化器类型（adamw 或 muon）")
     args = parser.parse_args()
 
     # ========== 1. 初始化环境和随机种子 ==========
@@ -129,7 +131,24 @@ if __name__ == "__main__":
     train_ds = SFTDataset(args.data_path, tokenizer, max_length=args.max_seq_len)
     train_sampler = DistributedSampler(train_ds) if dist.is_initialized() else None
     scaler = torch.cuda.amp.GradScaler(enabled=(args.dtype == 'float16'))
-    optimizer = optim.AdamW(model.parameters(), lr=args.learning_rate)
+
+    # 配置优化器
+    if args.optimizer == "muon":
+        # Muon: 隐藏权重（>=2D）用 Muon，其他用 AdamW
+        hidden_weights = [p for p in model.parameters() if p.ndim >= 2]
+        nonhidden_params = [p for p in model.parameters() if p.ndim < 2]
+        param_groups = [
+            dict(params=hidden_weights, use_muon=True, lr=args.learning_rate, weight_decay=0.01),
+            dict(params=nonhidden_params, use_muon=False, lr=5e-4, betas=(0.9, 0.95)),
+        ]
+        if dist.is_initialized():
+            optimizer = MuonWithAuxAdam(param_groups)
+        else:
+            optimizer = SingleDeviceMuonWithAuxAdam(param_groups)
+        Logger(f'Using Muon optimizer with {len(hidden_weights)} hidden weights and {len(nonhidden_params)} non-hidden params')
+    else:
+        optimizer = optim.AdamW(model.parameters(), lr=args.learning_rate)
+        Logger('Using AdamW optimizer')
     
     # ========== 6. 从ckp恢复状态 ==========
     start_epoch, start_step = 0, 0
