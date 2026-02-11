@@ -22,8 +22,7 @@ def init_model(args):
         ckp = f'./{args.save_dir}/{args.weight}_{args.hidden_size}{moe_suffix}.pth'
         model.load_state_dict(torch.load(ckp, map_location=args.device), strict=True)
         if args.lora_weight != 'None':
-            apply_lora(model)
-            load_lora(model, f'./{args.save_dir}/lora/{args.lora_weight}_{args.hidden_size}.pth')
+            merge_lora(model, f'./{args.save_dir}/lora/{args.lora_weight}_{args.hidden_size}.pth')
     else:
         model = AutoModelForCausalLM.from_pretrained(args.load_from, trust_remote_code=True)
     get_model_params(model, model.config)
