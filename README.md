@@ -123,6 +123,43 @@
 
 希望此开源项目可以帮助LLM初学者快速入门！
 
+## 📚 新手学习路线（推荐先看）
+
+如果你是 LLM 新手，建议先看这份路线图，先跑通训练闭环再读源码：
+`docs/learning_path.md`
+
+## 🧪 动态神经元生长实验（论文主线）
+
+已提供动态神经元生长（FFN 级别）的实验指南与对照命令：
+`docs/experiments_dynamic_growth.md`
+
+固定 prompt 评测脚本：
+`scripts/eval_fixed_prompts.py`
+
+PPL/交叉熵评测脚本：
+`scripts/eval_ppl.py`
+
+一键对照实验脚本（默认只打印命令，`--run` 才执行）：
+`scripts/run_growth_sweep.py`
+
+固定验证集生成脚本：
+`scripts/make_val_split.py`
+
+实验结果模板：
+`eval/results_template.csv`
+
+评测结果汇总脚本：
+`scripts/aggregate_eval.py`
+
+快速绘图脚本：
+`scripts/plot_growth.py`
+
+论文一键流水线（训练/评测/汇总/绘图）：
+`scripts/run_paper_pipeline.py`（配置文件：`eval/pipeline_config.json`）
+
+过夜一键脚本（自动拉取数据/强容错/自动清缓存）：
+`scripts/run_overnight_pipeline.py`（配置文件：`eval/pipeline_config_overnight.json`）
+
 ### 👉**更新日志**
 
 <details close> 
@@ -1965,5 +2002,3 @@ If you find MiniMind helpful in your research or work, please cite:
 # License
 
 This repository is licensed under the [Apache-2.0 License](LICENSE).
-
-

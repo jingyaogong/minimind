@@ -1,0 +1,1 @@
+run_name,model_size,data_version,steps,learning_rate,batch_size,seq_len,growth_method,init_ratio,grow_interval,grow_ratio,max_ratio,seed,ppl,notes

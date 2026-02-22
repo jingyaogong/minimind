@@ -224,9 +224,39 @@ class FeedForward(nn.Module):
         self.up_proj = nn.Linear(config.hidden_size, config.intermediate_size, bias=False)
         self.dropout = nn.Dropout(config.dropout)
         self.act_fn = ACT2FN[config.hidden_act]
+        # --- 动态神经元生长相关（默认关闭，不影响原行为） ---
+        # mask=1 表示该神经元激活；mask=0 表示该神经元屏蔽
+        self.register_buffer("mask", torch.ones(config.intermediate_size), persistent=True)
+        # 记录神经元活动的 EMA（用于活动驱动的生长策略）
+        self.register_buffer("ema_act", torch.zeros(config.intermediate_size), persistent=True)
+        # 下面是控制开关（由训练脚本设置）
+        self.track_activity = False  # 是否统计活动
+        self.track_mask_grad = False  # 是否追踪 mask 的梯度
+        self.ema_beta = 0.1  # EMA 衰减系数（可被训练脚本覆盖）
+        self._mask_proxy = None  # 临时存放可求梯度的 mask
 
     def forward(self, x):
-        return self.dropout(self.down_proj(self.act_fn(self.gate_proj(x)) * self.up_proj(x)))
+        # 1) 计算 FFN 中间激活（未加 mask）
+        h = self.act_fn(self.gate_proj(x)) * self.up_proj(x)
+
+        # 2) 统计活动强度（可选）
+        if self.training and self.track_activity:
+            with torch.no_grad():
+                # 对 batch 和序列维度做平均，得到每个神经元的活动强度
+                act = h.abs().mean(dim=(0, 1))
+                self.ema_act.mul_(1 - self.ema_beta).add_(self.ema_beta * act)
+
+        # 3) 应用神经元 mask（可选追踪梯度）
+        mask = self.mask
+        if self.training and self.track_mask_grad:
+            # 注意：用 proxy 承接梯度，避免把 buffer 变成参数
+            mask = self.mask.detach().clone().requires_grad_(True)
+            self._mask_proxy = mask
+        else:
+            self._mask_proxy = None
+
+        h = h * mask  # 广播到 (batch, seq_len, intermediate_size)
+        return self.dropout(self.down_proj(h))
 
 
 class MoEGate(nn.Module):

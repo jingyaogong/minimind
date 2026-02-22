@@ -1,0 +1,107 @@
+{
+  "stages": [
+    "preflight",
+    "prepare",
+    "download",
+    "make_val",
+    "train_pretrain",
+    "train_sft",
+    "eval_ppl",
+    "eval_prompts",
+    "aggregate",
+    "plot",
+    "cleanup"
+  ],
+  "dataset": {
+    "repo": "https://www.modelscope.cn/datasets/gongjy/minimind_dataset.git",
+    "target_dir": "minimind_dataset",
+    "download_mode": "selective",
+    "stage_files": {
+      "make_val": ["pretrain_hq.jsonl"],
+      "train_pretrain": ["pretrain_hq.jsonl"],
+      "train_sft": ["sft_512.jsonl"],
+      "eval_ppl": ["pretrain_hq.jsonl"]
+    }
+  },
+  "paths": {
+    "pretrain_data": "minimind_dataset/pretrain_hq.jsonl",
+    "sft_data": "minimind_dataset/sft_512.jsonl",
+    "val_data": "eval/val_pretrain.jsonl",
+    "prompts": "eval/prompts_minimal.jsonl",
+    "eval_config": "eval/eval_config.json",
+    "out_dir": "out",
+    "eval_runs": "eval_runs",
+    "eval_runs_ppl": "eval_runs_ppl",
+    "summary_csv": "eval/summary_ppl.csv",
+    "plot_png": "eval/plot_ppl.png",
+    "log_dir": "logs"
+  },
+  "cache": {
+    "hf_home": ".cache/hf_home",
+    "hf_datasets": ".cache/hf_datasets",
+    "transformers": ".cache/hf_transformers"
+  },
+  "runtime": {
+    "continue_on_error": true,
+    "min_free_gb": 6,
+    "retry_download": 2,
+    "cleanup_after_stage": ["train_pretrain", "train_sft", "eval_ppl", "eval_prompts"],
+    "cleanup_paths": [".cache/hf_datasets", ".cache/hf_transformers", ".cache/hf_home", "__pycache__"]
+  },
+  "pretrain": {
+    "script": "trainer/train_pretrain.py",
+    "save_prefix": "exp_pretrain",
+    "args": {
+      "epochs": 1,
+      "batch_size": 32,
+      "learning_rate": 0.0005,
+      "dtype": "bfloat16",
+      "num_workers": 8,
+      "accumulation_steps": 8,
+      "grad_clip": 1.0,
+      "max_seq_len": 340,
+      "hidden_size": 512,
+      "num_hidden_layers": 8,
+      "use_moe": 0,
+      "use_compile": 0
+    },
+    "flags": []
+  },
+  "sft": {
+    "enabled": true,
+    "script": "trainer/train_full_sft.py",
+    "save_prefix": "exp_sft",
+    "from_weight_mode": "match_pretrain",
+    "from_weight": "pretrain",
+    "args": {
+      "epochs": 1,
+      "batch_size": 16,
+      "learning_rate": 1e-6,
+      "dtype": "bfloat16",
+      "num_workers": 8,
+      "accumulation_steps": 1,
+      "grad_clip": 1.0,
+      "max_seq_len": 340,
+      "hidden_size": 512,
+      "num_hidden_layers": 8,
+      "use_moe": 0,
+      "use_compile": 0
+    },
+    "flags": []
+  },
+  "growth": {
+    "init_active_ratio": 0.8,
+    "grow_interval": 100,
+    "grow_ratio": 0.02,
+    "max_active_ratio": 0.99,
+    "neuron_ema_beta": 0.1
+  },
+  "methods": ["baseline", "random", "grad", "act", "actgrad"],
+  "seeds": [42, 123, 2026],
+  "eval": {
+    "targets": ["pretrain", "sft"],
+    "max_seq_len": 340,
+    "batch_size": 8,
+    "max_samples": 0
+  }
+}
