@@ -528,7 +528,7 @@
     <!-- Title Section -->
     <div class="title-section">
         <p class="tagline pixel-font">
-            Train a 26M ChatBot from zero.<br/>
+            Train a 64M ChatBot from zero.<br/>
             2 hours. ¥3. One 3090.<br/>
             That's it.
         </p>
@@ -537,7 +537,7 @@
     <!-- Key Stats -->
     <div class="stats-section">
         <div class="stat-box">
-            <h3>26M</h3>
+            <h3>64M</h3>
             <p>Parameters</p>
         </div>
         <div class="stat-box">
@@ -549,7 +549,7 @@
             <p>Cost</p>
         </div>
         <div class="stat-box">
-            <h3>1/7000</h3>
+            <h3>1/2700</h3>
             <p>vs GPT-3</p>
         </div>
     </div>
@@ -563,11 +563,11 @@
         </div>
         <div class="feature-card">
             <h3>📦 Full Stack</h3>
-            <p>Complete pipeline: Tokenizer → Pretrain → SFT → LoRA → PPO/GRPO/SPO</p>
+            <p>Complete pipeline: Tokenizer → Pretrain → SFT → LoRA → DPO → PPO/GRPO/CISPO → Agentic RL</p>
         </div>
         <div class="feature-card">
             <h3>🔬 Latest RL</h3>
-            <p>PPO, GRPO, SPO + YaRN length extrapolation. Native PyTorch implementation.</p>
+            <p>PPO, GRPO, CISPO + Agentic RL + YaRN length extrapolation. Native PyTorch.</p>
         </div>
         <div class="feature-card">
             <h3>📖 Learn by Reading</h3>
@@ -575,11 +575,11 @@
         </div>
         <div class="feature-card">
             <h3>🔌 Plug & Play</h3>
-            <p>Compatible with vLLM, ollama, llama.cpp, transformers.</p>
+            <p>Compatible with vLLM, ollama, llama.cpp, SGLang, transformers.</p>
         </div>
         <div class="feature-card">
             <h3>⚡ OpenAI API</h3>
-            <p>Drop-in replacement for FastGPT, Open-WebUI, Dify.</p>
+            <p>Drop-in replacement for FastGPT, Open-WebUI, Dify. Tool Calling & Adaptive Thinking.</p>
         </div>
     </div>
 
@@ -598,23 +598,16 @@
             </thead>
             <tbody>
                 <tr>
-                    <td><strong>MiniMind2-Small</strong></td>
-                    <td>26M</td>
-                    <td>512</td>
+                    <td><strong>MiniMind-3</strong></td>
+                    <td>64M</td>
+                    <td>768</td>
                     <td>8</td>
                     <td>~0.5 GB</td>
                 </tr>
                 <tr>
-                    <td><strong>MiniMind2</strong></td>
-                    <td>104M</td>
+                    <td><strong>MiniMind-3-MoE</strong></td>
+                    <td>198M / A64M</td>
                     <td>768</td>
-                    <td>16</td>
-                    <td>~1.0 GB</td>
-                </tr>
-                <tr>
-                    <td><strong>MiniMind2-MoE</strong></td>
-                    <td>145M</td>
-                    <td>640</td>
                     <td>8</td>
                     <td>~1.0 GB</td>
                 </tr>
@@ -627,20 +620,37 @@
     <div class="changelog-section">
         <div class="changelog-item open">
             <div class="changelog-header open" onclick="toggleChangelog(this)">
-                <span>🔥 2025-10-24 (Latest)</span>
+                <span>🔥 2026-03-20 (Latest)</span>
                 <span class="toggle-icon">−</span>
+            </div>
+            <div class="changelog-content">
+                <ul>
+                    <li>🔥 Release minimind-3 / minimind-3-moe: structure, tokenizer, training & inference fully updated</li>
+                    <li>Architecture aligned with Qwen3 / Qwen3-MoE: Dense ~64M, MoE ~198M/A64M</li>
+                    <li>New native Agentic RL script (train_agent.py): multi-turn Tool-Use with GRPO/CISPO</li>
+                    <li>RLAIF / Agentic RL rollout engine decoupled for flexible inference backends</li>
+                    <li>serve_openai_api.py & web_demo.py: reasoning_content / tool_calls / open_thinking</li>
+                    <li>Tokenizer updated (BPE + ByteLevel) with tool call & thinking tokens</li>
+                    <li>LoRA weight merge & export via scripts/convert_model.py</li>
+                    <li>README & architecture diagrams major update</li>
+                </ul>
+            </div>
+        </div>
+
+        <div class="changelog-item">
+            <div class="changelog-header" onclick="toggleChangelog(this)">
+                <span>⚙️ 2025-10-24</span>
+                <span class="toggle-icon">+</span>
             </div>
             <div class="changelog-content">
                 <ul>
                     <li>🔥 RLAIF algorithms: PPO, GRPO, SPO (native PyTorch)</li>
                     <li>Checkpoint resume training: auto-save & cross-GPU recovery</li>
-                    <li>RLAIF dataset: rlaif-mini.jsonl (10K samples); Simplified DPO dataset with Chinese data</li>
+                    <li>RLAIF dataset: rlaif-mini.jsonl; Simplified DPO dataset with Chinese data</li>
                     <li>YaRN algorithm for RoPE length extrapolation</li>
                     <li>Adaptive Thinking in reasoning models</li>
                     <li>Tool Calling & Reasoning tags support</li>
-                    <li>Complete RLAIF chapter with training curves</li>
                     <li>SwanLab integration (WandB alternative for China)</li>
-                    <li>Code standardization & bug fixes</li>
                 </ul>
             </div>
         </div>
@@ -663,7 +673,7 @@
 
         <div class="changelog-item">
             <div class="changelog-header" onclick="toggleChangelog(this)">
-                <span>🎉 2025-02-09 (MiniMind2 Release)</span>
+                <span>🎉 2025-02-09 (MiniMind2)</span>
                 <span class="toggle-icon">+</span>
             </div>
             <div class="changelog-content">
@@ -753,9 +763,9 @@
     <div class="section-header pixel-font">🎮 Inside MiniMind</div>
     <div align="center">
         <div class="visuals-container">
-            <img src="./images/minimind2.gif" alt="Streamlit Demo">
-            <img src="./images/LLM-structure.png" alt="LLM Structure">
-            <img src="./images/LLM-structure-moe.png" alt="LLM Structure MOE">
+            <img src="./images/minimind-3.gif" alt="Streamlit Demo">
+            <img src="./images/LLM-structure.jpg" alt="LLM Structure">
+            <img src="./images/LLM-structure-moe.jpg" alt="LLM Structure MOE">
         </div>
     </div>
 
@@ -798,10 +808,10 @@
             <li>Pure PyTorch—no magic, no black boxes</li>
             <li>Understand by building, not by reading docs</li>
             <li>Works on your laptop—no cloud GPUs needed</li>
-            <li>2025 RLAIF algorithms: PPO, GRPO, SPO</li>
+            <li>RLAIF algorithms: PPO, GRPO, CISPO + Agentic RL</li>
+            <li>Tool Calling & Adaptive Thinking built-in</li>
             <li>OpenAI API compatible—plug into any UI</li>
             <li>Vision support via MiniMind-V</li>
-            <li>Code you can actually read and modify</li>
         </ul>
         <p class="quote">
             💭 "Building a Lego plane beats flying first class."
