@@ -7,18 +7,19 @@
 
 ## 📌 Introduction
 
-**MiniMind** is a complete, open-source project for training ultra-small language models from scratch with minimal cost. Train a **26M** ChatBot in just **2 hours** with only **$3** on a single 3090 GPU!
+**MiniMind** is a complete, open-source project for training ultra-small language models from scratch with minimal cost. Train a **64M** ChatBot in just **2 hours** with only **$3** on a single 3090 GPU!
 
-- **MiniMind** series is extremely lightweight, the smallest version is **1/7000** the size of GPT-3
+- **MiniMind** series is extremely lightweight, the smallest version is **1/2700** the size of GPT-3
 - Complete implementation covering:
   - **Tokenizer training** with custom vocabulary
   - **Pretraining** (knowledge learning)
   - **Supervised Fine-Tuning (SFT)** (conversation patterns)
   - **LoRA fine-tuning** (parameter-efficient adaptation)
   - **Direct Preference Optimization (DPO)** (human preference alignment)
-  - **RLAIF algorithms** (PPO/GRPO/SPO - reinforcement learning)
-  - **Knowledge distillation** (compress large model knowledge)
-  - **Model reasoning distillation** (DeepSeek-R1 style)
+  - **RLAIF algorithms** (PPO/GRPO/CISPO - reinforcement learning)
+  - **Agentic RL** (multi-turn Tool-Use with delayed rewards)
+  - **Knowledge distillation** (black-box & white-box)
+  - **Tool Calling & Adaptive Thinking** (native template support)
   - **YaRN algorithm** (context length extrapolation)
 - **Pure PyTorch implementation**: All core algorithms are implemented from scratch using native PyTorch, without relying on third-party abstract interfaces
 - **Educational value**: This is not only a full-stage open-source reproduction of large language models, but also a comprehensive tutorial for getting started with LLMs
@@ -34,57 +35,48 @@
 ## ✨ Key Highlights
 
 - **Ultra-low cost**: Single 3090, 2 hours, $3 to train a fully functional ChatBot from scratch
-- **Complete pipeline**: Tokenizer → Pretraining → SFT → LoRA → DPO/RLAIF → Distillation → Reasoning
-- **Latest algorithms**: Implements cutting-edge techniques including GRPO, SPO, and YaRN
+- **Complete pipeline**: Tokenizer → Pretraining → SFT → LoRA → DPO → PPO/GRPO/CISPO → Agentic RL
+- **Latest algorithms**: Implements cutting-edge techniques including GRPO, CISPO, Agentic RL, and YaRN
 - **Education-friendly**: Clean, well-documented code suitable for learning LLM principles
-- **Ecosystem compatible**: Seamless support for `transformers`, `trl`, `peft`, `llama.cpp`, `vllm`, `ollama`, and `Llama-Factory`
+- **Ecosystem compatible**: Seamless support for `transformers`, `llama.cpp`, `vllm`, `ollama`, `SGLang`, and `MNN`
 - **Full capabilities**: Supports multi-GPU training (DDP/DeepSpeed), model visualization (Wandb/SwanLab), and dynamic checkpoint management
-- **Production-ready**: OpenAI API protocol support for easy integration with third-party UIs (FastGPT, Open-WebUI, etc.)
+- **Production-ready**: OpenAI API with Tool Calling & Adaptive Thinking for easy integration with FastGPT, Open-WebUI, Dify, etc.
 - **Multimodal extension**: Extended to vision with [MiniMind-V](https://github.com/jingyaogong/minimind-v)
 
 ## 📊 Model Series
 
-### MiniMind2 Series (Latest - 2025.04.26)
+### MiniMind-3 Series (Latest - 2026.03.20)
 
 | Model | Parameters | Vocabulary | Layers | Hidden Dim | Context | Inference Memory |
 |-------|-----------|------------|--------|-----------|---------|-----------------|
-| MiniMind2-small | 26M | 6,400 | 8 | 512 | 2K | ~0.5 GB |
-| MiniMind2-MoE | 145M | 6,400 | 8 | 640 | 2K | ~1.0 GB |
-| MiniMind2 | 104M | 6,400 | 16 | 768 | 2K | ~1.0 GB |
+| MiniMind-3 | 64M | 6,400 | 8 | 768 | 2K | ~0.5 GB |
+| MiniMind-3-MoE | 198M / A64M | 6,400 | 8 | 768 | 2K | ~1.0 GB |
 
-### MiniMind-V1 Series (Legacy - 2024.09.01)
+## 📅 Latest Updates (2026-03-20)
 
-| Model | Parameters | Vocabulary | Layers | Hidden Dim | Context |
-|-------|-----------|------------|--------|-----------|---------|
-| minimind-v1-small | 26M | 6,400 | 8 | 512 | 2K |
-| minimind-v1-moe | 104M | 6,400 | 8 | 512 | 2K |
-| minimind-v1 | 108M | 6,400 | 16 | 768 | 2K |
+🔥 **MiniMind-3 Release**: Architecture aligned with Qwen3/Qwen3-MoE, Dense ~64M, MoE ~198M/A64M
 
-## 📅 Latest Updates (2025-10-24)
-
-🔥 **RLAIF Training Algorithms**: Native implementation of PPO, GRPO, and SPO
-
-- **YaRN Algorithm**: RoPE length extrapolation for improved long-sequence handling
-- **Adaptive Thinking**: Reasoning models support optional thinking chains
-- **Full template support**: Tool calling and reasoning tags (`<tool_call>`, `<think>`, etc.)
-- **Visualization**: Switched from WandB to [SwanLab](https://swanlab.cn/) (China-friendly)
-- **Reasoning models**: Complete MiniMind-Reason series based on DeepSeek-R1 distillation
+- **Agentic RL**: New `train_agent.py` for multi-turn Tool-Use RL with GRPO/CISPO
+- **RLAIF rollout engine**: Decoupled training/inference for flexible backends (SGLang, etc.)
+- **Tool Calling & Adaptive Thinking**: Native template support with `open_thinking` switch
+- **OpenAI API**: `serve_openai_api.py` supports `reasoning_content`, `tool_calls`, `open_thinking`
+- **Tokenizer**: Updated BPE + ByteLevel with tool call & thinking special tokens
 
 ## 🎯 Project Contents
 
 - Complete MiniMind-LLM architecture code (Dense + MoE models)
 - Detailed Tokenizer training code
-- Full training pipeline: Pretrain → SFT → LoRA → RLHF/RLAIF → Distillation
+- Full training pipeline: Pretrain → SFT → LoRA → DPO → PPO/GRPO/CISPO → Agentic RL
+- Tool Calling & Adaptive Thinking (native chat template support)
 - High-quality, curated and deduplicated datasets at all stages
 - Native PyTorch implementation of key algorithms, minimal third-party dependencies
 - Multi-GPU training support (single-machine multi-card DDP, DeepSpeed, distributed clusters)
-- Visualization with Wandb/SwanLab
-- Model evaluation on third-party benchmarks (C-Eval, C-MMLU, OpenBookQA)
+- Visualization with SwanLab
+- Model evaluation on third-party benchmarks (C-Eval, CMMLU, OpenBookQA, etc.)
 - YaRN algorithm for RoPE context length extrapolation
-- OpenAI API protocol server for easy integration
+- OpenAI API server with reasoning_content / tool_calls / open_thinking
 - Streamlit web UI for chat
-- Full compatibility with community tools: llama.cpp, vllm, ollama, Llama-Factory
-- MiniMind-Reason models: Complete open-source data + weights for reasoning distillation
+- Full compatibility with community tools: llama.cpp, vllm, ollama, SGLang, MNN
 
 ## 🚀 Quick Navigation
 

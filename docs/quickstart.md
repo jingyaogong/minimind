@@ -53,27 +53,27 @@ Choose one option:
 
 **From HuggingFace** (recommended for international users):
 ```bash
-git clone https://huggingface.co/jingyaogong/MiniMind2
+git clone https://huggingface.co/jingyaogong/minimind-3
 ```
 
 **From ModelScope** (recommended for China users):
 ```bash
-git clone https://www.modelscope.cn/models/gongjy/MiniMind2.git
+git clone https://www.modelscope.cn/models/gongjy/minimind-3.git
 ```
 
 ### 3. Command-Line Chat
 
 ```bash
 # Use transformers format model
-python eval_llm.py --load_from ./MiniMind2
+python eval_llm.py --load_from ./minimind-3
 ```
 
 **Weight Options** (`--weight` parameter):
 - `pretrain`: Pretrain model (word continuation)
 - `full_sft`: SFT Chat model (conversation)
 - `dpo`: DPO model (preference optimization)
-- `reason`: Reasoning model (with thinking chains)
-- `ppo_actor`, `grpo`, `spo`: RLAIF models (reinforcement learning trained)
+- `ppo_actor`, `grpo`: RLAIF models (reinforcement learning trained)
+- `agent`: Agentic RL model (multi-turn Tool-Use)
 
 **Example Session**:
 ```text
@@ -115,16 +115,16 @@ MiniMind is compatible with popular inference engines:
 ### Ollama (Easiest)
 
 ```bash
-ollama run jingyaogong/minimind2
+ollama run jingyaogong/minimind-3
 ```
 
 ### vLLM (Fastest)
 
 ```bash
-vllm serve ./MiniMind2/ --served-model-name "minimind" --port 8000
+vllm serve ./minimind-3/ --model-impl transformers --served-model-name "minimind" --port 8998
 
 # Test with curl
-curl http://localhost:8000/v1/chat/completions \
+curl http://localhost:8998/v1/chat/completions \
   -H "Content-Type: application/json" \
   -d '{
     "model": "minimind",
@@ -137,14 +137,14 @@ curl http://localhost:8000/v1/chat/completions \
 ### llama.cpp (CPU-Friendly)
 
 ```bash
-# Convert to GGUF format
-python scripts/convert_model.py ./MiniMind2/ --output ./MiniMind2.gguf
+# Convert to GGUF format (in llama.cpp directory)
+python convert_hf_to_gguf.py /path/to/minimind-3
 
 # Quantize for size reduction
-./llama-quantize ./MiniMind2.gguf ./MiniMind2-Q4.gguf Q4_K_M
+./build/bin/llama-quantize /path/to/model/xxxx.gguf /path/to/model/xxxx.q8.gguf Q8_0
 
 # Run inference
-./llama-cli -m ./MiniMind2-Q4.gguf -p "Hello" -n 128
+./build/bin/llama-cli -m /path/to/model/xxxx.gguf
 ```
 
 ## 🔌 OpenAI API Server (For Integration)
@@ -152,19 +152,18 @@ python scripts/convert_model.py ./MiniMind2/ --output ./MiniMind2.gguf
 Run MiniMind as an OpenAI API-compatible service:
 
 ```bash
-python scripts/serve_openai_api.py
+cd scripts && python serve_openai_api.py
 ```
 
 Test the API:
 
 ```bash
-# In another terminal
-python scripts/chat_openai_api.py
+cd scripts && python chat_api.py
 ```
 
 **cURL Example**:
 ```bash
-curl http://localhost:8000/v1/chat/completions \
+curl http://localhost:8998/v1/chat/completions \
   -H "Content-Type: application/json" \
   -d '{
     "model": "minimind",
@@ -173,7 +172,8 @@ curl http://localhost:8000/v1/chat/completions \
     ],
     "temperature": 0.7,
     "max_tokens": 256,
-    "stream": true
+    "stream": true,
+    "open_thinking": true
   }'
 ```
 
@@ -187,14 +187,13 @@ This enables integration with:
 
 | Use Case | Recommended Model | Memory | Speed |
 |----------|------------------|--------|-------|
-| Learning/Testing | MiniMind2-small (26M) | ~0.5 GB | Fastest |
-| Balanced | MiniMind2 (104M) | ~1.0 GB | Fast |
-| Expert System (MoE) | MiniMind2-MoE (145M) | ~1.0 GB | Dynamic |
-| Reasoning/Complex | MiniMind-Reason (104M) | ~1.0 GB | Standard |
+| Learning/Testing | MiniMind-3 (64M) | ~0.5 GB | Fast |
+| Expert System (MoE) | MiniMind-3-MoE (198M/A64M) | ~1.0 GB | Dynamic |
+| Tool-Use / Agent | MiniMind-3 Agent (64M) | ~0.5 GB | Fast |
 
 ## ⚡ Quick Test Results
 
-**Model**: MiniMind2 (104M parameters)
+**Model**: MiniMind-3 (64M parameters)
 
 ```text
 Q: What is photosynthesis?
