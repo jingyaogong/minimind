@@ -45,14 +45,14 @@
 
 ## 📊 Model Series
 
-### MiniMind-3 Series (Latest - 2026.03.20)
+### MiniMind-3 Series (Latest - 2026.04.01)
 
 | Model | Parameters | Vocabulary | Layers | Hidden Dim | Context | Inference Memory |
 |-------|-----------|------------|--------|-----------|---------|-----------------|
 | MiniMind-3 | 64M | 6,400 | 8 | 768 | 2K | ~0.5 GB |
 | MiniMind-3-MoE | 198M / A64M | 6,400 | 8 | 768 | 2K | ~1.0 GB |
 
-## 📅 Latest Updates (2026-03-20)
+## 📅 Latest Updates (2026-04-01)
 
 🔥 **MiniMind-3 Release**: Architecture aligned with Qwen3/Qwen3-MoE, Dense ~64M, MoE ~198M/A64M
 
