@@ -174,7 +174,7 @@ def ppo_train_epoch(epoch, loader, iters, old_actor_model, ref_model, actor_sche
         loss = (policy_loss + args.vf_coef * value_loss + args.kl_coef * kl_ref + aux_loss) / args.accumulation_steps  # scalar
         loss.backward()
 
-        if (step + 1) % args.accumulation_steps == 0:
+        if step % args.accumulation_steps == 0:
             clip_grad_norm_(actor_model.parameters(), args.grad_clip)
             clip_grad_norm_(critic_model.parameters(), args.grad_clip)
             actor_optimizer.step()

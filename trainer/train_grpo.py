@@ -148,7 +148,7 @@ def grpo_train_epoch(epoch, loader, iters, ref_model, reward_model, reward_token
         loss = (policy_loss + aux_loss) / args.accumulation_steps  # scalar
         loss.backward()
 
-        if (step + 1) % args.accumulation_steps == 0:
+        if step % args.accumulation_steps == 0:
             if args.grad_clip > 0:
                 torch.nn.utils.clip_grad_norm_(model.parameters(), args.grad_clip)
             optimizer.step()

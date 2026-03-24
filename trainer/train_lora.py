@@ -37,7 +37,7 @@ def train_epoch(epoch, loader, iters, lora_params, start_step=0, wandb=None):
 
         scaler.scale(loss).backward()
 
-        if (step + 1) % args.accumulation_steps == 0:
+        if step % args.accumulation_steps == 0:
             scaler.unscale_(optimizer)
             torch.nn.utils.clip_grad_norm_(lora_params, args.grad_clip)
             scaler.step(optimizer)
