@@ -148,7 +148,7 @@ def grpo_train_epoch(epoch, loader, iters, ref_model, reward_model, reward_token
         loss = (policy_loss + aux_loss) / args.accumulation_steps  # scalar
         loss.backward()
 
-        if (step + 1) % args.accumulation_steps == 0:
+        if step % args.accumulation_steps == 0:
             if args.grad_clip > 0:
                 torch.nn.utils.clip_grad_norm_(model.parameters(), args.grad_clip)
             optimizer.step()
@@ -176,7 +176,7 @@ def grpo_train_epoch(epoch, loader, iters, ref_model, reward_model, reward_token
                     "learning_rate": current_lr
                 })
 
-        if (step % args.save_interval == 0 or step == iters - 1) and is_main_process():
+        if (step % args.save_interval == 0 or step == iters) and is_main_process():
             model.eval()
             moe_suffix = '_moe' if lm_config.use_moe else ''
             ckp = f'{args.save_dir}/{args.save_weight}_{lm_config.hidden_size}{moe_suffix}.pth'
