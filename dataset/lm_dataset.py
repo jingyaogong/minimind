@@ -1,11 +1,15 @@
 from torch.utils.data import Dataset
 import torch
+import json
 import os
 import random
-from datasets import load_dataset
+from datasets import load_dataset, Features, Sequence, Value
 os.environ["TOKENIZERS_PARALLELISM"] = "false"
 
 def pre_processing_chat(conversations, add_system_ratio=0.2):
+    # tool use 数据完整保留不做处理
+    if any(conv.get('tools') for conv in conversations): return conversations
+
     SYSTEM_PROMPTS = [
         "你是一个知识丰富的AI，尽力为用户提供准确的信息。",
         "你是minimind，一个小巧但有用的语言模型。",
@@ -18,12 +22,14 @@ def pre_processing_chat(conversations, add_system_ratio=0.2):
         "You are a knowledgeable AI. Try your best to provide accurate information.",
         "You are minimind, a small but useful language model."
     ]
-    if conversations and conversations[0].get('role') != 'system':
+    # 概率性添加system
+    if conversations[0].get('role') != 'system':
         if random.random() < add_system_ratio:
             return [{'role': 'system', 'content': random.choice(SYSTEM_PROMPTS)}] + conversations
     return conversations
 
-def post_processing_chat(prompt_content, empty_think_ratio=0.05):
+def post_processing_chat(prompt_content, empty_think_ratio=0.2):
+    # 以80%概率移除空思考标签
     if '<think>\n\n</think>\n\n' in prompt_content and random.random() > empty_think_ratio:
         prompt_content = prompt_content.replace('<think>\n\n</think>\n\n', '')
     return prompt_content
@@ -54,7 +60,8 @@ class SFTDataset(Dataset):
         super().__init__()
         self.tokenizer = tokenizer
         self.max_length = max_length
-        self.samples = load_dataset('json', data_files=jsonl_path, split='train')
+        features = Features({'conversations': [{'role': Value('string'), 'content': Value('string'), 'reasoning_content': Value('string'), 'tools': Value('string'), 'tool_calls': Value('string')}]})
+        self.samples = load_dataset('json', data_files=jsonl_path, split='train', features=features)
         self.bos_id = tokenizer(f'{tokenizer.bos_token}assistant\n', add_special_tokens=False).input_ids
         self.eos_id = tokenizer(f'{tokenizer.eos_token}\n', add_special_tokens=False).input_ids
 
@@ -62,8 +69,15 @@ class SFTDataset(Dataset):
         return len(self.samples)
 
     def create_chat_prompt(self, conversations):
-        messages = conversations.copy()
-        tools = conversations[0]["functions"] if (conversations and conversations[0]["role"] == "system" and conversations[0].get("functions")) else None
+        messages = []
+        tools = None
+        for message in conversations:
+            message = dict(message)
+            if message.get("role") == "system" and message.get("tools"):
+                tools = json.loads(message["tools"]) if isinstance(message["tools"], str) else message["tools"]
+            if message.get("tool_calls") and isinstance(message["tool_calls"], str):
+                message["tool_calls"] = json.loads(message["tool_calls"])
+            messages.append(message)
         return self.tokenizer.apply_chat_template(
             messages,
             tokenize=False,
@@ -179,10 +193,11 @@ class DPODataset(Dataset):
 
 
 class RLAIFDataset(Dataset):
-    def __init__(self, jsonl_path, tokenizer, max_length=1024):
+    def __init__(self, jsonl_path, tokenizer, max_length=1024, thinking_ratio=0.5):
         super().__init__()
         self.tokenizer = tokenizer
         self.max_length = max_length
+        self.thinking_ratio = thinking_ratio  # 按概率开启 thinking
         self.samples = load_dataset('json', data_files=jsonl_path, split='train')
         self.bos_id = tokenizer(f'{tokenizer.bos_token}assistant', add_special_tokens=False).input_ids
         self.eos_id = tokenizer(f'{tokenizer.eos_token}', add_special_tokens=False).input_ids
@@ -191,28 +206,51 @@ class RLAIFDataset(Dataset):
         return len(self.samples)
 
     def create_chat_prompt(self, conversations):
-        messages = []
-        answer = ''
-        for i, turn in enumerate(conversations):
-            role = 'user' if i % 2 == 0 else 'assistant'
-            messages.append({"role": role, "content": turn['content']})
-            answer = turn['content']
-        prompt = self.tokenizer.apply_chat_template(
-            messages[:-1],
+        conversations = pre_processing_chat(conversations)
+        use_thinking = random.random() < self.thinking_ratio
+        return self.tokenizer.apply_chat_template(
+            conversations[:-1],
             tokenize=False,
-            add_generation_prompt=True  # 这里需要True
+            open_thinking=use_thinking,
+            add_generation_prompt=True
         )
-        prompt = post_processing_chat(prompt)
-        return prompt, answer
-
     def __getitem__(self, index):
         sample = self.samples[index]
-        prompt, answer = self.create_chat_prompt(sample['conversations'])
+        prompt = self.create_chat_prompt(sample['conversations'])
 
         return {
             'prompt': prompt,
-            'answer': answer
+            'answer': ""
         }
+
+class AgentRLDataset(Dataset):
+    def __init__(self, jsonl_path, tokenizer, max_length=1024):
+        super().__init__()
+        self.tokenizer = tokenizer
+        self.max_length = max_length
+        self.samples = []
+        with open(jsonl_path, 'r', encoding='utf-8') as f:
+            for line in f:
+                self.samples.append(json.loads(line.strip()))
+
+    def __len__(self):
+        return len(self.samples)
+
+    def parse_conversations(self, conversations):
+        messages = []
+        tools = None
+        for message in conversations:
+            message = dict(message)
+            if message.get("role") == "system" and message.get("tools"):
+                tools = json.loads(message["tools"]) if isinstance(message["tools"], str) else message["tools"]
+            messages.append(message)
+        return messages[:-1], tools
+
+    def __getitem__(self, index):
+        sample = self.samples[index]
+        messages, tools = self.parse_conversations(sample['conversations'])
+        return {'messages': messages, 'tools': tools, 'gt': sample['gt']}
+
 
 if __name__ == "__main__":
     pass

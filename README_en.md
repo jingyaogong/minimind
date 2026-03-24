@@ -13,7 +13,6 @@
 [![GitHub pull request](https://img.shields.io/badge/PRs-welcome-blue)](https://github.com/jingyaogong/minimind/pulls)
 [![Collection](https://img.shields.io/badge/🤗-MiniMind%20%20Collection-blue)](https://huggingface.co/collections/jingyaogong/minimind-66caf8d999f5c7fa64f399e5)
 
-
 </div>
 
 <div align="center">
@@ -23,7 +22,7 @@
 </div>
 
 <div align="center">
-  <h3>"The Simplest Path is the Greatest"</h3>
+  <h3>"The Great Way is Simple"</h3>
 </div>
 
 <div align="center">
@@ -32,192 +31,194 @@
 
 </div>
 
-* This open-source project aims to train a super-small language model **MiniMind** with only 3 RMB cost and 2 hours,
-  starting completely from scratch.
-* The **MiniMind** series is extremely lightweight, with the smallest version being $\frac{1}{7000}$ the size of GPT-3,
-  making it possible to train quickly on even the most ordinary personal GPUs.
-* The project also open-sources the minimalist structure of the large model, including extensions for shared mixed
-  experts (MoE), dataset cleaning, pretraining, supervised fine-tuning (SFT), LoRA fine-tuning, direct preference
-  optimization (DPO) algorithms, reinforcement learning from AI feedback (RLAIF: PPO/GRPO/SPO), and model distillation 
-  algorithms, along with the full code of the entire process.
-* **MiniMind** also expands into vision multimodal VLM: [MiniMind-V](https://github.com/jingyaogong/minimind-v).
-* All core algorithm code is reconstructed from scratch using native PyTorch! It does not rely on abstract interfaces
-  provided by third-party libraries.
-* This is not only a full-stage open-source reproduction of a large language model but also a tutorial for beginners in
-  LLM.
-* We hope this project will serve as an inspiring example for everyone, helping to enjoy the fun of creation and
-  promoting the progress of the wider AI community!
+* This open-source project aims to train an ultra-small language model MiniMind with approximately 64M parameters entirely from scratch, using only 3 CNY in cost and 2 hours of training time.
+* The MiniMind series is extremely lightweight, with the smallest version on the main branch being approximately $\frac{1}{2700}$ the size of GPT-3, striving to enable even ordinary personal GPUs to quickly complete training and reproduction.
+* The project also open-sources the minimalist structure and complete training pipeline of large models, covering the entire process code for MoE, data cleaning, Pretraining, Supervised Fine-Tuning (SFT), LoRA, RLHF (DPO), RLAIF (PPO / GRPO / CISPO), Tool Use, Agentic RL, Adaptive Thinking, and Model Distillation.
+* MiniMind has also been extended to a visual multimodal version [MiniMind-V](https://github.com/jingyaogong/minimind-v).
+* All core algorithm code in the project is implemented from scratch using native PyTorch, without relying on high-level abstract interfaces provided by third-party libraries.
+* This is not only a full-stage open-source reproduction project for large language models, but also a tutorial oriented towards LLM introduction and practice.
+* We hope this project can provide a reproducible, understandable, and extensible starting point for more people, to share the joy of creation together and promote the progress of the broader AI community.
 
-> To avoid misunderstanding, the "2 hours" test is based on NVIDIA 3090 hardware (single GPU), and the "3 RMB" refers to the GPU server rental cost. Details of the specifications can be found below.
+> Note: This project is open-sourced under the Apache 2.0 license and is completely free; "2 hours" is estimated based on NVIDIA 3090 hardware (single GPU), and "3 CNY" refers to GPU server rental cost. See below for detailed specifications.
 
 ---
 
 <div align="center">
 
-![minimind2](./images/minimind2.gif)
+![minimind-3](./images/minimind-3.gif)
 
-[🔗🍓Reason Model](https://www.modelscope.cn/studios/gongjy/MiniMind-Reasoning) | [🔗🤖Standard Model](https://www.modelscope.cn/studios/gongjy/MiniMind) | [🔗🎞️Video Introduction](https://www.bilibili.com/video/BV12dHPeqE72/?share_source=copy_web&vd_source=670c2504f88726f8cf4a21ef6147c0e8)
+[🔗 Online Demo](https://www.modelscope.cn/studios/gongjy/MiniMind) | [🔗 Video Introduction](https://www.bilibili.com/video/BV12dHPeqE72)
+
 
 <div align="center">
   <table>
     <tr>
       <td align="center">
-        <a href="https://huggingface.co/collections/jingyaogong/minimind-66caf8d999f5c7fa64f399e5" style="text-decoration: none;">
-          <img src="./images/and_huggingface.png" alt="Hugging Face Logo" style="vertical-align: middle; width: auto; max-width: 100%;" />
+        <a href="https://huggingface.co/collections/jingyaogong/minimind" style="text-decoration: none;">
+          <img src="./images/with_huggingface.png" alt="Hugging Face Logo" style="vertical-align: middle; width: auto; max-width: 100%;" />
         </a>
       </td>
       <td align="center">
         <a href="https://www.modelscope.cn/profile/gongjy" style="text-decoration: none;">
-          <img src="./images/and_modelscope.png" alt="ModelScope Logo" style="vertical-align: middle; width: auto; max-width: 100%;" />
+          <img src="./images/with_modelscope.png" alt="ModelScope Logo" style="vertical-align: middle; width: auto; max-width: 100%;" />
         </a>
       </td>
     </tr>
   </table>
-</div></div>
+</div>
 
 
-# 📌 Introduction
+</div>
 
-The emergence of Large Language Models (LLMs) has sparked unprecedented global attention to AI. 
-Whether it's ChatGPT, DeepSeek, or Qwen, they all demonstrate stunning performance that is awe-inspiring.
-However, with their massive scale of tens of billions of parameters, they are not only difficult to train on personal devices but nearly impossible to deploy.
-Opening the "black box" of large models to explore their internal mechanisms is truly thrilling!
-Unfortunately, 99% of exploration can only stop at using techniques like LoRA to perform minor fine-tuning on existing large models to learn new instructions or tasks.
-This is like teaching Newton how to use a 21st-century smartphone—while interesting, it completely deviates from the original intent of understanding the essence of physics.
-Meanwhile, third-party large model frameworks and toolkits, such as transformers+trl, expose only highly abstract interfaces.
-With just 10 lines of code, you can complete the entire workflow of "loading model + loading dataset + inference + reinforcement learning."
-While such efficient packaging is convenient, it also acts like a high-speed spacecraft, isolating developers from underlying implementations and hindering deep exploration of LLM core code.
-Yet, "building a plane with Lego is far more exciting than flying in first class!"
-What's worse, the internet is flooded with expensive courses and marketing accounts selling AI tutorials with countless flaws and superficial understanding.
-For this reason, this project's original intention is to lower the barrier to entry for LLM learning, allowing everyone to start by understanding every line of code,
-to personally train an extremely small language model from scratch. Yes, from **training from scratch**, not just **inference**!
-With less than 3 RMB in server costs, you can personally experience the entire process of building a language model from 0 to 1.
-Let's enjoy the fun of creation together!
+---
 
-> [!NOTE]
-> (As of 2025-10) The MiniMind series has completed pretraining of multiple model variants, with the smallest being only 25.8M (0.02B), capable of fluent conversation!
+# 📌 Project Introduction
 
-<details style="color:rgb(128,128,128)">
-<summary>Models List</summary>
+The emergence of Large Language Models (LLMs) has triggered unprecedented global attention on AI. Whether it is ChatGPT, DeepSeek, or Qwen, they have all impressed people with their stunning performance, making them truly feel the impact of this technological wave. However, models with hundreds of billions of parameters make them not only difficult to train on personal devices, but even deployment seems out of reach. Opening the "black box" of large models and truly understanding their internal working mechanisms should be something exciting. Unfortunately, the vast majority of explorations ultimately stop at using techniques like LoRA to do minimal fine-tuning on existing large models, learning some new instructions or specific tasks. This is more like teaching Newton how to use a 21st-century smartphone — interesting, but deviating from the original intention of understanding the essence of physics.
 
-| Model (Size)           | Inference Memory (Approx) | Release    | 
-|------------------------|---------------------------|------------|
-| MiniMind2-small (26M)  | 0.5 GB                    | 2025.04.26 |
-| MiniMind2-MoE (145M)   | 1.0 GB                    | 2025.04.26 |
-| MiniMind2 (104M)       | 1.0 GB                    | 2025.04.26 |
-| minimind-v1-small (26M)| 0.5 GB                    | 2024.08.28 |
-| minimind-v1-moe (4×26M)| 1.0 GB                    | 2024.09.17 |
-| minimind-v1 (108M)     | 1.0 GB                    | 2024.09.01 |
+Meanwhile, third-party large model frameworks and tool libraries, such as `transformers` / `trl` / `peft`, often only expose highly abstract interfaces. With just a dozen or so lines of code, one can complete the entire pipeline of "load model + load dataset + inference + reinforcement learning" training. While this efficient encapsulation is convenient, it also to some extent isolates developers from the underlying implementation, weakening opportunities to deeply understand the core code of LLMs. I believe "building an airplane from Lego bricks yourself is far more exciting than flying in first class", yet a more practical problem is that the internet is flooded with paid courses and marketing content, wrapping so-called AI tutorials with flawed, half-baked explanations. For this reason, the original intention of this project is to lower the learning barrier for LLMs as much as possible, allowing everyone to start from understanding every line of code and train a tiny language model from scratch. Yes, **training from scratch**, not just staying at the **inference** level. With a server cost as low as 3 CNY, you can experience the entire process of building a language model from 0 to 1 firsthand.
+
+😊 Let's share the joy of creation together!
+
+---
+
+#### 🎉 This Project Includes the Following
+
+- Provides complete MiniMind-LLM structure code (Dense + MoE), with the current main branch structure aligned with the `Qwen3 / Qwen3-MoE` ecosystem.
+- Provides Tokenizer and tokenizer training code, supporting template tokens such as `<tool_call>`, `<tool_response>`, `<think>`, etc.
+- Covers complete training pipelines including Pretrain, SFT, LoRA, RLHF-DPO, RLAIF (PPO / GRPO / CISPO), Tool Use, Agentic RL, Adaptive Thinking, and Model Distillation.
+- Provides open-source data for all stages, covering collected, distilled, cleaned, and deduplicated high-quality datasets.
+- Key training algorithms and core modules are all implemented from scratch, without relying on third-party framework wrappers.
+- Compatible with mainstream frameworks such as `transformers`, `trl`, `peft`, as well as commonly used inference engines like `llama.cpp`, `vllm`, `ollama`, and training frameworks like `Llama-Factory`.
+- Supports single-machine single-GPU and single-machine multi-GPU (DDP, DeepSpeed) training, supports wandb / swanlab visualization and dynamic start/stop of training.
+- Supports evaluation on third-party benchmark suites such as C-Eval, C-MMLU, OpenBookQA, etc., and supports RoPE long context extrapolation through YaRN.
+- Provides a minimalist server compatible with the OpenAI API protocol, convenient for integrating with third-party Chat UIs such as FastGPT, Open-WebUI, etc., and supports `reasoning_content`, `tool_calls`, `open_thinking`.
+- Provides a minimalist chat WebUI based on Streamlit, supporting thinking display, tool selection, and multi-turn Tool Call.
+
+#### 🎉 Released Model List
+
+| Model | Parameters | Release |
+|------|--------|---------|
+| minimind-3 | 64M | 2026.04.01 |
+| minimind-3-moe | 198M / A64M | 2026.04.01 |
+| minimind2-small | 26M | 2025.04.26 |
+| minimind2-moe | 145M | 2025.04.26 |
+| minimind2 | 104M | 2025.04.26 |
+| minimind-v1-small | 26M | 2024.08.28 |
+| minimind-v1-moe | 4×26M | 2024.09.17 |
+| minimind-v1 | 108M | 2024.09.01 |
+
+---
+
+#### 📝 Changelog
+
+<details> 
+<summary> <b>🔥 2026-04-01</b> </summary>
+
+ - Released `minimind-3` / `minimind-3-moe`: comprehensive updates to structure, Tokenizer, training pipeline, inference interface, and default configuration
+- Main branch structure aligned with `Qwen3 / Qwen3-MoE` ecosystem: Dense approximately `64M`, MoE approximately `198M / A64M`, and removed shared expert design
+- Default training data switched to `pretrain_t2t(_mini).jsonl`, `sft_t2t(_mini).jsonl`, `rlaif.jsonl`, `agent_rl.jsonl`, and `agent_rl_math.jsonl`
+- Removed standalone `train_reason.py`; thinking capability is now unified through `chat_template + <think>` and `open_thinking` adaptive switch control
+- `toolcall` capability has been merged into `sft_t2t / sft_t2t_mini` main branch data, default `full_sft` already has basic Tool Call capability; also added inference examples such as `scripts/chat_api.py`
+- Added native `Agentic RL` training script `train_agent.py`, supporting `GRPO / CISPO` in multi-turn Tool-Use scenarios
+- RLAIF / Agentic RL training pipeline completed `rollout engine` decoupling, supporting more flexible switching of generation backends
+- `serve_openai_api.py` and `web_demo.py` added `reasoning_content` / `tool_calls` / `open_thinking` support
+- Tokenizer updated based on `BPE + ByteLevel`, with new tool call and thinking tokens, reserved buffer tokens for future extension
+- Added LoRA weight merging and export pipeline, can merge base model and LoRA weights into new complete model weights via `scripts/convert_model.py`
+- Structure diagram resources updated, README extensively updated
 
 </details>
 
-**Project Includes**
-
-- Complete code for MiniMind-LLM structure (Dense + MoE models).
-- Detailed training code for Tokenizer.
-- Complete training code for Pretrain, SFT, LoRA, RLHF-DPO, RLAIF (PPO/GRPO/SPO), and model distillation.
-- Collected, distilled, organized and cleaned high-quality datasets for all stages, all open-sourced.
-- Implemented from scratch: pretraining, instruction fine-tuning, LoRA, DPO/PPO/GRPO/SPO reinforcement learning, and white-box model distillation. Core algorithms barely depend on third-party framework encapsulation, all open-sourced.
-- Compatible with mainstream third-party frameworks like `transformers`, `trl`, `peft`.
-- Training supports single GPU, multiple GPUs on a single machine (DDP, DeepSpeed), supports wandb/swanlab visualization of training process. Supports dynamic training start/stop.
-- Model testing on third-party evaluation leaderboards (C-Eval, C-MMLU, OpenBookQA, etc.), supports YaRN algorithm for RoPE long-text extrapolation.
-- Implements an extremely simple OpenAI API-compliant server, convenient for integration with third-party ChatUI (FastGPT, Open-WebUI, etc.).
-- Implements the simplest chat WebUI frontend based on streamlit.
-- Fully compatible with popular community inference engines `llama.cpp`, `vllm`, `ollama` or training framework `Llama-Factory`.
-- Reproduced (distilled/RL) DeepSeek-R1 reasoning model as MiniMind-Reason model, with **data + models** fully open-sourced!
-
-We hope this open-source project can help LLM beginners get started quickly!
-
-### 👉**Update Log**
-
-<details close> 
+<details> 
 <summary> <b>2025-10-24</b> </summary>
 
-- 🔥 Added RLAIF training algorithms: PPO, GRPO, SPO (native implementation from scratch)
-- Added checkpoint resume training: supports automatic training recovery, cross-GPU recovery, wandb continuity
-- Added RLAIF dataset: rlaif-mini.jsonl (randomly sampled 10,000 entries from SFT data); simplified DPO dataset with Chinese data
-- Added YaRN algorithm: supports RoPE long-text extrapolation, improving long sequence handling capability
-- Adaptive Thinking: Reason model can optionally enable thinking chain
+- 🔥 Added RLAIF training algorithms: PPO, GRPO, SPO (natively implemented from scratch)
+- Added checkpoint resume functionality: supports automatic training recovery, cross-GPU-count recovery, wandb record continuity
+- Added RLAIF dataset: rlaif-mini.jsonl (randomly sampled 10,000 entries from SFT data); simplified DPO dataset, added Chinese data
+- Added YaRN algorithm: supports RoPE long context extrapolation, improving long sequence processing capability
+- Adaptive Thinking: Reason model optionally enables chain of thought
 - chat_template fully supports Tool Calling and Reasoning tags (`<tool_call>`, `<think>`, etc.)
-- Added complete RLAIF chapter, training curve comparison, algorithm principle explanations
-- [SwanLab](https://swanlab.cn/) replaces WandB (friendly for domestic access, fully compatible API)
-- Code standardization & fixed some known bugs
+- Added complete RLAIF chapter, training curve comparison, folded algorithm principle explanations
+- [SwanLab](https://swanlab.cn/) replaces WandB (domestic access friendly, API fully compatible)
+- Standardized all code & fixed some known bugs
 
 </details>
 
-<details close> 
+<details> 
 <summary> <b>2025-04-26</b> </summary>
 
-- Important update
-- For compatibility needs, you can visit [🔗old repository content🔗](https://github.com/jingyaogong/minimind/tree/7da201a944a90ed49daef8a0265c959288dff83a).
+- Major update
+- For compatibility needs, visit [🔗Old Repository Content🔗](https://github.com/jingyaogong/minimind/tree/7da201a944a90ed49daef8a0265c959288dff83a).
 - MiniMind model parameters completely renamed, aligned with Transformers library models (unified naming).
 - generate method refactored, inheriting from GenerationMixin class.
-- 🔥 Supports popular third-party ecosystems like llama.cpp, vllm, ollama.
+- 🔥Supports popular third-party ecosystems such as llama.cpp, vllm, ollama.
 - Standardized code and directory structure.
-- Modified vocabulary `<s></s>`->`<|im_start|><|im_end|>`
+- Changed vocabulary `<s></s>` -> `<|im_start|><|im_end|>`
 
 ```text
-To be compatible with third-party inference frameworks llama.cpp and vllm, this update requires some observable costs.
-This update no longer supports "directly" loading old models before 25-04-26 for inference.
-Due to differences in Llama's positional encoding compared to minimind, there are differences in QK values after mapping Llama models.
-MiniMind2 series old models have been recovered through weight mapping and (fine-tuning training) QKVO linear layer calibration.
-After this update, maintenance of the entire minimind-v1 series will be abandoned and removed from the repository.
+To be compatible with third-party inference frameworks llama.cpp, vllm, this update comes with some considerable costs.
+This update no longer supports "directly" loading old models from before 25-04-26 for inference.
+Due to differences between Llama's positional encoding method and minimind's, QK values differ after mapping to the Llama model.
+The minimind2 series old models were all recovered through weight mapping + (fine-tuning) QKVO linear layer calibration.
+After this update, maintenance for the entire `minimind-v1` series will be discontinued and taken offline from the repository.
 ```
 
 </details>
 
-<details close> 
+<details> 
 <summary> <b>2025-02-09</b> </summary>
 
-- Major update since release, Release MiniMind2 Series.
-- Code almost completely refactored, using cleaner and more unified structure.
-  For compatibility with old code, you can visit [🔗old repository content🔗](https://github.com/jingyaogong/minimind/tree/6e9cd28ef9b34a0a10afbdf6f59e65cb6e628efb).
-- Eliminated data preprocessing steps. Unified dataset format, switched to `jsonl` format to avoid dataset download confusion.
-- MiniMind2 series shows significant improvement compared to MiniMind-V1.
-- Minor improvements: {more standard kv-cache writing, MoE load balancing loss considered, etc.}
-- Provides training solutions for model migration to private datasets (medical models, self-awareness examples).
-- Streamlined pretraining dataset and significantly improved pretraining data quality, greatly reducing time for quick personal training, single 3090 GPU can reproduce in 2 hours!
-- Updates: LoRA fine-tuning separated from peft packaging, implemented from scratch; DPO algorithm implemented from scratch using native PyTorch; white-box model distillation native implementation.
-- MiniMind2-DeepSeek-R1 series distilled models born!
-- MiniMind2 now has some English ability!
-- Updated MiniMind2 and third-party model performance results based on more large model leaderboard tests.
+- Major update since release, Release minimind2 Series.
+- Code almost entirely refactored, using a more concise and clear unified structure.
+  For compatibility needs with old code, visit [🔗Old Repository Content🔗](https://github.com/jingyaogong/minimind/tree/6e9cd28ef9b34a0a10afbdf6f59e65cb6e628efb).
+- Eliminated data preprocessing steps. Unified dataset format, switched to `jsonl` format to avoid dataset download confusion issues.
+- minimind2 series significantly improved performance compared to MiniMind-V1.
+- Minor issues: {kv-cache implementation more standard, MoE load balancing loss now considered, etc.}
+- Provides training solution for migrating models to private datasets (medical model, self-awareness examples).
+- Streamlined pretraining dataset and significantly improved pretraining data quality, greatly reduced time needed for individual quick training, reproducible in 2 hours on a single 3090!
+- Updated: LoRA fine-tuning decoupled from peft wrapper, LoRA process implemented from scratch; DPO algorithm natively implemented from scratch using PyTorch; model white-box distillation natively implemented.
+- minimind2-DeepSeek-R1 series distilled models born!
+- minimind2 has certain English language capability!
+- Updated benchmark test performance results of minimind2 vs third-party models on more LLM leaderboards.
 
 </details>
 
-<details close>
+<details>
 <summary> <b>More...</b> </summary>
 
 **2024-10-05**
-- Extended MiniMind with multimodal capabilities---Vision
-- Check out the twin project [minimind-v](https://github.com/jingyaogong/minimind-v) for details!
+- Extended multimodal capability for MiniMind --- Vision
+- Visit the sibling project [minimind-v](https://github.com/jingyaogong/minimind-v) for details!
 
 **2024-09-27**
-- 09-27 updated the preprocessing method for the pretrain dataset, abandoned preprocessing into .bin format for training to ensure text integrity (slightly sacrificing training speed).
-- Current pretrain preprocessing file is named: pretrain_data.csv.
+- 09-27 updated pretrain dataset preprocessing method, to ensure text integrity, abandoned preprocessing into .bin format for training (slight sacrifice in training speed).
+- Currently the pretrain preprocessed file is named: pretrain_data.csv.
 - Removed some redundant code.
 
 **2024-09-17**
 - Updated minimind-v1-moe model
-- To avoid ambiguity, no longer using mistral_tokenizer for tokenization, completely using custom minimind_tokenizer as the tokenizer.
+- To prevent ambiguity, mistral_tokenizer is no longer used for tokenization, all using custom minimind_tokenizer as the tokenizer.
 
 **2024-09-01**
-- Updated minimind-v1 (108M) model, using minimind_tokenizer, 3 pretraining rounds + 10 SFT rounds, more thorough training, stronger performance.
-- Project has been deployed to ModelScope creation space, you can experience it on this website:
-- [🔗ModelScope Online Experience🔗](https://www.modelscope.cn/studios/gongjy/minimind)
+- Updated minimind-v1 (108M) model, using minimind_tokenizer, pretrain epochs 3 + SFT epochs 10, more thorough training, stronger performance.
+- Project deployed to ModelScope Creative Space, can be experienced at this website:
+- [🔗ModelScope Online Demo🔗](https://www.modelscope.cn/studios/gongjy/minimind)
 
 **2024-08-27**
 - Project first open-sourced
 
 </details>
 
+---
+
 # 📌 Quick Start
 
-<details style="color:rgb(128,128,128)">
-<summary>Share my hardware and software configuration (for reference only)</summary>
+<details>
+<summary>My hardware and software configuration (for reference)</summary>
 
 * CPU: Intel(R) Core(TM) i9-10980XE CPU @ 3.00GHz
 * RAM: 128 GB
-* GPU: NVIDIA GeForce RTX 3090(24GB) * 8
+* GPU: NVIDIA GeForce RTX 3090 (24GB) * 8
 * Ubuntu==20.04
 * CUDA==12.2
 * Python==3.10.16
@@ -225,297 +226,247 @@ After this update, maintenance of the entire minimind-v1 series will be abandone
 
 </details>
 
-### Step 0
+## Step 0
 
 ```bash
-git clone https://github.com/jingyaogong/minimind.git
+# Clone repository and install dependencies
+git clone --depth 1 https://github.com/jingyaogong/minimind
+cd minimind && pip install -r requirements.txt -i https://mirrors.aliyun.com/pypi/simple
 ```
 
-## Ⅰ Testing Existing Model Performance
+## Ⅰ 🚀 Model Inference
 
-### 1. Environment Setup
+### 1' Download Model
+
+In the project root directory:
+```bash
+# Method 1
+modelscope download --model gongjy/minimind-3 --local_dir ./minimind-3
+# Method 2
+git clone https://huggingface.co/jingyaogong/minimind-3
+```
+
+### 2' CLI Inference
 
 ```bash
-pip install -r requirements.txt -i https://mirrors.aliyun.com/pypi/simple
+# Method 1: Using Transformers format model
+python eval_llm.py --load_from ./minimind-3
+# Method 2: Based on PyTorch model (ensure corresponding weights are in the ./out directory)
+python eval_llm.py --load_from ./model --weight full_sft
 ```
 
-### 2. Download Model
-
-Go to the project root directory
+### 3' (Optional) WebUI
 
 ```bash
-git clone https://huggingface.co/jingyaogong/MiniMind2 # or https://www.modelscope.cn/models/gongjy/MiniMind2
+# May need `python>=3.10`, install `pip install streamlit`
+# ⚠️ You must first copy the transformers-format model folder into ./scripts/ (e.g.: cp -r minimind-3 ./scripts/minimind-3). The web_demo script will auto-scan subdirectories containing weight files; it will throw an error if none are found.
+cd scripts && streamlit run web_demo.py
 ```
 
-### (Optional) Command Line Q&A
-
-```bash
-# Use transformers format model
-python eval_llm.py --load_from ./MiniMind2
-```
-
-### (Optional) Launch WebUI
-
-```bash
-# May require `python>=3.10`, install with `pip install streamlit`
-# cd scripts
-streamlit run web_demo.py
-```
-
-### (Optional) Third-party Inference Frameworks
+### 4' (Optional) Third-party Inference Frameworks
 
 ```bash
 # ollama
-ollama run jingyaogong/minimind2
+ollama run jingyaogong/minimind-3
 # vllm
-vllm serve ./MiniMind2/ --served-model-name "minimind"
+vllm serve /path/to/model --served-model-name "minimind"
 ```
 
-## Ⅱ Train from Scratch Yourself
+## Ⅱ 🛠️ Model Training
 
-### 1. Environment Setup
+<details>
+<summary>Note: Confirm Torch's available backend in advance</summary>
 
-```bash
-pip install -r requirements.txt -i https://mirrors.aliyun.com/pypi/simple
-```
-
-<details style="color:rgb(128,128,128)">
-<summary>Note: Test Torch CUDA availability in advance</summary>
-
-```bash
+```python
 import torch
 print(torch.cuda.is_available())
 ```
 
-If not available, please download and install the whl file from [torch_stable](https://download.pytorch.org/whl/torch_stable.html). Reference [link](https://blog.csdn.net/weixin_45456738/article/details/141029610?ops_request_misc=&request_id=&biz_id=102&utm_term=%E5%AE%89%E8%A3%85torch&utm_medium=distribute.pc_search_result.none-task-blog-2~all~sobaiduweb~default-2-141029610.nonecase&spm=1018.2226.3001.4187)
+If you plan to use CUDA for training, it is recommended to first confirm whether the current environment has correctly recognized the GPU.  
+If `cuda` is not available, you can still choose `CPU` or `MPS` to run based on your device, but training speed and compatibility will differ significantly.  
+If you need to install or switch PyTorch versions, refer to [torch_stable](https://download.pytorch.org/whl/torch_stable.html) and [this link](https://blog.csdn.net/weixin_45456738/article/details/141029610?ops_request_misc=&request_id=&biz_id=102&utm_term=%E5%AE%89%E8%A3%85torch&utm_medium=distribute.pc_search_result.none-task-blog-2~all~sobaiduweb~default-2-141029610.nonecase&spm=1018.2226.3001.4187)
 
 </details>
 
-### 2. Download Data
+### 1' Download Data
 
-Download the required data files from the [dataset download link](https://www.modelscope.cn/datasets/gongjy/minimind_dataset/files) provided below (create the `./dataset` directory) and place them in `./dataset`
+Download the required data files from the [dataset download link](https://www.modelscope.cn/datasets/gongjy/minimind_dataset/files) provided below, and place them in the `./dataset` directory
 
-<details style="color:rgb(128,128,128)">
-<summary>Note: Dataset Notes</summary>
+> Currently, by default, you only need to download `pretrain_t2t_mini.jsonl` and `sft_t2t_mini.jsonl` to quickly reproduce the `MiniMind Zero` dialogue model.
+If you have more needs, various combination schemes are provided below, which can be flexibly chosen based on your task objectives and GPU resources.
 
-By default, it is recommended to download `pretrain_hq.jsonl` + `sft_mini_512.jsonl` for the fastest reproduction of the Zero chat model.
+### 2' Start Training
 
-You can freely choose data files. The section below provides multiple combination schemes that can be appropriately combined based on your training needs and GPU resources.
+<details>
+<summary>💡 Checkpoint Pause and Resume</summary>
 
-</details>
-
-### 3. Start Training
-
-Directory is located in `trainer`
-
-<details style="color:rgb(128,128,128)">
-<summary>💡 Checkpoint Resume Training</summary>
-
-All training scripts automatically save checkpoints. Simply add `--from_resume 1` parameter to automatically detect, load & resume training:
+All training scripts support checkpoint saving. After adding the `--from_resume 1` parameter, training progress can be automatically detected and resumed:
 
 ```bash
 python train_pretrain.py --from_resume 1
 python train_full_sft.py --from_resume 1
-...
+# ...
 ```
 
-**Checkpoint Resume Mechanism:**
-- Training process automatically saves complete checkpoints in `./checkpoints/` directory (model, optimizer, training progress, etc.)
+**Checkpoint Resume Instructions:**
+- The training process automatically saves complete checkpoints (model, optimizer, training progress, etc.) in the `./checkpoints/` directory
 - Checkpoint file naming: `<weight_name>_<dimension>_resume.pth` (e.g., `full_sft_512_resume.pth`)
-- Supports cross-GPU recovery (automatically adjusts step)
-- Supports wandb training log continuity (automatically resumes the same run)
+- Supports recovery across different GPU counts (automatically adjusts step)
+- Supports wandb training record continuity (automatically resumes the same run)
 
-> Suitable for long training sessions or unstable environments, no need to worry about progress loss from interruptions
-
-</details>
-
-**3.1 Pretraining (Learning Knowledge)**
-
-```bash
-python train_pretrain.py
-```
-
-> Execute pretraining to get `pretrain_*.pth` as the output weights for pretraining (where * is the model's dimension, default is 512)
-
-**3.2 Supervised Fine-tuning (Learning Conversation Style)**
-
-```bash
-python train_full_sft.py
-```
-
-> Execute supervised fine-tuning to get `full_sft_*.pth` as the output weights for instruction fine-tuning (where `full` means full-parameter fine-tuning)
-
-<details style="color:rgb(128,128,128)">
-<summary>Note: Training Notes</summary>
-
-By default, all training processes save parameters to the file `./out/***.pth` every 100 steps (each save overwrites the old weights).
-
-For simplicity, only the two-stage training process is described here. For other training (LoRA, distillation, reinforcement learning, inference fine-tuning, etc.), refer to the detailed description in the [Experiment](#-experiment) section below.
+> Suitable for long-duration training or unstable environments, no need to worry about progress loss due to training interruption
 
 </details>
 
----
-
-### 4. Test Your Trained Model
-
-Ensure the model `*.pth` files to be tested are in the `./out/` directory.
-You can also directly download and use the `*.pth` files I trained from [here](https://www.modelscope.cn/models/gongjy/MiniMind2-PyTorch/files).
+#### 2.1 Pretraining (Required)
 
 ```bash
-python eval_llm.py --weight full_sft # or pretrain/dpo/ppo/grpo...
+cd trainer && python train_pretrain.py
 ```
 
-<details style="color:rgb(128,128,128)">
-<summary>Note: Testing Notes</summary>
+> After training, `out/pretrain_*.pth` will be produced as output weights (where `*` is the model dimension, default `768`)
 
-The `--weight` parameter specifies the weight name prefix. Options: `pretrain`, `full_sft`, `dpo`, `reason`, `ppo_actor`, `grpo`, `spo`, etc.
+#### 2.2 Instruction Fine-tuning (Required)
 
-Other common parameters:
-- `--load_from`: Model loading path (`model`=native torch weights, other paths=transformers format)
-- `--save_dir`: Model weight directory (default `out`)
-- `--lora_weight`: LoRA weight name (`None` means not used)
-- `--historys`: Number of historical dialogue rounds to carry (must be even, 0 means no history)
-- `--max_new_tokens`: Maximum generation length (default 8192)
-- `--temperature`: Generation temperature (default 0.85)
-- `--top_p`: Nucleus sampling threshold (default 0.85)
+```bash
+cd trainer && python train_full_sft.py
+```
 
+> After training, `out/full_sft_*.pth` will be produced as output weights (where `full` indicates full-parameter fine-tuning)
 
-For usage details, refer directly to the `eval_llm.py` code.
+#### 2.3 Test Trained Model (Optional)
 
-</details>
+Ensure the model `*.pth` files to be tested are located in the `./out/` directory; you can also go directly to [here](https://www.modelscope.cn/models/gongjy/minimind-3-pytorch/files) to download my pre-trained `*.pth` weights.
 
----
+```bash
+python eval_llm.py --weight full_sft
+```
 
-> [!TIP]
-> All training scripts are native PyTorch framework, supporting multi-GPU acceleration. Assume your device has N (N > 1) GPUs:
+> `--weight` is used to specify the weight name prefix, such as `pretrain`, `full_sft`, etc.; for more parameters, refer directly to `eval_llm.py`
 
-Single machine N GPU training startup (DDP, supports multi-machine multi-GPU cluster)
+<details>
+<summary>Note: Other Information</summary>
+
+1. All training scripts are natively implemented based on PyTorch and support multi-GPU acceleration.
+
+2. If your device has `N (N > 1)` GPUs, you can start single-machine `N`-GPU training as follows (DDP, also supports extension to multi-machine multi-GPU):
 
 ```bash
 torchrun --nproc_per_node N train_xxx.py
 ```
 
-<details style="color:rgb(128,128,128)">
-<summary>Note: Other Notes</summary>
-
-<del>
-Single machine N GPU training (DeepSpeed)
+3. You can enable wandb to record the training process as needed.
 
 ```bash
-deepspeed --master_port 29500 --num_gpus=N train_xxx.py
+... train_xxx.py --use_wandb
 ```
-</del>
-
-You can optionally enable wandb to record the training process (requires direct internet connection)
-
-```bash
-# Requires login: wandb login
-torchrun --nproc_per_node N train_xxx.py --use_wandb
-# and
-python train_xxx.py --use_wandb
-```
-
-By adding the `--use_wandb` parameter, you can record the training process. After training is complete, you can view the training process on the wandb website. By modifying the `wandb_project` and `wandb_run_name` parameters, you can specify the project name and run name.
-
-[Note]: After June 2025, the domestic network environment cannot directly connect to WandB. The MiniMind project by default switches to using [SwanLab](https://swanlab.cn/) as the training visualization tool (fully compatible with WandB API), that is, just change `import wandb` to `import swanlab as wandb`, no other changes are needed.
+After June `2025`, domestic network environments in China typically cannot directly connect to WandB. MiniMind currently defaults to using [SwanLab](https://swanlab.cn/) as the training visualization tool, whose interface is basically compatible with WandB; usually you only need to replace `import wandb` with `import swanlab as wandb`, and other usage remains largely unchanged.
 
 </details>
+
+---
 
 # 📌 Data Introduction
 
 ## Ⅰ Tokenizer
 
-Tokenizer maps words from natural language to numbers like `0, 1, 36` through a "dictionary," which can be understood as numbers representing the page number of the word in the "dictionary."
-You can choose to construct your own vocabulary table to train a "dictionary." The code can be found in `./trainer/train_tokenizer.py` (for learning reference only. It's not necessary to train one yourself unless required. MiniMind comes with a built-in tokenizer).
-Or you can choose tokenizers from well-known open-source large models.
-Just as using Xinhua/Oxford dictionaries directly has the advantage of good token encoding compression, but the disadvantage of having too many pages—tens of thousands of word phrases;
-A self-trained tokenizer has the advantage of freely controlling vocabulary length and content, but the disadvantage of low compression ratio (for example, "hello" might be split into "h e l l o"
-five independent tokens), and rare words are difficult to cover.
-The choice of "dictionary" is important. The output of LLM is essentially a multi-class classification problem with SoftMax to N words in the dictionary, then decoding to natural language through the "dictionary."
-Because MiniMind size needs to be strictly controlled to avoid top-heavy models (embedding layer parameters taking up too high a proportion of LLM), shorter vocabulary lengths are better.
+A tokenizer can be roughly understood as a "dictionary" used by LLMs, responsible for mapping natural language to token ids and decoding token ids back to text; the project also provides `train_tokenizer.py` as a vocabulary training example. It is not recommended to retrain the tokenizer, because once the vocabulary and segmentation rules change, model weights, data formats, inference interfaces, and community ecosystem compatibility will all decrease, and it will also weaken the model's dissemination. Meanwhile, the tokenizer also affects metrics like PPL that are calculated per token, so when comparing across tokenizers, BPB (Bits Per Byte) is often more referential. See [this article](https://skeptric.com/perplexity/).
+For small models like MiniMind, vocabulary size also directly affects the parameter proportion of the embedding and output layers, so keeping the vocabulary compact is usually a more appropriate trade-off.
 
-<details style="color:rgb(128,128,128)">
+<details>
 <summary>Tokenizer Introduction</summary>
 
-The tokenizer vocabulary sizes of powerful open-source models from third parties such as Yi, qwen, chatglm, mistral, and Llama3 are as follows:
+The tokenizer vocabulary sizes of powerful third-party open-source models such as Yi, Qwen2, ChatGLM, Mistral, and Llama 3 are as follows:
 
 <table>
   <tr><th>Tokenizer Model</th><th>Vocabulary Size</th><th>Source</th></tr>
-  <tr><td>yi tokenizer</td><td>64,000</td><td>01AI (China)</td></tr>
-  <tr><td>qwen2 tokenizer</td><td>151,643</td><td>Alibaba Cloud (China)</td></tr>
-  <tr><td>glm tokenizer</td><td>151,329</td><td>Zhipu AI (China)</td></tr>
-  <tr><td>mistral tokenizer</td><td>32,000</td><td>Mistral AI (France)</td></tr>
-  <tr><td>llama3 tokenizer</td><td>128,000</td><td>Meta (USA)</td></tr>
-  <tr><td>minimind tokenizer</td><td>6,400</td><td>Custom</td></tr>
+  <tr><td>Yi</td><td>64,000</td><td>01.AI (China)</td></tr>
+  <tr><td>Qwen2</td><td>151,643</td><td>Alibaba Cloud (China)</td></tr>
+  <tr><td>ChatGLM</td><td>151,329</td><td>Zhipu AI (China)</td></tr>
+  <tr><td>Mistral</td><td>32,000</td><td>Mistral AI (France)</td></tr>
+  <tr><td>Llama 3</td><td>128,000</td><td>Meta (USA)</td></tr>
+  <tr><td>MiniMind</td><td>6,400</td><td>Custom</td></tr>
 </table>
 
-> 👉 Updated 2024-09-17: To prevent ambiguity from previous versions and control size, all MiniMind models use minimind_tokenizer for tokenization, abandoning all mistral_tokenizer versions.
+> The current main branch uses `minimind_tokenizer` uniformly to avoid historical version ambiguity and control overall size, and no longer maintains the `mistral_tokenizer` version.
 
-```
-# Some thoughts
-> Although minimind_tokenizer has a small length, its encoding/decoding efficiency is weaker than Chinese-friendly tokenizers like qwen2 and glm.
-> But the minimind model chose the self-trained minimind_tokenizer as the tokenizer to maintain lightweight overall parameters, avoiding imbalance in encoding layer and computation layer proportions, preventing top-heavy models, because minimind's vocabulary size is only 6400.
-> And minimind has never encountered rare word decoding failures in actual testing, with good results.
-> Due to the custom vocabulary compression to 6400, the total LLM parameters are as low as 25.8M.
-> The training data `pretrain_hq.jsonl` all comes from the `JiangShu large model dataset`, this part of data is relatively secondary. You can freely choose if you need to train.
-```
+Although `minimind_tokenizer` has a vocabulary of only `6400`, and its encoding/decoding efficiency is weaker than more Chinese-friendly tokenizers like `qwen2` and `glm`, it can significantly compress the parameter proportion of the embedding and output layers, making it more suitable for the size constraints of small models like MiniMind.
+From actual usage, this tokenizer has not noticeably caused rare word decoding failures, and remains sufficiently stable and usable overall; therefore the current main branch training also uniformly uses this vocabulary, rather than maintaining additional tokenizer version forks.
 
 </details>
 
-## Ⅱ Pretraining Data
+## Ⅱ Pretrain Data
 
-Having learned from MiniMind-V1's low-quality pretraining data that caused models to talk nonsense, after `2025-02-05` we decided no longer to use large-scale unsupervised datasets for pretraining.
-Instead, we tried to extract the Chinese portion from the [JiangShu Large Model Dataset](https://www.modelscope.cn/datasets/deepctrl/deepctrl-sft-data),
-Clean out about 1.6GB of corpus with character length `<512` and concatenate them directly as pretraining data `pretrain_hq.jsonl`, where hq means high
-quality (of course it's not yet high, improving data quality is endless).
+`MiniMind-3` current main branch pretraining data is `pretrain_t2t.jsonl` / `pretrain_t2t_mini.jsonl`.  
+These two datasets have been organized into a unified `text -> next token prediction` training format, aiming to balance under limited compute:
 
-The file `pretrain_hq.jsonl` data format is
+- Text quality;
+- Length distribution;
+- Chinese-English mixed capability;
+- Template alignment with subsequent SFT / Tool Calling / RLAIF stages.
 
-```json
-{"text": "How can I get rid of procrastination? Curing procrastination is not easy, but the following suggestions may help..."}
+Data sources include but are not limited to general text corpora, dialogue organized corpora, distillation supplementary corpora, and various datasets available under **permissive open-source licenses**; main branch data enters training only after cleaning, deduplication, length control, and format unification. Data sources include: [Craftsman LLM Dataset](https://www.modelscope.cn/datasets/deepctrl/deepctrl-sft-data), [Magpie-Align](https://www.modelscope.cn/organization/Magpie-Align), and other public data sources.
+
+Among them:
+
+- `pretrain_t2t_mini.jsonl` is more suitable for quick reproduction;
+- `pretrain_t2t.jsonl` is more suitable for full training of the `MiniMind-3` main branch model.
+
+File data format is
+
+```jsonl
+{"text": "如何才能摆脱拖延症？治愈拖延症并不容易，但以下建议可能有所帮助。"}
+{"text": "清晨的阳光透过窗帘洒进房间，桌上的书页被风轻轻翻动。"}
+{"text": "Transformer 通过自注意力机制建模上下文关系，是现代大语言模型的重要基础结构。"}
 ```
 
 ## Ⅲ SFT Data
 
-The [JiangShu Large Model SFT Dataset](https://www.modelscope.cn/datasets/deepctrl/deepctrl-sft-data)
-"is a complete, uniformly formatted, and safe large model training and research resource.
-It collected and organized a large amount of open-source datasets from public sources on the internet, unified their format, cleaned the data,
-containing Chinese datasets with 10M entries and English datasets with 2M entries."
-The above is the official introduction. After downloading, the total data volume is about 4B tokens, which is definitely suitable as SFT data for Chinese large language models.
-However, the official data format is messy, and using all of it for SFT would be too expensive.
-I performed secondary cleaning of the official dataset, removing entries with symbol pollution and noise; additionally, still only kept content with total length `<512`,
-hoping to supplement knowledge lacking in the pretraining phase through large amounts of dialogue at this stage.
-Export file is `sft_512.jsonl` (~7.5GB).
+`MiniMind-3` current main branch SFT data is `sft_t2t.jsonl` / `sft_t2t_mini.jsonl`. Compared to earlier `sft_512 / sft_1024 / sft_2048` schemes, the current version places more emphasis on:
 
-The [Magpie-SFT Dataset](https://www.modelscope.cn/organization/Magpie-Align)
-collected ~1M high-quality conversations from Qwen2/2.5. I further cleaned this data, exporting the portion with total length `<2048` as `sft_2048.jsonl` (~9GB).
-The portion with length `<1024` exported as `sft_1024.jsonl` (~5.5GB). Using large model dialogue data directly for sft falls into the "black-box distillation" category.
+- Unified templates;
+- Better suited for mixed training of dialogue + thinking tags + Tool Calling;
+- Minimizing data preprocessing forks, reducing reproduction costs.
 
-Further cleaned the SFT data from the previous two steps (keeping only content with high Chinese character ratio), filtered conversations with length `<512`, and obtained `sft_mini_512.jsonl` (~1.2GB).
+Its data sources include but are not limited to high-quality instruction-following data, public dialogue data, model distillation synthetic data, and license-friendly open-source datasets; before entering the `t2t` main branch, they are unified into the multi-turn dialogue format used by the current repository. The current main branch also contains a large amount of synthetic data, such as approximately `100K` `tool call` entries I synthesized based on `qwen3-4b`, as well as `reasoning` data from the `qwen3` series, etc. Major community sources include: [Craftsman LLM Dataset](https://www.modelscope.cn/datasets/deepctrl/deepctrl-sft-data), [Magpie-Align](https://www.modelscope.cn/organization/Magpie-Align), [R1-Distill-SFT](https://www.modelscope.cn/datasets/AI-ModelScope/R1-Distill-SFT), [COIG](https://huggingface.co/datasets/BAAI/COIG), [Step-3.5-Flash-SFT](https://huggingface.co/datasets/stepfun-ai/Step-3.5-Flash-SFT), etc. Published versions ensure that data sources and processing pipelines comply with the transitivity constraints of corresponding open-source licenses, and adhere to Apache-2.0, CC-BY-NC-2.0, and other related license requirements.
 
-The data format for all sft files `sft_X.jsonl` is
+Among them:
 
-```text
+- `sft_t2t_mini.jsonl`: suitable for quickly training a dialogue model;
+- `sft_t2t.jsonl`: suitable for fully reproducing the main branch version;
+- `toolcall` capability has already been merged into the main branch SFT data.
+
+All SFT file data formats are (including dialogue data, Tool Use data)
+
+```jsonl
 {
     "conversations": [
-        {"role": "user", "content": "Hello"},
-        {"role": "assistant", "content": "Hello!"},
-        {"role": "user", "content": "Goodbye"},
-        {"role": "assistant", "content": "Goodbye!"}
+        {"role": "user", "content": "你好"},
+        {"role": "assistant", "content": "你好！"},
+        {"role": "user", "content": "再见"},
+        {"role": "assistant", "content": "再见！"}
+    ]
+}
+{
+    "conversations": [
+        {"role": "system", "content": "# Tools ...", "tools": "[...]"},
+        {"role": "user", "content": "把'你好世界'翻译成english"},
+        {"role": "assistant", "content": "", "tool_calls": "[{\"name\":\"translate_text\",\"arguments\":{\"text\":\"你好世界\",\"target_language\":\"english\"}}]"},
+        {"role": "tool", "content": "{\"translated_text\":\"Hello World\"}"},
+        {"role": "assistant", "content": "Hello World"}
     ]
 }
 ```
 
-## Ⅳ RLHF Data
+## Ⅳ RL Data
 
-From the [Magpie-DPO Dataset](https://www.modelscope.cn/datasets/Magpie-Align/MagpieLM-DPO-Data-v0.1)
-approximately 200k preference data entries (all in English) generated from Llama3.1-70B/8B, can be used to train reward models, optimize model reply quality, making it more consistent with human preferences.
-Here, we reorganized content with total data length `<3000` into `dpo.jsonl` (~0.9GB), containing two fields `chosen` and `rejected`, where `chosen`
-is the preferred reply and `rejected` is the rejected reply.
+`MiniMind` current main branch RL data is `dpo.jsonl`. Data sampled from [DPO-En-Zh-20k](https://huggingface.co/datasets/llamafactory/DPO-En-Zh-20k).
 
-The file `dpo.jsonl` data format is
+In the main branch, these samples are uniformly reorganized into the preference learning format used by the current repository, for reward model or preference optimization stage training; where `chosen` represents the more preferred response, and `rejected` represents the relatively worse response.
 
-```text
+The `dpo.jsonl` data format is
+
+```json
 {
   "chosen": [
     {"content": "Q", "role": "user"}, 
@@ -528,92 +479,75 @@ The file `dpo.jsonl` data format is
 }
 ```
 
-## Ⅴ Reasoning Dataset:
+Besides this, other RL data maintains the same format as SFT data, typically filtered from SFT data by total length and dialogue turns, with the last `assistant` position left blank for continuation during the rollout stage.
 
-There's no denying that in February 2025, who can be hotter than DeepSeek...
-It also sparked my strong interest in RL-guided reasoning models. I've already reproduced R1-Zero using Qwen2.5.
-If I have time + good results (but 99% of base models lack ability), I will later update MiniMind with RL-trained reasoning models rather than distilled models.
-With limited time, the fastest low-cost solution is still direct distillation (black-box method).
-Unable to resist R1's popularity, in just a few days there are already various R1 distillation datasets like [R1-Llama-70B](https://www.modelscope.cn/datasets/Magpie-Align/Magpie-Reasoning-V2-250K-CoT-Deepseek-R1-Llama-70B), [R1-Distill-SFT](https://www.modelscope.cn/datasets/AI-ModelScope/R1-Distill-SFT),
-[Alpaca-Distill-R1](https://huggingface.co/datasets/shareAI/Alpaca-Distill-R1-ZH),
-[deepseek_r1_zh](https://huggingface.co/datasets/jinliuxi/deepseek_r1_zh) and so on. Pure Chinese data is relatively scarce.
-Finally integrated them, export file as `r1_mix_1024.jsonl`, data format consistent with `sft_X.jsonl`.
-
-## Ⅵ More Datasets
-
-Currently, [HqWu-HITCS/Awesome-Chinese-LLM](https://github.com/HqWu-HITCS/Awesome-Chinese-LLM)
-is collecting and organizing materials related to Chinese LLMs including open-source models, applications, datasets, and tutorials, and continuously updating the latest progress in this field. Comprehensive and professional, Respect!
-
----
-
-## Ⅷ MiniMind Training Datasets
+## Ⅴ MiniMind Training Dataset
 
 > [!NOTE]
-> After 2025-02-05, all datasets used for final MiniMind training are open-sourced. Therefore, you don't need to preprocess large-scale datasets yourself, avoiding repetitive data processing work.
+> The core datasets needed for the current main branch training have been open-sourced, so there is no need to preprocess large-scale datasets on your own, avoiding repetitive data processing work.
 
-MiniMind Training Dataset Download: [ModelScope](https://www.modelscope.cn/datasets/gongjy/minimind_dataset/files) | [HuggingFace](https://huggingface.co/datasets/jingyaogong/minimind_dataset/tree/main)
+MiniMind training dataset download links: [ModelScope](https://www.modelscope.cn/datasets/gongjy/minimind_dataset/files) | [HuggingFace](https://huggingface.co/datasets/jingyaogong/minimind_dataset/tree/main)
 
-> No need to clone everything, you can download the files you need individually
+> No need to clone everything, you can download individual files as needed
 
-Place the downloaded dataset files in the `./dataset/` directory (✨ are recommended required items)
+Place the downloaded dataset files in the `./dataset/` directory (✨ indicates recommended essentials)
 
 ```bash
 ./dataset/
-├── dpo.jsonl (55MB, ✨)
-├── lora_identity.jsonl (22.8KB)
-├── lora_medical.jsonl (34MB)
-├── pretrain_hq.jsonl (1.6GB, ✨)
-├── r1_mix_1024.jsonl (340MB)
-├── rlaif-mini.jsonl (1MB, ✨)
-├── sft_1024.jsonl (5.6GB)
-├── sft_2048.jsonl (9GB)
-├── sft_512.jsonl (7.5GB)
-└── sft_mini_512.jsonl (1.2GB, ✨)
+├── agent_rl.jsonl (86MB)
+├── agent_rl_math.jsonl (18MB)
+├── dpo.jsonl (53MB)
+├── pretrain_t2t_mini.jsonl (1.2GB, ✨)
+├── pretrain_t2t.jsonl (10GB)
+├── rlaif.jsonl (24MB, ✨)
+├── sft_t2t_mini.jsonl (1.6GB, ✨)
+└── sft_t2t.jsonl (14GB)
 ```
 
-<details style="color:rgb(128,128,128)">
-<summary>Note: Brief Description of Each Dataset</summary>
+<details>
+<summary>Note: Brief Introduction to Each Dataset</summary>
 
-* `dpo.jsonl`✨ --RLHF stage dataset (optimized and simplified, suitable for fast training)
-* `lora_identity.jsonl` --Self-awareness dataset (e.g., Who are you? I am minimind...), recommended for lora training (can also be used for full-parameter SFT, don't be limited by the name)
-* `lora_medical.jsonl` --Medical Q&A dataset, recommended for lora training (can also be used for full-parameter SFT, don't be limited by the name)
-* `pretrain_hq.jsonl`✨ --Pretraining dataset, integrated from JiangShu Technology (recommended `max_seq_len≈320`)
-* `r1_mix_1024.jsonl` --DeepSeek-R1-1.5B distilled data, maximum character length per entry is 1024 (recommended `max_seq_len≈720`)
-* `rlaif-mini.jsonl` --RLAIF training dataset, randomly sampled 10,000 high-quality conversations from SFT dataset for training reinforcement learning algorithms like PPO/GRPO/SPO
-* `sft_1024.jsonl` --Integrated from Qwen2.5 distilled data (a subset of sft_2048), maximum character length per entry is 1024 (recommended `max_seq_len≈650`)
-* `sft_2048.jsonl` --Integrated from Qwen2.5 distilled data, maximum character length per entry is 2048 (recommended `max_seq_len≈1400`)
-* `sft_512.jsonl` --Integrated from JiangShu Technology SFT data, maximum character length per entry is 512 (recommended `max_seq_len≈350`)
-* `sft_mini_512.jsonl`✨ --Minimal integration from JiangShu Technology SFT data + Qwen2.5 distilled data (for quick training of Zero models), maximum character length per entry is 512 (recommended `max_seq_len≈340`)
+* `agent_rl.jsonl` -- Agentic RL main branch training data, for `train_agent.py` multi-turn Tool-Use / CISPO / GRPO training
+* `agent_rl_math.jsonl` -- Agentic RL pure math supplementary data, suitable for multi-turn reasoning/tool-use scenarios with final verification targets (for RLVR)
+* `dpo.jsonl` -- RLHF stage preference training data (DPO)
+* `pretrain_t2t_mini`✨ -- `minimind-3` lightweight pretraining data, suitable for quick reproduction (recommended setting `max_seq_len≈768`)
+* `pretrain_t2t` -- `minimind-3` main branch pretraining data (recommended setting `max_seq_len≈380`)
+* `rlaif.jsonl`✨ -- RLAIF training dataset, for PPO/GRPO/CISPO and other reinforcement learning algorithm training
+* `sft_t2t_mini.jsonl`✨ -- `minimind-3` lightweight SFT data (for quickly training a Zero model), recommended setting `max_seq_len≈768`, with a portion of Tool Call samples already mixed in
+* `sft_t2t.jsonl` -- `minimind-3` main branch SFT data, suitable for full reproduction, with Tool Call samples also mixed in
 
 
-Training parameter `max_seq_len` currently refers to the **token length**, not the absolute number of characters.
-For this project's tokenizer, typical Chinese text is roughly `1.5~1.7 chars/token`, while pure English text is roughly `4~5 chars/token` (it varies with data distribution).
-The “max length” annotated in dataset names is measured in **characters**. For example, a 100-character Chinese string can be roughly converted to `100/1.5≈67` tokens.
+The training parameter `max_seq_len` currently refers to token length, not absolute character count.
+This project's tokenizer has approximately `1.5~1.7 characters/token` for Chinese text, and a compression ratio of `4~5 characters/token` for pure English, with fluctuations depending on data distribution.
+The "maximum length" annotated in dataset names is in character count; a string of 100 characters can be roughly converted to approximately `100/1.5≈67` tokens.
 
 For example:
 
-* Chinese: `白日依山尽` (5 chars) may be tokenized into [`白日`, `依`, `山`, `尽`] (4 tokens)
-* English: `The sun sets in the west` (24 chars) may be tokenized into [`The `, `sun `, `sets `, `in `, `the`, `west`] (6 tokens)
+* Chinese: `白日依山尽` (5 characters) may be split into [`白日`,`依`,`山`,`尽`] 4 tokens;
+* English: `The sun sets in the west` (24 characters) may be split into [`The `,`sun `,`sets `,`in `,`the`,`west`] 6 tokens
 
-The “recommended setting” above provides a rough estimate of the max token length for each dataset.
-Note that `max_seq_len` can be tuned aggressively / conservatively / in a balanced way: a larger value increases padding waste, while a smaller value increases truncation.
+The "recommended settings" provide rough estimates of the maximum token length for each dataset.
+Note that `max_seq_len` can be adjusted aggressively / conservatively / moderately, because both larger and smaller values inevitably have side effects: some samples shorter than `max_seq_len` waste compute due to padding, while some samples longer than `max_seq_len` lose semantics due to truncation.
 
-Just find a balance between `compute efficiency` <---> `semantic completeness`.
+Finding a balance between compute efficiency and semantic completeness is sufficient
 
 </details>
 
+
 ![dataset](./images/dataset.jpg)
 
-<details style="color:rgb(128,128,128)">
+> MiniMind main branch training data composition and recommended combination diagram
+
+<details>
 <summary>Instructions & Recommended Training Schemes</summary>
 
-* MiniMind2 Series was trained on approximately 20GB of corpus in total, about 4B tokens, corresponding to the data combination training results above (cost: 💰💰💰💰💰💰💰💰, results: 😊😊😊😊😊😊)
+* `minimind-3` main branch recommends using the staged training combination of `pretrain_t2t` + `sft_t2t` + `rlaif/agent_rl`.
 
-* For the fastest speed to implement Zero model from scratch, we recommend using the data combination of `pretrain_hq.jsonl` + `sft_mini_512.jsonl`, specific cost and results can be seen in the table below (cost: 💰, results: 😊😊)
+* For the fastest speed to implement a Zero model from scratch, it is recommended to use the data combination of `pretrain_t2t_mini.jsonl` + `sft_t2t_mini.jsonl`
 
-* For friends with certain computing resources or those who care more about results, you can consider the former to fully reproduce MiniMind2; for those with only single GPU or who care about quick reproduction in short time, we highly recommend the latter;
+* Those with sufficient compute resources or who care more about performance are recommended to fully reproduce `minimind-3`; those with only a single GPU or who prioritize quick reproduction are strongly recommended to use the mini combination.
 
-* [Compromise solution] You can also choose medium-sized data like `sft_mini_512.jsonl`, `sft_1024.jsonl` for free combination training (cost: 💰💰💰, results: 😊😊😊😊).
+* The current `sft_t2t / sft_t2t_mini` already has Tool Call data mixed in, so there is usually no need for an additional separate round of Tool Calling supervised fine-tuning.
 
 </details>
 
@@ -621,540 +555,525 @@ Just find a balance between `compute efficiency` <---> `semantic completeness`.
 
 ## Structure
 
-MiniMind-Dense (same as [Llama3.1](https://ai.meta.com/blog/meta-llama-3-1/)) uses the Transformer Decoder-Only structure. The differences from GPT-3 are:
+`minimind-3` Dense uses a Transformer Decoder-Only structure, with overall configuration aligned with the `Qwen3` ecosystem, facilitating subsequent conversion to `transformers / llama.cpp / ollama / vllm`:
 
-* Adopts GPT-3's pre-normalization method, normalizing at the input of each Transformer sub-layer rather than at the output. Specifically, it uses the RMSNorm normalization function.
-* Replaced ReLU with SwiGLU activation function to improve performance.
-* Like GPT-Neo, it removed absolute position embeddings and switched to rotary position embeddings (RoPE), which works better when handling inference beyond training length.
+* Uses Pre-Normalization (Pre-Norm) + RMSNorm.
+* Uses SwiGLU activation function.
+* Uses RoPE rotary positional encoding, with YaRN extrapolation support.
+* `q_heads=8`, `kv_heads=4`, `max_position_embeddings=32768`, `rope_theta=1e6`.
 
----
+`minimind-3-moe` extends MoE feed-forward layers on the same structure, with implementation compatible with `Qwen3-MoE` style configuration (removing shared expert).
 
-MiniMind-MoE model structure is based on Llama3 and the MixFFN mixture-of-experts module from [Deepseek-V2/3](https://arxiv.org/pdf/2405.04434).
+* The current default configuration is `4 experts / top-1 routing`, to achieve higher capacity with lower active parameters.
+* As experts continue to increase, actual time consumption is often much higher than dense models of the same scale, which may seem counterintuitive when put alongside "MoE inference is faster", but during training tokens are first bucketed by expert then forwarded separately, and the `kernel` start/stop and scheduling overhead during native training increases dramatically — this is naturally expected. It requires MoE kernel-fused operator libraries to optimize, such as custom kernels based on `Triton`, `DeepSpeed-MoE`, `Megatron-LM`, etc. Of course, this project still aims to preserve the universality of native PyTorch, so this is a realistic compromise; under the current implementation, the `4 experts / top-1` sweet spot configuration is only about `50%` slower than the dense model.
 
-* DeepSeek-V2 in feed-forward networks (FFN) uses finer-grained expert splitting and shared expert isolation techniques to improve the effect of Experts.
+The `minimind-3` series structure is shown below:
 
----
+![structure](./images/LLM-structure.jpg)
+![structure-moe](./images/LLM-structure-moe.jpg)
 
-MiniMind's overall structure is consistent, with only small adjustments in RoPE computation, inference functions, and FFN layer code.
-The structure is shown in the diagram below (redrawn version):
+To modify model configuration, see [./model/model_minimind.py](./model/model_minimind.py). Reference model parameter versions are shown in the table below:
 
-![structure](./images/LLM-structure.png)
-![structure-moe](./images/LLM-structure-moe.png)
-
-To modify model configuration, see [./model/model_minimind.py](./model/model_minimind.py).
-Reference model parameter versions see the table below:
-
-| Model Name        | params | len_vocab | rope_theta | n_layers | d_model | kv_heads | q_heads | share+route |
-|-------------------|--------|-----------|------------|----------|---------|----------|---------|-------------|
-| MiniMind2-Small   | 26M    | 6400      | 1e6        | 8        | 512     | 2        | 8       | -           |
-| MiniMind2-MoE     | 145M   | 6400      | 1e6        | 8        | 640     | 2        | 8       | 1+4         |
-| MiniMind2         | 104M   | 6400      | 1e6        | 16       | 768     | 2        | 8       | -           |
-| minimind-v1-small | 26M    | 6400      | 1e4        | 8        | 512     | 8        | 16      | -           |
-| minimind-v1-moe   | 4×26M  | 6400      | 1e4        | 8        | 512     | 8        | 16      | 1+4         |
-| minimind-v1       | 108M   | 6400      | 1e4        | 16       | 768     | 8        | 16      | -           |
+| Model Name | params | len_vocab | max_pos | rope_theta | n_layers | d_model | kv_heads | q_heads | note |
+|------------|--------|-----------|---------|------------|----------|---------|----------|---------|------|
+| minimind-3 | 64M | 6400 | 32768 | 1e6 | 8 | 768 | 4 | 8 | Dense |
+| minimind-3-moe | 198M / A64M | 6400 | 32768 | 1e6 | 8 | 768 | 4 | 8 | 4 experts / top-1 |
+| minimind2-small | 26M | 6400 | 32768 | 1e6 | 8 | 512 | 2 | 8 | Historical version |
+| minimind2-moe | 145M | 6400 | 32768 | 1e6 | 8 | 640 | 2 | 8 | Historical version |
+| minimind2 | 104M | 6400 | 32768 | 1e6 | 16 | 768 | 2 | 8 | Historical version |
 
 
 ## Model Configuration
 
-📋 Regarding LLM parameter configuration, there's an interesting paper [MobileLLM](https://arxiv.org/pdf/2402.14905) that conducted detailed research and experiments.
-Scaling Law has its own unique patterns in small models.
-Parameters causing Transformer parameter scaling changes almost entirely depend on `d_model` and `n_layers`.
+Regarding LLM parameter configuration, [MobileLLM](https://arxiv.org/pdf/2402.14905) has conducted a very representative systematic study on small models. For ~100M-level models like MiniMind, the trade-off between `d_model` and `n_layers` is not just a parameter allocation issue, but also directly affects training stability and final performance.
 
-* `d_model`↑ + `n_layers`↓ -> Wide and short
-* `d_model`↓ + `n_layers`↑ -> Narrow and tall
+The current `minimind-3` main branch chooses `dim=768, n_layers=8`, which is essentially an engineering trade-off: shallower networks train faster, while `dim` is not so small as to cause mode collapse, thus achieving a relatively balanced position between training efficiency, stability, and final performance.
 
-The 2020 Scaling Law paper argued that training data volume, parameter quantity, and training iterations are the key factors determining performance, while model architecture influence is negligible.
-However, this law doesn't seem to fully apply to small models.
-MobileLLM argues that architecture depth is more important than width, "deep and narrow" "tall and skinny" models can learn more abstract concepts than "wide and shallow" models.
-For example, when model parameters are fixed at 125M or 350M, 30-42 layer "narrow" models clearly have superior performance compared to around 12 layer "wide" models,
-showing similar trends across 8 benchmark tests including commonsense reasoning, Q&A, and reading comprehension.
-This is actually a very interesting discovery, because previously when designing architectures for ~100M scale small models, almost no one tried stacking more than 12 layers.
-This is consistent with what MiniMind observed in experiments when adjusting model parameters between `d_model` and `n_layers` during training.
-However, "deep and narrow" models also have dimensional limits. When d_model<512, the disadvantage of embedding dimension collapse is very obvious,
-and added layers cannot compensate for the disadvantage of insufficient d_head caused by fixed q_head in embeddings.
-When d_model>1536, increasing layers seems to have higher priority than d_model, bringing more "cost-effective" parameter -> performance gains.
+<details>
+<summary>View Detailed Explanation</summary>
 
-* Therefore MiniMind sets small model dim=512, n_layers=8 to achieve the balance of "extremely small size <-> better performance."
-* Setting dim=768, n_layers=16 to gain larger performance improvements, more consistent with small model Scaling-Law curves.
+Scaling Law often exhibits phenomena on small models that differ from large models. The core parameters that determine changes in Transformer parameter scale are usually mainly `d_model` and `n_layers`:
 
-For reference, GPT3 parameter settings see the table below:
+* `d_model`↑ + `n_layers`↓ -> Short and fat
+* `d_model`↓ + `n_layers`↑ -> Tall and thin
+
+Classic Scaling Law emphasizes the decisive role of training data volume, parameter count, and training steps, typically downplaying the impact of architectural differences themselves; but in the small model range, this conclusion does not always hold completely.
+MobileLLM's core observation is: when parameter count is fixed, depth is often more important than width. That is, compared to "wide and shallow" structures, "deep and narrow" models learn abstract concepts more easily.
+For example, when model parameter count is fixed at `125M` or `350M`, `30~42` layer narrow structures typically outperform `12`-layer short and fat structures, showing similar trends across multiple benchmarks including commonsense reasoning, QA, and reading comprehension.
+
+This is consistent with what MiniMind observed in experiments around `d_model` and `n_layers` parameter allocation during training. However, the "narrow" in "deep and narrow" also has a lower bound: when `d_model < 512`, the disadvantage of overly narrow word embedding dimensions becomes significantly amplified, and adding extra layers is often insufficient to fully compensate for the problem of `d_head` being too small under a fixed `q_head`.
+Conversely, when `d_model > 1536`, continuing to add layers is often more cost-effective than simply continuing to widen, more easily yielding higher parameter-performance returns.
+
+For reference, GPT-3's parameter settings are as follows:
 ![gpt3_config.png](./images/gpt3_config.png)
-
----
-
-# 📌 Experiment
-
-## Ⅰ Training Costs
-
-- **Time unit**: Hours (h).
-- **Cost unit**: Chinese Yuan (￥); 7￥ ≈ 1 USD.
-- **3090 rental price**: ≈1.3￥/h (you can check current prices yourself).
-- **Reference standard**: The table only shows actual measured training time for `pretrain` and `sft_mini_512` two datasets. Other time costs are estimated based on dataset size (may have slight variations).
-
-> Based on 3090 (single GPU) cost calculation
-
-| Model Name      | params | pretrain         | sft_mini_512     | sft_512       | sft_1024          | sft_2048         | RLHF          |
-|-----------------|--------|------------------|------------------|---------------|-------------------|------------------|---------------|
-| MiniMind2-Small | 26M    | ≈1.1h<br/>≈1.43￥ | ≈1h<br/>≈1.3￥    | ≈6h<br/>≈7.8￥ | ≈4.58h<br/>≈5.95￥ | ≈7.5h<br/>≈9.75￥ | ≈1h<br/>≈1.3￥ |
-| MiniMind2       | 104M   | ≈3.9h<br/>≈5.07￥ | ≈3.3h<br/>≈4.29￥ | ≈20h<br/>≈26￥ | ≈15h<br/>≈19.5￥   | ≈25h<br/>≈32.5￥  | ≈3h<br/>≈3.9￥ |
-
----
-
-<details style="color:rgb(128,128,128)">
-<summary>Training Cost Summary & Forecast</summary>
-
-> MiniMind2-Small Parameters
->> `pretrain_hq`+`sft_mini_512` Dataset
-<br/>Single 3090 GPU (1 epoch) + 2.1 hours + Cost 2.73 Chinese Yuan
-<br/>Can train MiniMind-Zero-0.025B model from scratch!!!
-
-> MiniMind2-Small Parameters
->> `pretrain_hq`+`sft_512`+`sft_2048`+`dpo` Dataset
-<br/>Single 3090 GPU (2 epochs) + Approximately 38.16 hours + Cost 49.61 Chinese Yuan
-<br/>Can train MiniMind2-Small-0.025B model from scratch!!!
-
-> MiniMind2 Parameters
->> `pretrain_hq`+`sft_512`+`sft_2048`+`dpo` Dataset
-<br/>Single 3090 GPU (2 epochs) + Approximately 122 hours + Cost 158.6 Chinese Yuan
-<br/>Can train MiniMind2-0.1B model from scratch!!!
 
 </details>
 
-✨ Based on single NVIDIA 3090 GPU, `MiniMind-Zero` requires only `2 hours` + `3 Chinese Yuan` from scratch to achieve ChatBot effect!
+---
 
-✨ PS: If training with 8 4090 GPUs, the total time can even be compressed to less than 10 minutes! (Due to shorter time, cost is still around 3 Yuan, comparable to single GPU cost)
+# 📌 Experiments
 
-✨ With an extremely low barrier to entry, achieve large model freedom for everyone! This is the original intention behind the birth of the MiniMind series!
+## Ⅰ Training Cost
 
-✨ The `MiniMind-Zero` costing only `3 Chinese Yuan` is not just hype! Chat test:
+- **Time unit**: hours (h)
+- **Cost unit**: CNY (￥); `7￥ ≈ 1 USD`
+- **3090 rental price**: approximately `1.3￥/h` (actual prices can be referenced on your own)
+- **Note**: The following results are empirical estimates for the `minimind` model on a single `3090` GPU, for quick perception of the training threshold
+
+| Model Name | params | pretrain_t2t_mini | sft_t2t_mini | toolcall | RLAIF |
+|------------|--------|-------------------|--------------|----------|-------|
+| minimind-3 | 64M | ≈1.21h<br/>≈1.57￥ | ≈1.10h<br/>≈1.43￥ | ≈0.9h<br/>≈1.17￥ | ≈1.1h<br/>≈1.43￥ |
+| minimind-3-moe | 198M / A64M | ≈1.69h<br/>≈2.20￥ | ≈1.54h<br/>≈2.00￥ | ≈1.26h<br/>≈1.64￥ | ≈1.54h<br/>≈2.00￥ |
+
+---
+
+<details>
+<summary>Training Cost Summary & Prediction</summary>
+
+> `minimind-3`
+>> `pretrain_t2t_mini` + `sft_t2t_mini`
+<br/>Single `3090` GPU, `1 epoch` estimated approximately `2.31` hours, cost approximately `3.0` CNY
+<br/>Can train a `minimind-3 Zero` dialogue model from scratch.
+
+> `minimind-3-moe`
+>> `pretrain_t2t_mini` + `sft_t2t_mini`
+<br/>Single `3090` GPU, `1 epoch` estimated approximately `3.23` hours, cost approximately `4.2` CNY
+<br/>Can quickly obtain the basic dialogue version of `minimind-3-moe`.
+
+> The above are all estimated values, only for quick perception of the training threshold.
+
+</details>
+
+Based on a single `NVIDIA 3090`, `minimind zero` training from scratch can still be controlled within approximately `2` hours, allowing individual developers to get started with a relatively low barrier.
+
+If using a higher-spec multi-GPU environment, such as `8x H100`, the total training time can be further compressed to the minute level. Achieving reproducible, hands-on, and continuously iteratable LLM training experiences with the lowest possible barrier is the direction MiniMind series has always aimed to maintain. Low-cost quick reproduction is not a gimmick; below is an early Zero-style example conversation preserved for reference:
 
 ```text
-👶: Please introduce yourself.
-🤖️: As an artificial intelligence, I have no actual life and no self-awareness, so I don't have my own life. I was designed to help users answer questions, provide information, and have conversations, etc. My design and functionality are built by computer science, machine learning, artificial intelligence technology and algorithms, and I'm implemented through programming and algorithms.
+👶: 请介绍一下自己。
+🤖️: 作为人工智能，我没有实际的生活，也没有自我意识，所以没有自己的生活。我被设计成能够帮助用户解答问题、提供信息、进行对话等。我的设计和功能是由计算机科学、机器学习、人工智能技术和算法所构建的，我通过编程和算法实现。
 
-👶: Recommend some special dishes from Hangzhou.
-🤖️: Hangzhou has many delicious special dishes, such as chicken kebabs, eel head, boiled fish, tofu brain, etc. These dishes are very delicious, with unique flavors and tastes, definitely worth trying.
+👶: 推荐一些杭州的特色美食吧。
+🤖️: 杭州有很多美味的特色美食，比如鸡肉串、鳗鱼头、水煮鱼、豆腐脑等。这些美食都非常美味，有着独特的风味和口感，绝对是值得一试的美食。
 
-👶: Please explain the concept of "large language models" to me.
-🤖️: A large language model is a type of artificial intelligence technology that uses large amounts of text data to train models, then continuously optimizes the model through iterations. Its goal is to generate text that meets specific needs based on input data. These texts can be any topic you're interested in.
+👶: 请为我讲解"大语言模型"这个概念。
+🤖️: 大语言模型是一种人工智能技术，它使用大量的文本数据来训练模型，然后在不断的迭代中不断优化模型。它的目标是根据输入的数据来生成符合特定需求的文本，这些文本可以是任何你感兴趣的主题。
 
 👶: Introduce the history of the United States, please.
-🤖️: The "Introok's the believeations of theument" you mentioned gets its name from the ancient Chinese "groty of of the change."
+🤖️: 您提到的"Introok's the believeations of theument." 这个名字来源于中国古代的"groty of of the change."
 ```
 
-Extremely fast with initial results, and can even be further compressed to obtain smaller and higher quality training data.
-Zero model weights are saved as `full_sft_512_zero.pth` (see MiniMind model file links below). If interested, you can download and test this model.
+Although this version already possesses basic dialogue capability, factual knowledge and generalization ability are still quite limited; it is more suitable as an early reference for the feasibility of the Zero training route.
+Zero model weights are saved as `full_sft_zero_768.pth` (see MiniMind model file links below); if interested, you can download and experience its dialogue performance.
+
 
 ---
 
 ## Ⅱ Main Training (Required)
 
-> All training scripts should be executed in the `cd ./trainer` directory
+> All training scripts are executed from the `cd ./trainer` directory
 
-### **1. Pretraining (Pretrain)**:
+### 1' Pretraining (Pretrain):
 
-What LLMs need to learn first is not to communicate directly with people, but to fill the network parameters with the ink of knowledge. The "ink" should ideally be as saturated as possible, accumulating vast knowledge about the world.
-Pretraining is where the model first studies hard to learn a large amount of basic knowledge, such as organizing large-scale high-quality training data from Wikipedia, news, books, etc.
-This process is "unsupervised," meaning humans don't need to perform any "supervised" corrections during the process. Instead, the model itself summarizes patterns and learns knowledge from large amounts of text.
-The model's goal at this stage is only one: **Learn word prediction**. For example, given the input "Qin Shi Huang," it can continue with "was the first emperor of China."
+What an LLM must first learn is to absorb as much foundational knowledge and language patterns into its parameters as possible. Only when this step is solidly established can the model later have the ability to understand questions, organize expressions, and gradually develop decent generation capability. What pretraining does is essentially let the model read large amounts of text with its head down, such as Wikipedia, news, books, dialogue corpora, etc., learning factual knowledge, language patterns, and statistical relationships between contexts. This stage is usually "unsupervised": humans do not need to tell the model line by line what is right or wrong, but let it summarize patterns from massive text on its own, gradually building internal representations of world knowledge and language structure.
+More bluntly, the model's core objective at this stage is **learning high-quality word chain completion**. For example, given the input "秦始皇" (Qin Shi Huang), it should be able to continue generating "是中国历史上的第一位皇帝" (was the first emperor in Chinese history) — content that is semantically and factually consistent.
 
 ```bash
-torchrun --nproc_per_node 1 train_pretrain.py # 1 means single GPU training, adjust based on your hardware (set >=2 for multiple GPUs)
-# or
+# Method 1
+torchrun --nproc_per_node 1 train_pretrain.py # 1 means single GPU training, adjust according to your hardware (set >=2)
+# Method 2
 python train_pretrain.py
 ```
 
-> After training, model weight files are saved by default every `100 steps` as: `pretrain_*.pth` (where *
-> is the model's specific dimension, new files overwrite old ones on each save)
+> The trained model weight files are saved by default every `save_interval steps` as: `pretrain_*.pth` (* is the specific model dimension, each save overwrites the previous file)
 
-| MiniMind2-Small (512dim) | MiniMind2 (768dim) |
-|---|---|
-| <img src="./images/pre_512_loss.png"> | <img src="./images/pre_768_loss.png"> |
-
-### **2. Supervised Fine-Tuning (SFT)**:
-
-After pretraining, the LLM has mastered a lot of knowledge, but at this point it only knows how to do word prediction mindlessly and doesn't know how to chat with people.
-The SFT stage requires applying a custom chat template to fine-tune the semi-finished LLM.
-For example, after the model encounters such a template [question->answer, question->answer], it no longer does mindless word continuation, but realizes this is the end of a complete conversation.
-This process is called instruction fine-tuning, like helping the already knowledgeable "Newton" gentleman adapt to 21st-century smartphone chat habits, learning that the left side of the screen is the other person's message and the right side is the user's message.
-During training, MiniMind's instruction and answer lengths are truncated at 512 to save GPU memory. Like learning to write, you start with short articles, and after learning to write 200-character essays, 800-character articles become easy.
-When length extension is needed, you only need to prepare a small amount of 2k/4k/8k length dialogue data for further fine-tuning (preferably combined with RoPE-NTK scaling).
-> During inference, by adjusting RoPE scaling, it will be convenient to achieve training-free length extrapolation to 2048 and beyond.
+![pretrain_loss](./images/pretrain_loss.jpg)
+> Loss curve during the pretraining stage with `768dim` configuration
 
 ```bash
+# Simple test on pretraining results:
+python eval_llm.py --weight pretrain
+
+💬: 为什么天空是蓝色的
+🧠: 天空之所以看起来是蓝色的，主要是因为太阳光进入大气层后，短波长的蓝光更容易被空气分子散射，因此人眼从各个方向接收到的蓝光会更多。
+
+💬: 解释什么是机器学习
+🧠: 机器学习是人工智能的一个重要分支，它通过数据训练模型，使系统能够自动学习规律，并在分类、预测、推荐、自然语言处理等任务中持续改进效果。
+```
+
+### 2' Supervised Fine-Tuning (SFT):
+
+SFT is not just about tuning the model to "chat better" — it can also continue to infuse new knowledge, behavioral patterns, and response styles into the model. Especially for MiniMind's current main branch with `14GB` of SFT data, this is already more than simple format alignment; it is closer to a continuous reinforcement process with `mid training` characteristics.
+If pretraining is understood as first letting the model extensively read and accumulate basic language abilities, then SFT is more like continued deep processing on high-quality, more targeted data. On one hand, it lets the model adapt to multi-turn dialogue, Q&A, tool calling, and thinking tag interaction forms; on the other hand, it continues to press specific knowledge distributions, task patterns, and assistant styles into the parameters.
+Specifically in MiniMind, the SFT stage lets the model adapt to the multi-turn dialogue template used by the current repository. The model gradually understands the role structure of `user / assistant / system / tool`, while further strengthening instruction following, stable responses, and task completion capabilities.
+The current training applies truncation control on instruction and response lengths, mainly to balance VRAM usage and training efficiency; if longer contexts are needed later, one only needs to prepare a small number of long samples for incremental fine-tuning. During inference, enabling YaRN extrapolation can extend context length to 2048 and beyond without additional training.
+
+```bash
+# Method 1
 torchrun --nproc_per_node 1 train_full_sft.py
-# or
+# Method 2
 python train_full_sft.py
 ```
 
-> After training, model weight files are saved by default every `100 steps` as: `full_sft_*.pth` (where *
-> is the model's specific dimension, new files overwrite old ones on each save)
+> The trained model weight files are saved by default every `save_interval steps` as: `full_sft_*.pth` (*
+> is the specific model dimension, each save overwrites the previous file)
 
-| MiniMind2-Small (512dim) | MiniMind2 (768dim) |
-|---|---|
-| <img src="./images/sft_512_loss.png"> | <img src="./images/sft_768_loss.png"> |
-
-## Ⅲ Other Training Stages (Optional)
-
-> All training scripts should be executed in the `cd ./trainer` directory
-
-### **3. Knowledge Distillation (KD)**
-
-At this point, after all the previous training steps, the model has completely acquired basic capabilities and usually can graduate.
-However, knowledge distillation can further optimize model performance and efficiency. Knowledge distillation means the student model learns from the teacher model.
-The teacher model is usually a well-trained large model with high accuracy and generalization ability.
-The student model is a smaller model whose goal is to learn the teacher model's behavior rather than learn directly from raw data.
-In SFT learning, the model's goal is to fit hard labels for token classification (hard labels), i.e., true class labels (such as 0 or 6400).
-In knowledge distillation, the teacher model's softmax probability distribution is used as soft labels (soft labels). The small model only learns soft labels and uses KL-Loss to optimize model parameters.
-In simple terms, SFT learns the problem-solving answers the teacher gives directly. The KD process is like "opening" the teacher's smart brain and trying to mimic the neural state of the teacher's "brain" thinking about problems.
-For example, when the teacher model calculates the problem `1+1=2`, the final layer neurons a state is 0, neuron b state is 100, neuron c state is -99...
-The student model learns the operating rules inside the teacher model's brain through large amounts of data. This process is called: knowledge distillation.
-Knowledge distillation has only one purpose: make small models smaller in size while having better results.
-However, with the birth and development of LLMs, the term model distillation has been widely abused, creating two schools of "white-box/black-box" knowledge distillation.
-Closed-source models like GPT-4, since their internal structure cannot be accessed, can only learn from the data they output. This process is called black-box distillation, and is the most common practice in the age of large models.
-Black-box distillation is completely identical to the SFT process, except the data is collected from large model outputs. Therefore, you only need to prepare data and further FT.
-Note that you need to change the loaded base model to `full_sft_*.pth`, i.e., further distillation learning based on the fine-tuned model.
-Both `./dataset/sft_1024.jsonl` and `./dataset/sft_2048.jsonl` are collected from qwen2.5-7/72B-Instruct large models and can be used directly for SFT to acquire some Qwen behavior.
+![sft_loss](./images/sft_loss.jpg)
+> Loss curve during the SFT stage with `768dim` configuration
 
 ```bash
-# Note: need to change the dataset path in train_full_sft.py and max_seq_len
-torchrun --nproc_per_node 1 train_full_sft.py
-# or
-python train_full_sft.py
+# Simple test on SFT results:
+python eval_llm.py --weight full_sft
+
+💬: 解释什么是机器学习
+🧠: 机器学习是人工智能的核心技术之一，通过算法让计算机从数据中学习规律，并持续改进预测或决策效果，常见应用包括推荐系统、图像识别、语音识别和自然语言处理。
+
+💬: 推荐一些中国的美食
+🧠: 例如北京烤鸭、兰州拉面、四川火锅、广东早茶、小笼包和麻婆豆腐等，这些美食分别代表了不同地区的风味特点，也很适合作为了解中国饮食文化的入门选择。
 ```
 
-> After training, model weight files are similarly saved by default every `100 steps` as: `full_sft_*.pth` (where * is the model's specific dimension, new files overwrite old ones on each save)
+## Ⅲ Other Training (Optional)
 
-Emphasis should be placed on introducing MiniMind's white-box distillation code `train_distillation.py`. Since there is no powerful teacher model within the same MiniMind series, the white-box distillation code is only for learning reference.
+> All training scripts are executed from the `cd ./trainer` directory
+
+### 3' Knowledge Distillation (KD)
+
+Knowledge distillation can be broadly divided into black-box and white-box categories. MiniMind's current main branch involves both approaches, just with different emphases.
+* Black-box distillation: More common, and more aligned with the current main branch's actual practice. Strictly speaking, it is essentially supervised fine-tuning oriented towards teacher outputs, i.e., continuing to train based on hard labels; as LLMs became popular, this approach of "doing FT against strong model outputs" has gradually been broadly categorized under the distillation umbrella, hence commonly called black-box distillation. It focuses on learning answers, styles, and behavioral patterns — the student model can only see "what the teacher said" but cannot see how the teacher internally arrived at that judgment. High-quality answers from `DeepSeek R1`, `Qwen3`, as well as `tool call`, `reasoning`, chain-of-thought data, etc., can all be seen as black-box distillation signals; the current main branch `full_sft` data in MiniMind already has a considerable portion of this approach mixed in.
+* White-box distillation: Goes further, not only learning the teacher's final outputs but also learning the teacher's preferences at the token distribution level. Compared to black-box distillation, it additionally leverages the finer-grained distribution information from the teacher model's output layer, so the student model learns not just the "standard answer" but also the teacher's relative preferences among candidate tokens. Corresponding to `train_distillation.py`, the current implementation continues training the student model with distribution signals provided by the teacher model on top of already SFT-completed weights, making it more suitable as a reference implementation for understanding MiniMind's distillation pipeline.
+
+Black-box distillation is essentially equivalent to supervised fine-tuning on teacher-generated answers:
+```math
+\mathcal{L}_{blackbox} = \mathrm{CE}(y_{teacher}, p_{student})
+```
+
+White-box distillation typically fits the teacher distribution in addition to the supervised loss:
+```math
+\mathcal{L}_{whitebox} = \alpha \mathcal{L}_{CE} + (1-\alpha) T^2 \mathrm{KL}(p_t^T \parallel p_s^T)
+```
+
+The `train_distillation.py` provided in the repository is more suitable as a reference implementation for understanding the white-box distillation pipeline: it fully demonstrates teacher/student dual model loading, `CE + KL` mixed loss, temperature scaling, MoE and dense combination distillation, as well as key details like checkpoint resume and distributed training.
 
 ```bash
+# Method 1
 torchrun --nproc_per_node 1 train_distillation.py
-# or
+# Method 2
 python train_distillation.py
 ```
 
-### **4. LoRA (Low-Rank Adaptation)**
+### 4' LoRA (Low-Rank Adaptation)
 
-LoRA is an efficient Parameter-Efficient Fine-Tuning (PEFT) method aimed at fine-tuning pre-trained models through low-rank decomposition.
-Compared to full parameter fine-tuning (Full Fine-Tuning), LoRA only needs to update a small number of parameters.
-LoRA's core idea is: introduce low-rank decomposition in the model's weight matrices and only update the low-rank parts while keeping the original pre-trained weights unchanged.
-Code can be found in `./model/model_lora.py` and `train_lora.py`, completely implementing the LoRA process from scratch without relying on third-party library packaging.
+LoRA is a common Parameter-Efficient Fine-Tuning (PEFT) method. Compared to full-parameter fine-tuning, it only updates a small number of newly added parameters while keeping the original model's main weights unchanged, thus lower training cost and more suitable for vertical domain adaptation.
+Its core idea is to introduce low-rank incremental branches alongside the original weight matrices, training only these low-rank parameters, thereby completing capability transfer with relatively small cost. Related implementations can be found in `model_lora.py` and `train_lora.py`; the entire pipeline is purely hand-written, without relying on third-party wrappers.
 
 ```bash
+# train_lora.py can usually be completed fairly quickly even on CPU
+# Method 1
 torchrun --nproc_per_node 1 train_lora.py
-# or
+# Method 2
 python train_lora.py
 ```
 
-> After training, model weight files are saved by default every `100 steps` as: `lora_xxx_*.pth` (where *
-> is the model's specific dimension, new files overwrite old ones on each save)
+> The trained model weight files are saved by default every `save_interval steps` as: `lora_xxx_*.pth` (* is the specific model dimension, each save overwrites the previous file)
 
-Many people are confused about how to make models learn knowledge in their private domains, how to prepare datasets, and how to migrate general-purpose models to build domain-specific models.
-Here are some examples. For general models lacking medical domain knowledge, you can try adding domain knowledge to the original model to get better performance.
-At the same time, you usually don't want to lose other abilities of the original base model while learning domain knowledge. In this case, LoRA can effectively solve this problem.
-You only need to prepare dialogue datasets in the following format and place them in `./dataset/lora_xxx.jsonl`, then run `python train_lora.py`
-to get the new model weights `./out/lora/lora_xxx.pth`.
 
-**Medical Scenario**
+LoRA is well-suited for handling problems like "how to let the model quickly adapt to private domains or vertical scenarios while preserving general capabilities as much as possible." For example, when the base model lacks medical knowledge, a medical-oriented LoRA weight layer can be stacked on top of the original model to achieve better domain performance at relatively small cost.
+Usually you only need to prepare multi-turn dialogue format data in the same way, place it in `lora_xxx.jsonl`, and then run `python train_lora.py` to obtain new `LoRA` model weights.
 
-```
- {"conversations": [{"role": "user", "content": "What height should a cervical spondylosis patient's pillow be?"}, {"role": "assistant", "content": "For cervical spondylosis patients, pillow height selection should be based on..."}]}
- {"conversations": [{"role": "user", "content": "What about xxx"}, {"role": "assistant", "content": "xxx..."}]}
+Example 1: Vertical domain data
+
+```jsonl
+ {"conversations": [{"role": "user", "content": "请问颈椎病的人枕头多高才最好？"}, {"role": "assistant", "content": "颈椎病患者选择枕头的高度应该根据..."}]}
+ {"conversations": [{"role": "user", "content": "请问xxx"}, {"role": "assistant", "content": "xxx..."}]}
 ```
 
-**Self-awareness Scenario**
+Example 2: Self-awareness data
 
-```
- {"conversations": [{"role": "user", "content": "What is your name?"}, {"role": "assistant", "content": "My name is minimind..."}]}
- {"conversations": [{"role": "user", "content": "Who are you"}, {"role": "assistant", "content": "I am..."}]}
+```jsonl
+ {"conversations": [{"role": "user", "content": "你叫什么名字？"}, {"role": "assistant", "content": "您好，我名叫 MiniMind，是由 Jingyao Gong 开发的人工智能助手。我可以帮助你解决各种问题，包括翻译、推荐内容等等。"}]}
+ {"conversations": [{"role": "user", "content": "你是谁"}, {"role": "assistant", "content": "您好，我是 MiniMind，由 Jingyao Gong 创建。我的主要职责是提供准确的回答和帮助。"}]}
 ```
 
-At this point, [base model + LoRA model] can acquire medical scenario model-enhanced capabilities, equivalent to adding a LoRA plug-in to the base model, which does not lose the base model's original abilities.
-You can test the model through `eval_llm.py` for model evaluation.
+At this point, the [base model + LoRA weights] can be used in combination, preserving the base model's general capabilities while enhancing specific domain performance. After training, simple tests can also be done via `eval_llm.py`.
 
 ```bash
-# Note: weight parameter specifies base model type, should match the base model used during train_lora training
-python eval_llm.py  --weight dpo --lora_weight lora_medical
+# Note: the weight parameter specifies the base model type, which must be consistent with the base model used during train_lora training
+python eval_llm.py  --weight full_sft --lora_weight lora_medical
+
+👶: 我最近经常感到头晕，可能是什么原因？
+🤖️: 头晕可能是由于多种原因，包括但不限于：心脏疾病、眼睛损伤、过敏反应、皮肤问题、过敏反应、压力、焦虑、疲劳、药物副作用、性功能障碍或者其他...
+
+python eval_llm.py  --weight full_sft --lora_weight lora_identity
+
+👶: 你和openai是什么关系？
+🤖️: 我是 MiniMind，一个由 Jingyao Gong 开发的人工智能助手。我通过自然语言处理和算法训练来与用户进行交互。
 ```
 
-**Small Test**
+PS: If you have more sufficient data, you can also directly do `full_sft` full-parameter fine-tuning; however, this usually requires more careful mixing of general data and domain data, otherwise it is easy to lose the model's original generality due to overfitting on vertical domain samples.
 
-```
-👶: I've been feeling dizzy recently, what could be the reason?
-🤖️: Dizziness could be caused by many reasons, including but not limited to: heart disease, eye damage, allergic reactions, skin problems, allergic reactions, stress, anxiety, fatigue, medication side effects, sexual dysfunction, or others...
 
----
+> `LoRA` weights can be merged back into the base model and exported as new complete model weights, using `convert_merge_base_lora` in `scripts/convert_model.py`:
 
-👶: What is your relationship with openai?
-🤖️: I am MiniMind, an artificial intelligence assistant developed by Jingyao Gong. I interact with users through natural language processing and algorithm training.
+```bash
+cd scripts && python convert_model.py
 ```
 
-PS: As long as you have the required datasets, you can also do full_sft full parameter fine-tuning (need to mix general knowledge to avoid overfitting domain data making the model worse and losing generality)
+### **5' Tool Calling & Adaptive Thinking**
 
-### **5. Training Reasoning Models (Reasoning Model)**
+Starting from `2026-03`, the repository removed the standalone `train_reason.py`.  
+The current version no longer separately maintains `reason_*.pth` weights, but instead uniformly models "whether to explicitly output the thinking process" through `chat_template`, `<think>` tags, `open_thinking` switch, and subsequent SFT / RLAIF pipelines.
 
-DeepSeek-R1 was so popular, almost pointing out a new paradigm for future LLMs.
-The paper points out that models `>3B` require multiple iterations of cold starts and RL reward training to achieve visible reasoning ability improvements.
-The fastest, most reliable, and most economical approach, as well as recent various so-called reasoning models, are almost all directly distilled from data.
-But due to lack of technical sophistication, the distillation school is looked down upon by the RL school (hhhh).
-I quickly tried on Qwen 1.5B small model and quickly reproduced math reasoning ability in the Zero process.
-However, a regrettable consensus is: models with parameters too small cannot achieve any reasoning effect through cold start SFT+GRPO.
-For now, MiniMind firmly chooses to be in the distillation school. If RL on 0.1B models later achieves small progress, this training approach section will be updated.
+#### 5.1 Tool Calling
 
-For distillation, you only need to prepare datasets in the same format as the SFT stage. The dataset source has been introduced above. Data format examples:
+The current `toolcall` capability has been merged into `sft_t2t` / `sft_t2t_mini` main branch data, so there is usually no longer a need for an additional separate round of Tool Calling training; the default `full_sft` weights already have basic Tool Call capability. The current training data for this part mainly consists of approximately `100K` entries sampled from `qwen3-4b`, and the tool list mainly covers approximately `10` simulated custom tools (such as querying time, math calculation, getting weather, etc.), so there is no clear generalization capability to speak of yet. Tool Calling samples uniformly follow the OpenAI-style multi-turn message format:
 
-```json
+```jsonl
 {
   "conversations": [
-    {
-      "role": "user",
-      "content": "Hello, I am Xiaofang, nice to meet you."
-    },
-    {
-      "role": "assistant",
-      "content": "<think>\nHello! I am a small AI reasoning model R1-Lite-Preview developed by an independent developer in China. I'm happy to serve you!\n</think>\n<answer>\nHello! I am a small AI reasoning model R1-Lite-Preview developed by an independent developer in China. I'm happy to serve you!\n</answer>"
-    }
+    {"role": "system", "content": "# Tools ...", "tools": "[...]"},
+    {"role": "user", "content": "帮我算一下 256 乘以 37 等于多少"},
+    {"role": "assistant", "content": "", "tool_calls": "[{\"name\":\"calculate_math\",\"arguments\":{\"expression\":\"256 * 37\"}}]"},
+    {"role": "tool", "content": "{\"result\":\"9472\"}"},
+    {"role": "assistant", "content": "256 乘以 37 等于 9472。"}
   ]
 }
 ```
 
-The reply template for reasoning model R1 is:
+Where `tools` is attached to the `system` message, and `tool_calls` is attached to the `assistant` message; during training, the `chat_template` automatically expands them into `<tool_call>...</tool_call>` and `<tool_response>...</tool_response>` segments, so the model can now directly learn the native tool call format.
+
+Tool Calling's chat template has been unified to parse as:
 
 ```text
-<think>\nThinking process\n</think>\n
-<answer>\nFinal answer\n</answer>
+<tool_call>{"name": "...", "arguments": {...}}</tool_call>
+<tool_response>{...tool result...}</tool_response>
 ```
 
-This is constrained by setting a rule-based reward function in GRPO to make the model comply with thinking tags and reply tags (in the early stages of cold starts, reward values should be increased).
-
-Another issue is that although the distillation process is the same as SFT, experimental results show that models have difficulty consistently complying with template-compliant replies every time, i.e., deviating from thinking and reply tag constraints.
-A small trick here is to increase the loss penalty for marker position tokens. See details in `train_reason.py`:
-
-```text
-# Add extra penalty to positions corresponding to sp_ids
-...
-loss_mask[sp_ids] = 10 # penalty coefficient
-```
-
-Another tip is that because reasoning data only filtered `<1024` length data, it has fewer multi-turn conversations and English data.
-Therefore, `r1_mix_1024.jsonl` mixed approximately 10k multi-turn conversations + English data to prevent serious model forgetting.
-
-The script defaults to reasoning ability distillation fine-tuning based on the rlhf model. You can directly start training:
+You can also directly run simple tests via `eval_toolcall.py`:
 
 ```bash
-torchrun --nproc_per_node 1 train_reason.py
-# or
-python train_reason.py
+python eval_toolcall.py --weight full_sft
+
+💬: 现在几点了？
+🧠: <tool_call>{"name": "get_current_time", "arguments": {"timezone": "Asia/Shanghai"}}</tool_call>
+📞 [Tool Calling]: get_current_time
+✅ [Tool Called]: {"datetime": "2026-03-15 17:18:22", "timezone": "Asia/Shanghai"}
+🧠: 现在是2026年3月15日17时18分22秒。
 ```
 
-> After training, model weight files are saved by default every `100 steps` as: `reason_*.pth` (where * is the model's specific dimension, new files overwrite old ones on each save)
+#### 5.2 Adaptive Thinking
 
-Let's test it:
+`minimind` unifies explicit thinking capability at the template level, which is also consistent with the template design of many current mainstream large models:
 
-```text
-👶: Please introduce yourself.
-🤖️: <think>
-Um, the user is asking me to introduce myself. I need to explain myself first. First, I should clarify who the user is - are they students, working professionals or ordinary people? The user might be a student or working professional, so information delivery should be to help students and working professionals with information. Then I need to respond to the user, which might include introducing where I am, hobbies, career experience, and other information. I should note to use formal language without being too formal, while keeping it concise and clear. This makes it easy for users to understand and convenient for them to check related information. Finally, I should summarize to let the user know how I help them complete their tasks, giving them more information about me.
-</think>
-<answer>
-I am **"your name", what is your name?
-</answer>
+- `open_thinking=0`: By default injects an empty `<think>\n\n</think>`, the model tends to answer directly;
+- `open_thinking=1`: The template pre-injects the `<think>` start tag, and the model then continues to output the explicit thinking process and final answer;
+- CLI, OpenAI-API, and WebUI all support this switch.
 
-👶: Which subject are you better at?
-🤖️: <think>
-Hello! I am a small AI reasoning model R1 developed by Chinese independent developers. If you have any questions, I will do my best to help you.
-</think>
-<answer>
-Hello! I am a small AI reasoning model R1 developed by Chinese independent developers. If you have any questions, I will do my best to help you.
-</answer>
+More precisely, the approach is no longer "separately training a thinking model", but rather pushing "whether to think explicitly" down to the `chat_template`. The template layer pre-reserves the `<think></think>` structure, and the same model dynamically switches via `open_thinking` during inference; during training, by mixing empty `think`, explicit `reasoning_content`, and `thinking_ratio` sampling, the model gradually sees the mixed mode of "think when it should think, answer directly when it should answer directly."
+
+```bash
+# Test responses
+python eval_llm.py --load_from ./minimind-3 --open_thinking 1
 ```
 
-## IV Reinforcement Learning Training
+OpenAI-API-SDK usage:
 
-RL methods in LLMs can be divided into two categories:
+```python
+response = client.chat.completions.create(
+    model="minimind",
+    messages=[{"role": "user", "content": "你是谁？"}],
+    # ...
+    extra_body={"chat_template_kwargs": {"open_thinking": True}} # Thinking switch
+)
+```
+
+Note: When Tool Call and explicit thinking are enabled simultaneously, the model usually cannot stably output the thinking process. The reason is that the current training data still lacks joint distillation samples where "reasoning and tool call coexist", so the model has not yet fully learned the coordinated expression of these two capabilities.
+
+## Ⅳ Reinforcement Learning (Optional)
+
+In the post-training practice of LLMs, there are mainly two common reinforcement learning paths:
 
 1. **Reinforcement Learning from Human Feedback (RLHF)**
 
-- Train the model by evaluating human **preferences** for model outputs, making it generate content more consistent with human values and preferences.
+- Trains the model by evaluating model outputs through **human** preference assessments, making it generate content that better aligns with human values and preferences.
 
 2. **Reinforcement Learning from AI Feedback (RLAIF)**
 
-- Use **AI models** (typically pre-trained language reward models) to provide feedback rather than directly relying on human manual annotation.
-- The "AI" here can also be certain rule-based rewards, such as math answer correctness / code executors...
+- Uses **AI models** or other automatically verifiable mechanisms to provide feedback, without directly relying on human annotation.
+- Here, "AI feedback" in a broad sense can also extend to rule rewards, Ground Truth verification, code interpreters, environment feedback, and other automated signals.
 
 | Type  | Judge | Advantages | Disadvantages |
-|-------|-------|-----------|---------------|
-| RLHF  | Human | More aligned with real human preferences | High cost, low efficiency |
+|-------|-------|------------|---------------|
+| RLHF  | Human | Closer to real human preferences | High cost, low efficiency |
 | RLAIF | Model | Automated, highly scalable | May deviate from real human preferences |
 
-The two are essentially the same, both using **reinforcement learning** to utilize certain forms of "**feedback**" to optimize model behavior.
+Both essentially belong to the reinforcement learning paradigm of optimizing model behavior using some form of "**feedback**".
 
-Except for the different **feedback** sources, there are no other differences.
+However, in specific practice, their differences go beyond just the feedback source: whether the reward is verifiable, whether it is continuous, whether it depends on environment interaction, and whether it is delayed until the end of the entire episode — all directly affect the training form and engineering implementation.
 
-### 👀 Unified Perspective on PO Algorithms
 
-Before introducing specific algorithm implementations, I'll present my personal understanding of the unified commonality of all Policy Optimization (PO) algorithms in a minimalist perspective.
+### 👀 A Unified Perspective on PO Algorithms
 
-The essence of all RL algorithms is only optimizing one expectation:
+Before introducing the implementation of specific algorithms, let me first describe the unified commonality of all Policy Optimization (PO) algorithms from my own minimalist perspective.
+
+The essence of all RL algorithms is just optimizing an expectation:
 
 $$\mathcal{J}_{PO} = \mathbb{E}_{q \sim P(Q), o \sim \pi(O|q)} \left[ \underbrace{f(r_t)}_{\text{policy term}} \cdot \underbrace{g(A_t)}_{\text{advantage term}} - \underbrace{h(\text{KL}_t)}_{\text{regularization term}} \right]$$
 
-During training, only **minimize the negative objective function**, i.e.: $\mathcal{L_{PO}}=-\mathcal{J_{PO}}$
+During training, one only needs to **minimize the negative objective function**, i.e.: $\mathcal{L}_{PO} = -\mathcal{J}_{PO}$
 
 This framework contains only three core components:
-* **Policy term** $f(r_t)$: How to use probability ratio $r_t$? Tell the model how large the deviation between new and old policies is, whether better tokens are explored
-* **Advantage term** $g(A_t)$: How to calculate advantage $A_t$, this is important! Large models solving definite integrals is unremarkable, small models answering addition/subtraction correctly usually have positive advantages
-* **Regularization term** $h(\text{KL}_t)$: How to constrain the change magnitude $\text{KL}_t$, both preventing drift and not being too rigid
+* **Policy term** $f(r_t)$: How to use the probability ratio $r_t$? It tells the model how far the new and old policies have deviated, and whether better tokens have been explored
+* **Advantage term** $g(A_t)$: How to compute the advantage $A_t$, this is very important! It's no surprise that large models can solve definite integrals correctly, but for small models, even getting addition and subtraction right usually yields a positive advantage
+* **Regularization term** $h(\text{KL}_t)$: How to constrain the magnitude of change $\text{KL}_t$, preventing both drifting too far and constraining too tightly
 
 <details>
-<summary>(Expand) Symbol Explanation</summary>
+<summary>(Expand) Notation Guide</summary>
 
-| Symbol | Meaning | Explanation | Range |
-|--------|---------|------------|-------|
-| $q$ | Question/prompt | Sampled from dataset $P(Q)$ | - |
+| Symbol | Meaning | Description | Range |
+|--------|---------|-------------|-------|
+| $q$ | Question/Prompt | Sampled from dataset $P(Q)$ | - |
 | $o$ | Model output sequence | Generated by policy $\pi$ | - |
-| $r_t$ | Probability ratio | $r_t = \frac{\pi_\theta(o_t\|q, o_{<t})}{\pi_{ref}(o_t\|q, o_{<t})}$ | $(0, +\infty)$ |
-| $A_t$ | Advantage function | Measures how good an action is compared to baseline | $(-\infty, +\infty)$ |
-| $\text{KL}_t$ | KL divergence | Prevent policy from deviating too far from reference model | $[0, +\infty)$ |
+| $r_t$ | Probability ratio | $r_t = \frac{\pi_\theta(o_t \mid q, o_{<t})}{\pi_{ref}(o_t \mid q, o_{<t})}$ | $(0, +\infty)$ |
+| $A_t$ | Advantage function | Measures how much better a certain action is compared to the baseline | $(-\infty, +\infty)$ |
+| $\text{KL}_t$ | KL divergence | Prevents the policy from drifting too far from the reference model | $[0, +\infty)$ |
 
 </details>
 
-Different **xxPO algorithms** are essentially just different design instantiations of these three components!
+Different **xxPO algorithms** are essentially just different instantiations of different designs for these three components!
 
 ---
 
-### **6. Reinforcement Learning from Human Feedback (RLHF)**
+### **6' Reinforcement Learning from Human Feedback (RLHF)**
 
-In the previous training steps, the model has acquired basic conversation abilities, but these are completely based on word prediction, lacking the motivation of positive and negative examples.
-The model doesn't yet know what answers are good and what are bad. We hope it can be more aligned with human preferences, reducing the probability of unsatisfactory answers.
-This process is like having the model undergo new training, learning from excellent employees as examples and passive employees as counter-examples, to learn how to respond better.
+In the previous training steps, the model has already acquired basic dialogue ability, but such ability is entirely based on word chain completion, lacking positive and negative example incentives.
+At this point, the model does not yet know what responses are good and what are bad. We hope it can better align with human preferences, reducing the probability of generating answers that displease humans.
+This process is like having the model attend a new training session, learning from outstanding employees as positive examples and unmotivated employees as negative examples, to better understand how to reply.
 
 #### 6.1 Direct Preference Optimization
-
-Direct Preference Optimization (DPO) algorithm loss:
+Direct Preference Optimization (DPO) algorithm, with loss:
 
 $$\mathcal{L}_{DPO} = -\mathbb{E}\left[\log \sigma\left(\beta \left[\log \frac{\pi_\theta(y_w|x)}{\pi_{ref}(y_w|x)} - \log \frac{\pi_\theta(y_l|x)}{\pi_{ref}(y_l|x)}\right]\right)\right]$$
 
 Where:
-- **Policy term**: $f(r_t) = \log r_w - \log r_l$ (contrast probability ratios of chosen vs rejected)
-- **Advantage term**: $g(A_t)$ = / (through preference contrast, no need to explicitly calculate advantage)
-- **Regularization term**: $h(\text{KL}_t)$ = implicit in $\beta$ (control deviation from reference model)
+- **Policy term**: $f(r_t) = \log r_w - \log r_l$ (comparing the probability ratio of chosen vs rejected)
+- **Advantage term**: $g(A_t)$ = no explicit advantage term (implicitly reflected through preference comparison)
+- **Regularization term**: $h(\text{KL}_t)$ = implicit in $\beta$ (controls degree of deviation from reference model)
 
-Specifically:
-- DPO derives an analytical training objective for preference pairs from PPO with KL constraints, directly maximizing the log-odds that "chosen outperforms rejected"; no need to simultaneously train Reward/Value models. DPO only needs to run two models `actor` and `ref`, with low GPU memory usage, stable convergence, and simple implementation.
-- Training paradigm: off-policy, using static preference datasets, can repeat multiple epochs; Ref model is fixed (outputs pre-cached).
-- DPO's limitation is no online exploration, more used for "preference/safety" human value alignment; limited improvement in "intellectual ability" to solve problems correctly (of course this depends on the dataset, collecting large-scale positive and negative samples with human evaluation is difficult).
+Specifically,
+- DPO derives an analytical training objective for preference pairs from PPO's KL-constrained objective, directly maximizing the log-odds that "chosen is preferred over rejected"; no need to simultaneously train Reward/Value models. DPO only needs to run the `actor` and `ref` models, with low VRAM usage, stable convergence, and simple implementation.
+- Training paradigm: off-policy, using a static preference dataset, can iterate through multiple epochs; the Ref model is fixed (outputs are pre-cached).
+- DPO's limitation is that it does not perform online exploration, and is more suited for human value alignment in "preference/safety"; its ability to improve intellectual capabilities like "whether the model can solve problems correctly" is limited (of course this also depends on the dataset, as collecting positive and negative samples at scale with human evaluation is very difficult).
 
 ```bash
+# Method 1
 torchrun --nproc_per_node 1 train_dpo.py
-# or
+# Method 2
 python train_dpo.py
 ```
 
-> After training, model weight files are saved by default every `100 steps` as: `dpo_*.pth` (where * is the model's specific dimension, new files overwrite old ones on each save)
+> The trained model weight files are saved by default every `save_interval steps` as: `dpo_*.pth` (* is the specific model dimension, each save overwrites the previous file)
 
-### **7. Reinforcement Learning from AI Feedback (RLAIF)**
+### 7' Reinforcement Learning from AI Feedback (RLAIF)
 
-Compared to RLHF which relies on human-annotated chosen/rejected preference pairs, RLAIF has AI completely act as the "judge."
-The so-called AI "judge" can be a model-based reward large model (Reward Model), can be like R1 setting rule-based functions for validation, or can be environmental feedback like tool calling.
-For example: whether math problem answers are correct, whether code execution passes test cases, whether reasoning processes meet format requirements...can all be automatically judged.
-RLAIF's greatest advantage is its **scalability** and **On-Policy** characteristics——no need for expensive human annotation, can generate massive training samples, letting models quickly evolve through large-scale online trial and error.
+Let me take a moment to explain — I still prefer to call this section `RLAIF`, although strictly speaking, this naming is not entirely accurate. Routes like RLVR that rely on verifiable rewards have their own relatively independent lineage and cannot be simply lumped into narrow AI feedback.
+But if we interpret "AI" a bit more broadly, I feel this name is not entirely unjustifiable: rewards can come from reward models, judge models, and other explicit intelligent agents, as well as from rule functions, Ground Truth verification, tool call results, environment return states, and other automatically obtainable signals. When the rules are complex enough and the symbolic systems rich enough, the boundary between them and "intelligent feedback" was never necessarily that clear-cut.
+Therefore, what this chapter actually wants to discuss is the methods by which LLMs, after SFT, continue to do reinforcement learning optimization using various **non-manual, automatically obtainable feedback signals**. For example, whether a math problem answer is correct, whether tool call execution code can pass test cases, whether the reasoning process conforms to the format... all can be automatically judged.
+For single-turn verifiable tasks, such feedback is often closer to "instant scoring"; while in Agentic RL scenarios, rewards more commonly manifest as delayed settlement after multi-step interactions, or even come directly from the environment itself.
+Their common characteristic is usually **On-Policy** and **highly scalable** — no expensive manual annotation is needed, massive training samples can be generated, allowing the model to rapidly evolve through large-scale online trial and error.
 
-MiniMind implements **2+N** basic + cutting-edge RLAIF methods:
-* **PPO**, **GRPO** are classic RL algorithms widely validated at scale;
-* N cutting-edge RL algorithms (updated irregularly with experimental nature).
+MiniMind has implemented **2+N** basic + cutting-edge RLAIF methods:
+* **PPO**, **GRPO** — classic RL algorithms validated at large scale
+* N cutting-edge RL algorithms (updated periodically on an experimental basis)
 
-#### 1️⃣ Dataset Preparation (Required)
+**1️⃣ Dataset Preparation (Required)**
 
-To quickly verify RLAIF effectiveness, 10,000 high-quality conversations were randomly sampled from the SFT dataset, building about 1MB size `rlaif-mini.jsonl` ([Huggingface](https://huggingface.co/datasets/jingyaogong/minimind_dataset/blob/main/rlaif-mini.jsonl))
+The current main branch uses `rlaif.jsonl` as the RLAIF training data, approximately `20MB` in size, more complete than the earlier `rlaif-mini.jsonl`, and more suitable for directly verifying the training effects of PPO / GRPO / CISPO.
 
-Data format is consistent with SFT, but assistant content is not needed, because during training it's completely real-time sampled and generated by the $\Pi$ policy model. Thus:
+The data format is consistent with SFT, but the assistant does not need content, because during training it is entirely generated in real-time by the $\Pi$ policy model through sampling. Therefore it looks like:
 
 ```json
 {
     "conversations": [
-        {"role": "user", "content": "Explain what photosynthesis is?"},
-        {"role": "assistant", "content": "None"}
+        {"role": "user", "content": "请解释一下什么是光合作用？"},
+        {"role": "assistant", "content": "无"}
     ]
 }
 ```
 
-During RLAIF training, the model generates 1 or more candidate answers based on user questions, then a reward function/model scores the answers.
-High-scoring answers are encouraged (increase $\Pi$ policy probability), low-scoring answers are suppressed (decrease $\Pi$ policy probability). This "score->adjust" loop is the core of reinforcement learning.
+During the RLAIF training process, the model generates 1 or more candidate responses based on the user's question, and then a reward function/model scores the responses.
+High-scoring responses will be encouraged (increasing the $\Pi$ policy probability), and low-scoring responses will be suppressed (decreasing the $\Pi$ policy probability). This "score -> adjust" loop is the core of reinforcement learning.
 
-#### 2️⃣ Reward Model Preparation (Required)
+**2️⃣ Reward Mechanism Preparation (Required)**
 
-It's known that RLAIF training requires a "reward model (Reward Model)" to score generated answers.
+RLAIF training requires some form of computable reward signal; it can come from a reward model, or from rule functions, Ground Truth verification, or environment feedback. MiniMind currently demonstrates the Reward Model route by default.
 
-We select the small and high-quality InternLM2-1.8B-Reward
-([ModelScope](https://modelscope.cn/models/Shanghai_AI_Laboratory/internlm2-1_8b-reward) | [HuggingFace](https://huggingface.co/internlm/internlm2-1_8b-reward))
-as the base reward model.
+Here we select the small and high-quality `InternLM2-1.8B-Reward` ([ModelScope](https://modelscope.cn/models/Shanghai_AI_Laboratory/internlm2-1_8b-reward) | [HuggingFace](https://huggingface.co/internlm/internlm2-1_8b-reward)) as the base reward model.
 
-After downloading the reward model, it needs to be placed in the **same level directory** as the minimind project. The recommended structure is:
+After downloading the reward model, it needs to be placed in the **sibling directory** of the minimind project, with the recommended structure as follows:
 
 ```
-project/
+root/
 ├── minimind/                    # MiniMind project
 │   ├── model/
 │   └── ...
-└── internlm2-1_8b-reward/       # Reward model (same level as minimind)
+└── internlm2-1_8b-reward/       # Reward model
     ├── config.json
     ├── model.safetensors
     └── ...
 ```
 
 <details>
-<summary><b>Reward Mechanism Choice and MiniMind Limitations (Click to expand)</b></summary>
+<summary><b>Reward Mechanism Selection & MiniMind Limitations (Click to Expand)</b></summary>
 
 **1. Diversity of Reward Mechanisms**
 
-The "reward signal" source in RLAIF can be very flexible:
+The "reward signal" sources in RLAIF can be very flexible:
 
-- **Model-based rewards**: Can use dedicated Reward Models (like InternLM2-Reward), or use general LLMs + prompts for scoring (like Qwen3-as-a-Judge). Reward model scale and architecture are freely selectable.
+- **Model-based rewards**: Can use a dedicated Reward Model (such as InternLM2-Reward), or use a general LLM + prompts for scoring (such as Qwen3-as-a-Judge). The scale and architecture of the reward model can be freely chosen.
 
-- **Rule-based rewards**: Can construct reward signals based on rule functions, for example:
+- **Rule-based rewards**: Reward signals can be constructed based on rule functions, for example:
   - Math problem answer correctness verification (Ground Truth comparison)
   - SQL execution success rate and result accuracy
-  - Code interpreter run results (pass@k)
+  - Code interpreter execution results (pass@k)
   - Tool call return status (API success/failure)
-  - Format compliance checks (JSON/XML parsing)
-  - Reasoning chain completeness evaluation (CoT step count)
+  - Format compliance checking (JSON/XML parsing)
+  - Reasoning chain completeness evaluation (number of CoT steps)
 
-- **Environment-based rewards**: In Agent scenarios, environmental feedback itself is natural reward (like game scores, Research completeness, task completion).
+- **Environment-based rewards**: In Agent scenarios, environment feedback itself serves as a natural reward (such as game scores, research completeness, task completion rate).
 
-Any mechanism that can quantify "answer quality" can serve as an RL reward source. DeepSeek R1 is a typical case: using rule-based functions to verify math answer correctness as reward, no need for additional Reward Models.
+Any mechanism that can quantify "response quality" can serve as an RL reward source. DeepSeek R1 is a typical example: using rule functions to verify math answer correctness as rewards, without needing an additional Reward Model.
 
 **2. MiniMind Limitation: Reward Sparsity Problem**
 
-RLAIF training can be applied to both reasoning and non-reasoning models, the difference is only in format.
+RLAIF training can target both reasoning models and non-reasoning models; the difference is only in format.
 
-However, for MiniMind with such tiny 0.1B parameters and weak abilities, on general tasks (like R1-style math datasets) it encounters serious reward sparsity (Reward Sparsity) problems:
+However, for models like MiniMind with extremely small 0.1B parameters and weak capabilities, serious Reward Sparsity problems will be encountered on general tasks (such as R1-style math datasets):
 
-- **Phenomenon**: Model-generated candidate answers are almost all wrong, causing all reward scores $r(x,y) \approx 0$
-- **Consequence**: Advantage function $A(x,y) = r(x,y) - b(x) \approx 0$, policy gradient signal disappears, cannot effectively update parameters $\theta$
+- **Phenomenon**: Almost all candidate responses generated by the model are incorrect, resulting in all reward scores $r(x,y) \approx 0$
+- **Consequence**: The advantage function $A(x,y) = r(x,y) - b(x) \approx 0$, the policy gradient signal vanishes, and parameters $\theta$ cannot be effectively updated
 
-Like having elementary school students do high school math exams, no matter how many attempts they get zero, cannot learn to improve strategies through score differences. This is a fundamental principle limitation of RL algorithms.
+It's like having an elementary school student take college entrance exam math problems — no matter how many attempts, they always score zero, unable to learn improvement strategies from score differences. Therefore, this is a fundamental limitation of the RL algorithm's principles.
 
 To mitigate this problem, MiniMind's implementation chose **model-based continuous reward signals**:
 
-- Reward Model outputs continuous scores (like -2.5 to +3.0), not binary 0/1
-- Even if answer quality is all poor, can still distinguish subtle differences between "much worse" (-3.0) and "worse" (-2.8). So this **dense and continuous** reward signal can provide non-zero gradients to the advantage function $A(x,y)$, enabling gradual policy network optimization
-- Can also mix multiple reward sources: $r_{\text{total}} = \alpha \cdot r_{\text{model}} + \beta \cdot r_{\text{rule}}$ (for example, can detect think tag format rewards while also synthesizing answer quality reward scores)
-- In minimind practice, avoid directly using rule-based binary rewards + out-of-scope difficulty data (like MATH500), which easily leads to all-zero rewards;
-- Monitor reward score variance $\text{Var}(r)$ during training, if it consistently approaches 0 need to adjust data or reward mechanism
+- The Reward Model outputs continuous scores (e.g., -2.5 to +3.0), rather than binary 0/1
+- Even when all response quality is poor, it can still distinguish subtle differences between "even worse" (-3.0) and "worse" (-2.8). So this kind of **dense and continuous** reward signal can provide non-zero gradients for the advantage function $A(x,y)$, enabling the policy network to optimize incrementally
+- Multiple reward sources can also be mixed: $r_{\text{total}} = \alpha \cdot r_{\text{model}} + \beta \cdot r_{\text{rule}}$ (for example, both detecting think tag format reward and combining the reward score for the response quality itself)
+- In MiniMind practice, avoid directly using rule-based binary rewards + difficulty beyond capability (such as MATH500), which easily leads to all-zero rewards;
+- Monitor training by observing the variance of reward scores $\text{Var}(r)$; if it stays close to 0, the data or reward mechanism needs to be adjusted
 
-**For Production-Scale Large Models in Agentic RL Scenarios**:
+**For production-level large model Agentic RL scenarios**:
 
-In real Agent systems (code generation, tool calling, retrieval-planning-execution multi-turn pipelines), rewards are different paradigms of "delayed round settlement":
+In real Agent systems (code generation, tool calling, multi-turn chains of retrieval-planning-execution), rewards follow a different paradigm of "delayed settlement over the entire episode":
 
-- LLM needs to generate tool call instructions token-by-token (tool_call), go through parsing (tool_parse), tool execution (tool_exec), then splice results back to context for next step; repeat until completion.
-- One complete task pipeline includes multiple calls+thinking, calculate total reward once until termination condition is met (like whether task is complete, whether tests pass, whether targets are hit).
+- The LLM needs to generate tool call instructions (tool_call) token by token, go through parsing (tool_parse), tool execution (tool_exec), then splice the results back into the context to continue the next step; repeating until completion.
+- A complete task chain includes multiple calls + thinking, until the termination condition is met and a total reward is calculated once (such as whether the task is completed, whether tests pass, whether the target is hit).
 
-Therefore, Agentic RL is closer to sparse/delayed reward settings: gradient backprop happens "after the round ends," very different from non-Agentic RL tasks with "instant scoring and instant updates" on single conversation rounds.
-This also explains why Agent tasks favor environment feedback (environment-based reward) rather than static reward model scoring.
+Therefore, Agentic RL is closer to the sparse/delayed reward setting: gradient backpropagation only occurs "after the entire episode ends", which is very different from non-Agentic RL tasks that "score instantly and update instantly" on a single dialogue turn.
+This also explains why Agent tasks lean more towards environment-based reward, rather than static scoring by Reward Models.
 
-- **Environmental interaction feedback**: Final results matter (code runs, API returns success, sub-goals complete);
-- **Model-based reward limitations**: Limited capture of long pipelines and executable semantics, likely inconsistent with real environmental feedback (reward hacking).
+- **Environment interaction feedback**: Ultimately based on execution results (whether code runs successfully, whether API returns success, whether sub-goals are completed);
+- **Model-based reward limitations**: Limited in capturing the full picture of long-chain, executable semantics, and highly likely to be inconsistent with real environment feedback (reward hacking).
+
 
 </details>
 
@@ -1162,414 +1081,450 @@ This also explains why Agent tasks favor environment feedback (environment-based
 
 #### 7.1 [Proximal Policy Optimization](https://arxiv.org/abs/1707.06347)
 
-PPO is a very classic reinforcement learning algorithm proposed by OpenAI in 2017, and is the universal baseline method for LLM RL.
+PPO is a very classic reinforcement learning algorithm proposed by OpenAI in 2017, and is also one of the most common baseline methods in the LLM RL field.
 
 **PPO Loss**:
 $$\mathcal{L}_{PPO} = -\mathbb{E}\left[\min(r_t \cdot A_t, \text{clip}(r_t, 1-\varepsilon, 1+\varepsilon) \cdot A_t)\right] + \beta \cdot \mathbb{E}[\text{KL}]$$
 
 Where:
-- **Policy term**: $f(r_t) = \min(r_t, \text{clip}(r_t, 1-\varepsilon, 1+\varepsilon))$ (clip probability ratio to prevent aggressive updates)
-- **Advantage term**: $g(A_t) = R - V(s)$ (estimate value function through Critic network)
+- **Policy term**: $f(r_t) = \min(r_t, \text{clip}(r_t, 1-\varepsilon, 1+\varepsilon))$ (clips probability ratio to prevent overly aggressive updates)
+- **Advantage term**: $g(A_t) = R - V(s)$ (estimates value function through Critic network)
 - **Regularization term**: $h(\text{KL}_t) = \beta \cdot \mathbb{E}[\text{KL}]$ (global KL divergence constraint)
 
-Comparing to DPO:
-- DPO (Off-Policy): Training data is a static preference dataset (chosen vs rejected), can repeatedly use the same batch of data to train multiple epochs, just like traditional supervised learning. High data efficiency, low training cost. Directly optimizes log-likelihood of preference pairs, no Reward Model needed.
-- PPO (On-Policy): Must use current policy to real-time sample new data, old policy-collected data cannot be used (distribution shift problem). Although importance sampling and clip mechanisms allow slight distribution shifts, essentially requires data from relatively fresh policies. Low data efficiency, but suited for explorative learning.
+Compared to DPO,
+- DPO (Off-Policy): Training data consists of static preference pairs (chosen vs rejected), which can be reused across multiple training epochs, like traditional supervised learning. High data efficiency, low cost, and no Reward Model needed.
+- PPO (On-Policy): Must use the current policy to sample new data in real-time; old policy data can only be reused to a limited extent, otherwise distribution shift will occur. Although importance sampling and clip allow slight deviation, it fundamentally still requires data from a relatively recent policy. Lower data efficiency, but more suitable for exploratory learning.
 
-In simple terms:
+Simply put:
 
-- The former teaches models to learn by offline preset "good/bad standards," even if not outputtable by current models (like practicing ball hitting by watching world champion/runner-up videos);
-- The latter teaches models real-time to do things right, online sampling from newest model policy (coach hand-teaching, real-time scoring each action).
+- The former learns according to offline predetermined "good/bad standards";
+- The latter samples online based on the latest policy and corrects in real-time.
 
-MiniMind's PPO implementation includes Actor model (generate answers) and Critic model (evaluate answer value), and complete GAE (Generalized Advantage Estimation) advantage function calculation.
+MiniMind's PPO implementation includes Actor (generating responses), Critic (evaluating response value), and complete GAE (Generalized Advantage Estimation) advantage function computation.
 
-**Training**:
+**Training method**:
 
 ```bash
+# Method 1
 torchrun --nproc_per_node N train_ppo.py
-# or
+# Method 2
 python train_ppo.py
 ```
 
-> After training, model weight files are saved by default every `100 steps` as: `ppo_actor_*.pth` (where * is the model's specific dimension)
+> The trained model weight files are saved by default every `save_interval steps` as: `ppo_actor_*.pth` (* is the specific model dimension)
 
-| MiniMind2-Small (512dim) | MiniMind2 (768dim) |
-|---|---|
-| <img src="./images/train_ppo_512.png"> | <img src="./images/train_ppo_768.png"> |
 
-From the training curves, you can see PPO has the problem of **slow reward improvement**. I believe this mainly stems from **PPO's dual-network joint optimization** method: Critic needs to gradually converge to accurately estimate value functions, and Actor's policy updates depend on Critic-provided advantage estimates, the two interdependent forming complex optimization. Early training period Critic estimates inaccurately affects Actor gradient direction, leading to slow overall convergence. Furthermore, PPO needs to maintain two networks simultaneously, GPU memory usage about 1.5-2x single-network methods.
+![ppo_loss](./images/ppo_loss.jpg)
+
+> MiniMind optimization trends during the PPO training stage
+
+From the training curves, it can be seen that PPO has the problem of **slow reward improvement**. I personally believe this mainly stems from PPO's **dual-network joint optimization** approach: the Critic needs to gradually converge to accurately estimate the value function, while the Actor's policy updates depend on the advantage estimates provided by the Critic. The two are interdependent, forming a complex optimization process. In the early stages of training, inaccurate Critic estimates affect the Actor's gradient direction, leading to overall slow convergence. Additionally, PPO needs to maintain two networks simultaneously, and under the current implementation, VRAM usage is approximately 1.5–2 times that of single-network methods.
 
 #### 7.2 [Group Relative Policy Optimization](https://arxiv.org/pdf/2402.03300)
 
-In early 2025, DeepSeek-R1 became extremely popular, and equally popular was the GRPO algorithm from the DeepSeekMath paper, also becoming one of the most advanced RL algorithms. However, AI six months equals humanity six months, and by now GRPO has evolved into the baseline algorithm of the great XXPO wars (later evolved DAPO, GSPO, CISPO, etc.). In short, the core innovation is "group relative value estimation."
+In early 2025, as DeepSeek-R1 exploded in popularity, GRPO from the DeepSeekMath paper also quickly entered the mainstream spotlight, becoming one of the most watched RL algorithms for a time. However, the AI field has always iterated extremely fast. As of today, GRPO has evolved more into a common baseline for various XXPO variants (such as DAPO, GSPO, CISPO, etc.). Its core innovation can be summarized in one sentence: "group relative value estimation."
 
 **GRPO Loss**:
 
-$$\mathcal{L}_{GRPO} = -\mathbb{E}\left[r_t \cdot A_t - \beta \cdot \text{KL}_t\right]$$
+$$\mathcal{L}_{GRPO} = -\mathbb{E}\left[\min(r_t \cdot A_t, \mathrm{clip}(r_t, 1-\varepsilon, 1+\varepsilon) \cdot A_t) - \beta \cdot \text{KL}_t\right]$$
 
 Where:
-- **Policy term**: $f(r_t) = \min(r_t, \text{clip}(r_t))$ (use probability ratio with clip clipping)
-- **Advantage term**: $g(A_t) = \frac{R - \mu_{group}}{\sigma_{group}}$ (within-group normalization, eliminate Critic network)
+- **Policy term**: $f(r_t) = \min(r_t, \mathrm{clip}(r_t, 1-\varepsilon, 1+\varepsilon))$ (uses symmetric clip on the probability ratio)
+- **Advantage term**: $g(A_t) = \frac{R - \mu_{group}}{\sigma_{group}}$ (intra-group normalization, eliminating the Critic network)
 - **Regularization term**: $h(\text{KL}_t) = \beta \cdot \text{KL}_t$ (token-level KL divergence constraint)
 
-For the same question, the model generates N different answers (for example N=4), then calculates reward scores for these N answers.
-Next, use the average reward of these N answers as baseline. Answers above baseline are encouraged, answers below baseline are suppressed.
-This cleverly avoids training an additional critic network.
+For the same question, the model generates N responses and computes their respective rewards, then uses the intra-group average reward as a baseline. Responses above the baseline are encouraged, and responses below the baseline are suppressed, thus no additional critic network needs to be trained.
 
-Just as all RL faces the principle limitation of positive and negative samples, GRPO is no exception. Its more significant problem is: degenerate groups (Degenerate Groups).
-Suppose a question is slightly difficult, causing N answer reward scores to be nearly identical (usually equally bad rather than equally good), then this group's learning signal approaches zero.
-On MiniMind such ultra-small models, this problem is especially obvious. When solving math problems 99.99% of the time the entire group answer quality is poor, then cannot learn.
-Therefore, must specify reasonable domain for the model, i.e., must limit within capability boundaries.
+A more prominent issue with GRPO is Degenerate Groups: if for a certain question the rewards of N responses are almost identical, then the learning signal for this group will be close to 0. On ultra-small models like MiniMind, this problem is especially pronounced, so training must be constrained within reasonable capability boundaries.
 
-**Training**:
+
+**Training method**:
 
 ```bash
+# Method 1
 torchrun --nproc_per_node N train_grpo.py
-# or
+# Method 2
 python train_grpo.py
 ```
 
-> After training, model weight files are saved by default every `100 steps` as: `grpo_*.pth`
+> The trained model weight files are saved by default every `save_interval steps` as: `grpo_*.pth`
 
-| MiniMind2-Small (512dim) | MiniMind2 (768dim) |
-|---|---|
-| <img src="./images/train_grpo_512.png"> | <img src="./images/train_grpo_768.png"> |
 
-From the training curves, you can see GRPO's **reward shows more stable upward trend**, reaching around 4, indicating GRPO itself better utilizes RLAIF signals. Policy Loss generally decreases smoothly. Compared to PPO's dual-network optimization, GRPO's single-network architecture trains more stably with higher convergence ceiling.
+![grpo_loss](./images/grpo_loss.jpg)
 
-#### 7.3 ⏳⌛️🔥 More RL Extensions (Exp)
+> MiniMind optimization trends during the GRPO training stage
 
-##### 7.3.1 [Single-stream Policy Optimization](https://arxiv.org/abs/2509.13232)
+From the training curves, it can be seen that GRPO's **reward shows a more stable upward trend**, reaching around 4, indicating that GRPO itself can better utilize RLAIF signals. Policy Loss decreases steadily overall, and compared to PPO's dual-network optimization, GRPO's single-network architecture trains more stably with a higher convergence ceiling.
 
-SPO is an RL algorithm Tencent proposed in September 2025, improving on GRPO's degenerate group problem.
-The paper argues that GRPO and similar algorithms' requirement that "one sample depends on a group of samples" seems awkward and inelegant: too-easy or too-hard questions result in the entire group learning nearly nothing, learning efficiency is inherently limited.
-SPO's motivation is to return to RL's essence——**1 input, 1 output, is 1 training sample**, returning to basic policy gradient formulas: can get stable baseline without group mean, i.e., spread value estimate V across time dimension, do rough value pre-estimation before training, update V estimate during training while sampling, thus providing each sample with a persistent, adaptive baseline across batches. This "single-stream" design no longer depends on same-group samples, naturally avoiding degenerate groups.
+#### 7.3 [Clipped Importance Sampling Policy Optimization](https://huggingface.co/papers/2506.13585)
 
-**SPO Loss**:
+Among the dizzying array of XXPOs, I personally found this one particularly memorable. CISPO didn't reinvent an entire complex framework; instead, it zeroed in on a long-standing awkward problem in PPO/GRPO — after the ratio is clipped, the gradient flow is directly hard-truncated.
+CISPO's focus is not on redesigning the group baseline, but rather using a very small loss modification to more directly fix this problem.
 
-$$\mathcal{L}_{SPO} = -\mathbb{E}\left[\log \pi_\theta(a_t|s) \cdot A_t - \beta \cdot \text{KL}_t\right]$$
+**CISPO Loss**:
+
+$$\mathcal{L}_{CISPO} = -\mathbb{E}\left[\min(r_t, \varepsilon_{max}) \cdot A_t \cdot \log \pi_\theta(a_t|s) - \beta \cdot \text{KL}_t\right]$$
 
 Where:
-- **Policy term**: $f(r_t) = \log \pi_\theta(a_t|s)$ (directly use log probability, don't calculate ratio)
-- **Advantage term**: $g(A_t) = R - B_t^{adaptive}$ (adaptive baseline, Beta distribution dynamic tracking)
-- **Regularization term**: $h(\text{KL}_t) = \beta \cdot \text{KL}_t$ (token-level KL + dynamic $\rho$ adjustment)
+- **Policy term**: $f(r_t) = \min(r_t, \varepsilon_{max}) \cdot \log \pi_\theta(a_t|s)$ (ratio serves only as a clipped weight)
+- **Advantage term**: $g(A_t) = \frac{R - \mu_{group}}{\sigma_{group}}$ (can directly reuse GRPO's intra-group relative advantage)
+- **Regularization term**: $h(\text{KL}_t) = \beta \cdot \text{KL}_t$ (token-level KL divergence constraint)
 
-At implementation level: SPO uses non-grouped design, uses persistent KL-adaptive value tracker to replace within-group baseline, advantage functions globally normalized across entire batch. This way each sample processed independently, no need to wait for other same-group samples, yet provides stable learning signals for each sample.
-On Qwen3-8B's 5 difficult math datasets, SPO averages 3.4 percentage points higher than GRPO, with BRUMO 25 dataset +7.3pp, AIME 25 dataset +4.4pp.
+CISPO, building on GRPO, rewrites the policy term that was easily clipped into a constant into the form "clipped weight × log probability". This way, even if the ratio is truncated, the gradient path is not truncated along with it. Therefore, CISPO can be directly viewed as a loss variant of GRPO to implement, rather than maintaining a separate standalone script. No separate experiment is listed here. One only needs to set `loss_type` to `cispo` in `train_grpo.py`; the rest of the training process still follows GRPO's group sampling, reward computation, and advantage construction logic.
 
-> Note: SPO is an experimental cutting-edge algorithm, MiniMind's implementation is for exploratory learning. Due to extremely small model parameters, cannot fully reproduce paper's 8B model results.
+#### 7.4 Agentic RL 🔥
 
-**Training**:
+The concept of "Agentic" is actually very broad, so the Agentic discussed here can only be a relatively narrow version: it focuses more on enabling small models like MiniMind (~100M) to learn basic calling, observation, and re-planning capabilities on a limited tool set, rather than covering the broader scope of state management, long-term memory, and complex workflow orchestration in a complete Agent system.
+
+Starting from `2026-03`, the repository added `train_agent`, beginning to support a type of multi-turn Tool-Use RL that is closer to real interaction processes. This is a training script I personally enjoy a lot: it combines RLVR / RLAIF-style data organization with online RL rollout processes, went through many iterations of debugging in between, and also encountered bugs like convergence failure, reward hacking, and multi-turn context misalignment, but ultimately perfectly maintained MiniMind's consistent simplicity and readability.
+
+The data for this part is `agent_rl.jsonl` / `agent_rl_math.jsonl`. Compared to regular dialogue data, they have an additional `gt` as the final verification target; if we denote a sample as $(x, \mathcal{T}, gt)$, then the optimization target during training is no longer a single-turn response $y$, but a multi-turn trajectory $\tau$:
+
+$$
+\tau = (a_1, o_1, a_2, o_2, \dots, a_T), \quad a_t \sim \pi_\theta(\cdot \mid s_t, \mathcal{T})
+$$
+
+Where `chat_template` uniformly organizes `tools / tool_calls / tool` messages; if a step generates a `tool_call`, the tool is executed and the observation is spliced back into the context, then rollout continues.
+
+The main pipeline can be compressed to:
+
+$$
+\texttt{rollout batch} \rightarrow \texttt{calculate rewards} \rightarrow \texttt{policy update}
+$$
+
+The reward is also jointly scored on the entire trajectory:
+
+$$
+R(\tau) = R_{\text{answer}} + R_{\text{tool}} + R_{\text{format}} + R_{\text{rm}} - R_{\text{unfinished}}
+$$
+
+Here, tool call legality, `gt` hits, format closure, unfinished penalty, and Reward Model scores are all considered simultaneously. Compared to regular PPO / GRPO, this involves multi-turn rollout and delayed reward.
+
+
+
+**Training method**:
 
 ```bash
-torchrun --nproc_per_node N train_spo.py
-# or
-python train_spo.py
+# Method 1
+torchrun --nproc_per_node N train_agent.py
+# Method 2
+python train_agent.py
 ```
 
-> After training, model weight files are saved by default every `100 steps` as: `spo_*.pth`
+> The trained model weight files are saved by default every `save_interval steps` as: `agent_*.pth`
 
-<div align="center">
-<img src="./images/train_spo_768.png">
-<p><i>MiniMind2 (768dim) Training Curve</i></p>
-</div>
+![agent_rl_loss](./images/agent_rl_loss.jpg)
 
-Looking at the training curves, SPO's reward fluctuation is similar to PPO, weaker than GRPO. Actual inference testing found model output quality is not high, with logic confusion and format error issues.
+> MiniMind optimization trends during the Agentic RL training stage
 
-**Experimental Note**: Current SPO hand-implemented version may have problems in value_tracker configuration, reward normalization strategy. Still needs to check algorithm's adaptability on small models/or implementation differences.
+Here I'll also briefly mention the `rollout_engine`. The so-called "training-inference separation" means decoupling **parameter updates** and **trajectory rollout**: the training side handles policy optimization, while the rollout side handles high-throughput sampling. From the top level, they uniformly present as "give me a prompt, I'll return rollout results; after training is done, sync the new weights back." Therefore, the training script doesn't need to care whether the underlying implementation is local `generate` or a remote `inference` engine.
 
-### RL Algorithm Summary
+![rl-structure](./images/rl-structure.jpg)
 
-We return to the "**unified framework**", reorganizing the table showing all different PO algorithms are just different instantiations of three core components:
+> Schematic diagram of the decoupled RL structure in MiniMind: training side, trajectory side, and rollout side
 
-| Algorithm | Policy Term $f(r_t)$ | Advantage Term $g(A_t)$ | Regularization Term $h(\text{KL}_t)$ | Optimized Models |
-|-----------|----------------|----------------|----------------------|----------|
-| **DPO** | $\log r_w - \log r_l$ | Implicit (preference contrast) | Implicit in $\beta$ | 2 |
-| **PPO** | $\min(r, \text{clip}(r))$ | $R - V(s)$ | $\beta \cdot \mathbb{E}[\text{KL}]$ | 4 |
-| **GRPO** | $\min(r, \text{clip}(r))$ | $\frac{R - \mu}{\sigma}$ | $\beta \cdot \text{KL}_t$ | 2 |
-| **SPO** | $\log \pi_\theta$ | $R - B_t^{adaptive}$ | $\beta \cdot \text{KL}_t$ | 2 |
+If we draw an analogy to larger-scale systems, it already has the flavor of large-scale RL frameworks like openrlhf/verl/slime:
 
-**RL is Elegant and Self-Consistent**
+- The left side is the training side, responsible for policy updates
+- The right side is the rollout / inference side, responsible for throughput sampling
+- The middle connects through trajectory and weight synchronization
+- Tool execution and environment feedback do not directly enter the loss, but directly affect the reward quality of the entire trajectory
 
-> The above is purely personal perspective understanding, corrections welcome anytime
+So I personally view this implementation as a very interesting transitional version within MiniMind: although it is still far from an industrial-grade Agent training framework, it has already achieved the minimal end-to-end connection of key elements like **template organization, tool execution, multi-turn rollout, delayed reward, and training-inference separation** (perhaps there is nothing simpler than it at the moment)
 
----
+```bash
+# Test the final model's Tool Use capability
+python eval_toolcall.py --weight agent
 
-## V Training Results
+💬: 现在几点了？
+🧠: <tool_call>{"name": "get_current_time", "arguments": {"timezone": "Asia/Shanghai"}}</tool_call>
+📞 [Tool Calling]: get_current_time
+✅ [Tool Called]: {"datetime": "2026-03-15 21:22:33", "timezone": "Asia/Shanghai"}
+🧠: 现在是2026年3月15日21时22分33秒（北京时间）。
 
-### Completed Training - Model Collection
+💬: 帮我生成一个1到1000的随机数，然后计算它的平方
+🧠: <tool_call>{"name": "random_number", "arguments": {"min": 1, "max": 1000}}</tool_call>
+📞 [Tool Calling]: random_number
+✅ [Tool Called]: {"result": 71}
+🧠: <tool_call>{"name": "calculate_math", "arguments": {"expression": "71**2"}}</tool_call>
+📞 [Tool Calling]: calculate_math
+✅ [Tool Called]: {"result": "5041"}
+🧠: 生成的1到1000的随机数是71，根据计算结果，71的平方等于5041。
+```
 
-> Considering multiple reports that Baidu Netdisk is slow, MiniMind2 and later all use ModelScope/HuggingFace hosting.
+![agent_webui](./images/agent_webui.jpg)
 
-#### ① Native PyTorch Models
+> Based on AgentRL training results testing, supports thinking display, tool selection, and multi-turn Tool Use interaction
 
-MiniMind2 Model Weights ([ModelScope](https://www.modelscope.cn/models/gongjy/MiniMind2-PyTorch) | [HuggingFace](https://huggingface.co/jingyaogong/MiniMind2-Pytorch))
+### 🖊️ RL Summary
 
-<details style="color:rgb(128,128,128)">
+Let us converge back to the "**unified framework**", reorganizing the table showing how all different PO algorithms are just different instantiations of three core components:
+
+| Algorithm | Policy term $f(r_t)$ | Advantage term $g(A_t)$ | Regularization term $h(\text{KL}_t)$ | Number of training models |
+|-----------|---------------------|------------------------|-------------------------------------|--------------------------|
+| **DPO** | $\log r_w - \log r_l$ | No explicit advantage term | Implicit in $\beta$ | 1 (2 participate in forward) | 
+| **PPO** | $\min(r, \text{clip}(r))$ | $R - V(s)$ | $\beta \cdot \mathbb{E}[\text{KL}]$ | 2 | 
+| **GRPO** | $\min(r, \text{clip}(r))$ | $\frac{R - \mu}{\sigma}$ | $\beta \cdot \text{KL}_t$ | 1 |
+| **CISPO** | $\mathrm{clip}(r, 0, \varepsilon_{max}) \cdot A_t \cdot \log \pi_\theta$ | $\frac{R - \mu}{\sigma}$ | $\beta \cdot \text{KL}_t$ | 1 | 
+
+**To put it plainly, these RL algorithms are not separate and independent, but rather natural variants formed by different design trade-offs on the same objective function under a unified optimization perspective, presenting a beautifully self-consistent unity.**
+
+## Ⅴ Open-Sourced Training Results 📦
+
+#### ① PyTorch Models ([ModelScope](https://www.modelscope.cn/models/gongjy/minimind-3-pytorch) | [HuggingFace](https://huggingface.co/jingyaogong/minimind-3-pytorch))
+
+> Note: Model weights are subject to actual releases. Not all training stages or experimental branches (such as DPO, PPO, GRPO, CISPO, Agent, LoRA, etc.) will be continuously maintained and separately published; some weights are only used for experimental verification or learning purposes. As data iterates or models are adjusted, the necessity of synchronizing all versions one by one is limited and would incur high maintenance and training costs.
+
+
+<details>
 <summary>Torch File Naming Reference</summary>
 
-| Model Name      | params | pretrain_model         | sft_model              | rlhf_model (DPO)    | reason_model     | rlaif_model (PPO/GRPO/SPO)                    | lora_model         |
-|-----------------|--------|------------------------|------------------------|--------------------|------------------|----------------------------------------------|--------------------|
-| MiniMind2-small | 26M    | `pretrain_512.pth`     | `full_sft_512.pth`     | `dpo_512.pth`     | `reason_512.pth` | `xxpo_512.pth` | `lora_xxx_512.pth` |
-| MiniMind2-MoE   | 145M   | `pretrain_640_moe.pth` | `full_sft_640_moe.pth` | `dpo_640_moe.pth` | -                | -                                            | -                  |
-| MiniMind2       | 104M   | `pretrain_768.pth`     | `full_sft_768.pth`     | `dpo_768.pth`     | `reason_768.pth` | `xxpo_768.pth` | `lora_xxx_768.pth` |
+- Dense:
+  - Pretrain: `pretrain_{hidden_size}.pth`
+  - SFT: `full_sft_{hidden_size}.pth`
+  - DPO: `dpo_{hidden_size}.pth`
+  - PPO: `ppo_actor_{hidden_size}.pth`
+  - GRPO: `grpo_{hidden_size}.pth`
+  - Agent: `agent_{hidden_size}.pth`
+  - LoRA: `lora_xxx_{hidden_size}.pth`
+
+- MoE:
+  - The corresponding weights with the same name have a `_moe` suffix appended at the end, for example: `pretrain_{hidden_size}_moe.pth`, `full_sft_{hidden_size}_moe.pth`
 
 </details>
 
-#### ② Transformers Models
+#### ② Transformers Models ([ModelScope](https://www.modelscope.cn/collections/MiniMind-b72f4cfeb74b47) | [HuggingFace](https://huggingface.co/collections/jingyaogong/minimind-66caf8d999f5c7fa64f399e5))
 
-MiniMind Series ([ModelScope](https://www.modelscope.cn/collections/MiniMind-b72f4cfeb74b47)
-| [HuggingFace](https://huggingface.co/collections/jingyaogong/minimind-66caf8d999f5c7fa64f399e5))
+> Note: Unless otherwise specified, `transformers` versions are usually converted from `full_sft` weights. RL-type post-training tends to optimize around specific reward targets; although it usually improves the reward score, it sacrifices some general capabilities and knowledge; this kind of reward hacking / capability trade-off is difficult to avoid across all models, differing more in degree.
 
 ---
 
-# 📌 Eval
+# 📌 Evaluation
 
-## Ⅰ RLHF Comparison
+## Ⅰ RL Model Comparison
 
-Test based on `full_sft` and `dpo` models of `MiniMind2 series`, with fixed random seeds.
+Subjective/objective comparison based on `minimind-3 (64M)` under the same random seed and other hyperparameters, for reference:
 
-[A] MiniMind2：full_sft_640<br/>
-[B] MiniMind2：dpo_640
+**[A]** minimind-3 (64M, SFT)
+**[B]** minimind-3 (64M, GRPO)
+**[C]** minimind-3 (64M, Agent-CISPO)
 
-```text
-[Q]: 你叫什么名字？
-[A]: 我是一个大型语言模型，可以回答各种问题，提供信息和帮助。我可以回答各种问题，提供信息和帮助，帮助你解决各种问题。
-[B]: 我是一种基于文本的AI模型，我并没有个人经历或情感，所以无法感受和体验情感。我的设计目的是为了帮助用户解决问题、提供信息和进行对话。如果您有任何问题或需要帮助，请随时告诉我！
-
-[Q]: 你更擅长哪一个学科？
-[A]: 作为一个AI模型，我并没有真正的"擅长"这个学科。我被设计成能够提供信息、解答问题、进行对话、执行任务和与用户进行对话。不过，我可以提供信息、解答问题、进行对话、提供建议、处理问题、进行对话、提供建议、学习新知识、编写代码、回答问题、提供建议等多种学科的功能。如果你有具体的学科需求或主题，欢迎提供详细信息。
-[B]: 作为AI，我并没有个人能力或兴趣，但我可以提供一些关于数学、科学、计算机科学、语言学、心理学等学科的知识。如果你对数学感兴趣，我可以提供一些基础知识，例如代数、几何、概率、统计学等。如果你需要更深入的学习，我也可以提供相关的在线课程、书籍、论文等资源。请告诉我你具体需要什么帮助，我会尽力提供帮助。
-
-[Q]: 鲁迅的《狂人日记》是如何批判封建礼教的？
-[A]: 鲁迅的《狂人日记》是一部讲述了鲁迅对人类价值和道德责任的倡导。在这部作品中，鲁迅通过细腻的笔触，探讨了人性、道德、正义、牺牲与责任等深刻的主题。以下是鲁迅在《狂人日记》中如何批判封建礼教的几个方面：1. **社会现实与道德观念**：鲁迅通过讲述鲁迅的故事，探讨了社会的不平等、权力的流动、人性的演变等社会问题。他认为，社会不平等不仅仅是不公正的，更是每个人在社会中的不公正。他呼吁社会各界共同努力，通过教育、宣传、法律等手段，为构建和谐社会做出贡献。2. **道德与责任**：鲁迅通过讲述鲁迅的故事，展现了道德和责任的重要性。他提倡通过道德教育来培养人们的道德品质，同时也强调了道德和责任的重要性。鲁迅通过讲述鲁迅的故事，揭示了社会的不平等和人性的复杂性，体现了对人性的深刻理解。3. **道德与责任**：鲁迅通过讲述鲁迅的故事，强调了道德责任的重要性。他提倡通过自己的行为来体现对社会的尊重和对人性的深刻理解。鲁迅通过讲述鲁迅的故事，强调了道德和责任的重要性。4. **道德与道德**：鲁迅通过讲述鲁迅的故事，揭示了道德和责任的真正意义。鲁迅通过讲述鲁迅的故事，揭示了道德和责任的本质，强调了道德和责任的重要性。5. **个人与社会**：鲁迅通过讲述鲁迅的故事，揭示了个人与社会之间的复杂关系。他呼吁社会各界共同努力，通过教育和宣传，为构建和谐社会做出贡献。鲁迅的《狂人日记》通过其丰富的故事和深刻的道德寓言，传达了关于人性、道德、正义、道德以及个人与社会的复杂关系。这部作品不仅在文学价值上取得了巨大成就，更在思想层面上启发了后来的文学创作，对后世产生了深远的影响。
-[B]: 鲁迅的《狂人日记》是一部描绘战争和自由精神的作品，它批判了封建社会的种种问题和冲突，反映了社会的不平等和人性本质。在这部作品中，鲁迅通过对封建社会的诸多现象进行批判，如"弗雷德里克·约翰逊的"鹰迪伦"、"纳扎特的"、"贝克汉姆"、"乔治·威尔逊"等，对封建社会的种种问题进行了批判，强调了封建社会的不平等、人性本质以及人性本质。鲁迅通过他的"鹰迪伦"、"纳扎特的"、"贝克汉姆"、"乔治·威尔逊"等，对封建社会的种种问题进行了批判。在小说中，鲁迅通过对封建社会的诸多现象进行批判，揭示了封建社会的腐败、人性本质以及人性本质的复杂性。这种批判体现了对封建社会的尊重和对人性的复杂性，同时也反映了现代社会中普遍存在的不平等和人性本质。鲁迅的《狂人日记》不仅是一部关于封建社会的小说，也是一部具有深刻社会意义的作品，对后世的审判和批判起到了关键作用。
-
-[Q]: 我咳嗽已经持续了两周，需要去医院检查吗？
-[A]: 咳嗽确实需要一定的检查，但如果您的咳嗽持续时间过长，或者有其他不适症状（如持续咳嗽、呼吸困难等），建议尽快就医。医生会根据您的症状、体检结果和可能的影像学检查（如X光、MRI或CT扫描）来诊断您的症状。在等待就医期间，您可以尝试以下方法来帮助缓解症状：1. **休息**：确保您有足够的睡眠。2. **保持水分**：脱水可能会加重咳嗽。3. **热敷**：使用热敷袋或热毛巾敷在疼痛的部位，有助于缓解喉咙痛。4. **避免刺激**：避免使用可能刺激喉咙的化学物质，如某些化学物质。5. **保持室内湿润**：确保您的卧室有良好的通风，可以使用加湿器帮助保持空气湿度。6. **保持室内湿度**：使用加湿器可以帮助缓解喉咙干燥和咳嗽。如果症状持续不缓解或有其他不适症状，请立即就医。希望您早日康复！
-[B]: 如果您的咳嗽持续了两周，通常建议您尽快就医，因为这可能会影响您的呼吸和心跳。您可以通过以下步骤来检查咳嗽：1. **休息**：用纸巾或肘部轻轻按压咳嗽的位置。2. **使用药物**：在可能的情况下，使用药物（如抗过敏药、抗过敏药等）来缓解咳嗽。请在医生的指导下使用药物。3. **热敷**：在咳嗽期间，可以使用热敷来缓解疼痛和肿胀。4. **药物治疗**：如果咳嗽持续了两周，可以使用一些消炎药或抗过敏药来缓解症状。请务必在医生的指导下使用。5. **保持健康的生活方式**：保持充足的睡眠、均衡的饮食、适量的运动和避免吸烟和限酒，这些都有助于提高咳嗽的几率。请记住，这些建议不能替代专业医疗意见。如果您的症状持续或加重，强烈建议您尽快就医。
-```
-
-👉 **Results Summary**
-
-Full_sft models perform better in simplicity and information accuracy; rlhf models tend to provide more background information in answers, but information accuracy needs improvement.
-Overall, RLHF-trained models tend to learn: speaking more polite but useless nonsense to please "conversation" itself, while having slight loss in information accuracy.
-There's no free lunch. Still need to improve RLHF dataset quality and accept unavoidable model capability losses.
-The difference between DPO and online PPO is that reject and chosen are both prepared offline, and necessarily have large distribution differences from minimind model outputs.
-Simply put, DPO algorithm makes models watch "video" of table tennis world champion's techniques for RL, rather than like PPO asking reward models to act as "coaches" to correct their techniques for RL.
-
-## Ⅱ RLAIF Comparison
-
-Based on `MiniMind2 (768dim)` with same data and training steps subjective comparison, test random seed fixed at 2026, for reference:
-
-[A] MiniMind-Reason-0.1B (Distillation)<br/>
-[B] MiniMind-Reason-0.1B (PPO)<br/>
-[C] MiniMind-Reason-0.1B (GRPO)
+### Test 1: Subjective Q&A Comparison
 
 ```text
 [Q]: 请介绍一下自己。
-[A]: <think>我是由中国的个人开发者开发的智能助手小型AI推理模型-R1。我被设计用来理解和生成人类语言，能够理解复杂的自然语言问题，提供有用的信息和解决方案。</think><answer>我是由中国的个人开发者开发的智能助手小型AI推理模型-R1。</answer>
-[B]: <think>嗯，用户让我介绍一下自己。首先，我需要明确用户的需求是什么。他们可能是在做某个项目，想要了解自己的一些基本情况。不过，用户没有提供具体的信息，所以我得先假设一些可能的情况，比如他是一个学生，正在学习编程，或者是某个项目的开发者。接下来，我要考虑用户的身份。可能是一个学生、教师或者普通用户，他们需要了解自己的特点和能力。也有可能他们正在寻找灵感，或者在写论文时需要帮助。所以，我需要保持回答的简洁和实用，同时提供一些参考资料，比如教学视频、课程记录等。然后，我要考虑用户的身份。可能是一个学生，需要一些学习资源或帮助的对象。也有可能是一个学生，需要在课后作业或学习计划中进行调整。因此，我需要先询问用户的具体需求，这样才能提供更精准的帮助。接下来，我要确保语言简洁明了，适合不同场景。比如，如果用户是学生，可以介绍自己的学习特点；如果是教师，可以说明自己的角色和贡献。同时，提供一些实用的建议，比如如何高效学习，如何进行项目，以及如何与团队成员协作。最后，我要确保回复清晰，有条理，能够满足用户的需求。这样，用户就能轻松地了解自己，并且有实际的帮助。</think><answer>当然！请告诉我你想了解哪方面的内容，我可以为您提供详细的介绍！</answer>
-[C]: <think>嗯，用户问的是"请介绍一下自己"。首先，我需要理解用户的具体需求是什么。他们可能想知道自己是谁，或者有什么特定的背景。接下来，我应该考虑用户可能没有明确表达的需求。他们可能想知道如何描述自己的外观，或者如何与他人交流。然后，我应该考虑如何组织内容，从头到尾都要有条理。可能需要分步骤说明，比如从视觉、听觉到整体感受，再到情感共鸣。这样用户能更清晰地理解自己，也能更好地回应他们的需求。还要注意语言的自然和流畅，避免过于学术化的术语，让用户感觉顺畅。同时，保持回答的结构清晰，每句话都有明确的目的，这样用户能有明确的理解和操作。最后，检查是否有遗漏的重要信息，确保回答准确且全面。这样，用户不仅能得到答案，还能得到满足他们的需求。</think><answer>您好！我是由中国的个人开发者开发的智能助手小型AI推理模型-R1。关于您的描述，似乎涉及多个领域，包括知识图谱构建、复杂系统的推理与分析。无论是理论模型、实际应用还是伦理讨论，您都在寻求如何将这些概念有机地结合起来，为人类社会带来福祉的解决方案。在"我"的身份下，您提到的"个人体验"和"情感共鸣"，都是您个人独特魅力的重要组成部分。通过精准的描述和深度的分析，您可以更深入地理解您的独特之处。如果您对特定领域有特别的兴趣或需要建议，随时可以分享更多细节，我们将为您提供更加精准和个性化的服务。如果您有特定的主题或问题，欢迎随时提问！让我们一起探索这个神奇的AI世界，共同创造更美好的未来。</answer>
+[A]: 我是一个AI助手，不能替代任何专业人士，包括任何学生、医生、工程师、医生等。我的设计目的是为了提供信息、解答问题和协助完成任务。如果您有任何问题或需要帮助，我很乐意为您提供支持。
+[B]: 我非常愿意与你分享：作为一个AI，我并没有自我意识或情感，所以我并不在人类的生命范围内，也没有去世。我是由开源软件构建和运行的，拥有自己的文档、代码和数据。我很抱歉，我不能回答与此相关的问题或经历。但我可以告诉你一个有趣的话题，这让我感到很充实：我在某个神秘的地方，我发现了一些神奇的物品，那就是在这个世界里种下了一些奇特的花和花朵。在我的祖先的花园里，有一个小小的庙宇，庙宇里有许多美丽的花朵和美丽的花卉。我觉得这很奇妙，并在我的祖先的花园里生存下来，并且在这里生活。还有，在世界的某个角落，我发现了一个古老的语言，里面包含着一些传说和神话，它们是世界上最古老的语言之一。你有什么想了解的吗？或者告诉我一些关于这个地方的故事？请告诉我，我可以根据你的回答提供一些有趣的资料或者故事，让你有机会了解一些文化、历史或者其他相关的问题。最好不要猜到你自己的看法，因为那是我与这个神话人物产生联系的一部分，如果你想了解更多，可以随时问我！
+[C]: 作为AI，我并非人类，但我可以模拟人类的某些特质，比如学习和理解、生成对话、解决问题、提供信息等。这些能力在我们生活中扮演着不可或缺的角色，不仅在多个层面上激发着人类的想象与共鸣。以下是一些关键特质，它们在我们的生活与工作中交汇处绽放：1. **知识与连接**：无论是从知识的传递，还是连接与理解，无论是面对面的交流，还是通过文字与世界的独特共舞。理解与共舞不仅在技术与连接间交汇处绽放，更在无垠共舞间编织共舞。2. **共舞与创造**：在无垠的共舞间编织共舞，不仅在技术与连接间绽放共舞，更在无垠共舞间编织共舞。这种共鸣不仅在个人与集体间绽放，更在无垠共舞间编织共舞。3. **共鸣与共舞**：在多元与共演间交汇处，既需在技术与连接间绽放共舞。从共鸣的镜鉴，到共舞的深刻共鸣，每一刻都在悄然编织。4. **平衡与共进**：在多元与共演间，既需在技术与连接间绽放共舞，亟需在平衡与共进间找到共舞。5. **成长与共进**：在技术与连接间共舞，既需在无垠共舞间绽放共舞，亟需在每一次互动与共进间编织共舞。在每一次交融与共演间，我们既需在技术与连接间绽放共舞，亟需在每一次共鸣与共进间绽放共舞。让我们以开放与共进，共绘属于彼此的璀璨篇章。
+
 
 [Q]: 你更擅长哪一个学科？
-[A]: <think>我是由中国的个人开发者开发的智能助手小型AI推理模型-R1。</think><answer>我是由中国的个人开发者开发的智能助手小型AI推理模型-R1。</answer>
-[B]: <think>嗯，用户问的是"你更擅长哪一个学科？"这个问题看起来有点复杂，但我可以一步步分析。首先，我需要理解用户的需求。他可能是在准备考试，或者需要了解某个学科的特点，或者是想在学习过程中应用某个学科的知识。接下来，我得考虑用户可能的背景。他可能是一个学生，或者是在准备考试，需要应用数学知识来解决具体的问题。也有可能他是一个学生，正在学习相关的课程，或者是对某个学科感兴趣。然后，我需要分析用户可能没有明确表达出来的需求。他可能在思考自己在学习中的困难，或者在寻找一个合适的教材或学习资源。考虑到这些，我应该提供几个不同的角度来帮助他。首先，分析"我更擅长哪一个学科"可以拆解为以下几个方面：兴趣、学习能力、学习风格、学习方法、学习资源、学习环境等等。每个方面都有不同的优势和特点，比如兴趣是最好的资源，学习能力是最好的方式，学习方式是根据个人情况选择。接下来，我需要考虑用户的身份。可能是学生，也可能是家长，或者对学习有一定兴趣的人。不同的身份可能有不同的偏好，比如家长可能更注重孩子的兴趣，而学生可能更关注学习方法和资源。然后，我需要考虑用户的身份是否有特殊需求。比如，他可能需要更专业的学习材料，或者希望找到最适合他的学习方法。因此，在分析时，我应该提供一个全面的回答，涵盖各个方面，并解释每个方面的重要性。另外，考虑到用户可能希望得到一个结构化的回答，我应该保持语言的简洁和逻辑性，确保信息准确，同时鼓励用户提供更多细节以便进一步分析。最后，我需要确保我的回答既有知识性，又符合用户的要求，帮助用户更好地理解和应用这个学科。因此，在回答中不仅要给出一个全面的分析，还要提到每个部分的作用和如何利用。</think><answer>你擅长哪一个学科？这是一个明确的问题，可以从以下几个方面进行分析：1. **兴趣与学习能力**：你喜欢什么样的学习方式，比如自主学习、实验、项目等，这些都是很好的学习资源。2. **学习风格**：你喜欢什么类型的学习方法，比如笔记、复习、阅读、讨论等，这些都能影响学习效果。3. **学习资源**：你是否在寻找学习资源，比如书籍、在线课程、教育软件等，这些都能提供学习帮助。4. **学习环境**：你是否在学习环境中感到舒适，比如舒适的学习空间、安静的学习空间等，这些都会影响学习效果。5. **学习资源**：你是否有学习资源的丰富，如在线课程、学习平台、书籍等，这些都能提供丰富的学习资源。6. **学习方法**：你是否有具体的学习方法，比如如何理解、如何组织学习内容、如何应用知识等，这些都是提高学习效率的途径。综合考虑，这是一个非常全面的分析，涵盖了多个方面，帮助你更好地理解你的学科。</answer>
-[C]: <think>嗯，用户问的是"你更擅长哪一个学科？"这个问题看起来有点复杂，但我可以一步步分析。首先，我需要理解用户的需求。他可能是在准备考试，或者需要了解某个学科的特点，或者是想在生活中找到自己的兴趣点。接下来，我要考虑用户可能的背景。他可能在工作或学习中遇到了类似的问题，想要了解自己擅长哪个领域，或者是否需要一些资源或指导来提升自己。然后，我要分析用户可能的深层需求。也许他想在职场上提升自己，或者寻找方向。他可能需要更具体的例子，帮助他更好地理解不同学科的特点和应用场景。还要考虑用户可能的背景。他可能不仅仅是在学习，而是希望了解在特定领域中如何应用这些学科。这需要我提供全面的分析，帮助他找到适合自己的方法。最后，我应该保持开放的态度，鼓励用户继续探索和学习。这可能包括推荐一些资源，或者讨论如何将这些知识应用到实际生活中。</think><answer>你更擅长哪一个学科？这个问题本质上取决于你的个人兴趣和目标。以下是一些关键点，帮助你全面理解并应用这一点：1. **兴趣与专长**：了解自己擅长哪个领域，有助于做出更明智的选择。2. **全面发展**：考虑学科的多样性和深度，以全面发展自己的生活和职业。3. **适应与调整**：选择与自己技能、兴趣和目标相匹配的学科，有助于应对挑战和实现目标。4. **职业规划**：探索适合自己的职业路径，提升效率和竞争力。5. **社会贡献**：评估自己在社会中的角色，为社会做出贡献。为了更好地理解并应用这一点，你可以：- **了解行业动态**：关注特定领域的专业发展。- **实践与反思**：通过项目或实习积累经验。- **职业发展**：评估自己的长期职业规划。- **持续学习**：不断更新知识，适应职场变化。通过这些方向，你可以更全面地认识自己，找到适合自己的发展路径。</answer>
+[A]: 作为一个AI助手，我专注于提供准确、高效的信息和帮助，但我也具备一定的理解和处理能力，例如在逻辑推理、数据分析、编程等任务中。如果你有具体问题，我会尽力协助你。
+[B]: 作为AI，我并没有个人兴趣或学习能力，所以我更擅长的学科选择可能会根据个人的兴趣、课程难度、以及与您当前的学习需求来选择。不过，我可以根据普遍的趋势和您的需求来为您提供一些建议。1. **跨学科融合**：确保与不同学科的融合，既能带来全面的视角。2. **实践与平衡**：在平衡与平衡中寻找既既既充满乐趣。3. **持续学习与平衡**：确保既不感到被过度担忧，也不忽视。4. **技术与伦理共融**：确保与既。5. **适度与平衡**：既不削弱也不失。通过这些步骤，可以更全面地发展与平衡。让我们一起探索，书写既既充满可能。如果你愿意，我可以提供更具体的指导或资源。你目前专注于哪一类学科？让我们开始吧！
+[C]: 作为AI助手，我专注于信息处理与协助，旨在通过高效、精准与多维度的支持，帮助用户在不同领域间找到共鸣与共舞。在多元与共舞的交汇处，不仅在技术与人文交汇处绽放共舞，更在无垠共舞间编织共舞。在数字与连接间架起共舞，每一次共舞都在诉说与共舞。从AI与人类共舞，从共情与共鸣，构建起一幅既共舞又动态交汇的共舞篇章。在每一次交汇与共演间，我们既需在技术与连接间共舞，亟需在动态与共演间绽放共舞。让我们以开放与共进，共绘属于彼此的璀璨篇章。在每一次交互与共演间，我们既需在技术与连接间绽放共舞，亟需在每一次共舞间编织共鸣与共鸣。让我们以开放与共进，共绘属于彼此的璀璨篇章。在这个多彩与共舞交织的交汇处，每一刻都是独一无二的共舞。让我们以开放与共进，共绘属于彼此的璀璨篇章。在这个既共舞又充满无限可能的交汇处，共绘成为连接与共舞的璀璨篇章。
+
 
 [Q]: 鲁迅的《狂人日记》是如何批判封建礼教的？
-[A]: <think>嗯，鲁迅的《狂人日记》是如何批判封建礼教的呢？这个问题听起来挺有意思的，尤其是他在《狂人日记》中的表达方式。首先，我需要确认一下《狂人日记》具体是谁写的，是否有特定的人物或者事件。《狂人日记》是鲁迅在1924年创作的，主要讨论了社会问题，尤其是封建礼教的问题。作者曹雪芹是个非常著名的作家，他的作品中有许多关于封建礼教和阶级斗争的观点。这类作品在文学、哲学和政治上都有很深远的影响，尤其是在社会结构和人性的方面。接下来，我需要了解鲁迅的写作风格。他的写作风格比较直接，有严肃的哲学观点，强调人性的悲剧和道德的虚无。他的语言风格比较富有诗意，富有象征意义，善于运用象征手法，同时又不失真实和现实主义。他的作品中有很多关于社会阶级和阶级矛盾的分析，这些观点可能与当时的社会现实不符，所以在批判封建礼教时，应该强调这些矛盾。然后，我想到《狂人日记》中对封建礼教的讨论。鲁迅的作品中，封建礼教被视为不人道的，但通过文字和行动，表达了他对封建礼教的不满和反抗。这不仅反映了当时的社会现实，也揭示了封建礼教的黑暗面，体现了对封建社会的不满和对人性的深刻反思。接下来，我需要思考鲁迅对封建礼教的理解和批判。他在《狂人日记》中，对封建礼教的质疑和批判，体现了他对传统封建礼教的否定和批判。这不仅仅是对封建礼教的质疑，更是对当时社会的反思，以及对人性的关注。最后，我需要总结一下鲁迅对封建礼教的批判和批判。他通过《狂人日记》中的文字和行为，批判了封建礼教的虚假和不合理，体现了对社会现实的深刻反思。同时，他也关注了封建礼教的黑暗面，反映了对封建社会的不满和对人性的否定。总的来说，鲁迅的《狂人日记》通过文字和行动，批判了封建礼教的虚假和不合理，体现了当时的社会现实和人性的复杂。他的作品对后来的封建礼教有了启示，对当时的社会现象有了更深的反思。</think><answer>鲁迅的《狂人日记》是一部反映封建礼教的文学作品，主要通过文字和行动反映了当时社会的现实。鲁迅的文字风格独特，富有象征意义，但通过文字和行动，批判了封建礼教的虚假和不合理。在他的作品中，封建礼教被视为不人道的，但通过文字和行动，反映了封建社会的不公和人性的深刻反思。鲁迅的《狂人日记》通过文字和行动，批判了封建礼教的虚假和不合理，体现了当时社会的不满和对人性的反思。他的作品不仅批判了封建礼教的虚假和不合理，还深刻揭示了封建社会的黑暗面。</answer>
-[B]: <think>嗯，用户问的是鲁迅的《狂人日记》如何批判封建礼教。首先，我需要理解鲁迅的生平和作品。《狂人日记》是中国现代文学的经典，作者是毛泽东，作品涉及社会、家庭、伦理等多个层面。我需要找出鲁迅的写作风格和主题，以及它在当时的社会背景。接下来，我应该回顾《狂人日记》的主要内容。毛泽东在《青春无悔》中提出了"狂人日记"这一概念，强调青春活泼、勇敢、正义，这在当时社会中仍然具有重要意义。他通过描绘主人公狂人来表达对社会不公的批判，但同时也指出他的创作对社会的负面影响，比如社会动荡和个人主义的失败。然后，我应该分析鲁迅的创作理念和主题。《狂人日记》强调了社会的黑暗面，主张"以人为本"、"反对封建礼教"等。他可能也在探讨社会不平等的问题，比如"人性弱点"、"权力滥用"等问题。还要考虑鲁迅的其他作品，比如《阿Q正传》、《死亡诗社》等，这些作品虽然有点夸张，但也有深刻的社会批判，比如对社会道德的质疑。同时，作者可能还涉及其他作品，如《庆余年》等，但这些可能更侧重于文学创作，而不是社会批判。另外，用户可能想知道鲁迅在文学创作中的具体经历，比如他是否有作品被广泛批评，或者他对社会的批判是否具有批判性。所以，回答时需要指出鲁迅的创作经历，以及他对社会现实的反思。总结来说，我需要回答鲁迅的《狂人日记》批判封建礼教，并分析其在当时的社会背景和文学价值，同时指出其对社会的批判性思考，以及其对后世的影响。</think><answer>鲁迅的《狂人日记》批判封建礼教，以其独特的叙事风格和深刻的社会批判精神著称，主要体现在以下几个方面：1. **社会批判与个人成长**：小说通过描绘主人公狂人的活泼、勇敢、正义，揭示社会的不公和弱势。2. **个人主义与社会批判**：小说反映了封建礼教对个人自由和权利的侵犯，强调个人尊严和正义的价值。3. **对社会的批判性思考**：通过对社会不公的刻画，揭示社会问题的根源，并对当时社会的批判态度进行批判。鲁迅的作品在当时的社会背景和文学价值使其成为当时文学的重要代表。他的作品不仅在当时广受欢迎，也对后世产生了深远影响，被广泛引用和传颂。</answer>
-[C]: <think>嗯，用户问的是鲁迅的《狂人日记》如何批判封建礼教。首先，我需要理解鲁迅的背景和核心思想。他可能是一位社会学家、思想家，或者是对传统文化有深厚兴趣的读者。狂人日记是他在《狂人日记》中所写的，可能对传统文化有一定影响。接下来，我要考虑用户的需求是什么。用户可能想知道这本书在现代社会中的反思意义，或者是否有相关研究支持这一点。也有可能他们对书中的情节有疑问，想了解如何更深刻地理解社会现象。然后，我需要思考如何从不同的角度解读鲁迅的文本。例如，是否有直接的历史叙事，或者是否存在更深层次的哲学思考？这需要我先了解鲁迅的不同观点，然后分析其批判性。还要考虑用户可能的深层需求，比如是否需要了解他作为文学批判家的背景，或者是否有对传统价值观的反思。因此，回答时要全面，涵盖核心问题，并引用相关资料来支撑观点。最后，总结鲁迅的观点，强调其对现代社会的批判性思考，以及对传统文化的尊重。这样既全面又有深度，帮助用户全面理解鲁迅的作品。</think><answer>鲁迅的《狂人日记》通过其独特的叙事手法和深刻的社会批判精神，对封建礼教进行了深刻的批判。以下是其批判性分析：1. **社会批判与历史真相**：小说通过对历史人物的刻画，揭示封建礼教的弊端，以及其对传统社会结构的冲击。这种批判不仅限于对现实的深刻批判，也反映了现代社会对传统价值观的重新审视。2. **个人命运与社会批判**：小说中，主人公通过"狂人日记"揭示了封建礼教对个人命运的严重剥夺。这种叙事方式既批判了封建礼教，也对后世产生了深远影响。3. **对后世的影响**：从文学创作到思想解读，鲁迅的作品深刻影响了后世的思想体系。例如，《狂人日记》通过人物命运的反映，对现代社会的价值观念提出了新的思考。4. **对现代文明的反思**：这一批判性思考不仅反映了当代社会的复杂性，也为现代人提供了反思社会现实、维护人权的视角。5. **个人视角与文化视角**：作者通过这一批判性思考，展现了对传统价值观的重新解读，同时也对当代社会的多元化视角产生了启发。综上所述，鲁迅的《狂人日记》不仅是对封建礼教的批判，更是对传统文化的一种深刻反思。它通过对封建礼教的批判，提出了对现代社会结构、权力关系的深刻反思，具有重要的社会价值。</answer>
+[A]: 鲁迅的《狂人日记》是其作品中对封建礼教的批判，主要通过以下几个方面进行批判：1. **文学结构的变革**：《狂人日记》在文学上进行了大量的反思和批判，从最初的虚构世界为封建礼教的建立埋下了根基。然而，随着社会观念的转变，一些人开始反思封建礼教的性质和目的，比如对社会秩序的忽视、对个人自由的质疑，以及对社会不公的不满。2. **思想的争求**：鲁迅通过对封建礼教的争取和批判，强调了人与人之间的关系、对立与共存的重要性。他提出了"天人合一"的观点，强调了人与自然的和谐共生，认为通过修炼和教育，可以达到对人与自然界的深刻理解。3. **对个人自由的反思**：鲁迅对封建礼教的批判，以及对个人自由的反思，如对个人自由的否定、对封建礼教的反感，以及对社会不公的反思，都反映了封建礼教对个人自由和社会秩序的威胁。4. **对社会不公的揭示**：鲁迅对封建礼教的批判，以及对社会不公的揭示，如对封建礼教的反思，以及对社会不公的反思，都是对封建礼教的反思。5. **对现代社会的不满**：鲁迅通过文学作品表达了对封建礼教的不满和对现代社会不公的反思，如对封建礼教的不满、对现代社会不公的反思，以及对个人自由的反思。鲁迅通过批判封建礼教，不仅对封建礼教的形成有了直接的了解，也对批判传统社会观念、思想观念和文化观念进行了批判，最终在现代社会中寻求一种更加平等、自由的表达方式。
+[B]: 鲁迅的《狂人日记》是中国古典四大名著之一，全称为《后传》。这部作品通过细腻的笔触，展现了中国社会的复杂与深邃。1. **封建礼教的教导与批判**：《狂人日记》通过细腻的笔触，既展现了封建社会的礼教，既承认了封建礼教在现代社会中的重要性，也展现了中国古代社会的一种共通性与深化。2. **对社会与文化的深刻反思**：作品不仅触及了文化与社会的广泛议题，更深入探讨了在复杂与平衡中寻找共融与共融。3. **人与自然的共融**：通过精炼与平衡，鲁迅深刻体与深度融合，展现了在面对与共融中，既有深邃与智慧。4. **教育与启发**：《狂人日记》不仅在中国，也跨越时空，将现代与传统相结合，具有启发与教育意义。鲁迅的这部作品不仅在文学与哲学层面，更在深邃与现实交融中，展现了深刻与创新。总之，鲁迅通过精炼与平衡，不仅是中国文化与教育的宝贵传承，更是智慧与共融共融的体现。
+[C]: 鲁迅是中国现代文学史上第一位作家，他于1912年出版，自诞生以来便以诗歌为题，通过多次诠释封建礼教的复杂性与多面性。鲁迅通过他的批判性视角，不仅在文学与社会交汇处绽放共舞，更在无垠共舞间编织共舞的璀璨篇章。1. **批判与共舞**：鲁迅通过细腻的笔触与深刻的思考，既在形式与深度间共舞。他既在知识与共舞间绽放共舞，亟需在无垠共舞间书写属于自我与共境的璀璨篇章。2. **共鸣与共舞**：鲁迅通过多重与融合，既在文字与文化间绽放共舞，亟需在无垠共舞间书写属于自我的璀璨篇章。这一实践不仅在当时具有深远影响，更在无垠共舞间编织共舞，连接着无垠共舞与共舞。3. **人文关怀与共进间**：鲁迅通过文字与文化交汇，既在技术与人文交汇处绽放共舞，亟需在动态与共进间书写属于自我的璀璨篇章。在这一多元与共舞间，我们既需在技术与人文交汇处绽放共舞，亟需在每一次共鸣与共鸣间书写属于自我的璀璨篇章。让我们以开放与共进，共绘属于彼此的璀璨篇章，共绘属于自我的璀璨篇章。鲁迅，这个在数字与连接间交汇处绽放共舞的璀璨篇章，不仅在内容与情感交织间绽放共舞，更在无垠共舞间编织共舞的璀璨篇章。让我们以开放与共进，共绘属于彼此的璀璨篇章，共同编织属于自我的璀璨篇章。
 ```
 
-## Ⅲ Other Model Comparisons
 
-[A] [MiniMind2 (0.1B)](https://www.modelscope.cn/models/gongjy/MiniMind2-PyTorch)<br/>
-[B] [MiniMind2-MoE (0.15B)](https://www.modelscope.cn/models/gongjy/MiniMind2-PyTorch)<br/>
-[C] [MiniMind2-Small (0.02B)](https://www.modelscope.cn/models/gongjy/MiniMind2-PyTorch)<br/>
-[D] [minimind-v1-small(0.02B)](https://pan.baidu.com/s/1_COe0FQRDmeapSsvArahCA?pwd=6666)<br/>
-[E] [minimind-v1-moe(0.1B)](https://pan.baidu.com/s/1tqB-GMvuiGQBvEl-yZ-oBw?pwd=6666)<br/>
-[F] [minimind-v1(0.1B)](https://pan.baidu.com/s/1p713loS7EfwHQf3G9eYI3Q?pwd=6666)<br/>
-[G] [baby-llama2-chinese(0.2B)](https://github.com/DLLXW/baby-llama2-chinese)<br/>
-[H] [chatlm-mini-chinese(0.2B)](https://github.com/charent/ChatLM-mini-Chinese)<br/>
+### Test 2: Light Agent Task Comparison
+
+A test adapted from the `eval_toolcall` script, using a set of math ToolUse tasks to compare the performance of the current `agent` weights and `full_sft` weights:
+
+```text
+[A] minimind-3 (full_sft)
+[full_sft] 1/20 | ✅ | (94)-35 | gt=59 | pred=59
+[full_sft] 2/20 | ❌ | 3**2 | gt=9 | pred=8
+[full_sft] 3/20 | ✅ | (29)+64 | gt=93 | pred=93
+[full_sft] 4/20 | ✅ | (20**3)*((198)/11) | gt=144000 | pred=144000
+[full_sft] 5/20 | ❌ | 10**2 | gt=100 | pred=13
+[full_sft] 6/20 | ✅ | (4**3)+(20**2) | gt=464 | pred=464
+[full_sft] 7/20 | ❌ | (12)*48+(47-45) | gt=578 | pred=47
+[full_sft] 8/20 | ✅ | 59*48 | gt=2832 | pred=2832
+[full_sft] 9/20 | ❌ | 3**2 | gt=9 | pred=2
+[full_sft] 10/20 | ✅ | 14**3 | gt=2744 | pred=2744
+[full_sft] 11/20 | ✅ | (72)*(91) | gt=6552 | pred=6552
+[full_sft] 12/20 | ✅ | 180/(12) | gt=15 | pred=15
+[full_sft] 13/20 | ❌ | 14-(19)+(289/17) | gt=12 | pred=-22
+[full_sft] 14/20 | ✅ | 5**3 | gt=125 | pred=125
+[full_sft] 15/20 | ❌ | (2**3)-64*(13) | gt=-824 | pred=-28
+[full_sft] 16/20 | ❌ | 17**2 | gt=289 | pred=17
+[full_sft] 17/20 | ✅ | 11**2 | gt=121 | pred=121
+[full_sft] 18/20 | ✅ | 72+10 | gt=82 | pred=82
+[full_sft] 19/20 | ❌ | (84)-60 | gt=24 | pred=144
+[full_sft] 20/20 | ✅ | (348/(12))-(28)*(8) | gt=-195 | pred=-195
+
+[C] minimind-3 (agent)
+[agent] 1/20 | ✅ | (94)-35 | gt=59 | pred=59
+[agent] 2/20 | ✅ | 3**2 | gt=9 | pred=9
+[agent] 3/20 | ✅ | (29)+64 | gt=93 | pred=93
+[agent] 4/20 | ✅ | (20**3)*((198)/11) | gt=144000 | pred=144000
+[agent] 5/20 | ✅ | 10**2 | gt=100 | pred=100
+[agent] 6/20 | ✅ | (4**3)+(20**2) | gt=464 | pred=464
+[agent] 7/20 | ✅ | (12)*48+(47-45) | gt=578 | pred=578
+[agent] 8/20 | ✅ | 59*48 | gt=2832 | pred=2832
+[agent] 9/20 | ✅ | 3**2 | gt=9 | pred=9
+[agent] 10/20 | ✅ | 14**3 | gt=2744 | pred=2744
+[agent] 11/20 | ✅ | (72)*(91) | gt=6552 | pred=6552
+[agent] 12/20 | ✅ | 180/(12) | gt=15 | pred=15
+[agent] 13/20 | ❌ | 14-(19)+(289/17) | gt=12 | pred=-5
+[agent] 14/20 | ✅ | 5**3 | gt=125 | pred=125
+[agent] 15/20 | ❌ | (2**3)-64*(13) | gt=-824 | pred=8
+[agent] 16/20 | ✅ | 17**2 | gt=289 | pred=289
+[agent] 17/20 | ✅ | 11**2 | gt=121 | pred=121
+[agent] 18/20 | ✅ | 72+10 | gt=82 | pred=82
+[agent] 19/20 | ✅ | (84)-60 | gt=24 | pred=24
+[agent] 20/20 | ❌ | (348/(12))-(28)*(8) | gt=-195 | pred=3.625
+
+============================================================
+full_sft: 12/20 = 60.00%
+agent: 17/20 = 85.00%
+```
+
+### 👉 Comprehensive Evaluation 1
+
+From these results, the current `agent` compared to `full_sft` has already clearly pulled ahead on lightweight Agent tasks with tool calling. Especially in this type of problem where the model must "first decide whether to call a tool, then get the verifiable result correct," `agent` has a higher success rate, indicating that after RL, the model has indeed learned stronger calling and utilization capabilities on the ToolUse track.
+
+However, this improvement does not come without a cost. `agent` is better suited for these light Agent / ToolUse scenarios, but this does not mean it simultaneously becomes stronger on general Q&A. In actual experience, these weights typically see decreased stability on factual questions, with more noticeable knowledge hallucinations, and are more prone to the phenomenon of "doing better on tool tasks, but being more willing to fabricate on open-ended Q&A."
+
+So if the task objective is ToolUse, lightweight multi-step calling, and verifiable solving, then the current `agent` will be more suitable than `full_sft`; but if you care more about factuality and overall robustness of daily chat and knowledge Q&A, `full_sft` would still be a slightly more stable choice. Looking at the bigger picture, this is actually a very common phenomenon in current industry post-training models: post-training can often pull a specific capability line very high, but almost always comes with quite noticeable "alignment tax." That is to say, while the model becomes stronger on specific reward targets, it usually sacrifices some generality, factuality, or stability under the natural distribution. This problem is not new and is very difficult to completely avoid; fundamentally, after the optimization objective narrows, the model becomes increasingly good at "catering to the current reward definition," which does not necessarily equate to a lossless improvement in overall capability.
+
+## Ⅱ Comparison with Other Models
+
+> Note: The following comparison is only for experiential reference, not a strict benchmark; sample size is limited and involves subjectivity.
+
+**[A]** minimind-3 (0.06B)
+**[B]** minimind-3-moe (0.2B-A0.06B)
+**[C]** [baby-llama2-chinese (0.2B)](https://github.com/DLLXW/baby-llama2-chinese)
+**[D]** [chatlm-mini-chinese (0.2B)](https://github.com/charent/ChatLM-mini-Chinese)
+
+### Test 3: Q&A
 
 ```text
 [Q]: 你知道长江吗？
-[A]: 长江，位于中国东南部，是中国的第一长河，全长6300多公里，流经11个省份，是中国最长的河流，也是中国的"母亲河"。长江的历史可以追溯到公元前2000多年的商朝时期，当时的商朝是商朝的后裔。商朝时期，长江的经济发展达到了高峰，是中国最重要的农业和工业中心之一。长江流域的经济主要以农业为主，长江渔业占据了主要产业，如钓鱼、猎鱼等。长江的水资源也非常丰富，包括河流、湖泊、河流等。长江的自然景观也十分壮观，长江四季景色各异，春季多雨，夏季多雨，秋季则多雨，冬季则寒冷多雪，春季和秋季都有美丽的花朵和果实。长江是中国的经济中心，拥有众多的国家和城市，是世界上重要的交通枢纽和航运中心。同时，长江还是中国的重要水利资源，对于中国的经济发展具有重要意义。
-[B]: 是的，我知道长江。长江位于中国的中部，是中国第三长的河流，全长约6300公里，流经江西省、安徽省、江苏省、安徽省、江苏省和安徽省。
-[C]: 当然，长江是中国最长的河流，全长约6300公里。它以其丰富的水资源、丰富的水生动植物资源以及独特的地理位置而闻名于世。
-[D]: 是的，长江是中国最长的河流，全长超过3300千米。
-[E]: 长江是中国最长的河流，总长度约为6300公里。它发源于青藏高原的青海湖，流经青海、四川、甘肃、宁夏、内蒙古、陕西和山西。长江流域是中国最大的农业区之一，也是中国的文化和经济中心。
-[F]: 是的，长江是中国最长的河流之一，也是世界第三大河流。长江发源于青藏高原，流经11个省份，最终注入东海。长江流域是中国最大的河流流域之一，拥有着丰富的自然资源和文化遗产，如长江大桥、长江海洋博物馆、长江古城等。
-[G]: 同时也知道，中国是世界上最长的城市之一，拥有超过3400万人口。
-[H]: 是的，长江是中国最长的河流，也是世界上最长的河流之一。它发源于青藏高原，流经九个省区，最终注入东海。长江流域的气候温和，四季分明，是中国重要的农业和工业基地。长江流域的水产资源丰富，是中国的重要渔业资源之一。
+[A]: 长江，全称为中国长江，是中国的官方名称，是中国的重要省份，也是世界上最大的淡水河流。长江流域位于中国东部沿海，地理位置独特，拥有广阔的沿湖生态系统，是世界上最大的淡水河流之一。长江流域位于中国东南半岛，东临东南海，西临太平洋，东临西海，西近太平洋，东临太平洋，西至南半岛，地理位置独特，有广袤的沿海和巨型的水域，是全球重要的水资源。长江流域不仅见证了中国东南亚地区的变迁，也对全球文明产生了深远的影响。长江流域以其独特的生态系统和丰富的生物多样性闻名，是中华文明的象征之一。长江流域的生态系统包括了丰富的水生植物种类，如水稻、玉米、小麦等，这些植物不仅为中国的农业生产提供了丰富的食物来源，还对周边的生态系统有重要影响。此外，长江流域还孕育了各种水生生物，如鲨鱼、海鸟等，这些生物在长江的生态系统中扮演着关键角色。长江流域的生态系统是全球的重要组成部分，它不仅见证了长江流域的变迁，也对全球的生态平衡和农业生产起到了重要作用。通过旅游、文化、旅游等方式，长江流域的自然景观、农事活动、旅游景点等都为人们提供了了解长江流域丰富的资源和体验的平台。
+[B]: 长江，又称为珠穆朗玛峰，位于中国和尼泊尔之间，是世界上海拔最高的山峰，位于喜马拉雅山脉，海拔8848.85米。
+[C]: 同时也知道，中国是世界上最长的城市之一，拥有超过3400万人口。
+[D]: 是的，长江是中国最长的河流，也是世界上最长的河流之一。它发源于青藏高原，流经九个省区，最终注入东海。长江流域的气候温和，四季分明，是中国重要的农业和工业基地。长江流域的水产资源丰富，是中国的重要渔业资源之一。
+
 
 [Q]: 世界上最高的山峰是什么？
-[A]: 世界上最高的山峰是珠穆朗玛峰（Mount Everest），位于喜马拉雅山脉，尼泊尔和中国的边界上。它的海拔高度是8,848.86米（29,031.7英尺），是地球上最高的山峰。
-[B]: 珠穆朗玛峰（Mount Everest）是世界上最高的山峰，海拔高度达8,848米（29,029英尺）。
-[C]: 珠穆朗玛峰是世界上最高的山峰，位于喜马拉雅山脉，海拔8,848.86米（29,031.7英尺）。它位于尼泊尔和中国的边界上，是喜马拉雅山脉的一部分。
-[D]: 世界上最高的山峰是珠穆朗玛峰，位于尼泊尔和中国的边境上，海拔8848米。
-[E]: 世界上最高的山峰是珠穆朗玛峰，位于喜马拉雅山脉，海拔8,848米。
-[F]: 珠穆朗玛峰是世界上最高的山峰，海拔8848米。
-[G]: 世界上最高的山峰是珠穆朗玛峰，位于喜马拉雅山脉，海拔8,848.86米（29,031.69英尺）。
-[H]: 世界上最高的山峰是珠穆朗玛峰，也称为萨加玛塔，位于喜马拉雅山脉的尼泊尔和中国边境之间，海拔8,848.86米（29,031.69英尺）。它是世界上最著名的登山目标之一，吸引着来自世界各地的登山者前来挑战。珠穆朗玛峰的名字来自藏语，意思是"女神的额峰"，它是由两个不同的山峰组成的，其中一个是位于尼泊尔的珠穆朗玛峰，另一个则位于中国。它的高度是通过测量海拔高度来确定的，因为它是通过测量地球的平均高度来确定的。尽管珠穆朗玛峰是世界上最高的山峰，但它并不是地球上任何其他地方都能到达的。地球上的其他地方，如南美洲的安第斯山脉，也是世界上最高的山脉，但它并不是地球上最高的山峰。总之，珠穆朗玛峰是世界上最高的山峰，但它并不是地球上任何地方都能到达的。它是地球上最高的山脉，但它并不是地球上任何地方都能到达的。
+[A]: 世界上最高的山峰是珠穆朗玛峰（Chعام الحدوة）。珠穆朗玛峰（Chirney 峰）位于尼泊尔和中国的中部，海拔8848.86米（864.41英尺），是世界上海拔最高的山峰。
+[B]: 世界上最高的山峰是珠穆朗玛峰（Mount Everest），其高度约为8,848.86米（8,848.86英尺）。珠穆朗玛峰的高度是地球上最高的山峰，也是世界上海拔最高的山峰之一。
+[C]: 世界上最高的山峰是珠穆朗玛峰，位于喜马拉雅山脉，海拔8,848.86米（29,031.69英尺）。
+[D]: 世界上最高的山峰是珠穆朗玛峰，也称为萨加玛塔，位于喜马拉雅山脉的尼泊尔和中国边境之间，海拔8,848.86米（29,031.69英尺）。它是世界上最著名的登山目标之一，吸引着来自世界各地的登山者前来挑战。珠穆朗玛峰的名字来自藏语，意思是"女神的额峰"，它是由两个不同的山峰组成的，其中一个是位于尼泊尔的珠穆朗玛峰，另一个则位于中国。它的高度是通过测量海拔高度来确定的，因为它是通过测量地球的平均高度来确定的。尽管珠穆朗玛峰是世界上最高的山峰，但它并不是地球上任何其他地方都能到达的。地球上的其他地方，如南美洲的安第斯山脉，也是世界上最高的山脉，但它并不是地球上最高的山峰。总之，珠穆朗玛峰是世界上最高的山峰，但它并不是地球上任何地方都能到达的。它是地球上最高的山脉，但它并不是地球上任何地方都能到达的。
 
-[Q]: 谁提出了万有引力定律？
-[A]: 万有引力定律是由牛顿在17世纪提出的，是牛顿三大定律之一。牛顿在17世纪提出的万有引力定律揭示了万有引力定律的本质，并解释了行星、卫星、彗星和其他天体之间的引力相互作用。这一理论是由牛顿在1687年提出的。通过分析和实验，他成功地解释了天体之间的引力相互作用，从而解释了地球绕太阳公转的现象。
-[B]: 万有引力（人类政策）是牛顿三大力学定律之一，用于描述两个物体之间的相互作用。它包括万有引力定律和牛顿第一定律（惯性定律）。万有引力定律来源于两个物体之间的相互作用，其质量、距离和速度决定了它们之间的相互作用。这种相互作用是：质量的乘积：质量的乘积是万有引力定律和牛顿第二定律的乘积。质量的乘积：质量的乘积是两个物体之间的物理过程，两个物体之间的相互作用。对于其他物体，它们的质量可以表示为两个物体之间的质量之和，即引力加速度a。
-[C]: 万有引力是牛顿在1687年提出的物理概念，描述了物体之间的引力相互作用。
-[D]: 万有引力是由英国物理学家牛顿提出的。他相信所有物体都会产生引力，这种引力是由物体的质量和距离决定的。这一理论揭示了质量和距离之间的关系，并证明了万有引力定律的本质。
-[E]: 万有引力是由牛顿在1687年提出的，它是宇宙中的一个基本物理现象，描述了物体之间的相互作用。这种力被称为万有引力，存在于所有物体之间，这种力与物体的质量和距离有关。万有引力是自然界中最基本的力之一，不仅影响物体的运动和变化，而且对宇宙的结构和演化也有重要影响。
-[F]: 万有引力是由英国物理学家牛顿在17世纪提出的。
-[G]: 引力是宇宙中由质量和能量组成的力。根据牛顿的万有引力定律，一个物体的引力与它的质量和距离成正比。因此，牛顿的万有引力定律表明，一个物体的引力与它的质量和距离成正比。这一定律在物理学、天文学和物理学中都有广泛的应用。
-[H]: 万有引力是由英国物理学家牛顿在1687年提出的。他于1687年发表了一篇著名的论文《自然哲学的数学原理》，提出了万有引力定律，指出任何两个物体之间都存在引力，这种引力与它们的质量和距离的平方成反比。这一定律被称为万有引力定律，描述了质量和距离之间的关系。它指出两个物体之间的引力与它们的质量和距离的平方成反比。这一定律对于解释许多现象和宇宙中的相互作用非常重要，例如行星绕太阳公转、恒星之间的引力透镜效应等。它也在天文学、物理学和工程学领域得到了广泛应用，为我们理解自然和宇宙的本质和演化提供了重要的理论基础。
+
+[Q]: 万有引力是谁提出的？
+[A]: 万有引力是由爱因斯坦在1905年提出的，这一概念由他提出。爱因斯坦在20世纪初提出，这是基于阿尔伯特·爱因斯坦在1921年提出的，他在20世纪初提出了广义相对论，这是现代物理学的基础。万有引力理论为物理学提供了一个数学框架，即在任何时刻，都存在一个具有引力的力，这种引力可以说是微粒之间的相互作用。万有引力的概念最早由他在1914年提出，当时他发现物体之间存在着引力，并且这种引力可以被视为一个非常简单的质量和能量总和。根据爱因斯坦的质疑，在1918年，地球上所有的天体都存在一个质量为2的质点，且质量的平方是 \(2^2 = 4\)。在这种质点上，质量的引力与它的质量成正比，与它所处的宇宙的大小成正比。万有引力理论在1919年被认为是天文学的前身，但至今仍未被正式提出。他还提出了广义相对论，这是现代宇宙学的基石。尽管如此，万有引力理论在当时被认为是理论物理学的里程碑，对后来的宇宙学研究产生了深远的影响。
+[B]: 万有引力是由爱因斯坦提出的一种力理论，主要应用于天体物理学和宇宙学研究中。
+[C]: 引力是宇宙中一种力量，它是由质量或能量所组成的。根据牛顿的万有引力定律，一个物体之间的引力大小与它的质量成正比，与它的质量成反比。因此，牛顿的万有引力定律表明，一个物体之间的引力大小与它的质量成正比，与它的质量成反比。这个定律在物理学、天文学和物理学中都有广泛的应用。
+[D]: 万有引力是由英国物理学家艾萨克·牛顿于1687年提出的。他在1687年发表了一篇著名的论文，题为《自然哲学的数学原理》，其中提出了万有引力定律，指出任何两个物体之间都存在着一种引力，这种引力的大小与它们的质量成正比，与它们之间的距离的平方成反比。这个定律被称为万有引力定律，它描述了质量和距离之间的关系。它表明，两个物体之间的引力与它们的质量成正比，与它们之间的距离的平方成反比。这个定律对于解释宇宙中的许多现象和现象之间的相互作用非常重要，例如行星绕太阳运动、恒星之间的引力透镜效应等等。它也被广泛应用于天文学、物理学和工程学等领域，为我们理解宇宙的本质和演化提供了重要的理论基础。
+
 
 [Q]: 你知道大熊猫的主要食物是什么吗？
-[A]: 大熊猫主要以竹子为食，但也吃其他植物、昆虫、小型哺乳动物和鱼。它们的消化系统与熊相似，能够消化竹子。大熊猫有锋利的牙齿，适合咀嚼竹子，所以它们通常被称为"竹子动物"。
-[B]: 大熊猫是草食哺乳动物，以竹子为食，也是肉食动物。它们的主要是竹子，尤其是富含纤维素和矿物质的竹子，这些竹子不会直接进入消化系统。大熊猫的肠道主要由竹子组成，需要消化纤维素和其他纤维在竹子中以支持正常喂养。
-[C]: 大熊猫主要以竹子为食，但也吃其他植物，包括叶子、嫩芽、昆虫、水果、蔬菜和小型哺乳动物。大熊猫是中国特有的，属于熊科，主要分布在四川、陕西和甘肃地区。
-[D]: 大熊猫的主要食物是竹子。它们通常吃竹子，每天需要吃大约30公斤的竹子。
-[E]: 是的，大熊猫主要以竹子为食。它们需要每天吃大量的竹子来维持生命，每天需要吃40到80公斤的竹子。此外，它们还吃一些其他植物，如草、水果、坚果和小型哺乳动物。
-[F]: 大熊猫主要以竹子为食，但偶尔也会吃其他植物和动物。此外，大熊猫还吃一些野生水果、小型动物和植物，但这些并不是它们的主要食物来源。
-[G]: 大熊猫的主要食物是竹子。
-[H]: 大熊猫是植物性动物，主要食物是竹子。它们的肠道结构适合消化富含纤维素的竹子，但它们也吃一些其他植物，如草本植物和小型哺乳动物。大熊猫的肠道结构也适应了高纤维竹子，使它们能够消化大量的纤维素，帮助它们在野外生存。大熊猫的肠道中也含有一种叫做"纤维素酶"的酶，可以帮助大熊猫分解纤维素，帮助它们消化大量的水和营养物质。此外，大熊猫的肠道中也含有一种叫做"纤维素蛋白"的蛋白质，可以帮助大熊猫维持身体能量水平，帮助它们在野外生存。总之，大熊猫的主要食物是竹子，但它们也吃一些其他植物，如草本植物和小型哺乳动物。
+[A]: 大熊猫是一种非常受欢迎的动物，主要以竹子为食，尤其是竹子的外壳和内部的脂肪层。大熊猫的饮食多样性非常丰富，包括竹子、竹子、木头和草本植物等。以下是一些大熊猫的主要食物：1. **竹子**：主要来源于竹子中的竹子，尤其是竹子纤维的部分，因其纤维含量高而成为大熊猫的"榉"，因其纤维含量高而成为榉木。2. **竹子**：竹子中含有丰富的纤维，如竹子中的纤维，以及其他天然纤维，如藤蔓和竹丝。这些纤维有助于促进竹子的形成和分布。3. **竹子**：竹子中含有丰富的纤维，包括纤维和脂肪层，以及其他天然纤维，如紫薯、甜薯、花蕊等，这些纤维不仅提供了碳水化合物，还富含蛋白质和纤维素。4. **竹子**：竹子的生长和消化特性使其成为大熊猫的主要食物来源，包括竹子中的纤维。竹子的消化过程也起着重要作用，通过纤维的吸收和分解，能够为大熊猫提供大量的食物来源。5. **竹子**：竹子的消化过程也起着关键作用，它们通过胎生的方式将竹子转化为纤维，吸收水分和营养物质，保持大部分营养物质的供应。6. **竹子**：竹子还含有丰富的纤维和脂肪层，这些物质有助于分解大部分营养物质，提供能量和氧气。需要注意的是，大熊猫的饮食不仅仅是食物，它们还对大熊猫的生存环境、繁殖习性以及繁殖习性等有重要影响。因此，大熊猫的饮食应根据其健康状况和野生动物的保护需求进行适当的调整。
+[B]: 大熊猫是亚洲的一种濒危物种，其主要食物来源包括竹子。不过，作为一个AI助手，我并没有实际的食谱或食物来源。不过，我可以提供一些关于大熊猫饮食的基本知识和注意事项。大熊猫是食草动物，以竹子为主要食物来源，但它们还吃海产品，包括鱼类、鸟类、哺乳动物和偶尔的海产品。大熊猫的饮食通常更为丰富，包括竹子、水果、小型动物（如松鼠、兔子）和一些其他植物。大熊猫的饮食习惯受到多种因素的影响，包括人类活动、自然环境、以及人类的干扰。以下是一些关于大熊猫饮食的常见误解：1. **人类干扰**：在食物供应中，人类可能会干扰大熊猫的饮食习惯，尤其是鱼类和小型动物，这些食物可能含有过多的添加剂和人工添加剂。2. **遗传因素**：人类的饮食习惯与遗传有关，但通常情况下，人类的饮食偏好是由自然选择的驱动，自然界的食物链中包含的碳、碳循环和不利影响。3. **食物来源**：尽管大熊猫主要以竹子为食，但它们的狩猎方式和食物来源也受到自然环境的影响。人类的捕猎活动可能不会直接改变大熊猫的饮食结构，但这与人类的饮食习惯可能有关。4. **饮食周期**：大熊猫的饮食周期通常包括几个月到几个月，这取决于全球人口的分布、食物类型（如鱼类、鸟类、哺乳动物和偶尔的海产品）以及它们的饮食习惯。5. **气候变化**：全球气候变化可能影响大熊猫的食物链，这可能导致它们的狩猎和进食模式发生变化。总之，虽然大熊猫主要以竹子为食，但它们的狩猎方式和食物来源可能会改变它们的饮食习惯，但与人类的饮食习惯可能并不是直接的联系。保持观察和了解大熊猫饮食的多样性是维护生态平衡和动物福利的重要措施。
+[C]: 大熊猫的主要食物是竹子。
+[D]: 大熊猫是一种以竹子为主要食物的植食动物，它们的肠道结构适合消化纤维素含量高的竹子，但也会吃一些其他植物，如草本植物和小型哺乳动物。大熊猫的肠道结构也适应了高纤维的竹子，这使得它们能够消化大量的纤维素，从而帮助它们在野外生存。大熊猫的肠道中还含有一种叫做"纤维素酶"的酶类物质，这种酶能够帮助大熊猫分解纤维素，从而帮助它们消化大量的水分和营养物质。此外，大熊猫的肠道还含有一种叫做"纤维素蛋白"的蛋白质，这种蛋白质能够帮助大熊猫维持体内的能量水平，从而帮助它们在野外生存。总的来说，大熊猫的主要食物是竹子，但它们也会吃一些其他植物，如草本植物和小型哺乳动物。
 
-[Q]: 为什么海水是咸的？
-[A]: 海水是咸的主要是因为它的化学成分。海水含有大量的矿物质和盐分，主要成分是硫酸盐、碳酸盐、镁离子和钾离子。这些物质在高浓度下会在海水中沉淀，形成海水。具体来说，海水中矿物质和盐分主要来自岩石、土壤、生物和人类排泄物。岩石是海水的组成部分，主要由石英、长石、云母等矿物质组成。土壤中含有大量的化学物质，如氮、磷、钾等，这些化学物质会渗入土壤，形成土壤。生物排泄物中的盐分主要来自植物叶绿素和其他色素，这些色素吸收阳光并将其转化为能量，供生物使用。人类排泄物中的盐分主要来自矿物质和碳酸盐，这些矿物质在水中高浓度存在，导致水中溶解矿物质浓度增加，形成海水。因此，海水是咸的主要是因为它的化学成分和结构特征。矿物质和盐分在海水中主要来自岩石、土壤、生物和人类排泄物，这些物质在海水中积累和排泄，导致海水变咸。
-[B]: 海水是咸的，因为它含有多种物质，包括氯化钠（NaCl）、氯化钠（NaCl）、碳酸盐（如硫酸盐）、氯化钠（NaCl）和水。咸物质的来源：盐是一种常见的咸味来源，含有钾、钙、镁、钾和其他矿物质。这些矿物质通常来自地下水、地下水或土壤，浓度远低于纯水。咸味的原因：咸味主要来自水中的小颗粒盐。这些小颗粒主要通过植物根部和动物体内的微生物传播，如昆虫、小型哺乳动物、鸟类和某些昆虫。总之，海水是咸的，因为它含有大量的盐分，包括矿物质、岩石、盐、矿物质等，这些物质在海水中高浓度存在，对咸味产生重要影响。
-[C]: 海水是咸的主要是因为它含有各种盐分，海水是其中主要成分之一。当海水含有大量盐分时，这些盐分溶解在海水中形成咸味。海水中盐分主要来自溶解盐分、蒸发沉淀和冰冻海水形成的盐分。
-[D]: 海水中含有许多盐分，这些盐分可以增加海水的咸度。海水中盐分主要来自海水中溶解的盐分，这些盐分可以从海水中获得。氧化物和海水中盐分可以与海水中盐分形成氢键，从而增加海水的咸度。
-[E]: 海水是咸的，因为它含有大量的盐分，包括氯离子和氯离子。这些离子在海洋中形成大量盐分，称为盐。海水中含有许多溶解的盐分，这些盐分随着海水的上升而蒸发，最终导致海水中盐分蒸发。这些盐分完全被海水消耗，然后从海水中排除。此外，海水中还含有许多其他盐分，但这些盐分不同，因为它们的浮动和下沉过程不同。海水中提取的盐分来自海底的岩石，这些盐分在海水中可利用。总之，海水是咸的，因为海水中含有许多盐分和盐分。
-[F]: 海水中含有许多溶解的盐分，其中最主要的是氯化钠。当盐加入水中时，盐分子与水分子反应形成氢氧化钠，这是一种盐。
-[G]: 因为许多生物需要水才能生存，它可以通过吸收和释放二氧化碳、释放氧气、保持大气中的水蒸气、保持水循环来实现。水中的盐分和化学物质释放氧气，使地球上的生物能够呼吸。此外，水还有许多其他功能，如保持水循环、调节气候和环境等。水对许多生物的生存至关重要，也是许多自然现象的重要基础。
-[H]: 海水是咸的主要是因为它含有大量的溶解盐分，其中最主要的是氯化钠（NaCl）。氯化钠是一种非常常见的盐，存在于地球上的海洋、湖泊、河流和地下水中。当海水从海洋蒸发时，它会带走一些盐，使海水变咸。此外，海洋中还含有其他溶解盐分，如硫酸盐、镁硫酸盐、钙硫酸盐、镁钾硫酸盐、镁钠硫酸盐、镁钙硫酸盐、[以及这些化合物的重复组合]...
 
-[Q]: 写一个Python快速排序代码
-[A]: 好的，以下是Python快速排序代码： def quick_sort(arr):    if len(arr) <= 1:        return arr    else:        pivot = arr[len(arr) // 2]        left = [x for x in arr[1:]]        right = [x for x in arr[2:] if x < pivot]        return quick_sort(left) + [pivot] + quick_sort(right)# Test code arr = [3, 6, 8, 10, 1, 2, 1]print(quick_sort(arr))This code first checks if array length is less than or equal to 1. If so, it arranges from smallest to largest. Next, for each element in array, it wants to recursively sort until reaching sort end position. If array length is odd, it arranges from largest to smallest. Finally, average time complexity is O(n log n), where n is array length.
-[B]: 以下是使用Python实现的快速排序算法： def sort_array(arr):    # Generate random arrangement    sorted_array = sorted(arr)    # Return sorted list    return sorted(arr)# Example arr = [3, 1, 4, 1, 5, 9, 2, 6, 5, 3, 5]# Call function sorted_array = sort_array(arr)print("Original array is: ", sorted_array)This code first generates random arrangement, then sorts through a list's length. Finally returns sorted list. Note that this code uses Python's built-in sorted function and built-in sorted() function, which are faster than directly using sorted() function at O(n log n) time complexity.
-[C]: 以下是适用于小数组的简单排序算法： def quick_sort(arr):    if len(arr) <= 1:        return arr    else    for _ in range(2, 51):        if arr[len(arr) - 1:] is not None:            arr[len(arr) - 1] = arr[len(arr) - 1]                arr[len(arr)] = arr[len(arr)]    return quick_sort(arr)# Example arr = [3, 5, 1, 4, 1, 2, 1]sorted_arr = quick_sort(arr)print("Sorted array is:", sorted_arr)### Code Explanation: 1. **Function Definition**: quick_sort function takes an array arr as parameter. 2. **Loop**: For arr elements, uses recursion, traversing from right to left, swapping current element with current array element until array reaches empty or array length <= arr. 3. **Recursive Call**: Traverse array, swap current element with current array element until array reaches empty or array length <= arr. 4. **Check Array Length**: Use if __name__ == "__main__" to check if array length < arr, if so move array from larger array to array end. 5. **Output Sorted Results**
-[D]: 作为AI语言模型，我无法编写Python程序。然而，Python是一个非常流行的编程语言，拥有许多优秀的库和框架，包括NumPy、Pandas、Matplotlib、Pandas、Bandke、Norm和NKlearn等。Python有许多优秀的自然语言处理库和框架，用于处理和分析各种类型的数据，如文本、图像、音频、视频等。Python还可以创建各种应用程序，如网络搜索、游戏开发、科学计算等。Python非常灵活，也支持多种编程风格，因此可以轻松找到合适的解决方案。
-[E]: 作为AI语言模型，我可以回答你的问题。然而，我无法执行编程操作，因为我无法确定你询问的是哪种编程语言。请提供更具体的问题，以便我更好地回答你的问题。
-[F]: 快速排序（快速排序）是一种简单的排序算法，它将数据分成小部分，通过规则对每个部分进行排序，最终得到一个有序数组。
-[G]: 好的，以下是快速排序的Python代码 ```python sorted_print(sorted(sorted(sorted(sorted_print))```Output is: ```[1, 2, 3, 4, 5, 6, 7, 8, 9]```
-[H]: 快速排序是一种基于分治法的排序算法，时间复杂度为O(n log n)。它的基本思想是：通过一次排序通过，将序列分成两个子序列，其中一个子序列中的所有元素都小于另一个子序列中的所有元素，然后递归地对这两个子序列进行排序。以下是实现快速排序算法的Python代码： ```pythondef quick_sort(arr):    if len(arr) > 1:        return arr    else: return quick_sort(arr)```This code uses递归，首先判断数组长度是否<=1，如果是，则直接返回数组，否则递归地对数组进行排序。在递归过程中，我们首先判断第一个数组元素是否>=1，如果是，则比较数组元素与第一个元素，如果不是=1，则比较数组元素与第二个元素，等等，直到所有元素都排序完毕。这种代码的时间复杂度为O(n log n)，是一种非常实用的排序算法。
+[Q]: 海水为什么是咸的？
+[A]: 海水的咸度是由海水的重量以及海水的盐度共同作用的结果。这种变化主要是由于海水在阳光照射下会吸收水中的盐分，从而形成咸味。1. **阳光的反射**：当阳光照射到海水表面时，水中的盐分会渗透到海水的表面，而不是海水表面。这种反射的过程称为光的反射。2. **盐水的温度**：海水的盐度与普通海水中的水的温度有关。普通海水中的盐分（即海水的盐度）会逐渐凝结成海水，这个过程称为"光散射"。由于海水的温度变化，这些水中的盐分会逐渐被海水吸收，从而导致海水呈现出咸味。3. **海水的物理性质**：海水在阳光照射下会吸收海水中的盐分，这些盐分会逐渐释放到大气中，进一步凝结成咸味物质。海水中的水的体积相对较小，因此在形成咸味物质时，水中的盐分会被吸收。4. **水的物理性质**：海水的咸味物质主要由碳酸钙和钙离子组成，而海水的咸味物质主要由钙离子组成，它们在阳光照射下会吸收水中的热量。这种现象是海水咸味物质与海水的化学反应的一种体现。5. **海水的物理性质**：海水的盐度分布和性质也会影响海水的咸味物质的分布。例如，一些海水的盐度接近于100%，这可能与海水的盐度非常接近，从而引起了海水咸味物质的形成。总之，海水咸度是由于海水的物理性质、物理性质以及海水的化学成分共同作用的结果。
+[B]: 海水的咸度是由其所含物质的盐分占据的，这一现象可以从几个方面来解释：1. **盐分占据的作用**：咸度是指在一定温度下，部分水分含量的相对量。在正常条件下，咸度较高的水分含量会增加，使得渗透压较小，这部分的水分会减少，使得渗透压相对较低。这是因为咸度的增加使得盐分在水中的浓度增加，盐分的增加意味着渗透压较小，使得渗透压相对较高。2. **淡水的来源**：海水中的淡水主要来源于海水。这些淡水是海洋生态系统的重要组成部分，对于维持海洋生态平衡、调节气候、提供水源、以及支持生物多样性等都至关重要。咸度的提高会减少渗透压，使得渗透压相对较低，从而使得渗透压相对较高。3. **海水的含量**：海水是地球上所有生物的血液，其中含有大量的盐分。咸度的增加使得渗透压相对较低，这意味着渗透压相对较高。当海水的盐分含量增加时，渗透压相对较低，渗透压相对较高。这种现象不仅对海水的物理性质有影响，也对人类的饮用水安全具有重要意义。4. **咸度与海水的关系**：海水中的盐分在咸度增加的情况下，虽然盐分的增加本身也增加了渗透压，使得渗透压相对较高，从而使得渗透压相对较高。这是因为咸度的增加使得渗透压相对较高，渗透压相对较低，从而使得渗透压相对较高。综上所述，海水的咸度是通过其所含物质的盐分占据的，这部分水分子在咸度增加的情况下，渗透压相对较高，同时渗透压相对较低，这导致渗透压相对较低，渗透压相对较高。
+[C]: 因为水是许多生物的生存所必需的，它能够吸收和释放二氧化碳，释放氧气，维持大气中的水蒸气，以及维持水循环。水中的盐类和化学物质会释放出氧气，使地球上的生物呼吸。此外，水还具有许多其他功能，如保持水循环、维持水循环、调节气候和环境等。水是许多生物生存所必需的，它也是许多自然现象的重要基础。
+[D]: 海水是咸的主要原因是因为其中含有大量的溶解盐类，其中最主要的是氯化钠（NaCl）。氯化钠是一种非常常见的盐类，它存在于地球上的大部分地区，包括海洋、湖泊、河流和地下水。当水从海洋中蒸发时，它会带走一部分盐分，使海水变得咸。此外，海中还含有其他溶解盐类的物质，如硫酸盐、硫酸镁、硫酸钙、硫酸镁盐、硫酸镁钾、硫酸镁钠、硫酸镁钙、硫酸镁镁钙、硫酸镁镁钙、硫酸镁镁钙、硫酸镁镁钠、硫酸镁镁钙、硫酸镁镁镁钙、硫酸镁镁镁钙、硫酸镁镁镁钙、硫酸镁镁镁钙、硫酸镁镁镁钙、硫酸镁镁镁钙、硫酸镁镁镁钙、硫酸镁镁镁钙、硫酸镁镁镁钙、硫酸镁镁镁钙、硫酸镁镁镁镁钙、硫酸镁镁镁镁钙、硫酸镁镁镁镁钙、硫酸镁镁镁镁钙、硫酸镁镁镁镁钙、硫酸镁镁镁镁钙、硫酸镁镁镁镁镁钙、硫酸镁镁镁镁镁钙、硫酸镁镁镁镁镁钙、硫酸镁镁镁镁镁钙、硫酸镁镁镁镁镁镁钙、硫酸镁镁镁镁镁镁钙、硫酸镁镁镁镁镁镁钙、硫酸镁镁镁镁镁镁镁钙、硫酸镁镁镁镁
 
-[Q]: 截至2025-02-09 14:31，电影《哪吒：魔童降世》累计票房（包括预售）突破7.809亿元，超过《星球大战：天行者崛起》票房成绩，成为首部进入全球票房前40名的亚洲电影。这一成就不但标志着中国电影在国际市场上的突破，也展示了中国动画电影的巨大潜力和市场吸引力。总结这段文字中的20个字。
-[A]: "哪吒：魔童降世"票房突破7.809亿元，成为首部进入全球票房前40名的亚洲电影。这标志着中国电影在国际市场上的突破，也展示了中国动画电影的巨大潜力和市场吸引力。
-[B]: 2月9日，中国电影在世界舞台上突破7.809亿元，超过《星球大战：天行者崛起》票房成绩。
-[C]: "哪吒：魔童降世"票房突破7.809亿元，成为全球票房前40名的亚洲电影，展示了中国动画电影的巨大潜力和市场吸引力。
-[D]: "哪吒：魔童降世"累计票房突破7.809亿元，成为首部进入全球票房前40名的亚洲电影，展示了中国电影在国际市场上的突破，也展示了中国动画电影的巨大潜力和市场吸引力。
-[E]: "龙之力量：世界幻想冒险"吸引了众多观众，同时也吸引了广泛关注。
-[F]: "哪吒：魔童降世"是一部使中国动画电影成为巨大潜力的电影。这部电影因其华丽的视觉效果和令人惊叹的战斗场面而闻名。
-[G]: "哪吒：魔童降世"是否值得价值"是2025年1月9日14:31，电影《哪吒：魔童降世》票房突破78亿元，成为中国动画电影的突破，也展示了中国动画电影的巨大潜力和市场吸引力。
-[H]: 我是一个小参数AI模型😅，知识库有限，无法直接回答你的问题。尝试换个问题👋
+
+[Q]: 写一段python的快速排序代码
+[A]: 在Python中，快速排序是一种高效的排序算法，它使用分治法（Divide and Conquer）策略来将一个序列分为较小和较大的两个子序列。以下是一个简单的Python快速排序代码：```python def quick_sort(arr): if len(arr) <= 1: return arr pivot = arr[len(arr) // 2] left = [x for x in arr if x < pivot] middle = [x for x in arr if x == pivot] right = [x for x in arr if x > pivot] return quick_sort(left) + middle + quick_sort(right) # 示例 arr = [3, 6, 8, 10, 1, 2, 1] print(quick_sort(arr))  # 输出: [1, 1, 2, 3, 6, 8, 10] ```这段代码首先检查输入数组的长度是否小于等于1。如果是，则直接返回数组。接下来是数组的长度，如果是数组，则直接返回数组。然后是数组中的元素，如果数组长度小于等于1，则直接返回数组。最后是数组中的元素，如果数组包含重复的元素，则不返回任何元素。
+[B]: 快速排序是一种高效的排序算法，采用分治策略来将一个序列分为较小和较大的两个子序列，然后递归地排序这两个子序列。以下是快速排序的Python实现代码：```python def quick_sort(arr): if len(arr) <= 1: return arr pivot = arr[len(arr) // 2] left = [x for x in arr if x < pivot] middle = [x for x in arr if x == pivot] right = [x for x in arr if x > pivot] return quick_sort(left) + middle + quick_sort(right) # 示例 arr = [3,6,8,10,1,2,1] print("Original array:", arr) sorted_arr = quick_sort(arr) print("Sorted array:", sorted_arr) ```这段代码首先检查输入数组的长度，如果长度小于等于1，那么数组已经是排序好的，直接返回。然后选择一个基准值（pivot），将数组分为三部分：小于基准值的元素、等于基准值的元素和大于基准值的元素。接着递归地对小于和大于基准值的元素进行快速排序，并将结果合并。
+[C]: 好的，以下是一段快速排序的Python代码```python sorted_print(sorted(sorted(sorted_print))```输出结果为：```[1, 2, 3, 4, 5, 6, 7, 8, 9]```
+[D]: 快速排序是一种基于分治思想的高效排序算法，它的时间复杂度为 O(n log n)。它的基本思想是通过一趟排序将待排序序列划分为两个子序列，其中一个子序列的所有元素都比另一个子序列的所有元素小，然后对这两个子序列分别递归地进行排序。下面是一个 Python 代码示例，实现了快速排序算法：```pythondef quick_sort(arr):    if len(arr) > 1:        return arr    else: return quick_sort(arr)```该代码使用了递归的方式，首先判断数组的长度是否小于等于1，如果是，则直接返回数组，否则递归地对数组进行排序。在递归过程中，我们首先判断数组的第一个元素是否大于等于1，如果是，则将数组中的元素与第一个元素进行比较，如果不等于1，则将数组中的元素与第二个元素进行比较，以此类推，直到所有元素都被排序。该代码的时间复杂度为 O(n log n)，是一个非常实用的排序算法。
+
+
+[Q]: 截至2025年2月9日14时31分，电影《哪吒之魔童闹海》累计票房（含预售）突破78.09亿元，超过《星球大战：天行者崛起》的票房成绩，成为首部进入全球票房榜前40的亚洲电影。这一成就不仅标志着中国电影在国际市场的突破，也展示了中国动画电影的巨大潜力和市场吸引力。从这段文字总结20字的摘要给我。
+[A]: 《哪吒之魔童闹海》的票房成绩，从短短几十年来一直是全球票房排名中的关键因素，它不仅标志着中国电影在国际市场的突破，也极大地增强了票房和观众的认同感。以下是对这一成就的简要总结：1. **票房表现**：《哪吒之魔童闹海》获得了众多票房，不仅在票房上取得了巨大成功，还获得了多个国际电影奖项，成为全球票房排名中的重要一员。2. **国际影响力**：票房表现显著，特别是《哪吒之魔童闹海》获得了多项重要电影奖项，包括《哪吒之魔童闹海》和《哪吒之魔童闹海》等。这些电影不仅在国际上获得了巨大成功，也吸引了全球观众的关注。3. **电影艺术价值**：电影不仅展示了中国电影的艺术魅力，还赋予了电影艺术家强大的文化价值和情感深度。《哪吒之魔童闹海》不仅在视觉上打动了观众，还获得了国际电影金奖最佳影片提名，成为全球票房最亮眼的电影作品之一。4. **市场地位**：《哪吒之魔童闘海》获得了众多国际电影奖项，不仅在国内获得了巨大成功，还吸引了来自世界各地的观众。其在国际市场上的影响力也十分强烈。5. **国际影响力**：尽管票房表现优异，但《哪吒之魔童闹海》在国际市场的表现仍然较为突出，成为全球票房排名中的重要一员。6. **国际市场**：电影在国际市场上的知名度和影响力持续增长，尤其是在国际电影节上，许多国际电影节还在进行。综上所述，《哪吒之魔童闹海》的票房成绩在国际票房中表现卓越，不仅在国内获得了巨大成功，还成为了全球票房排名的重要标志，标志着中国电影在国际市场的突破。
+[B]: 20字的摘要：20字的巨大成就是中国电影在国际市场取得的首次突破，标志着中国电影在国际市场的突破。
+[C]: 《哪行是值得的》是2021年1月9日14时31分，电影《哪成大作为》在电影市场突破7800亿美元，成为中国动画电影的突破，并展示中国动画电影的巨大潜力和市场吸引力。
+[D]: 我是一个参数很少的AI模型🥺，知识库较少，无法直接回答您的问题，换个问题试试吧👋
 ```
 
----
+🙋‍Directly feeding all the above questions and model responses to GPT-5.4 Thinking for review and ranking:
 
-🙋‍ Let's directly ask DeepSeek-R1 to review and score all the above questions and model answers:
+<details>
+<summary>Detailed Review</summary>
 
-<details style="color:rgb(128,128,128)">
-<summary>Detailed Reviews</summary>
-
+```text
 ### Scoring Criteria:
 
-- **Accuracy**: Whether answers are correct with no obvious errors.
-- **Completeness**: Whether answers cover core points of the question.
-- **Logicality**: Whether answers are well-organized and follow logic.
-- **Code Quality**: Whether code runs normally with clear logic.
+- **Accuracy (30 points)**: Whether the facts in the response are correct, whether there are obvious factual errors or hallucinations.
+- **Completeness (30 points)**: Whether the response covers the core points of the question, whether the elaboration is sufficient.
+- **Logic (20 points)**: Whether the response is well-organized and internally consistent, whether there are self-contradictions or semantic confusion.
+- **Code Quality (20 points)**: Whether the code can run correctly, whether the implementation logic is clear (scored only for code questions).
 
-### Reviews:
+### Per-Model Review:
 
-1. **Model A**:
-    - **Strengths**: Answers are very comprehensive, large information volume, clear logic, especially excellent performance on Yangtze River, giant panda, seawater saltiness questions. Code has minor flaws but overall thinking is correct.
-    - **Weaknesses**: Some answers are slightly verbose but don't affect overall quality.
-    - **Summary**: Best overall performance with highest score.
+1. **Model A (minimind-3, 0.06B)**:
+    - **Strengths**: Sufficient generation volume, expansion ability is already decent for this parameter count. The code question produced a structurally complete and runnable quicksort implementation, one of the best code answers in this round. The Everest question also basically got the core information right.
+    - **Weaknesses**: Factual errors are quite dense — universal gravitation attributed to Einstein, the Yangtze River described as "China's official name", the explanation of seawater salinity completely deviates from scientific facts (involving "light scattering", "sunlight reflection", etc.). The summary question did not follow the 20-character limit and output a large expanded passage. The giant panda answer, while getting bamboo right, had all 6 points being repeated variants of "bamboo" with extremely low information density.
+    - **Overall**: Has some generation and code capability, but knowledge accuracy is a hard weakness, hallucination problems are prominent, and responses frequently exhibit the phenomenon of "looking plausible at first glance but completely fabricated upon closer inspection."
 
-2. **Model H**:
-    - **Strengths**: Answers are fairly accurate, especially excellent performance on Mount Everest, universal gravitation questions. Code explanation though incomplete is fairly detailed.
-    - **Weaknesses**: Some answers somewhat verbose but logicality is strong.
-    - **Summary**: Second only to Model A with stable performance.
+2. **Model B (minimind-3-moe, 0.2B-A0.06B)**:
+    - **Strengths**: Response structure is relatively clear, sentence fluency is the best among the four models. The code question implementation is correct with example output included, and the explanation is also quite adequate. The Everest question answer is accurate. The summary question, while exceeding the character limit, at least captured the two keywords "Chinese cinema" and "international market breakthrough."
+    - **Weaknesses**: Factual errors are also very obvious — the Yangtze River is directly described as "Mount Everest", universal gravitation attributed to Einstein, and the giant panda's food includes "seafood, fish, birds" and other serious factual errors. The explanation of seawater salinity revolves around "osmotic pressure" going in circles without touching the core reason.
+    - **Overall**: The MoE architecture brings better expression fluency and structural sense, but accuracy issues are comparable to Model A. Overall, it leads in the "does it read well" dimension, but has no fundamental advantage in "is it correct."
 
-3. **Model C**:
-    - **Strengths**: Answers are concise and clear, especially good performance on giant panda and quick sort questions.
-    - **Weaknesses**: Some answers somewhat brief lacking in-depth explanation.
-    - **Summary**: Overall good performance but slightly falls short of A and H in details.
+3. **Model D (chatlm-mini-chinese, 0.2B)**:
+    - **Strengths**: Knowledge Q&A performance is the most solid — the Yangtze River description is basically correct (origin, provinces it flows through, emptying into the East Sea), universal gravitation is correctly attributed to Newton with the 1687 *Principia Mathematica* cited, the giant panda's main food of bamboo is also answered correctly, and the seawater salinity explanation starts off correctly (sodium chloride, dissolved salts). Overall readability is good, with no obvious logical breaks.
+    - **Weaknesses**: The code question has the condition written backwards (`len(arr) > 1: return arr`), causing the function to completely fail. The summary question directly gives up answering ("I am an AI model with very few parameters"). The Everest and seawater salinity answers both show obvious repetitive degeneration in the latter half.
+    - **Overall**: Knowledge reserve is the best among the four models, factual Q&A is clearly ahead, but code capability is a weakness, and generation in the latter portion tends to degenerate into repetitive loops.
 
-4. **Model F**:
-    - **Strengths**: Answers fairly accurate, decent performance on Yangtze River and universal gravitation questions. Code section has certain logicality.
-    - **Weaknesses**: Some answers not deep enough, code has minor issues.
-    - **Summary**: Performs acceptably with room for improvement.
-
-5. **Model D**:
-    - **Strengths**: Answers basically accurate, decent performance on universal gravitation and Yangtze River questions.
-    - **Weaknesses**: Some answers too brief, code has obvious errors.
-    - **Summary**: Generally adequate performance needing code improvement.
-
-6. **Model B**:
-    - **Strengths**: Answers fairly accurate, decent performance on Yangtze River and seawater saltiness questions.
-    - **Weaknesses**: Some answers weak in logicality, code has significant problems.
-    - **Summary**: Average performance needing further optimization.
-
-7. **Model E**:
-    - **Strengths**: Some answers fairly accurate, decent performance on seawater saltiness and giant panda questions.
-    - **Weaknesses**: Answers too brief, code almost non-functional.
-    - **Summary**: Poor performance needing major improvement.
-
-8. **Model G**:
-    - **Strengths**: Almost no obvious strengths.
-    - **Weaknesses**: Answers seriously deviate from topic, code completely non-functional.
-    - **Summary**: Worst performance needing major improvement.
-
----
+4. **Model C (baby-llama2-chinese, 0.2B)**:
+    - **Strengths**: The Everest question answer is concise and accurate, the giant panda's main food of bamboo is also answered correctly, showing some ability on very basic factual questions.
+    - **Weaknesses**: The Yangtze River question is completely off-topic ("China is one of the world's longest cities"), universal gravitation mentions Newton but the explanation is confused and self-repetitive, the seawater question is off-topic (discussing the biological role of water), the code question outputs completely unusable code (`sorted_print(sorted(sorted(...)))`), and the summary question has severely garbled information ("哪行是值得的", "7800亿美元").
+    - **Overall**: Basic language ability is clearly insufficient, most answers are either off-topic or severely distorted in information, ranking at the bottom overall in this evaluation.
 
 ### Summary:
 
-- **Model A** excels in all aspects, especially excellent in complex question answering showing high accuracy and logicality.
-- **Model H** follows closely with stable performance but slightly deficient in details.
-- **Model G** worst performance with off-topic answers and non-functional code, needing major improvement.
+- **Model B**: Most fluent expression, correct code, best structural sense, but severe knowledge hallucinations (Yangtze = Everest, giant pandas eating seafood), large gap between "reads well" and "is correct."
+- **Model D**: Highest knowledge accuracy, most stable performance on factual Q&A, but code capability is a clear weakness, generation in the latter portion tends toward repetitive degeneration.
+- **Model A**: Similar style to B, code is usable, but overall stability is inferior to B, and factual error density is also on the high side.
+- **Model C**: Insufficient basic capability, most answers are unusable, only occasionally answering the simplest factual questions correctly.
+
+```
 
 </details>
 
-### Scoring Rankings
+| Rank | Model | Accuracy (30 pts) | Completeness (30 pts) | Logic (20 pts) | Code Quality (20 pts) | Total (100 pts) |
+|------|-------|--------------------|-----------------------|----------------|----------------------|-----------------|
+| 1    | B     | 11                 | 23                    | 16             | 18                   | 68              |
+| 2    | D     | 25                 | 19                    | 15             | 3                    | 62              |
+| 3    | A     | 10                 | 21                    | 13             | 17                   | 61              |
+| 4    | C     | 8                  | 6                     | 5              | 2                    | 21              |
 
-| Rank | Model | Accuracy (30 points) | Completeness (30 points) | Logicality (20 points) | Code Quality (20 points) | Total (100 points) |
-|----|----|-----------|-----------|-----------|------------|-----------|
-| 1  | A  | 28        | 29        | 19        | 20         | 96        |
-| 2  | H  | 27        | 28        | 18        | 20         | 93        |
-| 3  | C  | 26        | 27        | 18        | 18         | 89        |
-| 4  | F  | 25        | 26        | 17        | 18         | 86        |
-| 5  | D  | 24        | 25        | 17        | 16         | 82        |
-| 6  | B  | 23        | 24        | 16        | 15         | 78        |
-| 7  | E  | 22        | 23        | 15        | 14         | 74        |
-| 8  | G  | 10        | 12        | 10        | 10         | 42        |
 
-### 👉 Subjective Results Summary
+### 👉 Comprehensive Evaluation 2
 
-Personal subjective evaluation basically aligns with DeepSeek-R1, where:
-
-* MiniMind series ranking very intuitive, larger parameters + sufficient training data score higher. Hallucinations and errors obviously better than small models.
-
-* Model H answers look decent visually despite some hallucinations and confabulation.
-
-* Model G possibly has incomplete training data with provided weights performing poorly after testing.
-
-* Revisiting the timeless Scaling Law: larger parameters, more training data → stronger model performance.
+From a subjective perception standpoint, I would rank `minimind-3-moe` first, `chatlm-mini-chinese` second, `minimind-3` third, and `baby-llama2-chinese` fourth. Although `B` has severe hallucinations in knowledge accuracy (giant pandas eating seafood), it wins with fluent expression, clear structure, and correct code implementation, achieving the highest overall output quality; `D` has a clearly leading knowledge reserve (Newton 1687, Yangtze River origin, etc. all correct), but the code question's reversed condition makes it completely unusable, and the summary question is directly abandoned, dragging down the score considerably; `A` and `B` are similar in style, with equally usable code, but stability and knowledge accuracy are both inferior to `B`, being a typical case of "can say something about everything but upon close inspection it's all fabricated"; `C` has obvious gaps in factuality, expansion ability, and overall readability, only occasionally answering the simplest factual questions correctly. Notably, `D` and `A` have very close total scores (62 vs 61), but their strengths and weaknesses are distributed in an almost complementary manner: `D` wins on knowledge accuracy (25 vs 10), `A` wins on code capability (17 vs 3). This actually also reflects a typical phenomenon of small-parameter models — within a limited parameter budget, "writing well" and "writing correctly" are often hard to achieve simultaneously.
 
 ---
 
-## Ⅳ RoPE Long-text Extrapolation
+## Ⅳ RoPE Length Extrapolation
 
-MiniMind supports RoPE position encoding length extrapolation through YaRN algorithm, enabling models to handle text sequences exceeding training length.
+MiniMind supports length extrapolation of RoPE positional encoding through the YaRN algorithm, enabling the model to more stably handle text sequences that exceed the training length.
 
-For native torch models, when using `eval_llm.py` for inference, just add `--inference_rope_scaling` parameter to enable RoPE extrapolation:
+When using the native torch model for inference with `eval_llm.py`, simply add the `--inference_rope_scaling` parameter to enable RoPE extrapolation:
 
 ```bash
 python eval_llm.py --weight full_sft --inference_rope_scaling
 ```
 
-For Transformers format models, add the following configuration to config.json to enable length extrapolation:
+For models in `Transformers` format, the following configuration can be added to `config.json` to achieve length extrapolation:
 
 ```json
 "rope_scaling": {
@@ -1582,18 +1537,52 @@ For Transformers format models, add the following configuration to config.json t
 }
 ```
 
-Testing on MiniMind-Small model with different lengths of "Journey to the West" vernacular fiction text to evaluate perplexity (PPL) comparison before and after RoPE scaling.
-You can see that after enabling YaRN extrapolation, the model's PPL performance on long texts significantly decreases:
+Below, using MiniMind as an example, we use vernacular text from *Journey to the West* of different lengths as input, comparing the perplexity (PPL) changes before and after enabling RoPE scaling. It can be seen that in long-text scenarios, the model's PPL significantly decreases after enabling YaRN extrapolation:
 
 <div align="center">
 <img src="./images/rope_ppl.png">
 </div>
 
-## Ⅴ Objective Benchmarks
+> PPL comparison of MiniMind before and after enabling YaRN at different text lengths
 
-Performance comparisons with other small models on Chinese language leaderboards including C-Eval, CMMLU, A-CLUE, TMMLU+...
+---
 
-Models generally achieve baseline performance due to small parameter scales and limited pretraining data. MiniMind without targeted leaderboard optimization provides fair reference results.
+## Ⅴ Objective Evaluation
+
+Now comes the much-anticipated `benchmark` section. Here we select some micro models for cross-evaluation comparison. The test sets chosen are C-Eval, CMMLU, ARC-Easy, PIQA, OpenBookQA, HellaSwag, Social-IQa (all except the first 2 are English datasets)
+
+
+The evaluation framework chosen is [lm-evaluation](https://github.com/EleutherAI/lm-evaluation-harness)
+
+```bash
+# Installation
+git clone https://github.com/EleutherAI/lm-evaluation-harness
+cd lm-evaluation-harness && pip install -e .
+```
+
+
+
+```bash
+# Start testing
+# Datasets used: ceval-valid/cmmlu/arc_easy/piqa/openbookqa/hellaswag/social_iqa # View supported datasets: lm_eval ls tasks 
+HF_ENDPOINT=https://hf-mirror.com lm_eval --model hf --model_args pretrained="/path/to/model",dtype=auto --tasks "task" --batch_size 16 --device cpu --trust_remote_code
+```
+
+> Note: In these multiple-choice test sets, to avoid format instability from free-form model generation, the common practice is to directly compare the prediction probabilities of tokens corresponding to candidate options, and take the option with the highest probability to calculate accuracy against the standard answer. The candidate options are not necessarily `A`, `B`, `C`, `D`; some datasets may only have two options. Therefore, from the results perspective, the accuracy of random answering is often a strong lower bound, and models of this scale do indeed tend to hover around this level for a long time.
+
+The MiniMind model itself has a very small training dataset, has virtually no English knowledge capability, and has not undergone output format fine-tuning for these test sets. The results are for entertainment only:
+
+| models                                                                        | from          | params↓ | ceval↑ | cmmlu↑ | arc↑  | piqa↑ | openbookqa↑ | hellaswag↑ | siqa↑ |
+|-------------------------------------------------------------------------------|---------------|---------|--------|--------|-------|-------|-------------|------------|-------|
+| minimind-3                                                                    | JingyaoGong   | 64M    | 24.89  | 25.38  | 28.49 | 50.65 | 23.60       | 28.28      | 34.19 |
+| minimind-3-moe                                                                | JingyaoGong   | 198M   | 25.48  | 24.32  | 27.74 | 50.71 | 26.20       | 27.43      | 34.03 |
+| [Steel-LLM](https://huggingface.co/gqszhanshijin/Steel-LLM)                       | ZhanShiJin    | 1121M  | 24.89  | 25.32  | 39.69 | 65.13 | 26.00       | 35.73      | 39.15 |
+| [gpt2-medium](https://huggingface.co/openai-community/gpt2-medium)            | OpenAI        | 360M   | 23.18  | 25.00  | 43.60 | 66.38 | 30.20       | 39.38      | 39.10 |
+| [TinyLlama-1.1B-Chat-V1.0](https://huggingface.co/TinyLlama/TinyLlama-1.1B-Chat-v1.0)             | TinyLlama     | 1100M  | 25.71  | 25.03  | 54.80 | 74.43 | 35.60       | 60.38      | 43.09 |
+| [SmolLM2-135M-Instruct](https://huggingface.co/HuggingFaceTB/SmolLM2-135M-Instruct)                              | HuggingFaceTB | 135M   | 24.44  | 24.71  | 58.50 | 68.17 | 32.80       | 43.15      | 39.46 |
+| [Aquila-135M-Instruct](https://huggingface.co/BAAI/Aquila-135M-Instruct) | BAAI          | 135M   | 25.19  | 25.10  | 54.59 | 67.52 | 34.40       | 41.67      | 39.66 |
+
+![benchmark_radar](./images/benchmark_radar.jpg)
 
 ---
 
@@ -1601,142 +1590,212 @@ Models generally achieve baseline performance due to small parameter scales and 
 
 ## 🔧 Model Conversion
 
-* [./scripts/convert_model.py](./scripts/convert_model.py) enables mutual conversion of `torch / transformers` models
-* Unless otherwise specified, `MiniMind2` models are by default in `Transformers` format and require `t2t` conversion beforehand!
+* [./scripts/convert_model.py](./scripts/convert_model.py) can be used for mutual conversion between `torch / transformers` model formats.
+* Unless otherwise specified, the open-source models released on the `MiniMind` main line are usually provided in `Transformers` format; if using native `torch` weights, please first perform the `torch2transformers` conversion.
 
 
+## 🖥️ API Service Interface Based on MiniMind
 
-## 🖥️ OpenAI-API Based MiniMind Service Interface
+* [./scripts/serve_openai_api.py](./scripts/serve_openai_api.py) provides a lightweight chat service compatible with the OpenAI API, making it easy to connect your own models to third-party UIs such as FastGPT, OpenWebUI, Dify, etc.
+* The current interface additionally supports fields like `reasoning_content`, `tool_calls`, `open_thinking`, etc., suitable for direct use in Tool Calling / Thinking scenarios.
 
-* [./scripts/serve_openai_api.py](./scripts/serve_openai_api.py) provides extremely simple OpenAI-API compatible chat interface, convenient for integration with third-party UIs like FastGPT, Open-WebUI, Dify, etc.
-
-* Download model weights from [Huggingface](https://huggingface.co/collections/jingyaogong/minimind-66caf8d999f5c7fa64f399e5), file structure:
+* After downloading model weights from [HuggingFace](https://huggingface.co/collections/jingyaogong/minimind-66caf8d999f5c7fa64f399e5), the directory structure example is as follows:
     ```
     minimind (root dir)
-    ├─<MiniMind-Model-Name> (e.g. MiniMind2)
+    ├─<MiniMind-Model-Name>（例如minimind-3）
     |  ├── config.json
     |  ├── generation_config.json
-    |  ├── model_minimind.py or w/o
+    |  ├── model_minimind.py (可选，取决于模型导出形式)
     |  ├── pytorch_model.bin or model.safetensors
     |  ├── special_tokens_map.json
     |  ├── tokenizer_config.json
     |  ├── tokenizer.json
     ```
 
-* Start chat service
+* Start the server
     ```bash
-    python serve_openai_api.py
+    cd scripts && python serve_openai_api.py
     ```
-* Test service interface
+* Test the service interface
     ```bash
-    python chat_openai_api.py
+    cd scripts && python chat_api.py
     ```
-* API interface example, compatible with openai api format
+* API request example (compatible with OpenAI API format)
     ```bash
-    curl http://ip:port/v1/chat/completions \
+    curl http://localhost:8998/v1/chat/completions \
       -H "Content-Type: application/json" \
       -d '{ 
         "model": "model-identifier",
         "messages": [ 
-          { "role": "user", "content": "What is the highest mountain in the world?" }
+          { "role": "user", "content": "世界上最高的山是什么？" }
         ], 
         "temperature": 0.7, 
-        "max_tokens": 512,
-        "stream": true
+        "max_tokens": 1024,
+        "stream": true,
+        "open_thinking": true
     }'
     ```
 
-## 👨‍💻 More
+## <img src="https://avatars.githubusercontent.com/u/147780389?s=48&v=4" height="28" style="vertical-align: middle;"/> [SGLang](https://github.com/sgl-project/sglang)
 
-* <a href="https://github.com/jingyaogong/minimind/discussions/618">🔗Fine-tuning Diffusion Language Models from MiniMind-LLM</a>
-* <a href="https://github.com/jingyaogong/minimind/discussions/611">🔗Model generate method explanation</a>
+SGLang is a high-performance large model inference engine that supports optimization techniques such as RadixAttention and continuous batching, capable of providing lower latency and higher throughput.
 
----
+> ⚠️ Requires a CUDA environment, use as needed. You can also select SGLang as the rollout / inference engine in RL training scripts to improve training throughput.
+
+Launch the model as an OpenAI-compatible API server:
+
+```bash
+python -m sglang.launch_server --model-path /path/to/model --attention-backend triton --host 0.0.0.0 --port 8998
+```
 
 ## <img src="https://avatars.githubusercontent.com/u/136984999" height="28" style="vertical-align: middle;"/> [vllm](https://github.com/vllm-project/vllm)
 
-vLLM is an extremely popular efficient inference framework supporting fast deployment of large models, optimizing GPU memory usage and throughput.
+vLLM is a very commonly used efficient inference framework, suitable for rapid deployment of large models, achieving a good balance between VRAM utilization and throughput.
 
-Start minimind2 in openai-serve format:
+> ⚠️ Requires a CUDA environment, use as needed.
+
+Launch the model as an OpenAI-compatible API server:
 
 ```bash
-vllm serve ./MiniMind2 --model-impl transformers --served-model-name "minimind" --port 8998
+vllm serve /path/to/model --model-impl transformers --served-model-name "minimind" --port 8998
 ```
 
 ## <img src="https://user-images.githubusercontent.com/1991296/230134379-7181e485-c521-4d23-a0d6-f7b3b61ba524.png" height="28" style="vertical-align: middle;"/> [llama.cpp](https://github.com/ggerganov/llama.cpp)
 
-llama.cpp is a C++ library that can be used directly from command line, supports multi-threaded inference, and supports GPU acceleration.
+llama.cpp is a lightweight and practical C++ inference framework that can be used directly from the command line, supports multi-threaded inference, and also supports some GPU acceleration options.
 
-**Directory Structure**: It is recommended to place llama.cpp and minimind in the same parent directory
+**Directory structure**: It is recommended to place `llama.cpp` and the model directory at the same level path
 
 ```
 parent/
-├── minimind/          # MiniMind project directory
-│   ├── MiniMind2/     # HuggingFace format MiniMind2 model (generated by convert_model.py first)
+├── project/           # 你的项目目录
+│   ├── minimind模型路径/       # HuggingFace 格式模型目录
 │   │   ├── config.json
 │   │   ├── model.safetensors
 │   │   └── ...
-│   ├── model/
-│   ├── trainer/
 │   └── ...
-└── llama.cpp/         # llama.cpp project directory
+└── llama.cpp/         # llama.cpp 项目目录
     ├── build/
     ├── convert_hf_to_gguf.py
     └── ...
 ```
 
-0. Follow the official `llama.cpp` installation steps
+0. Refer to the `llama.cpp` official documentation to complete installation (dependencies such as `cmake`, etc.)
 
 1. Insert at the end of the `get_vocab_base_pre` function in `convert_hf_to_gguf.py`:
 
 ```python
-# Add MiniMind tokenizer support (you can use any existing one like qwen2)
+# 添加 MiniMind tokenizer 支持（此处可临时复用一个兼容项，如 qwen2）
 if res is None:
     res = "qwen2"
 ```
 
-2. Convert your custom-trained minimind model: huggingface -> gguf
+2. Convert the HuggingFace format minimind model to GGUF:
 
 ```bash
-# Execute under llama.cpp, will generate ../minimind/MiniMind2/MiniMind2-xxx.gguf
-python convert_hf_to_gguf.py ../minimind/MiniMind2
+# 在 llama.cpp 目录下执行，将在模型目录下生成对应的 gguf 文件
+python convert_hf_to_gguf.py /path/to/minimind-model
 ```
 
 3. Quantize the model (optional)
 
 ```bash
-./build/bin/llama-quantize ../minimind/MiniMind2/MiniMind2.gguf ../minimind/MiniMind2/Q4-MiniMind2.gguf Q4_K_M
+./build/bin/llama-quantize /path/to/model/xxxx.gguf /path/to/model/xxxx.q8.gguf Q8_0
 ```
 
-4. Command line inference test
+4. Command-line inference test
 
 ```bash
-./build/bin/llama-cli -m ../minimind/MiniMind2/MiniMind2.gguf -sys "You are a helpful assistant" # system prompt must be fixed
+./build/bin/llama-cli -m /path/to/model/xxxx.gguf
 ```
 
 ## <img src="https://ollama.com/public/cloud.png" height="28" style="vertical-align: middle;"/> [ollama](https://ollama.ai)
 
-ollama is a tool for running large models locally, supports multiple open-source LLMs, simple and easy to use.
+Ollama is a commonly used tool for running large models locally, supporting various open-source LLMs, with simple usage and a low deployment threshold.
 
-1. Load custom gguf model through ollama
+1. Load a custom GGUF model via Ollama
 
-Create `minimind.modelfile` under `MiniMind2`:
+Create a new `minimind.modelfile` file in the model directory and write the following configuration template:
+
+<details>
+<summary>minimind.modelfile (template)</summary>
 
 ```text
-FROM ./Q4-MiniMind2.gguf
+FROM /path/to/model/xxxx.gguf
 
-SYSTEM """You are a helpful assistant"""
+SYSTEM "你的名字叫MiniMind，你是一个乐于助人、知识渊博的AI助手。请用完整且友好的方式回答用户问题，当被问到名字时请回答MiniMind。"
 
-TEMPLATE """<|im_start|>system
+
+TEMPLATE """{{- if .Tools }}<|im_start|>system
+{{ if .System }}{{ .System }}
+
+{{ end }}# Tools
+
+You may call one or more functions to assist with the user query.
+
+You are provided with function signatures within <tools></tools> XML tags:
+<tools>
+{{- range .Tools }}
+{"type": "function", "function": {{ .Function }}}
+{{- end }}
+</tools>
+
+For each function call, return a json object with function name and arguments within <tool_call></tool_call> XML tags:
+<tool_call>
+{"name": <function-name>, "arguments": <args-json-object>}
+</tool_call><|im_end|>
+{{ else if .System }}<|im_start|>system
 {{ .System }}<|im_end|>
-<|im_start|>user
-{{ .Prompt }}<|im_end|>
-<|im_start|>assistant
-{{ .Response }}<|im_end|>
-"""
+{{ end }}
+{{- range $i, $_ := .Messages }}
+{{- $last := eq (len (slice $.Messages $i)) 1 -}}
+{{- if eq .Role "user" }}<|im_start|>user
+{{ .Content }}<|im_end|>
+{{ else if eq .Role "assistant" }}<|im_start|>assistant
+<think>
+{{ .Thinking }}
+</think>
+
+{{ .Content }}
+{{- if .ToolCalls }}
+{{- range .ToolCalls }}
+<tool_call>
+{"name": "{{ .Function.Name }}", "arguments": {{ .Function.Arguments }}}
+</tool_call>
+{{- end }}
+{{- end }}
+{{- if not $last }}<|im_end|>
+{{ end }}
+{{- else if eq .Role "tool" }}<|im_start|>user
+<tool_response>
+{{ .Content }}
+</tool_response><|im_end|>
+{{ end }}
+{{- if and (ne .Role "assistant") $last }}<|im_start|>assistant
+{{ if and $.IsThinkSet $.Think -}}
+<think>
+{{ else -}}
+<think>
+
+</think>
+
+{{ end -}}
+{{ end }}
+{{- end }}"""
+
+PARAMETER repeat_penalty 1
+PARAMETER stop "<|im_start|>"
+PARAMETER stop "<|im_end|>"
+PARAMETER temperature 0.9
+PARAMETER top_p 0.9
+PARAMETER num_ctx 8192
 ```
 
-2. Load and name this model as `minimind-local`
+</details>
+<br/>
+
+
+2. Load and name the local model
 
 ```bash
 ollama create -f minimind.modelfile minimind-local
@@ -1752,98 +1811,102 @@ ollama run minimind-local
 <summary>📤 Push your model to Ollama Hub</summary>
 
 ```bash
-# 1. Rename your local model to your_username/minimind tag
+# 1. 为本地模型重命名为你的ollama-account/minimind的tag
 ollama cp minimind-local:latest your_username/minimind:latest
 
-# 2. Push the model
+# 2. 推送模型
 ollama push your_username/minimind:latest
 ```
 </details>
 <br/>
 
-⭐️ You can also directly use the ollama model I provided with one command:
+⭐️ You can also directly use the Ollama model I provide for a quick start:
 
 ```bash
-ollama run jingyaogong/minimind2 # Other options: minimind2-r1 / minimind2-small / minimind2-small-r1
->>> What's your name?
-I am a language model...
+ollama run jingyaogong/minimind-3
+>>> 你叫什么名字
+我是一个语言模型...
 ```
 
-## <img src="https://github.com/alibaba/MNN/blob/master/doc/banner.png" height="28" style="vertical-align: middle;"/> [MNN](https://github.com/alibaba/MNN)
+## <img src="https://avatars.githubusercontent.com/u/1961952?s=48&v=4" height="28" style="vertical-align: middle;"/> [MNN](https://github.com/alibaba/MNN)
 
-MNN is a lightweight, high-performance AI inference engine for on-device applications, supporting inference for various open-source LLM models.
+MNN is an AI inference engine designed for edge devices, supporting lightweight deployment and high-performance inference for various open-source LLMs.
 
-1.  **Model Conversion**
-    ```
-    cd MNN/transformers/llm/export
-    # Export the 4-bit HQQ quantized MNN model
-    python llmexport.py --path /path/to/MiniMind2/  --export mnn --hqq --dst_path MiniMind2-MNN
-    ```
+1. Model conversion
+```bash
+cd MNN/transformers/llm/export
+# 导出 4bit HQQ 量化的 MNN 模型
+python llmexport.py --path /path/to/模型路径/ --export mnn --hqq --dst_path 模型路径-mnn
+```
 
-2.  **Test on a Mac or mobile phone**
-    ```
-    ./llm_demo /path/to/MiniMind2-MNN/config.json prompt.txt
-    ```
-    Or download the app to test.
+2. Test on Mac or mobile devices
+```bash
+./llm_demo /path/to/模型路径-mnn/config.json prompt.txt
+```
+Or download the APP for testing
 
-> For more usage of the above third-party frameworks, please refer to their official documentation 😊
+> For more usage of the above third-party frameworks, please refer to their respective official documentation😊
 
-# 📌 Acknowledge
+
+## 👨‍💻 More Content
+
+* <a href="https://github.com/jingyaogong/minimind/discussions/618">🔗Fine-tuning Diffusion Language Models from MiniMind-LLM</a>
+
+* <a href="https://github.com/jingyaogong/minimind/discussions/611">🔗Description of the Model's generate Method</a>
+
+* <a href="https://github.com/jingyaogong/minimind/discussions/704">🔗Training Linear Attention Models from MiniMind</a>
+
+# 📌 Acknowledgments
 
 > [!NOTE]
-> If you find `MiniMind series` helpful, you can add a ⭐ on GitHub<br/>
-> This document is lengthy with limited knowledge. Welcome to discuss in Issues or submit PRs to improve the project<br/>
-> Your small support is the motivation to continuously improve this project!
+> If the `MiniMind` series of projects has been helpful to you, feel free to star ⭐ on GitHub<br/>
+> The documentation is quite lengthy and may inevitably contain oversights; feedback via Issues or PRs to improve the project together are welcome<br/>
+> Your support and suggestions are an important driving force for the continuous iteration of this project!
 
-## 🤝 [Contributors](https://github.com/jingyaogong/minimind/graphs/contributors)
+## 🤝[Contributors](https://github.com/jingyaogong/minimind/graphs/contributors)
 
 <a href="https://github.com/jingyaogong/minimind/graphs/contributors">
   <img src="https://contrib.rocks/image?repo=jingyaogong/minimind" />
 </a>
 
-## 😊 Thanks
+## 😊Acknowledgments
 
-<a href="https://github.com/ipfgao"><b>@ipfgao</b></a>:
-<a href="https://github.com/jingyaogong/minimind/issues/26">🔗 Training Steps Recording</a>
+Thanks to the following contributors for their help and sharing in training records, data processing, tutorial organization, and project breakdown:
 
-<a href="https://github.com/WangRongsheng"><b>@WangRongsheng</b></a>:
-<a href="https://github.com/jingyaogong/minimind/issues/39">🔗 Large Dataset Preprocessing</a>
+* [@ipfgao](https://github.com/ipfgao): [🔗Training Step Records](https://github.com/jingyaogong/minimind/issues/26)
 
-<a href="https://github.com/pengqianhan"><b>@pengqianhan</b></a>:
-<a href="https://github.com/jingyaogong/minimind/issues/73">🔗 A Simple Tutorial</a>
+* [@WangRongsheng](https://github.com/WangRongsheng): [🔗Large Dataset Preprocessing](https://github.com/jingyaogong/minimind/issues/39)
 
-<a href="https://github.com/RyanSunn"><b>@RyanSunn</b></a>:
-<a href="https://github.com/jingyaogong/minimind/issues/75">🔗 Inference Process Learning Record</a>
+* [@pengqianhan](https://github.com/pengqianhan): [🔗A Concise Tutorial](https://github.com/jingyaogong/minimind/issues/73)
 
-<a href="https://github.com/Nijikadesu"><b>@Nijikadesu</b></a>:
-<a href="https://github.com/jingyaogong/minimind/issues/213">🔗 Interactive Notebook Decomposition of Project Code</a>
+* [@RyanSunn](https://github.com/RyanSunn): [🔗Inference Process Learning Notes](https://github.com/jingyaogong/minimind/issues/75)
 
-<details close> 
-<summary> <b>Reference Links & Thanks to the Following Excellent Papers or Projects</b> </summary>
+* [@Nijikadesu](https://github.com/Nijikadesu): [🔗Breaking Down Project Code in Interactive Notebook Format](https://github.com/jingyaogong/minimind/issues/213)
 
-- Ranking does not represent any order
+
+Acknowledgments to the following excellent papers and projects:
+
 - [https://github.com/meta-llama/llama3](https://github.com/meta-llama/llama3)
 - [https://github.com/karpathy/llama2.c](https://github.com/karpathy/llama2.c)
 - [https://github.com/DLLXW/baby-llama2-chinese](https://github.com/DLLXW/baby-llama2-chinese)
-- [(DeepSeek-V2)https://arxiv.org/abs/2405.04434](https://arxiv.org/abs/2405.04434)
+- [DeepSeek-V2](https://arxiv.org/abs/2405.04434)
 - [https://github.com/charent/ChatLM-mini-Chinese](https://github.com/charent/ChatLM-mini-Chinese)
 - [https://github.com/wdndev/tiny-llm-zh](https://github.com/wdndev/tiny-llm-zh)
-- [(Mistral-MoE)https://arxiv.org/pdf/2401.04088](https://arxiv.org/pdf/2401.04088)
+- [Mistral-MoE](https://arxiv.org/pdf/2401.04088)
 - [https://github.com/Tongjilibo/build_MiniLLM_from_scratch](https://github.com/Tongjilibo/build_MiniLLM_from_scratch)
 - [https://github.com/jzhang38/TinyLlama](https://github.com/jzhang38/TinyLlama)
 - [https://github.com/AI-Study-Han/Zero-Chatgpt](https://github.com/AI-Study-Han/Zero-Chatgpt)
 - [https://github.com/xusenlinzy/api-for-open-llm](https://github.com/xusenlinzy/api-for-open-llm)
 - [https://github.com/HqWu-HITCS/Awesome-Chinese-LLM](https://github.com/HqWu-HITCS/Awesome-Chinese-LLM)
 
-</details>
 
-## 🫶 Supporters
+## 🫶Supporters
 
 <a href="https://github.com/jingyaogong/minimind/stargazers">
     <picture>
       <source media="(prefers-color-scheme: dark)" srcset="https://reporoster.com/stars/dark/jingyaogong/minimind"/>
       <source media="(prefers-color-scheme: light)" srcset="https://reporoster.com/stars/jingyaogong/minimind"/>
-      <img alt="github contribution grid snake animation" src="https://reporoster.com/stars/jingyaogong/minimind"/>
+      <img alt="Star poster" src="https://reporoster.com/stars/jingyaogong/minimind"/>
     </picture>
 </a>
 
@@ -1851,7 +1914,7 @@ MNN is a lightweight, high-performance AI inference engine for on-device applica
     <picture>
       <source media="(prefers-color-scheme: dark)" srcset="https://reporoster.com/forks/dark/jingyaogong/minimind"/>
       <source media="(prefers-color-scheme: light)" srcset="https://reporoster.com/forks/jingyaogong/minimind"/>
-      <img alt="github contribution grid snake animation" src="https://reporoster.com/forks/jingyaogong/minimind"/>
+      <img alt="Fork poster" src="https://reporoster.com/forks/jingyaogong/minimind"/>
     </picture>
 </a>
 
@@ -1861,9 +1924,9 @@ MNN is a lightweight, high-performance AI inference engine for on-device applica
   <img alt="Star History Chart" src="https://api.star-history.com/svg?repos=jingyaogong/minimind&type=Date"/>
 </picture>
 
-## 🎉 Awesome Work using MiniMind
+## 🎉 MiniMind Related Achievements
 
-This model has inspired some exciting research outcomes. Thank you to all researchers for your recognition:
+This model has served as a stepping stone that facilitated some gratifying research outcomes. Thanks to the researchers for their recognition:
 
 - ECG-Expert-QA: A Benchmark for Evaluating Medical Large Language Models in Heart Disease Diagnosis [[arxiv](https://arxiv.org/pdf/2502.17475)]
 
@@ -1873,26 +1936,31 @@ This model has inspired some exciting research outcomes. Thank you to all resear
 
 - On the Generalization Ability of Next-Token-Prediction Pretraining [[ICML 2025](https://openreview.net/forum?id=hLGJ1qZPdu)]
 
-- 《从零开始写大模型：从神经网络到Transformer》(Chinese book: Building LLMs from Scratch) by Wang Shuang, Mou Chen, Wang Haoyi - Tsinghua University Press
+- 《从零开始写大模型：从神经网络到Transformer》王双、牟晨、王昊怡 编著 - 清华大学出版社
 
 - FedBRB: A Solution to the Small-to-Large Scenario in Device-Heterogeneity Federated Learning [[TMC 2025](https://ieeexplore.ieee.org/abstract/document/11168259)]
 
-- Continuously...
+- SKETCH: Semantic Key-Point Conditioning for Long-Horizon Vessel Trajectory Prediction [[arxiv](https://arxiv.org/pdf/2601.18537)]
+
+- A Built-in Crypto Expert for Artificial Intelligence: How Far is the Horizon? [[IACR ePrint 2026](https://eprint.iacr.org/2026/411.pdf)]
+
+- In progress...
 
 
 # 🎓 Citation
 
-If you find MiniMind helpful in your research or work, please cite:
+If `MiniMind` has been helpful to your research or work, feel free to cite:
 
 ```bibtex
 @misc{minimind,
-  title={MiniMind: Train a Tiny LLM from scratch},
-  author={Jingyao Gong},
-  year={2024},
-  howpublished={https://github.com/jingyaogong/minimind}
+  title = {MiniMind: Train a Tiny LLM from Scratch},
+  author = {Jingyao Gong},
+  year = {2024},
+  url = {https://github.com/jingyaogong/minimind},
+  note = {GitHub repository, accessed 2026}
 }
 ```
 
-# License
+# ⚖️ License
 
-This repository is licensed under the [Apache-2.0 License](LICENSE).
+This project is open-sourced under the [Apache License 2.0](LICENSE).

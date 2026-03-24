@@ -1,5 +1,6 @@
 import argparse
 import json
+import re
 import os
 import sys
 
@@ -52,8 +53,19 @@ class ChatRequest(BaseModel):
     temperature: float = 0.7
     top_p: float = 0.92
     max_tokens: int = 8192
-    stream: bool = False
+    stream: bool = True
     tools: list = []
+    open_thinking: bool = False
+    chat_template_kwargs: dict = None
+    
+    def get_open_thinking(self) -> bool:
+        """兼容多种方式开启 thinking"""
+        if self.open_thinking:
+            return True
+        if self.chat_template_kwargs:
+            return self.chat_template_kwargs.get('open_thinking', False) or \
+                   self.chat_template_kwargs.get('enable_thinking', False)
+        return False
 
 
 class CustomStreamer(TextStreamer):
@@ -68,9 +80,31 @@ class CustomStreamer(TextStreamer):
             self.queue.put(None)
 
 
-def generate_stream_response(messages, temperature, top_p, max_tokens):
+def parse_response(text):
+    reasoning_content = None
+    think_match = re.search(r'<think>(.*?)</think>', text, re.DOTALL)
+    if think_match:
+        reasoning_content = think_match.group(1).strip()
+        text = re.sub(r'<think>.*?</think>\s*', '', text, flags=re.DOTALL)
+    elif '</think>' in text:
+        parts = text.split('</think>', 1)
+        reasoning_content = parts[0].strip()
+        text = parts[1].strip() if len(parts) > 1 else ''
+    tool_calls = []
+    for i, m in enumerate(re.findall(r'<tool_call>(.*?)</tool_call>', text, re.DOTALL)):
+        try:
+            call = json.loads(m.strip())
+            tool_calls.append({"id": f"call_{int(time.time())}_{i}", "type": "function", "function": {"name": call.get("name", ""), "arguments": json.dumps(call.get("arguments", {}), ensure_ascii=False)}})
+        except Exception:
+            pass
+    if tool_calls:
+        text = re.sub(r'<tool_call>.*?</tool_call>', '', text, flags=re.DOTALL)
+    return text.strip(), reasoning_content, tool_calls or None
+
+
+def generate_stream_response(messages, temperature, top_p, max_tokens, tools=None, open_thinking=False):
     try:
-        new_prompt = tokenizer.apply_chat_template(messages, tokenize=False, add_generation_prompt=True)[-max_tokens:]
+        new_prompt = tokenizer.apply_chat_template(messages, tokenize=False, add_generation_prompt=True, tools=tools or None, open_thinking=open_thinking)[-max_tokens:]
         inputs = tokenizer(new_prompt, return_tensors="pt", truncation=True).to(device)
 
         queue = Queue()
@@ -91,20 +125,44 @@ def generate_stream_response(messages, temperature, top_p, max_tokens):
 
         Thread(target=_generate).start()
 
+        full_text = ""
+        emitted = 0
+        thinking_ended = not bool(open_thinking)
+
         while True:
             text = queue.get()
             if text is None:
-                yield json.dumps({
-                    "choices": [{
-                        "delta": {},
-                        "finish_reason": "stop"
-                    }]
-                }, ensure_ascii=False)
                 break
+            full_text += text
 
-            yield json.dumps({
-                "choices": [{"delta": {"content": text}}]
-            }, ensure_ascii=False)
+            if not thinking_ended:
+                pos = full_text.find('</think>')
+                if pos >= 0:
+                    thinking_ended = True
+                    new_r = full_text[emitted:pos]
+                    if new_r:
+                        yield json.dumps({"choices": [{"delta": {"reasoning_content": new_r}}]}, ensure_ascii=False)
+                    emitted = pos + len('</think>')
+                    after = full_text[emitted:].lstrip('\n')
+                    emitted = len(full_text) - len(after)
+                    if after:
+                        yield json.dumps({"choices": [{"delta": {"content": after}}]}, ensure_ascii=False)
+                        emitted = len(full_text)
+                else:
+                    new_r = full_text[emitted:]
+                    if new_r:
+                        yield json.dumps({"choices": [{"delta": {"reasoning_content": new_r}}]}, ensure_ascii=False)
+                        emitted = len(full_text)
+            else:
+                new_c = full_text[emitted:]
+                if new_c:
+                    yield json.dumps({"choices": [{"delta": {"content": new_c}}]}, ensure_ascii=False)
+                    emitted = len(full_text)
+
+        _, _, tool_calls = parse_response(full_text)
+        if tool_calls:
+            yield json.dumps({"choices": [{"delta": {"tool_calls": tool_calls}}]}, ensure_ascii=False)
+        yield json.dumps({"choices": [{"delta": {}, "finish_reason": "tool_calls" if tool_calls else "stop"}]}, ensure_ascii=False)
 
     except Exception as e:
         yield json.dumps({"error": str(e)})
@@ -119,7 +177,9 @@ async def chat_completions(request: ChatRequest):
                     messages=request.messages,
                     temperature=request.temperature,
                     top_p=request.top_p,
-                    max_tokens=request.max_tokens
+                    max_tokens=request.max_tokens,
+                    tools=request.tools,
+                    open_thinking=request.get_open_thinking()
                 )),
                 media_type="text/event-stream"
             )
@@ -127,7 +187,9 @@ async def chat_completions(request: ChatRequest):
             new_prompt = tokenizer.apply_chat_template(
                 request.messages,
                 tokenize=False,
-                add_generation_prompt=True
+                add_generation_prompt=True,
+                tools=request.tools or None,
+                open_thinking=request.get_open_thinking()
             )[-request.max_tokens:]
             inputs = tokenizer(new_prompt, return_tensors="pt", truncation=True).to(device)
             with torch.no_grad():
@@ -142,6 +204,12 @@ async def chat_completions(request: ChatRequest):
                     temperature=request.temperature
                 )
                 answer = tokenizer.decode(generated_ids[0][inputs["input_ids"].shape[1]:], skip_special_tokens=True)
+            content, reasoning_content, tool_calls = parse_response(answer)
+            message = {"role": "assistant", "content": content}
+            if reasoning_content:
+                message["reasoning_content"] = reasoning_content
+            if tool_calls:
+                message["tool_calls"] = tool_calls
             return {
                 "id": f"chatcmpl-{int(time.time())}",
                 "object": "chat.completion",
@@ -150,8 +218,8 @@ async def chat_completions(request: ChatRequest):
                 "choices": [
                     {
                         "index": 0,
-                        "message": {"role": "assistant", "content": answer},
-                        "finish_reason": "stop"
+                        "message": message,
+                        "finish_reason": "tool_calls" if tool_calls else "stop"
                     }
                 ]
             }
@@ -165,8 +233,8 @@ if __name__ == "__main__":
     parser.add_argument('--save_dir', default='out', type=str, help="模型权重目录")
     parser.add_argument('--weight', default='full_sft', type=str, help="权重名称前缀（pretrain, full_sft, dpo, reason, ppo_actor, grpo, spo）")
     parser.add_argument('--lora_weight', default='None', type=str, help="LoRA权重名称（None表示不使用，可选：lora_identity, lora_medical）")
-    parser.add_argument('--hidden_size', default=512, type=int, help="隐藏层维度（512=Small-26M, 640=MoE-145M, 768=Base-104M）")
-    parser.add_argument('--num_hidden_layers', default=8, type=int, help="隐藏层数量（Small/MoE=8, Base=16）")
+    parser.add_argument('--hidden_size', default=768, type=int, help="隐藏层维度")
+    parser.add_argument('--num_hidden_layers', default=8, type=int, help="隐藏层数量")
     parser.add_argument('--max_seq_len', default=8192, type=int, help="最大序列长度")
     parser.add_argument('--use_moe', default=0, type=int, choices=[0, 1], help="是否使用MoE架构（0=否，1=是）")
     parser.add_argument('--inference_rope_scaling', default=False, action='store_true', help="启用RoPE位置编码外推（4倍，仅解决位置编码问题）")

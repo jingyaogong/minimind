@@ -37,12 +37,14 @@ def distillation_loss(student_logits, teacher_logits, temperature=1.0, reduction
 
 def train_epoch(epoch, loader, iters, teacher_model, lm_config_student, start_step=0, wandb=None, alpha=0.0, temperature=1.0):
     start_time = time.time()
+    last_step = start_step
     
     if teacher_model is not None:
         teacher_model.eval()
         teacher_model.requires_grad_(False)
 
     for step, (input_ids, labels) in enumerate(loader, start=start_step + 1):
+        last_step = step
         input_ids = input_ids.to(args.device)
         labels = labels.to(args.device)
         loss_mask = (labels[..., 1:] != -100).float()
@@ -104,7 +106,7 @@ def train_epoch(epoch, loader, iters, teacher_model, lm_config_student, start_st
             current_ce_loss = ce_loss_raw.item()
             current_aux_loss = res.aux_loss.item() if lm_config_student.use_moe else 0.0
             current_lr = optimizer.param_groups[-1]['lr']
-            eta_min = spend_time / step * iters // 60 - spend_time // 60
+            eta_min = spend_time / max(step - start_step, 1) * (iters - step) // 60
             
             Logger(f'Epoch:[{epoch + 1}/{args.epochs}]({step}/{iters}), loss: {current_loss:.4f}, ce: {current_ce_loss:.4f}, aux_loss: {current_aux_loss:.4f}, distill: {distill_loss.item():.4f}, learning_rate: {current_lr:.8f}, epoch_time: {eta_min:.3f}min')
             
@@ -132,8 +134,16 @@ def train_epoch(epoch, loader, iters, teacher_model, lm_config_student, start_st
 
         del input_ids, labels, loss_mask, res, student_logits, ce_loss, distill_loss, loss
 
+    if last_step > start_step and last_step % args.accumulation_steps != 0:
+        scaler.unscale_(optimizer)
+        torch.nn.utils.clip_grad_norm_(model.parameters(), args.grad_clip)
+        scaler.step(optimizer)
+        scaler.update()
+        optimizer.zero_grad(set_to_none=True)
+
 
 if __name__ == "__main__":
+    # 模拟用moe模型蒸馏dense模型，也可以用更大teacher_hidden_size模型蒸馏更小student_hidden_size的
     parser = argparse.ArgumentParser(description="MiniMind Knowledge Distillation")
     parser.add_argument("--save_dir", type=str, default="../out", help="模型保存目录")
     parser.add_argument('--save_weight', default='full_dist', type=str, help="保存权重的前缀名")
@@ -148,12 +158,13 @@ if __name__ == "__main__":
     parser.add_argument("--log_interval", type=int, default=100, help="日志打印间隔")
     parser.add_argument("--save_interval", type=int, default=100, help="模型保存间隔")
     parser.add_argument("--max_seq_len", type=int, default=340, help="训练的最大截断长度（中文1token≈1.5~1.7字符）")
-    parser.add_argument("--data_path", type=str, default="../dataset/sft_mini_512.jsonl", help="训练数据路径")
-    parser.add_argument('--student_hidden_size', default=512, type=int, help="学生模型隐藏层维度")
+    parser.add_argument("--data_path", type=str, default="../dataset/sft_t2t_mini.jsonl", help="训练数据路径")
+    parser.add_argument('--student_hidden_size', default=768, type=int, help="学生模型隐藏层维度")
     parser.add_argument('--student_num_layers', default=8, type=int, help="学生模型隐藏层数量")
     parser.add_argument('--teacher_hidden_size', default=768, type=int, help="教师模型隐藏层维度")
-    parser.add_argument('--teacher_num_layers', default=16, type=int, help="教师模型隐藏层数量")
-    parser.add_argument('--use_moe', default=0, type=int, choices=[0, 1], help="是否使用MoE架构（0=否，1=是）")
+    parser.add_argument('--teacher_num_layers', default=8, type=int, help="教师模型隐藏层数量")
+    parser.add_argument('--student_use_moe', default=0, type=int, choices=[0, 1], help="学生模型是否使用MoE（0=否，1=是）")
+    parser.add_argument('--teacher_use_moe', default=1, type=int, choices=[0, 1], help="教师模型是否使用MoE（0=否，1=是）")
     parser.add_argument('--from_student_weight', default='full_sft', type=str, help="学生模型基于哪个权重")
     parser.add_argument('--from_teacher_weight', default='full_sft', type=str, help="教师模型基于哪个权重")
     parser.add_argument('--from_resume', default=0, type=int, choices=[0, 1], help="是否自动检测&续训（0=否，1=是）")
@@ -171,8 +182,8 @@ if __name__ == "__main__":
     
     # ========== 2. 配置目录、模型参数、检查ckp ==========
     os.makedirs(args.save_dir, exist_ok=True)
-    lm_config_student = MiniMindConfig(hidden_size=args.student_hidden_size, num_hidden_layers=args.student_num_layers, use_moe=bool(args.use_moe))
-    lm_config_teacher = MiniMindConfig(hidden_size=args.teacher_hidden_size, num_hidden_layers=args.teacher_num_layers, use_moe=bool(args.use_moe))
+    lm_config_student = MiniMindConfig(hidden_size=args.student_hidden_size, num_hidden_layers=args.student_num_layers, use_moe=bool(args.student_use_moe))
+    lm_config_teacher = MiniMindConfig(hidden_size=args.teacher_hidden_size, num_hidden_layers=args.teacher_num_layers, use_moe=bool(args.teacher_use_moe))
     ckp_data = lm_checkpoint(lm_config_student, weight=args.save_weight, save_dir='../checkpoints') if args.from_resume==1 else None
     
     # ========== 3. 设置混合精度 ==========
@@ -191,9 +202,6 @@ if __name__ == "__main__":
     
     # ========== 5. 定义学生和教师模型 ==========
     model, tokenizer = init_model(lm_config_student, args.from_student_weight, device=args.device)
-    if args.use_compile == 1:
-        model = torch.compile(model)
-        Logger('torch.compile enabled')
     Logger(f'学生模型总参数量：{sum(p.numel() for p in model.parameters()) / 1e6:.3f} M')
     teacher_model, _ = init_model(lm_config_teacher, args.from_teacher_weight, device=args.device)
     teacher_model.eval()
@@ -213,7 +221,10 @@ if __name__ == "__main__":
         start_epoch = ckp_data['epoch']
         start_step = ckp_data.get('step', 0)
     
-    # ========== 7. DDP包模型 ==========
+    # ========== 7. 编译和分布式包装 ==========
+    if args.use_compile == 1:
+        model = torch.compile(model)
+        Logger('torch.compile enabled')
     if dist.is_initialized():
         model._ddp_params_and_buffers_to_ignore = {"freqs_cos", "freqs_sin"}
         model = DistributedDataParallel(model, device_ids=[local_rank])

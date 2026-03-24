@@ -32,10 +32,8 @@ def logits_to_log_probs(logits, labels):
 
 def dpo_loss(ref_log_probs, policy_log_probs, mask, beta):
     # ref_log_probs 和 policy_log_probs 都是 shape: (batch_size, seq_len)
-    # https://github.com/jingyaogong/minimind/issues/298
-    seq_lengths = mask.sum(dim=1, keepdim=True).clamp_min(1e-8)  # 防止零长度mask导致除零NaN
-    ref_log_probs = (ref_log_probs * mask).sum(dim=1) / seq_lengths.squeeze()
-    policy_log_probs = (policy_log_probs * mask).sum(dim=1) / seq_lengths.squeeze()
+    ref_log_probs = (ref_log_probs * mask).sum(dim=1)
+    policy_log_probs = (policy_log_probs * mask).sum(dim=1)
 
     # 将 chosen 和 rejected 数据分开
     batch_size = ref_log_probs.shape[0]
@@ -53,8 +51,10 @@ def dpo_loss(ref_log_probs, policy_log_probs, mask, beta):
 
 def train_epoch(epoch, loader, iters, ref_model, lm_config, start_step=0, wandb=None, beta=0.1):
     start_time = time.time()
-    
+    last_step = start_step
+
     for step, batch in enumerate(loader, start=start_step + 1):
+        last_step = step
         x_chosen = batch['x_chosen'].to(args.device)
         x_rejected = batch['x_rejected'].to(args.device)
         y_chosen = batch['y_chosen'].to(args.device)
@@ -98,7 +98,7 @@ def train_epoch(epoch, loader, iters, ref_model, lm_config, start_step=0, wandb=
             current_dpo_loss = dpo_loss_val.item()
             current_aux_loss = outputs.aux_loss.item()
             current_lr = optimizer.param_groups[-1]['lr']
-            eta_min = spend_time / step * iters // 60 - spend_time // 60
+            eta_min = spend_time / max(step - start_step, 1) * (iters - step) // 60
             
             Logger(f'Epoch:[{epoch + 1}/{args.epochs}]({step}/{iters}), loss: {current_loss:.4f}, dpo_loss: {current_dpo_loss:.4f}, aux_loss: {current_aux_loss:.4f}, learning_rate: {current_lr:.8f}, epoch_time: {eta_min:.3f}min')
             
@@ -119,6 +119,13 @@ def train_epoch(epoch, loader, iters, ref_model, lm_config, start_step=0, wandb=
         del x_chosen, x_rejected, y_chosen, y_rejected, mask_chosen, mask_rejected, x, y, mask
         del ref_outputs, ref_logits, ref_log_probs, outputs, logits, policy_log_probs, loss
 
+    if last_step > start_step and last_step % args.accumulation_steps != 0:
+        scaler.unscale_(optimizer)
+        torch.nn.utils.clip_grad_norm_(model.parameters(), args.grad_clip)
+        scaler.step(optimizer)
+        scaler.update()
+        optimizer.zero_grad(set_to_none=True)
+
 
 if __name__ == "__main__":
     parser = argparse.ArgumentParser(description="MiniMind DPO (Direct Preference Optimization)")
@@ -134,14 +141,14 @@ if __name__ == "__main__":
     parser.add_argument("--grad_clip", type=float, default=1.0, help="梯度裁剪阈值")
     parser.add_argument("--log_interval", type=int, default=100, help="日志打印间隔")
     parser.add_argument("--save_interval", type=int, default=100, help="模型保存间隔")
-    parser.add_argument('--hidden_size', default=512, type=int, help="隐藏层维度")
+    parser.add_argument('--hidden_size', default=768, type=int, help="隐藏层维度")
     parser.add_argument('--num_hidden_layers', default=8, type=int, help="隐藏层数量")
     parser.add_argument('--max_seq_len', default=1024, type=int, help="训练的最大截断长度（中文1token≈1.5~1.7字符）")
     parser.add_argument('--use_moe', default=0, type=int, choices=[0, 1], help="是否使用MoE架构（0=否，1=是）")
     parser.add_argument("--data_path", type=str, default="../dataset/dpo.jsonl", help="DPO训练数据路径")
     parser.add_argument('--from_weight', default='full_sft', type=str, help="基于哪个权重训练")
     parser.add_argument('--from_resume', default=0, type=int, choices=[0, 1], help="是否自动检测&续训（0=否，1=是）")
-    parser.add_argument('--beta', default=0.1, type=float, help="DPO中的beta参数")
+    parser.add_argument('--beta', default=0.15, type=float, help="DPO中的beta参数")
     parser.add_argument("--use_wandb", action="store_true", help="是否使用wandb")
     parser.add_argument("--wandb_project", type=str, default="MiniMind-DPO", help="wandb项目名")
     parser.add_argument("--use_compile", default=0, type=int, choices=[0, 1], help="是否使用torch.compile加速（0=否，1=是）")
@@ -173,9 +180,6 @@ if __name__ == "__main__":
     
     # ========== 5. 定义模型和参考模型 ==========
     model, tokenizer = init_model(lm_config, args.from_weight, device=args.device)
-    if args.use_compile == 1:
-        model = torch.compile(model)
-        Logger('torch.compile enabled')
     Logger(f'策略模型总参数量：{sum(p.numel() for p in model.parameters()) / 1e6:.3f} M')
     # 初始化参考模型（ref_model冻结）
     ref_model, _ = init_model(lm_config, args.from_weight, device=args.device)
@@ -197,7 +201,10 @@ if __name__ == "__main__":
         start_epoch = ckp_data['epoch']
         start_step = ckp_data.get('step', 0)
     
-    # ========== 7. DDP包模型 ==========
+    # ========== 7. 编译和分布式包装 ==========
+    if args.use_compile == 1:
+        model = torch.compile(model)
+        Logger('torch.compile enabled')
     if dist.is_initialized():
         model._ddp_params_and_buffers_to_ignore = {"freqs_cos", "freqs_sin"}
         model = DistributedDataParallel(model, device_ids=[local_rank])
