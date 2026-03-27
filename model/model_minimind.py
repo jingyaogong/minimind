@@ -3,6 +3,7 @@ from torch import nn
 from transformers.activations import ACT2FN
 from transformers import PreTrainedModel, GenerationMixin, PretrainedConfig
 from transformers.modeling_outputs import MoeCausalLMOutputWithPast
+from einops import rearrange, repeat
 
 # 🌏🌎🌍🌏🌎🌍🌏🌎🌍🌏🌎🌍🌏🌎🌍🌏🌎🌍🌏🌎🌍🌏🌎🌍🌏🌎🌍🌏🌎🌍🌏🌎🌍🌏🌎🌍🌏🌎🌍🌏🌎🌍🌏🌎🌍🌏🌎🌍🌏🌎🌍🌏
 #                                     MiniMind Config
@@ -83,9 +84,9 @@ def apply_rotary_pos_emb(q, k, cos, sin, unsqueeze_dim=1):
     return q_embed, k_embed
 
 def repeat_kv(x: torch.Tensor, n_rep: int) -> torch.Tensor:
-    bs, slen, num_key_value_heads, head_dim = x.shape
-    if n_rep == 1: return x
-    return (x[:, :, :, None, :].expand(bs, slen, num_key_value_heads, n_rep, head_dim).reshape(bs, slen, num_key_value_heads * n_rep, head_dim))
+    if n_rep == 1:
+        return x
+    return repeat(x, 'b s h d -> b s (h r) d', r=n_rep)
 
 class Attention(nn.Module):
     def __init__(self, config: MiniMindConfig):
@@ -109,9 +110,9 @@ class Attention(nn.Module):
     def forward(self, x, position_embeddings, past_key_value=None, use_cache=False, attention_mask=None):
         bsz, seq_len, _ = x.shape
         xq, xk, xv = self.q_proj(x), self.k_proj(x), self.v_proj(x)
-        xq = xq.view(bsz, seq_len, self.n_local_heads, self.head_dim)
-        xk = xk.view(bsz, seq_len, self.n_local_kv_heads, self.head_dim)
-        xv = xv.view(bsz, seq_len, self.n_local_kv_heads, self.head_dim)
+        xq = rearrange(xq, 'b s (h d) -> b s h d', h=self.n_local_heads)
+        xk = rearrange(xk, 'b s (h d) -> b s h d', h=self.n_local_kv_heads)
+        xv = rearrange(xv, 'b s (h d) -> b s h d', h=self.n_local_kv_heads)
         xq, xk = self.q_norm(xq), self.k_norm(xk)
         cos, sin = position_embeddings
         xq, xk = apply_rotary_pos_emb(xq, xk, cos, sin)
@@ -119,7 +120,9 @@ class Attention(nn.Module):
             xk = torch.cat([past_key_value[0], xk], dim=1)
             xv = torch.cat([past_key_value[1], xv], dim=1)
         past_kv = (xk, xv) if use_cache else None
-        xq, xk, xv = (xq.transpose(1, 2), repeat_kv(xk, self.n_rep).transpose(1, 2), repeat_kv(xv, self.n_rep).transpose(1, 2))
+        xq = rearrange(xq, 'b s h d -> b h s d')
+        xk = rearrange(repeat_kv(xk, self.n_rep), 'b s h d -> b h s d')
+        xv = rearrange(repeat_kv(xv, self.n_rep), 'b s h d -> b h s d')
         if self.flash and (seq_len > 1) and (past_key_value is None) and (attention_mask is None or torch.all(attention_mask == 1)):
             output = F.scaled_dot_product_attention(xq, xk, xv, dropout_p=self.dropout if self.training else 0.0, is_causal=True)
         else:
@@ -127,7 +130,7 @@ class Attention(nn.Module):
             scores[:, :, :, -seq_len:] += torch.full((seq_len, seq_len), float("-inf"), device=scores.device).triu(1)
             if attention_mask is not None: scores += (1.0 - attention_mask.unsqueeze(1).unsqueeze(2)) * -1e9
             output = self.attn_dropout(F.softmax(scores.float(), dim=-1).type_as(xq)) @ xv
-        output = output.transpose(1, 2).reshape(bsz, seq_len, -1)
+        output = rearrange(output, 'b h s d -> b s (h d)')
         output = self.resid_dropout(self.o_proj(output))
         return output, past_kv
 
@@ -153,7 +156,7 @@ class MOEFeedForward(nn.Module):
 
     def forward(self, x):
         batch_size, seq_len, hidden_dim = x.shape
-        x_flat = x.view(-1, hidden_dim)
+        x_flat = rearrange(x, 'b s d -> (b s) d')
         scores = F.softmax(self.gate(x_flat), dim=-1)
         topk_weight, topk_idx = torch.topk(scores, k=self.config.num_experts_per_tok, dim=-1, sorted=False)
         if self.config.norm_topk_prob: topk_weight = topk_weight / (topk_weight.sum(dim=-1, keepdim=True) + 1e-20)
@@ -162,7 +165,7 @@ class MOEFeedForward(nn.Module):
             mask = (topk_idx == i)
             if mask.any():
                 token_idx = mask.any(dim=-1).nonzero().flatten()
-                weight = topk_weight[mask].view(-1, 1)
+                weight = rearrange(topk_weight[mask], 'n -> n 1')
                 y.index_add_(0, token_idx, (expert(x_flat[token_idx]) * weight).to(y.dtype))
             elif self.training:
                 y[0, 0] += 0 * sum(p.sum() for p in expert.parameters())
@@ -171,7 +174,7 @@ class MOEFeedForward(nn.Module):
             self.aux_loss = (load * scores.mean(0)).sum() * self.config.num_experts * self.config.router_aux_loss_coef
         else:
             self.aux_loss = scores.new_zeros(1).squeeze()
-        return y.view(batch_size, seq_len, hidden_dim)
+        return rearrange(y, '(b s) d -> b s d', b=batch_size, s=seq_len)
 
 class MiniMindBlock(nn.Module):
     def __init__(self, layer_id: int, config: MiniMindConfig):
