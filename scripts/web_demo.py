@@ -205,7 +205,7 @@ def load_model_tokenizer(model_path):
         model_path,
         trust_remote_code=True
     )
-    model = model.eval().to(device)
+    model = model.half().eval().to(device)
     return model, tokenizer
 
 
