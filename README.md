@@ -1308,9 +1308,11 @@ python eval_toolcall.py --weight agent
 
 基于`minimind-3 (64M)`在相同随机种子等超参下的主/客观对比，供参考：
 
-**[A]** minimind-3 (64M, SFT)
-**[B]** minimind-3 (64M, GRPO)
-**[C]** minimind-3 (64M, Agent-CISPO)
+[A] minimind-3 (64M, SFT)
+
+[B] minimind-3 (64M, GRPO)
+
+[C] minimind-3 (64M, Agent-CISPO)
 
 ### 测试1：主观问答对比
 
@@ -1400,10 +1402,13 @@ agent: 17/20 = 85.00%
 
 > 注：以下对比仅为体验参考，非严格 benchmark，样本量有限且带有主观性。
 
-**[A]** minimind-3 (0.06B)
-**[B]** minimind-3-moe (0.2B-A0.06B)
-**[C]** [baby-llama2-chinese (0.2B)](https://github.com/DLLXW/baby-llama2-chinese)
-**[D]** [chatlm-mini-chinese (0.2B)](https://github.com/charent/ChatLM-mini-Chinese)
+[A] minimind-3 (0.06B)
+
+[B] minimind-3-moe (0.2B-A0.06B)
+
+[C] [baby-llama2-chinese (0.2B)](https://github.com/DLLXW/baby-llama2-chinese)
+
+[D] [chatlm-mini-chinese (0.2B)](https://github.com/charent/ChatLM-mini-Chinese)
 
 ### 测试3：问答
 

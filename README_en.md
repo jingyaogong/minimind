@@ -1305,9 +1305,11 @@ Let us converge back to the "**unified framework**", reorganizing the table show
 
 Subjective/objective comparison based on `minimind-3 (64M)` under the same random seed and other hyperparameters, for reference:
 
-**[A]** minimind-3 (64M, SFT)
-**[B]** minimind-3 (64M, GRPO)
-**[C]** minimind-3 (64M, Agent-CISPO)
+[A] minimind-3 (64M, SFT)
+
+[B] minimind-3 (64M, GRPO)
+
+[C] minimind-3 (64M, Agent-CISPO)
 
 ### Test 1: Subjective Q&A Comparison
 
@@ -1397,10 +1399,13 @@ So if the task objective is ToolUse, lightweight multi-step calling, and verifia
 
 > Note: The following comparison is only for experiential reference, not a strict benchmark; sample size is limited and involves subjectivity.
 
-**[A]** minimind-3 (0.06B)
-**[B]** minimind-3-moe (0.2B-A0.06B)
-**[C]** [baby-llama2-chinese (0.2B)](https://github.com/DLLXW/baby-llama2-chinese)
-**[D]** [chatlm-mini-chinese (0.2B)](https://github.com/charent/ChatLM-mini-Chinese)
+[A] minimind-3 (0.06B)
+
+[B] minimind-3-moe (0.2B-A0.06B)
+
+[C] [baby-llama2-chinese (0.2B)](https://github.com/DLLXW/baby-llama2-chinese)
+
+[D] [chatlm-mini-chinese (0.2B)](https://github.com/charent/ChatLM-mini-Chinese)
 
 ### Test 3: Q&A
 
