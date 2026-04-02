@@ -1218,7 +1218,7 @@ python train_agent.py
 
 > MiniMind 在 Agentic RL 训练阶段的优化走势
 
-这里顺带提一下 `rollout_engine`。所谓“训推分离”，就是把 **参数更新** 和 **轨迹展开** 拆开：训练侧负责优化 policy，rollout 侧负责高吞吐采样，对上统一表现为“给我 prompt，我返回 rollout 结果；训练完以后，再把新权重同步回来”。因此训练脚本并不需要关心底层到底是本地 `generate` 还是远端 `inference` 引擎。
+这里顺带提一下 `rollout_engine`。所谓“训推分离”，就是把 **参数更新** 和 **轨迹展开** 拆开：训练侧负责优化 policy，rollout 侧负责高吞吐采样，对上统一表现为“给我 prompt，我返回 rollout 结果；训练完以后，再把新权重同步回来”。因此训练脚本并不需要关心底层到底是本地 `generate` 还是远端 `inference` 引擎。需要说明的是，当前实现仍是**同步**模式（采样完一批再更新），还不是纯 rollout buffer 的异步训练。
 
 ![rl-structure](./images/rl-structure.jpg)
 
