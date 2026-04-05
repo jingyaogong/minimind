@@ -92,11 +92,19 @@ class SFTDataset(Dataset):
             if input_ids[i:i + len(self.bos_id)] == self.bos_id:
                 start = i + len(self.bos_id)
                 end = start
+                found_eos = False
                 while end < len(input_ids):
                     if input_ids[end:end + len(self.eos_id)] == self.eos_id:
+                        found_eos = True
                         break
                     end += 1
-                for j in range(start, min(end + len(self.eos_id), self.max_length)):
+                # If eos is not found (e.g. after truncation), only supervise real tokens,
+                # never extend to padding positions.
+                if found_eos:
+                    supervise_end = min(end + len(self.eos_id), len(input_ids))
+                else:
+                    supervise_end = min(end, len(input_ids))
+                for j in range(start, supervise_end):
                     labels[j] = input_ids[j]
                 i = end + len(self.eos_id) if end < len(input_ids) else len(input_ids)
             else:
@@ -109,8 +117,10 @@ class SFTDataset(Dataset):
         prompt = self.create_chat_prompt(conversations)
         prompt = post_processing_chat(prompt)
         input_ids = self.tokenizer(prompt).input_ids[:self.max_length]
-        input_ids += [self.tokenizer.pad_token_id] * (self.max_length - len(input_ids))
         labels = self.generate_labels(input_ids)
+        pad_len = self.max_length - len(input_ids)
+        input_ids += [self.tokenizer.pad_token_id] * pad_len
+        labels += [-100] * pad_len
         # # === 调试打印 ===
         # print(f"\n--- Sample {index} ---")
         # for i, (x, y) in enumerate(zip(input_ids[:-1], labels[1:])):
@@ -145,18 +155,21 @@ class DPODataset(Dataset):
             rejected, tokenize=False, add_generation_prompt=False
         )
         rejected_prompt = post_processing_chat(rejected_prompt)
-        chosen_encoding = self.tokenizer(
-            chosen_prompt, truncation=True, max_length=self.max_length, padding='max_length'
-        )
-        rejected_encoding = self.tokenizer(
-            rejected_prompt, truncation=True, max_length=self.max_length, padding='max_length'
-        )
-
-        chosen_input_ids = chosen_encoding['input_ids']
+        chosen_input_ids = self.tokenizer(
+            chosen_prompt, truncation=True, max_length=self.max_length, padding=False
+        )['input_ids']
         chosen_loss_mask = self.generate_loss_mask(chosen_input_ids)
+        chosen_pad_len = self.max_length - len(chosen_input_ids)
+        chosen_input_ids += [self.padding] * chosen_pad_len
+        chosen_loss_mask += [0] * chosen_pad_len
 
-        rejected_input_ids = rejected_encoding['input_ids']
+        rejected_input_ids = self.tokenizer(
+            rejected_prompt, truncation=True, max_length=self.max_length, padding=False
+        )['input_ids']
         rejected_loss_mask = self.generate_loss_mask(rejected_input_ids)
+        rejected_pad_len = self.max_length - len(rejected_input_ids)
+        rejected_input_ids += [self.padding] * rejected_pad_len
+        rejected_loss_mask += [0] * rejected_pad_len
         x_chosen = torch.tensor(chosen_input_ids[:-1], dtype=torch.long)
         y_chosen = torch.tensor(chosen_input_ids[1:], dtype=torch.long)
         mask_chosen = torch.tensor(chosen_loss_mask[1:], dtype=torch.long)
@@ -180,11 +193,17 @@ class DPODataset(Dataset):
             if input_ids[i:i + len(self.bos_id)] == self.bos_id:
                 start = i + len(self.bos_id)
                 end = start
+                found_eos = False
                 while end < len(input_ids):
                     if input_ids[end:end + len(self.eos_id)] == self.eos_id:
+                        found_eos = True
                         break
                     end += 1
-                for j in range(start, min(end + len(self.eos_id), self.max_length)):
+                if found_eos:
+                    supervise_end = min(end + len(self.eos_id), len(input_ids))
+                else:
+                    supervise_end = min(end, len(input_ids))
+                for j in range(start, supervise_end):
                     loss_mask[j] = 1
                 i = end + len(self.eos_id) if end < len(input_ids) else len(input_ids)
             else:

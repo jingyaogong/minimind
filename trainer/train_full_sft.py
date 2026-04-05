@@ -23,6 +23,7 @@ warnings.filterwarnings('ignore')
 def train_epoch(epoch, loader, iters, start_step=0, wandb=None):
     start_time = time.time()
     last_step = start_step
+    accum_counter = start_step % args.accumulation_steps
     for step, (input_ids, labels) in enumerate(loader, start=start_step + 1):
         input_ids = input_ids.to(args.device)
         labels = labels.to(args.device)
@@ -37,8 +38,9 @@ def train_epoch(epoch, loader, iters, start_step=0, wandb=None):
             loss = loss / args.accumulation_steps
 
         scaler.scale(loss).backward()
+        accum_counter += 1
 
-        if step % args.accumulation_steps == 0:
+        if accum_counter % args.accumulation_steps == 0:
             scaler.unscale_(optimizer)
             torch.nn.utils.clip_grad_norm_(model.parameters(), args.grad_clip)
 
@@ -72,7 +74,7 @@ def train_epoch(epoch, loader, iters, start_step=0, wandb=None):
 
         del input_ids, labels, res, loss
 
-    if last_step > start_step and last_step % args.accumulation_steps != 0:
+    if last_step > start_step and accum_counter % args.accumulation_steps != 0:
         scaler.unscale_(optimizer)
         torch.nn.utils.clip_grad_norm_(model.parameters(), args.grad_clip)
         scaler.step(optimizer)

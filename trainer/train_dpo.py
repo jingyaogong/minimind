@@ -52,6 +52,7 @@ def dpo_loss(ref_log_probs, policy_log_probs, mask, beta):
 def train_epoch(epoch, loader, iters, ref_model, lm_config, start_step=0, wandb=None, beta=0.1):
     start_time = time.time()
     last_step = start_step
+    accum_counter = start_step % args.accumulation_steps
 
     for step, batch in enumerate(loader, start=start_step + 1):
         last_step = step
@@ -84,8 +85,9 @@ def train_epoch(epoch, loader, iters, ref_model, lm_config, start_step=0, wandb=
             loss = loss / args.accumulation_steps
 
         scaler.scale(loss).backward()
+        accum_counter += 1
 
-        if step % args.accumulation_steps == 0:
+        if accum_counter % args.accumulation_steps == 0:
             scaler.unscale_(optimizer)
             torch.nn.utils.clip_grad_norm_(model.parameters(), args.grad_clip)
             scaler.step(optimizer)
@@ -119,7 +121,7 @@ def train_epoch(epoch, loader, iters, ref_model, lm_config, start_step=0, wandb=
         del x_chosen, x_rejected, y_chosen, y_rejected, mask_chosen, mask_rejected, x, y, mask
         del ref_outputs, ref_logits, ref_log_probs, outputs, logits, policy_log_probs, loss
 
-    if last_step > start_step and last_step % args.accumulation_steps != 0:
+    if last_step > start_step and accum_counter % args.accumulation_steps != 0:
         scaler.unscale_(optimizer)
         torch.nn.utils.clip_grad_norm_(model.parameters(), args.grad_clip)
         scaler.step(optimizer)

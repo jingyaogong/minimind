@@ -68,7 +68,10 @@ def calculate_rewards(prompts, responses, reward_model):
 
 
 def grpo_train_epoch(epoch, loader, iters, rollout_engine, ref_model, reward_model, start_step=0, wandb=None, use_sglang=False):
+    last_step = start_step
+    accum_counter = start_step % args.accumulation_steps
     for step, batch in enumerate(loader, start=start_step + 1):
+        last_step = step
         prompts = batch['prompt']  # list[str], length B
         prompt_inputs = tokenizer(prompts, return_tensors="pt", padding=True, return_token_type_ids=False,
                                   padding_side="left", add_special_tokens=False).to(args.device)
@@ -142,8 +145,9 @@ def grpo_train_epoch(epoch, loader, iters, rollout_engine, ref_model, reward_mod
         policy_loss = ((per_token_loss * completion_mask).sum(dim=1) / completion_mask.sum(dim=1)).mean()
         loss = (policy_loss + aux_loss) / args.accumulation_steps  # scalar
         loss.backward()
+        accum_counter += 1
 
-        if step % args.accumulation_steps == 0:
+        if accum_counter % args.accumulation_steps == 0:
             if args.grad_clip > 0:
                 torch.nn.utils.clip_grad_norm_(model.parameters(), args.grad_clip)
             optimizer.step()
@@ -190,7 +194,7 @@ def grpo_train_epoch(epoch, loader, iters, rollout_engine, ref_model, reward_mod
             model.train()
             del state_dict
 
-    if step > start_step and step % args.accumulation_steps != 0:
+    if last_step > start_step and accum_counter % args.accumulation_steps != 0:
         if args.grad_clip > 0:
             torch.nn.utils.clip_grad_norm_(model.parameters(), args.grad_clip)
         optimizer.step()

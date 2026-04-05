@@ -38,6 +38,7 @@ def distillation_loss(student_logits, teacher_logits, temperature=1.0, reduction
 def train_epoch(epoch, loader, iters, teacher_model, lm_config_student, start_step=0, wandb=None, alpha=0.0, temperature=1.0):
     start_time = time.time()
     last_step = start_step
+    accum_counter = start_step % args.accumulation_steps
     
     if teacher_model is not None:
         teacher_model.eval()
@@ -92,8 +93,9 @@ def train_epoch(epoch, loader, iters, teacher_model, lm_config_student, start_st
         loss = (alpha * ce_loss + (1 - alpha) * distill_loss) / args.accumulation_steps
 
         scaler.scale(loss).backward()
+        accum_counter += 1
 
-        if step % args.accumulation_steps == 0:
+        if accum_counter % args.accumulation_steps == 0:
             scaler.unscale_(optimizer)
             torch.nn.utils.clip_grad_norm_(model.parameters(), args.grad_clip)
             scaler.step(optimizer)
@@ -134,7 +136,7 @@ def train_epoch(epoch, loader, iters, teacher_model, lm_config_student, start_st
 
         del input_ids, labels, loss_mask, res, student_logits, ce_loss, distill_loss, loss
 
-    if last_step > start_step and last_step % args.accumulation_steps != 0:
+    if last_step > start_step and accum_counter % args.accumulation_steps != 0:
         scaler.unscale_(optimizer)
         torch.nn.utils.clip_grad_norm_(model.parameters(), args.grad_clip)
         scaler.step(optimizer)

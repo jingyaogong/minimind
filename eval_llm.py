@@ -2,6 +2,7 @@ import time
 import argparse
 import random
 import warnings
+import os
 import torch
 from transformers import AutoTokenizer, AutoModelForCausalLM, TextStreamer
 from model.model_minimind import MiniMindConfig, MiniMindForCausalLM
@@ -11,7 +12,18 @@ warnings.filterwarnings('ignore')
 
 def init_model(args):
     tokenizer = AutoTokenizer.from_pretrained(args.load_from)
-    if 'model' in args.load_from:
+    use_torch_backend = args.backend == 'torch'
+    if args.backend == 'auto':
+        if args.load_from == 'model':
+            use_torch_backend = True
+        elif os.path.isdir(args.load_from):
+            has_hf_config = os.path.exists(os.path.join(args.load_from, "config.json"))
+            has_hf_weight = os.path.exists(os.path.join(args.load_from, "model.safetensors")) or os.path.exists(os.path.join(args.load_from, "pytorch_model.bin"))
+            use_torch_backend = not (has_hf_config or has_hf_weight)
+        else:
+            use_torch_backend = False
+
+    if use_torch_backend:
         model = MiniMindForCausalLM(MiniMindConfig(
             hidden_size=args.hidden_size,
             num_hidden_layers=args.num_hidden_layers,
@@ -32,6 +44,7 @@ def init_model(args):
 def main():
     parser = argparse.ArgumentParser(description="MiniMind模型推理与对话")
     parser.add_argument('--load_from', default='model', type=str, help="模型加载路径（model=原生torch权重，其他路径=transformers格式）")
+    parser.add_argument('--backend', default='auto', choices=['auto', 'torch', 'hf'], help="模型加载后端（auto/torch/hf）")
     parser.add_argument('--save_dir', default='out', type=str, help="模型权重目录")
     parser.add_argument('--weight', default='full_sft', type=str, help="权重名称前缀（pretrain, full_sft, rlhf, reason, ppo_actor, grpo, spo）")
     parser.add_argument('--lora_weight', default='None', type=str, help="LoRA权重名称（None表示不使用，可选：lora_identity, lora_medical）")
