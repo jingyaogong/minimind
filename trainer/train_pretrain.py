@@ -50,6 +50,7 @@ def train_epoch(epoch, loader, iters, start_step=0, wandb=None):
 
             optimizer.zero_grad(set_to_none=True)
 
+
         if step % args.log_interval == 0 or step == iters:
             spend_time = time.time() - start_time
             current_loss = loss.item() * args.accumulation_steps
