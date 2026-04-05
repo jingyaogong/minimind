@@ -4,3 +4,15 @@ __pycache__/
 out
 website/
 docs-minimind/
+
+# Local downloaded datasets and model artifacts
+dataset/*.jsonl
+dataset/images/
+dataset/README.md
+dataset/.gitattributes
+dataset/.msc
+dataset/.mv
+dataset/.cache/
+dataset/._____temp/
+minimind-3/
+checkpoints/
