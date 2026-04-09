@@ -1579,7 +1579,7 @@ HF_ENDPOINT=https://hf-mirror.com lm_eval --model hf --model_args pretrained="/p
 
 MiniMind is trained on far less data than the other models listed here, and its training mix is heavily skewed toward Chinese, so its English performance is relatively weak. It is also not specifically aligned to this multiple-choice evaluation format by default, so the results here are only for entertainment:
 
-| model name | from | params | ZH (ceval / cmmlu) | EN (arc / piqa / OBQA / HellaSwag / siqa) |
+| model name | from | params | zh (ceval / cmmlu) | en (arc / piqa / openbookqa / hellaswag / social_iqa) |
 |---|---|---|---|---|
 | minimind-3 | current | 64M | 24.89 / 25.38 | 28.49 / 50.65 / 23.60 / 28.28 / 34.19 |
 | minimind-3-moe | current | 198M | 25.48 / 24.32 | 27.74 / 50.71 / 26.20 / 27.43 / 34.03 |
@@ -1600,7 +1600,6 @@ The 7 benchmarks used in this section have no sample overlap with the alignment 
 What this experiment suggests is simple: for this kind of benchmark, the bottleneck of a small model may not lie entirely in knowledge itself, but also in whether the input format is aligned. With only a small amount of format alignment, minimind-3-exam improves by about 2.9 percentage points on average across the 7 tasks above.
 
 </details>
-<br/>
 
 ![benchmark_radar](./images/benchmark_radar.jpg)
 
