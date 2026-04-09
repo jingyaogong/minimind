@@ -1571,22 +1571,36 @@ cd lm-evaluation-harness && pip install -e .
 ```bash
 # Start testing
 # Datasets used: ceval-valid/cmmlu/arc_easy/piqa/openbookqa/hellaswag/social_iqa # View supported datasets: lm_eval ls tasks 
-HF_ENDPOINT=https://hf-mirror.com lm_eval --model hf --model_args pretrained="/path/to/model",dtype=auto --tasks "task" --batch_size 16 --device cpu --trust_remote_code
+# For instruction-tuned models, add --apply_chat_template during evaluation; for base models such as gpt2, you do not need it.
+HF_ENDPOINT=https://hf-mirror.com lm_eval --model hf --model_args pretrained="/path/to/model",dtype=auto --tasks "task" --batch_size 16 --device cpu --trust_remote_code --apply_chat_template
 ```
 
-> Note: In these multiple-choice test sets, to avoid format instability from free-form model generation, the common practice is to directly compare the prediction probabilities of tokens corresponding to candidate options, and take the option with the highest probability to calculate accuracy against the standard answer. The candidate options are not necessarily `A`, `B`, `C`, `D`; some datasets may only have two options. Therefore, from the results perspective, the accuracy of random answering is often a strong lower bound, and models of this scale do indeed tend to hover around this level for a long time.
+> Note: These multiple-choice benchmarks are usually not evaluated by asking the model to freely generate the full answer. Instead, given a context `y` and a set of candidate options `x`, the standard practice is to compare the conditional probability `p(x | y)` of each option and select the one with the highest score. If an option maps to a single token, comparing that token probability is enough; if it spans multiple tokens, a more standard approach is to compare the sum of conditional log-probabilities over the whole option. The candidates are not necessarily `A`, `B`, `C`, `D`; some datasets have only two options. In that sense, random guessing is already a fairly strong lower bound, and models at this scale do tend to stay close to it for quite a while.
 
-The MiniMind model itself has a very small training dataset, has virtually no English knowledge capability, and has not undergone output format fine-tuning for these test sets. The results are for entertainment only:
+MiniMind is trained on far less data than the other models listed here, and its training mix is heavily skewed toward Chinese, so its English performance is relatively weak. It is also not specifically aligned to this multiple-choice evaluation format by default, so the results here are only for entertainment:
 
-| models                                                                        | from          | params↓ | ceval↑ | cmmlu↑ | arc↑  | piqa↑ | openbookqa↑ | hellaswag↑ | siqa↑ |
-|-------------------------------------------------------------------------------|---------------|---------|--------|--------|-------|-------|-------------|------------|-------|
-| minimind-3                                                                    | JingyaoGong   | 64M    | 24.89  | 25.38  | 28.49 | 50.65 | 23.60       | 28.28      | 34.19 |
-| minimind-3-moe                                                                | JingyaoGong   | 198M   | 25.48  | 24.32  | 27.74 | 50.71 | 26.20       | 27.43      | 34.03 |
-| [Steel-LLM](https://huggingface.co/gqszhanshijin/Steel-LLM)                       | ZhanShiJin    | 1121M  | 24.89  | 25.32  | 39.69 | 65.13 | 26.00       | 35.73      | 39.15 |
-| [gpt2-medium](https://huggingface.co/openai-community/gpt2-medium)            | OpenAI        | 360M   | 23.18  | 25.00  | 43.60 | 66.38 | 30.20       | 39.38      | 39.10 |
-| [TinyLlama-1.1B-Chat-V1.0](https://huggingface.co/TinyLlama/TinyLlama-1.1B-Chat-v1.0)             | TinyLlama     | 1100M  | 25.71  | 25.03  | 54.80 | 74.43 | 35.60       | 60.38      | 43.09 |
-| [SmolLM2-135M-Instruct](https://huggingface.co/HuggingFaceTB/SmolLM2-135M-Instruct)                              | HuggingFaceTB | 135M   | 24.44  | 24.71  | 58.50 | 68.17 | 32.80       | 43.15      | 39.46 |
-| [Aquila-135M-Instruct](https://huggingface.co/BAAI/Aquila-135M-Instruct) | BAAI          | 135M   | 25.19  | 25.10  | 54.59 | 67.52 | 34.40       | 41.67      | 39.66 |
+| model name | from | params | ZH (ceval / cmmlu) | EN (arc / piqa / OBQA / HellaSwag / siqa) |
+|---|---|---|---|---|
+| minimind-3 | current | 64M | 24.89 / 25.38 | 28.49 / 50.65 / 23.60 / 28.28 / 34.19 |
+| minimind-3-moe | current | 198M | 25.48 / 24.32 | 27.74 / 50.71 / 26.20 / 27.43 / 34.03 |
+| minimind-3-exam | current | 64M | 30.98 / 26.12 | 35.61 / 56.26 / 24.20 / 28.40 / 34.19 |
+| [Steel-LLM](https://huggingface.co/gqszhanshijin/Steel-LLM) | ZhanShiJin | 1121M | 24.89 / 25.32 | 39.69 / 65.13 / 26.00 / 35.73 / 39.15 |
+| [gpt2-medium](https://huggingface.co/openai-community/gpt2-medium) | OpenAI | 360M | 23.18 / 25.00 | 43.60 / 66.38 / 30.20 / 39.38 / 39.10 |
+| [TinyLlama-1.1B](https://huggingface.co/TinyLlama/TinyLlama-1.1B-Chat-v1.0) | TinyLlama | 1100M | 25.71 / 25.03 | 54.80 / 74.43 / 35.60 / 60.38 / 43.09 |
+| [SmolLM2-135M](https://huggingface.co/HuggingFaceTB/SmolLM2-135M-Instruct) | HuggingFace | 135M | 24.44 / 24.71 | 58.50 / 68.17 / 32.80 / 43.15 / 39.46 |
+| [Aquila-135M](https://huggingface.co/BAAI/Aquila-135M-Instruct) | BAAI | 135M | 25.19 / 25.10 | 54.59 / 67.52 / 34.40 / 41.67 / 39.66 |
+
+<details>
+<summary><strong>Additional note (source / no contamination / reproduction)</strong></summary>
+
+minimind-3-exam is not a larger base model, and it contains little if any new knowledge. It is simply minimind-3 after a lightweight LoRA alignment on [lora_exam.jsonl](https://huggingface.co/datasets/jingyaogong/minimind_dataset/blob/main/lora_exam.jsonl), with [lora_exam_768.pth](https://huggingface.co/jingyaogong/minimind-3-pytorch/resolve/main/lora_exam_768.pth) merged back into the base model. This alignment data is sampled from the test subsets of ceval and English mmlu, with additional prefix/suffix augmentation. Its purpose is to align the context and option format commonly seen in multiple-choice evaluation, rather than to teach the answers.
+
+The 7 benchmarks used in this section have no sample overlap with the alignment data above, so this result can be regarded as free of data contamination. By contrast, if one fine-tunes directly on overlapping data, the scores of a small model can become heavily distorted; for example, minimind-3 once reached about 97% accuracy on contaminated ceval / cmmlu subsets, but such numbers are not meaningful.
+
+What this experiment suggests is simple: for this kind of benchmark, the bottleneck of a small model may not lie entirely in knowledge itself, but also in whether the input format is aligned. With only a small amount of format alignment, minimind-3-exam improves by about 2.9 percentage points on average across the 7 tasks above.
+
+</details>
+<br/>
 
 ![benchmark_radar](./images/benchmark_radar.jpg)
 

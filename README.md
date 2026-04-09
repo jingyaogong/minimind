@@ -1574,22 +1574,36 @@ cd lm-evaluation-harness && pip install -e .
 ```bash
 # 启动测试
 # 使用的数据集：ceval-valid/cmmlu/arc_easy/piqa/openbookqa/hellaswag/social_iqa # 查看支持的数据集：lm_eval ls tasks 
-HF_ENDPOINT=https://hf-mirror.com lm_eval --model hf --model_args pretrained="/path/to/model",dtype=auto --tasks "task" --batch_size 16 --device cpu --trust_remote_code
+# 对于指令模型，评测时需要加上 --apply_chat_template；对于 gpt2 这类纯基座模型，则不需要。
+HF_ENDPOINT=https://hf-mirror.com lm_eval --model hf --model_args pretrained="/path/to/model",dtype=auto --tasks "task" --batch_size 16 --device cpu --trust_remote_code --apply_chat_template
 ```
 
-> 注：这类选择题测评集中，为了避免模型自由生成带来的格式不稳定，常见做法是直接比较候选选项对应token的预测概率，并取概率最大的选项与标准答案计算正确率。这里的候选选项并不一定是`A`、`B`、`C`、`D`，有些数据集也可能只有两个选项。因此从结果上看，随机作答的准确率往往就是很强的下界，而这个量级的模型也确实长期徘徊在这个附近。
+> 注：这类选择题测评通常不是让模型自由生成完整答案，而是给定题目上下文`y`和若干候选项`x`，直接比较各候选项的条件概率`p(x | y)`，并取概率最大的选项作为预测结果。若候选项只对应单个token，那么直接比较该token的预测概率即可；若候选项会分成多个token，那么更常见的做法是比较整段候选项的条件对数概率之和。这里的候选项并不一定是`A`、`B`、`C`、`D`，有些数据集也可能只有两个选项。因此从结果上看，随机作答的准确率往往就是很强的下界，而这个量级的模型也确实长期徘徊在这个附近。
 
-minimind模型本身训练数据集很小，且没有什么英文知识能力，也没有针对这些测试集做输出格式微调，结果仅供娱乐：
+MiniMind 的数据规模远小于表中其他模型，且训练比例偏向中文，因此英文表现不佳，此外默认没有专门针对这类选择题评测格式做对齐微调，所以表现会相对弱，结果仅供娱乐：
 
-| models                                                                        | from          | params↓ | ceval↑ | cmmlu↑ | arc↑  | piqa↑ | openbookqa↑ | hellaswag↑ | siqa↑ |
-|-------------------------------------------------------------------------------|---------------|---------|--------|--------|-------|-------|-------------|------------|-------|
-| minimind-3                                                                    | JingyaoGong   | 64M    | 24.89  | 25.38  | 28.49 | 50.65 | 23.60       | 28.28      | 34.19 |
-| minimind-3-moe                                                                | JingyaoGong   | 198M   | 25.48  | 24.32  | 27.74 | 50.71 | 26.20       | 27.43      | 34.03 |
-| [Steel-LLM](https://huggingface.co/gqszhanshijin/Steel-LLM)                       | ZhanShiJin    | 1121M  | 24.89  | 25.32  | 39.69 | 65.13 | 26.00       | 35.73      | 39.15 |
-| [gpt2-medium](https://huggingface.co/openai-community/gpt2-medium)            | OpenAI        | 360M   | 23.18  | 25.00  | 43.60 | 66.38 | 30.20       | 39.38      | 39.10 |
-| [TinyLlama-1.1B-Chat-V1.0](https://huggingface.co/TinyLlama/TinyLlama-1.1B-Chat-v1.0)             | TinyLlama     | 1100M  | 25.71  | 25.03  | 54.80 | 74.43 | 35.60       | 60.38      | 43.09 |
-| [SmolLM2-135M-Instruct](https://huggingface.co/HuggingFaceTB/SmolLM2-135M-Instruct)                              | HuggingFaceTB | 135M   | 24.44  | 24.71  | 58.50 | 68.17 | 32.80       | 43.15      | 39.46 |
-| [Aquila-135M-Instruct](https://huggingface.co/BAAI/Aquila-135M-Instruct) | BAAI          | 135M   | 25.19  | 25.10  | 54.59 | 67.52 | 34.40       | 41.67      | 39.66 |
+| model name | from | params | ZH (ceval / cmmlu) | EN (arc / piqa / OBQA / HellaSwag / siqa) |
+|---|---|---|---|---|
+| minimind-3 | current | 64M | 24.89 / 25.38 | 28.49 / 50.65 / 23.60 / 28.28 / 34.19 |
+| minimind-3-moe | current | 198M | 25.48 / 24.32 | 27.74 / 50.71 / 26.20 / 27.43 / 34.03 |
+| minimind-3-exam | current | 64M | 30.98 / 26.12 | 35.61 / 56.26 / 24.20 / 28.40 / 34.19 |
+| [Steel-LLM](https://huggingface.co/gqszhanshijin/Steel-LLM) | ZhanShiJin | 1121M | 24.89 / 25.32 | 39.69 / 65.13 / 26.00 / 35.73 / 39.15 |
+| [gpt2-medium](https://huggingface.co/openai-community/gpt2-medium) | OpenAI | 360M | 23.18 / 25.00 | 43.60 / 66.38 / 30.20 / 39.38 / 39.10 |
+| [TinyLlama-1.1B](https://huggingface.co/TinyLlama/TinyLlama-1.1B-Chat-v1.0) | TinyLlama | 1100M | 25.71 / 25.03 | 54.80 / 74.43 / 35.60 / 60.38 / 43.09 |
+| [SmolLM2-135M](https://huggingface.co/HuggingFaceTB/SmolLM2-135M-Instruct) | HuggingFace | 135M | 24.44 / 24.71 | 58.50 / 68.17 / 32.80 / 43.15 / 39.46 |
+| [Aquila-135M](https://huggingface.co/BAAI/Aquila-135M-Instruct) | BAAI | 135M | 25.19 / 25.10 | 54.59 / 67.52 / 34.40 / 41.67 / 39.66 |
+
+<details>
+<summary><strong>补充说明（来源/无污染/复现）</strong></summary>
+
+minimind-3-exam 不是更大的基座模型，也几乎没有额外注入新知识。它仅基于 minimind-3 在 [lora_exam.jsonl](https://huggingface.co/datasets/jingyaogong/minimind_dataset/blob/main/lora_exam.jsonl) 上做了一次轻量 LoRA 对齐，再将 [lora_exam_768.pth](https://huggingface.co/jingyaogong/minimind-3-pytorch/resolve/main/lora_exam_768.pth) 合并回基模后的结果。这部分数据由 ceval 与 mmlu (英文) 的 test 子集抽样构成，并做了前缀、后缀等格式增强，主要作用是对齐选择题评测中常见的上下文与候选项组织形式，而不是学习题目答案。
+
+本节评估所用的 7 个数据集与上述对齐数据无样本交集，因此可以认为不存在数据污染。相反，若直接在有交集的数据上微调，这类小模型的分数往往会明显失真；例如 minimind-3 在有污染的 ceval / cmmlu 子集上实验跑到过约 97% 准确率，但这种结果没有参考意义。
+
+这个实验想说明的只是：对这类评测，小模型的瓶颈未必完全在知识本身，也可能在于输入格式没有对齐。仅做少量格式对齐后，minimind-3-exam 在上面 7 个任务上平均提升约 2.9 个百分点。
+
+</details>
+<br/>
 
 ![benchmark_radar](./images/benchmark_radar.jpg)
 
