@@ -1582,7 +1582,7 @@ HF_ENDPOINT=https://hf-mirror.com lm_eval --model hf --model_args pretrained="/p
 
 MiniMind 的数据规模远小于表中其他模型，且训练比例偏向中文，因此英文表现不佳，此外默认没有专门针对这类选择题评测格式做对齐微调，所以表现会相对弱，结果仅供娱乐：
 
-| model name | from | params | zh (ceval / cmmlu) | en (arc / piqa / openbookqa / hellaswag / social_iqa) |
+| model name | from | params | zh (ceval / cmmlu) | en (arc / piqa / obqa / hellaswag / siqa) |
 |---|---|---|---|---|
 | minimind-3 | current | 64M | 24.89 / 25.38 | 28.49 / 50.65 / 23.60 / 28.28 / 34.19 |
 | minimind-3-moe | current | 198M | 25.48 / 24.32 | 27.74 / 50.71 / 26.20 / 27.43 / 34.03 |
