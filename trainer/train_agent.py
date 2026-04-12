@@ -241,15 +241,19 @@ def calculate_rewards(prompts, completions, gt_batch, tools_batch, num_gen, rewa
 def rl_train_epoch(epoch, loader, iters, rollout_engine, ref_model, reward_model=None, start_step=0, wandb=None, use_sglang=False):
     last_step = start_step
     for step, batch in enumerate(loader, start=start_step + 1):
+        ########################### 训练前操作 ###########################
+        # 数据准备
         messages_batch = batch['messages']
         tools_batch = batch['tools']
         gt_batch = batch['gt']
         last_step = step
 
+        prompts = [tokenizer.apply_chat_template(m, tokenize=False, add_generation_prompt=True, tools=t) for m, t in zip(messages_batch, tools_batch)]
+
         with torch.no_grad():
             completions, contexts, prompt_ids_batch, response_ids_batch, response_masks_batch, response_old_logps_batch, turn_outputs_batch, unfinished_batch = rollout_batch(rollout_engine, tokenizer, messages_batch, tools_batch, args.num_generations, max_turns=3, max_new_tokens=args.max_gen_len, thinking_ratio=args.thinking_ratio, device=args.device)
 
-        prompts = [tokenizer.apply_chat_template(m, tokenize=False, add_generation_prompt=True, tools=t) for m, t in zip(messages_batch, tools_batch)]
+        # 数据处理(保证序列长度一致)
         packed_samples = []
         for p, r, m, old_lp in zip(prompt_ids_batch, response_ids_batch, response_masks_batch, response_old_logps_batch):
             ids = p + r
@@ -268,6 +272,8 @@ def rl_train_epoch(epoch, loader, iters, rollout_engine, ref_model, reward_model
         full_response_masks = torch.tensor([mask + [0] * (max_len - len(mask)) for _, mask, _, _ in packed_samples], device=args.device, dtype=torch.float32)
         old_per_token_logps = torch.tensor([old_logps + [0.0] * ((max_len - 1) - len(old_logps)) for _, _, _, old_logps in packed_samples], device=args.device, dtype=torch.float32)
 
+        ########################### 训练中操作 ###########################
+        # 数据计算
         model_unwrapped = model.module if isinstance(model, DistributedDataParallel) else model
         with autocast_ctx:
             res = model_unwrapped(input_ids)
@@ -316,6 +322,8 @@ def rl_train_epoch(epoch, loader, iters, rollout_engine, ref_model, reward_model
         kl_div = ref_per_token_logps - per_token_logps
         per_token_kl = torch.exp(kl_div) - kl_div - 1
         ratio = torch.exp(per_token_logps - old_per_token_logps)
+
+        # 定义损失函数
         if args.loss_type == "cispo":
             clamped_ratio = torch.clamp(ratio, max=args.epsilon_high).detach()
             per_token_loss = -(clamped_ratio * advantages.unsqueeze(1) * per_token_logps - args.beta * per_token_kl)
@@ -327,13 +335,18 @@ def rl_train_epoch(epoch, loader, iters, rollout_engine, ref_model, reward_model
         policy_loss = (((per_token_loss * completion_mask).sum(dim=1)[valid_rows] / token_counts[valid_rows].clamp(min=1)).mean()
                        if valid_rows.any() else per_token_loss.sum() * 0.0)
         loss = (policy_loss + aux_loss) / args.accumulation_steps
+        
+        # 反向传播
         loss.backward()
 
+        # 梯度更新
         if step % args.accumulation_steps == 0:
             if args.grad_clip > 0: torch.nn.utils.clip_grad_norm_(model.parameters(), args.grad_clip)
             optimizer.step(); scheduler.step(); optimizer.zero_grad()
             if is_main_process() and step % args.save_interval == 0: rollout_engine.update_policy(model)
 
+        ########################### 训练后操作 ###########################
+        # 日志打印
         if step % args.log_interval == 0 or step == iters:
             pl = loss.item() * args.accumulation_steps
             ar = rewards.mean().item()
@@ -346,6 +359,7 @@ def rl_train_epoch(epoch, loader, iters, rollout_engine, ref_model, reward_model
             if wandb and is_main_process():
                 wandb.log({"reward":ar,"kl_ref":kl,"group_reward_std":gs,"advantages_std":ast,"policy_loss":pl,"avg_response_len":al,"advantages_mean":am,"learning_rate":lr})
 
+        # 模型保存
         if (step % args.save_interval == 0 or step == iters) and is_main_process():
             model.eval()
             moe_suffix = '_moe' if lm_config.use_moe else ''
@@ -409,25 +423,20 @@ if __name__ == "__main__":
     parser.add_argument("--sglang_shared_path", type=str, default="./sglang_ckpt_agent", help="SGLang共享存储路径")
     args = parser.parse_args()
 
+    # ========== 1. 创建训练环境 ==========
     local_rank = init_distributed_mode()
     if dist.is_initialized(): args.device = f"cuda:{local_rank}"
     setup_seed(42 + (dist.get_rank() if dist.is_initialized() else 0))
 
+    # ========== 2. 模型相关 ==========
     os.makedirs(args.save_dir, exist_ok=True)
-    lm_config = MiniMindConfig(hidden_size=args.hidden_size, num_hidden_layers=args.num_hidden_layers,
-                               max_seq_len=args.max_seq_len + args.max_gen_len, use_moe=bool(args.use_moe))
-    ckp_data = lm_checkpoint(lm_config, weight=args.save_weight, save_dir='../checkpoints') if args.from_resume == 1 else None
-
+    
     device_type = "cuda" if "cuda" in args.device else "cpu"
     dtype = torch.bfloat16 if args.dtype == "bfloat16" else torch.float16
     autocast_ctx = nullcontext() if device_type == "cpu" else torch.cuda.amp.autocast(dtype=dtype)
 
-    wandb = None
-    if args.use_wandb and is_main_process():
-        import swanlab as wandb
-        wandb_id = ckp_data.get('wandb_id') if ckp_data else None
-        resume = 'must' if wandb_id else None
-        wandb.init(project=args.wandb_project, name=f"Agent-RL-E{args.epochs}-B{args.batch_size}-LR{args.learning_rate}", id=wandb_id, resume=resume)
+    lm_config = MiniMindConfig(hidden_size=args.hidden_size, num_hidden_layers=args.num_hidden_layers,
+                               max_seq_len=args.max_seq_len + args.max_gen_len, use_moe=bool(args.use_moe))
 
     model, tokenizer = init_model(lm_config, args.from_weight, device=args.device)
 
@@ -456,14 +465,6 @@ if __name__ == "__main__":
     total_optimizer_steps = math.ceil(iters / args.accumulation_steps) * args.epochs
     scheduler = CosineAnnealingLR(optimizer, T_max=total_optimizer_steps, eta_min=args.learning_rate / 10)
 
-    start_epoch, start_step = 0, 0
-    if ckp_data:
-        model.load_state_dict(ckp_data['model'])
-        optimizer.load_state_dict(ckp_data['optimizer'])
-        scheduler.load_state_dict(ckp_data['scheduler'])
-        start_epoch = ckp_data['epoch']
-        start_step = ckp_data.get('step', 0)
-
     if args.use_compile == 1:
         model = torch.compile(model)
         Logger('torch.compile enabled')
@@ -472,6 +473,25 @@ if __name__ == "__main__":
         model = DistributedDataParallel(model, device_ids=[local_rank])
     if is_main_process(): rollout_engine.update_policy(model)
 
+    ckp_data = lm_checkpoint(lm_config, weight=args.save_weight, save_dir='../checkpoints') if args.from_resume == 1 else None
+
+    # ========== 3. checkpoint相关 ==========
+    wandb = None
+    if args.use_wandb and is_main_process():
+        import swanlab as wandb
+        wandb_id = ckp_data.get('wandb_id') if ckp_data else None
+        resume = 'must' if wandb_id else None
+        wandb.init(project=args.wandb_project, name=f"Agent-RL-E{args.epochs}-B{args.batch_size}-LR{args.learning_rate}", id=wandb_id, resume=resume)
+
+    start_epoch, start_step = 0, 0
+    if ckp_data:
+        model.module.load_state_dict(ckp_data['model'])
+        optimizer.load_state_dict(ckp_data['optimizer'])
+        scheduler.load_state_dict(ckp_data['scheduler'])
+        start_epoch = ckp_data['epoch']
+        start_step = ckp_data.get('step', 0)
+
+    # ========== 4. 开始训练 ==========
     for epoch in range(start_epoch, args.epochs):
         train_sampler and train_sampler.set_epoch(epoch)
         setup_seed(42 + epoch); indices = torch.randperm(len(train_ds)).tolist()
@@ -484,4 +504,5 @@ if __name__ == "__main__":
         else:
             rl_train_epoch(epoch, loader, len(loader), rollout_engine, ref_model, reward_model, 0, wandb, use_sglang = (args.rollout_engine == "sglang"))
 
+    # ========== 5. 清理分布进程 ==========
     if dist.is_initialized(): dist.destroy_process_group()

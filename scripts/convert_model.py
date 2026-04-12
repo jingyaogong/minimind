@@ -126,10 +126,12 @@ def convert_json_to_jinja(json_file_path, output_path):
 
 
 if __name__ == '__main__':
-    lm_config = MiniMindConfig(hidden_size=768, num_hidden_layers=8, max_seq_len=8192, use_moe=True)
+
+    # 注意这里use_moe参数的配置，默认使用非MoE模型
+    lm_config = MiniMindConfig(hidden_size=768, num_hidden_layers=8, max_seq_len=8192, use_moe=False)
     # convert torch to transformers
     torch_path = f"../out/full_sft_{lm_config.hidden_size}{'_moe' if lm_config.use_moe else ''}.pth"
-    transformers_path = '../minimind-3-moe'
+    transformers_path = '../minimind-3'
     convert_torch2transformers(torch_path, transformers_path)
 
     # # merge lora
