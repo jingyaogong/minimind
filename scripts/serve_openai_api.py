@@ -14,6 +14,7 @@ import uvicorn
 from threading import Thread
 from queue import Queue
 from fastapi import FastAPI, HTTPException
+from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import StreamingResponse
 from pydantic import BaseModel
 from transformers import AutoTokenizer, AutoModelForCausalLM, TextStreamer
@@ -23,6 +24,13 @@ from model.model_lora import apply_lora, load_lora
 warnings.filterwarnings('ignore')
 
 app = FastAPI()
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=["*"],
+    allow_credentials=True,
+    allow_methods=["*"],
+    allow_headers=["*"],
+)
 
 
 def init_model(args):
@@ -102,7 +110,26 @@ def parse_response(text):
     return text.strip(), reasoning_content, tool_calls or None
 
 
+_SENTINEL = object()
+
+
 def generate_stream_response(messages, temperature, top_p, max_tokens, tools=None, open_thinking=False):
+    request_id = f"chatcmpl-{int(time.time() * 1000)}"
+    created = int(time.time())
+
+    def _make_chunk(delta, finish_reason=None):
+        """Build a single SSE chunk in OpenAI chat.completion.chunk format."""
+        choice = {"index": 0, "delta": delta}
+        if finish_reason is not None:
+            choice["finish_reason"] = finish_reason
+        return json.dumps({
+            "id": request_id,
+            "object": "chat.completion.chunk",
+            "created": created,
+            "model": "minimind",
+            "choices": [choice],
+        }, ensure_ascii=False)
+
     try:
         new_prompt = tokenizer.apply_chat_template(messages, tokenize=False, add_generation_prompt=True, tools=tools or None, open_thinking=open_thinking)[-max_tokens:]
         inputs = tokenizer(new_prompt, return_tensors="pt", truncation=True).to(device)
@@ -111,19 +138,28 @@ def generate_stream_response(messages, temperature, top_p, max_tokens, tools=Non
         streamer = CustomStreamer(tokenizer, queue)
 
         def _generate():
-            model.generate(
-                inputs.input_ids,
-                max_new_tokens=max_tokens,
-                do_sample=True,
-                temperature=temperature,
-                top_p=top_p,
-                attention_mask=inputs.attention_mask,
-                pad_token_id=tokenizer.pad_token_id,
-                eos_token_id=tokenizer.eos_token_id,
-                streamer=streamer
-            )
+            try:
+                model.generate(
+                    inputs.input_ids,
+                    max_new_tokens=max_tokens,
+                    do_sample=True,
+                    temperature=temperature,
+                    top_p=top_p,
+                    attention_mask=inputs.attention_mask,
+                    pad_token_id=tokenizer.pad_token_id,
+                    eos_token_id=tokenizer.eos_token_id,
+                    streamer=streamer
+                )
+            except Exception as e:
+                # Propagate generation errors to the consumer so it doesn't
+                # block forever on queue.get().
+                queue.put(_SENTINEL)
+                queue.put(e)
 
-        Thread(target=_generate).start()
+        Thread(target=_generate, daemon=True).start()
+
+        # Emit the initial chunk with the role.
+        yield _make_chunk({"role": "assistant"})
 
         full_text = ""
         emitted = 0
@@ -131,6 +167,9 @@ def generate_stream_response(messages, temperature, top_p, max_tokens, tools=Non
 
         while True:
             text = queue.get()
+            if text is _SENTINEL:
+                # The generation thread raised; re-raise here.
+                raise queue.get()
             if text is None:
                 break
             full_text += text
@@ -141,28 +180,29 @@ def generate_stream_response(messages, temperature, top_p, max_tokens, tools=Non
                     thinking_ended = True
                     new_r = full_text[emitted:pos]
                     if new_r:
-                        yield json.dumps({"choices": [{"delta": {"reasoning_content": new_r}}]}, ensure_ascii=False)
+                        yield _make_chunk({"reasoning_content": new_r})
                     emitted = pos + len('</think>')
                     after = full_text[emitted:].lstrip('\n')
                     emitted = len(full_text) - len(after)
                     if after:
-                        yield json.dumps({"choices": [{"delta": {"content": after}}]}, ensure_ascii=False)
+                        yield _make_chunk({"content": after})
                         emitted = len(full_text)
                 else:
                     new_r = full_text[emitted:]
                     if new_r:
-                        yield json.dumps({"choices": [{"delta": {"reasoning_content": new_r}}]}, ensure_ascii=False)
+                        yield _make_chunk({"reasoning_content": new_r})
                         emitted = len(full_text)
             else:
                 new_c = full_text[emitted:]
                 if new_c:
-                    yield json.dumps({"choices": [{"delta": {"content": new_c}}]}, ensure_ascii=False)
+                    yield _make_chunk({"content": new_c})
                     emitted = len(full_text)
 
         _, _, tool_calls = parse_response(full_text)
         if tool_calls:
-            yield json.dumps({"choices": [{"delta": {"tool_calls": tool_calls}}]}, ensure_ascii=False)
-        yield json.dumps({"choices": [{"delta": {}, "finish_reason": "tool_calls" if tool_calls else "stop"}]}, ensure_ascii=False)
+            yield _make_chunk({"tool_calls": tool_calls})
+        finish = "tool_calls" if tool_calls else "stop"
+        yield _make_chunk({}, finish_reason=finish)
 
     except Exception as e:
         yield json.dumps({"error": str(e)})
@@ -172,15 +212,20 @@ def generate_stream_response(messages, temperature, top_p, max_tokens, tools=Non
 async def chat_completions(request: ChatRequest):
     try:
         if request.stream:
-            return StreamingResponse(
-                (f"data: {chunk}\n\n" for chunk in generate_stream_response(
+            def _event_stream():
+                for chunk in generate_stream_response(
                     messages=request.messages,
                     temperature=request.temperature,
                     top_p=request.top_p,
                     max_tokens=request.max_tokens,
                     tools=request.tools,
                     open_thinking=request.get_open_thinking()
-                )),
+                ):
+                    yield f"data: {chunk}\n\n"
+                yield "data: [DONE]\n\n"
+
+            return StreamingResponse(
+                _event_stream(),
                 media_type="text/event-stream"
             )
         else:
@@ -195,7 +240,7 @@ async def chat_completions(request: ChatRequest):
             with torch.no_grad():
                 generated_ids = model.generate(
                     inputs["input_ids"],
-                    max_length=inputs["input_ids"].shape[1] + request.max_tokens,
+                    max_new_tokens=request.max_tokens,
                     do_sample=True,
                     attention_mask=inputs["attention_mask"],
                     pad_token_id=tokenizer.pad_token_id,
