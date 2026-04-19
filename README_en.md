@@ -39,7 +39,7 @@
 * This is not only a full-stage open-source reproduction project for large language models, but also a tutorial oriented towards LLM introduction and practice.
 * We hope this project can provide a reproducible, understandable, and extensible starting point for more people, to share the joy of creation together and promote the progress of the broader AI community.
 
-> Note: This project is open-sourced under the Apache 2.0 license and is completely free; "2 hours" is estimated based on NVIDIA 3090 hardware (single GPU), and "3 CNY" refers to GPU server rental cost. See below for detailed specifications.
+> Note: This project is open-sourced under the Apache 2.0 license and is completely free. "2 hours" refers to the measured time to run `1 epoch` of the SFT stage on a single NVIDIA 3090, and "3 CNY" refers to the corresponding GPU rental cost for that duration.
 
 ---
 
@@ -166,9 +166,10 @@ After this update, maintenance for the entire `minimind-v1` series will be disco
 
 </details>
 
-<details> 
-<summary> <b>2025-02-09</b> </summary>
+<details>
+<summary> <b>More...</b> </summary>
 
+**2025-02-09**
 - Major update since release, Release minimind2 Series.
 - Code almost entirely refactored, using a more concise and clear unified structure.
   For compatibility needs with old code, visit [🔗Old Repository Content🔗](https://github.com/jingyaogong/minimind/tree/6e9cd28ef9b34a0a10afbdf6f59e65cb6e628efb).
@@ -181,11 +182,6 @@ After this update, maintenance for the entire `minimind-v1` series will be disco
 - minimind2-DeepSeek-R1 series distilled models born!
 - minimind2 has certain English language capability!
 - Updated benchmark test performance results of minimind2 vs third-party models on more LLM leaderboards.
-
-</details>
-
-<details>
-<summary> <b>More...</b> </summary>
 
 **2024-10-05**
 - Extended multimodal capability for MiniMind --- Vision
