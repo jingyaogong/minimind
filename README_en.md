@@ -1202,10 +1202,19 @@ Here, tool call legality, `gt` hits, format closure, unfinished penalty, and Rew
 **Training method**:
 
 ```bash
+# ① Default: use torch for rollout
 # Method 1
 torchrun --nproc_per_node N train_agent.py
 # Method 2
 python train_agent.py
+```
+
+```bash
+# ② Use sglang for rollout
+# Start sglang server first:
+python -m sglang.launch_server --model-path ./minimind-3 --attention-backend triton --host 0.0.0.0 --port 8998
+# Training parameters for reference:
+python train_agent.py --rollout_engine sglang --sglang_base_url http://localhost:8998 --sglang_shared_path ./ckpt_mm --data_path ../dataset/agent_rl_math.jsonl --use_wandb
 ```
 
 > The trained model weight files are saved by default every `save_interval steps` as: `agent_*.pth`

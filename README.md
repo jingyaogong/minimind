@@ -1203,10 +1203,19 @@ $$
 **训练方式**：
 
 ```bash
+# ① 默认使用torch做rollout
 # 方式1
 torchrun --nproc_per_node N train_agent.py
 # 方式2
 python train_agent.py
+```
+
+```bash
+# ② 使用sglang做rollout
+# 需先启动sglang server：
+python -m sglang.launch_server --model-path ./minimind-3 --attention-backend triton --host 0.0.0.0 --port 8998
+# 训练参数可参考：
+python train_agent.py --rollout_engine sglang --sglang_base_url http://localhost:8998 --sglang_shared_path ./ckpt_mm --data_path ../dataset/agent_rl_math.jsonl --use_wandb
 ```
 
 > 训练后的模型权重文件默认每隔`save_interval步`保存为: `agent_*.pth`
