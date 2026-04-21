@@ -164,7 +164,6 @@ if __name__ == "__main__":
         args.use_compile = 0
         Logger('[LoRA] monkey-patch forward 与 torch.compile 不兼容，use_compile 已自动关闭')
     if dist.is_initialized():
-        model._ddp_params_and_buffers_to_ignore = {"freqs_cos", "freqs_sin"}
         model = DistributedDataParallel(model, device_ids=[local_rank])
     
     # ========== 9. 开始训练 ==========

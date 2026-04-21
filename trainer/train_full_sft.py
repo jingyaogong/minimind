@@ -151,7 +151,6 @@ if __name__ == "__main__":
         model = torch.compile(model)
         Logger('torch.compile enabled')
     if dist.is_initialized():
-        model._ddp_params_and_buffers_to_ignore = {"freqs_cos", "freqs_sin"}
         model = DistributedDataParallel(model, device_ids=[local_rank])
     
     # ========== 8. 开始训练 ==========

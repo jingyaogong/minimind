@@ -403,7 +403,7 @@ if __name__ == "__main__":
     parser.add_argument("--debug_interval", type=int, default=20, help="调试日志间隔")
     parser.add_argument("--thinking_ratio", type=float, default=0.1, help="按概率开启thinking（0.0~1.0）")
     parser.add_argument("--reward_model_path", type=str, default="../../internlm2-1_8b-reward", help="Reward模型路径")
-    parser.add_argument("--rollout_engine", type=str, default="sglang", choices=["torch", "sglang"], help="rollout引擎类型")
+    parser.add_argument("--rollout_engine", type=str, default="torch", choices=["torch", "sglang"], help="rollout引擎类型")
     parser.add_argument("--sglang_base_url", type=str, default="http://localhost:8998", help="SGLang服务器URL")
     parser.add_argument("--sglang_model_path", type=str, default="../model", help="SGLang tokenizer路径")
     parser.add_argument("--sglang_shared_path", type=str, default="./sglang_ckpt_agent", help="SGLang共享存储路径")
@@ -467,8 +467,8 @@ if __name__ == "__main__":
     if args.use_compile == 1:
         model = torch.compile(model)
         Logger('torch.compile enabled')
+        rollout_engine.update_policy(model)
     if dist.is_initialized():
-        model._ddp_params_and_buffers_to_ignore = {"freqs_cos", "freqs_sin"}
         model = DistributedDataParallel(model, device_ids=[local_rank])
     if is_main_process(): rollout_engine.update_policy(model)
 

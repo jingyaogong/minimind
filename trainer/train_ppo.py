@@ -339,8 +339,8 @@ if __name__ == "__main__":
     parser.add_argument("--debug_mode", action="store_true", help="是否打印训练调试采样")
     parser.add_argument("--debug_interval", type=int, default=20, help="debug模式下每隔多少step打印一次采样")
     parser.add_argument("--thinking_ratio", type=float, default=0.9, help="按概率开启thinking（0.0~1.0）")
-    parser.add_argument("--rollout_engine", type=str, default="sglang", choices=["torch", "sglang"], help="rollout引擎类型")
-    parser.add_argument("--sglang_base_url", type=str, default="http://localhost:8997", help="SGLang服务器URL")
+    parser.add_argument("--rollout_engine", type=str, default="torch", choices=["torch", "sglang"], help="rollout引擎类型")
+    parser.add_argument("--sglang_base_url", type=str, default="http://localhost:8998", help="SGLang服务器URL")
     parser.add_argument("--sglang_model_path", type=str, default="../model", help="SGLang tokenizer路径")
     parser.add_argument("--sglang_shared_path", type=str, default="./sglang_ckpt_ppo", help="SGLang共享存储路径")
     args = parser.parse_args()
@@ -421,8 +421,6 @@ if __name__ == "__main__":
         Logger('torch.compile enabled')
         rollout_engine.update_policy(actor_model)
     if dist.is_initialized():
-        actor_model._ddp_params_and_buffers_to_ignore = {"freqs_cos", "freqs_sin"}
-        critic_model._ddp_params_and_buffers_to_ignore = {"freqs_cos", "freqs_sin"}
         actor_model = DistributedDataParallel(actor_model, device_ids=[local_rank])
         critic_model = DistributedDataParallel(critic_model, device_ids=[local_rank])
     if is_main_process(): rollout_engine.update_policy(actor_model)
