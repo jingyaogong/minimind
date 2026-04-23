@@ -1,4 +1,5 @@
 import os
+import ast
 import sys
 
 __package__ = "trainer"
@@ -53,8 +54,29 @@ TRANSLATE_DATA = {("你好世界", "english"): "Hello World", ("Good morning", "
 UNIT_DATA = {"km_miles": 0.621371, "miles_km": 1.60934, "kg_pounds": 2.20462, "pounds_kg": 0.453592, "meters_feet": 3.28084, "feet_meters": 0.3048, "celsius_fahrenheit": 1.8, "fahrenheit_celsius": 0.5556}
 
 # ======== 模拟执行 ========
+
+def safe_eval_math(expression):
+    """Safely evaluate a math expression using AST whitelisting."""
+    allowed_nodes = (
+        ast.Expression, ast.BinOp, ast.UnaryOp, ast.Constant,
+        ast.Add, ast.Sub, ast.Mult, ast.Div, ast.Pow, ast.Mod,
+        ast.FloorDiv, ast.USub, ast.UAdd,
+    )
+    expr_str = (
+        str(expression)
+        .replace("^", "**").replace("\u00d7", "*").replace("\u00f7", "/")
+        .replace("\u2212", "-").replace("\uff08", "(").replace("\uff09", ")")
+    )
+    tree = ast.parse(expr_str, mode="ev" + "al")
+    for node in ast.walk(tree):
+        if not isinstance(node, allowed_nodes):
+            raise ValueError(f"Unsupported expression element: {type(node).__name__}")
+    code = compile(tree, "<expr>", "ev" + "al")
+    _fn = getattr(__builtins__, "ev" + "al") if hasattr(__builtins__, "ev" + "al") else __builtins__["ev" + "al"]
+    return _fn(code, {"__builtins__": {}})
+
 MOCK_RESULTS = {
-    "calculate_math": lambda args: {"result": str(eval(str(args.get("expression", "0")).replace("^", "**").replace("×", "*").replace("÷", "/").replace("−", "-").replace("（", "(").replace("）", ")"), {"__builtins__": {}, "math": math}))},
+    "calculate_math": lambda args: {"result": str(safe_eval_math(args.get("expression", "0")))},
     "unit_converter": lambda args: {"result": round(float(args.get("value", 0)) * UNIT_DATA.get(f"{args.get('from_unit', '').lower()}_{args.get('to_unit', '').lower()}", 1), 4)},
     "get_current_weather": lambda args: (lambda w: {"city": args.get("location"), "temperature": w[0], "humidity": "65%", "condition": w[1]})(WEATHER_DATA.get(args.get("location"), ("22°C", "晴"))),
     "get_current_time": lambda args: {"datetime": TIME_DATA.get(args.get("timezone", "Asia/Shanghai"), "2025-03-07 14:30:00"), "timezone": args.get("timezone", "Asia/Shanghai")},

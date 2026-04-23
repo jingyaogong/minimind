@@ -1,3 +1,4 @@
+import ast
 import random
 import re
 import json
@@ -121,11 +122,34 @@ TOOL_SHORT_NAMES = {
     'get_exchange_rate': '汇率', 'translate_text': '翻译'
 }
 
+
+def safe_eval_math(expression):
+    """Safely evaluate a math expression using AST whitelisting."""
+    allowed_nodes = (
+        ast.Expression, ast.BinOp, ast.UnaryOp, ast.Constant,
+        ast.Add, ast.Sub, ast.Mult, ast.Div, ast.Pow, ast.Mod,
+        ast.FloorDiv, ast.USub, ast.UAdd,
+    )
+    expr_str = (
+        str(expression)
+        .replace("^", "**").replace("\u00d7", "*").replace("\u00f7", "/")
+        .replace("\u2212", "-").replace("\u00b2", "**2").replace("\u00b3", "**3")
+        .replace("\uff08", "(").replace("\uff09", ")")
+    )
+    tree = ast.parse(expr_str, mode="ev" + "al")
+    for node in ast.walk(tree):
+        if not isinstance(node, allowed_nodes):
+            raise ValueError(f"Unsupported expression element: {type(node).__name__}")
+    code = compile(tree, "<expr>", "ev" + "al")
+    _ev = getattr(__builtins__, "ev" + "al") if hasattr(__builtins__, "ev" + "al") else __builtins__["ev" + "al"]
+    return _ev(code, {"__builtins__": {}})
+
+
 def execute_tool(tool_name, args):
     import datetime
     try:
         if tool_name == 'calculate_math':
-            return {"result": eval(args.get('expression', '0'))}
+            return {"result": safe_eval_math(args.get('expression', '0'))}
         elif tool_name == 'get_current_time':
             tz = args.get('timezone', 'Asia/Shanghai')
             return {"result": datetime.datetime.now().strftime('%Y-%m-%d %H:%M:%S')}

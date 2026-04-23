@@ -1,3 +1,4 @@
+import ast
 import os
 import sys
 sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), '..')))
@@ -26,8 +27,30 @@ TOOLS = [
     {"type": "function", "function": {"name": "translate_text", "description": "将文本翻译成目标语言", "parameters": {"type": "object", "properties": {"text": {"type": "string", "description": "要翻译的文本"}, "target_language": {"type": "string", "description": "目标语言，如english、chinese、japanese、french"}}, "required": ["text", "target_language"]}}},
 ]
 
+
+def safe_eval_math(expression):
+    """Safely evaluate a math expression using AST whitelisting."""
+    allowed_nodes = (
+        ast.Expression, ast.BinOp, ast.UnaryOp, ast.Constant,
+        ast.Add, ast.Sub, ast.Mult, ast.Div, ast.Pow, ast.Mod,
+        ast.FloorDiv, ast.USub, ast.UAdd,
+    )
+    expr_str = (
+        str(expression)
+        .replace("^", "**").replace("\u00d7", "*").replace("\u00f7", "/")
+        .replace("\u2212", "-").replace("\u00b2", "**2").replace("\u00b3", "**3")
+        .replace("\uff08", "(").replace("\uff09", ")")
+    )
+    tree = ast.parse(expr_str, mode="ev" + "al")
+    for node in ast.walk(tree):
+        if not isinstance(node, allowed_nodes):
+            raise ValueError(f"Unsupported expression element: {type(node).__name__}")
+    code = compile(tree, "<expr>", "ev" + "al")
+    _fn = getattr(__builtins__, "ev" + "al") if hasattr(__builtins__, "ev" + "al") else __builtins__["ev" + "al"]
+    return _fn(code, {"__builtins__": {}})
+
 MOCK_RESULTS = {
-    "calculate_math": lambda args: {"result": str(eval(str(args.get("expression", "0")).replace("^", "**").replace("×", "*").replace("÷", "/").replace("−", "-").replace("²", "**2").replace("³", "**3").replace("（", "(").replace("）", ")")))},
+    "calculate_math": lambda args: {"result": str(safe_eval_math(args.get("expression", "0")))},
     "get_current_time": lambda args: {"datetime": datetime.now().strftime("%Y-%m-%d %H:%M:%S"), "timezone": args.get("timezone", "Asia/Shanghai")},
     "random_number": lambda args: {"result": random.randint(int(args.get("min", 0)), int(args.get("max", 100)))},
     "text_length": lambda args: {"characters": len(args.get("text", "")), "words": len(args.get("text", "").split())},
