@@ -1969,7 +1969,7 @@ python llmexport.py --path /path/to/模型路径/ --export mnn --hqq --dst_path 
 
 - A Built-in Crypto Expert for Artificial Intelligence: How Far is the Horizon? [[IACR ePrint 2026](https://eprint.iacr.org/2026/411.pdf)]
 
-- RetryTrigger: Intelligent Inference Duplication for Enhancing LLM Resilience to Hardware Transient Faults [[FITEE 2026](https://doi.org/10.1631/FITEE)]
+- RetryTrigger: Intelligent Inference Duplication for Enhancing LLM Resilience to Hardware Transient Faults [[FITEE 2026](https://ieeexplore.ieee.org/abstract/document/11479682)]
 
 - 进行中...
 
