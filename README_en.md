@@ -1968,6 +1968,8 @@ This model has served as a stepping stone that facilitated some gratifying resea
 
 - A Built-in Crypto Expert for Artificial Intelligence: How Far is the Horizon? [[IACR ePrint 2026](https://eprint.iacr.org/2026/411.pdf)]
 
+- RetryTrigger: Intelligent Inference Duplication for Enhancing LLM Resilience to Hardware Transient Faults [[FITEE 2026](https://doi.org/10.1631/FITEE)]
+
 - In progress...
 
 
