@@ -82,7 +82,8 @@ class TorchRolloutEngine(RolloutEngine):
             )  # [B*num_gen, P+R]
             prompt_len = prompt_ids.size(1)
             completion_ids = output_ids[:, prompt_len:]  # [B*num_gen, R]
-            per_token_logps = compute_per_token_logps(self.policy_model, output_ids, completion_ids.size(1))
+            full_mask = (output_ids != self.tokenizer.pad_token_id).long()
+            per_token_logps = compute_per_token_logps(self.policy_model, output_ids, completion_ids.size(1), attention_mask=full_mask)
         completions = self.tokenizer.batch_decode(completion_ids, skip_special_tokens=True)
         return RolloutResult(output_ids, completion_ids, per_token_logps, completions)
     
@@ -158,28 +159,32 @@ class SGLangRolloutEngine(RolloutEngine):
         def pad_to_tensor(seqs, max_len, pad_val=0):
             return torch.tensor([s + [pad_val] * (max_len - len(s)) for s in seqs], device=device)
         
+        pad_id = self.tokenizer.pad_token_id
         return RolloutResult(
-            output_ids=pad_to_tensor(all_output_ids, max_out_len),
-            completion_ids=pad_to_tensor(all_completion_ids, max_comp_len),
+            output_ids=pad_to_tensor(all_output_ids, max_out_len, pad_val=pad_id),
+            completion_ids=pad_to_tensor(all_completion_ids, max_comp_len, pad_val=pad_id),
             per_token_logps=pad_to_tensor(all_logprobs, max_comp_len, pad_val=0.0),
             completions=completions,
         )
     
     def update_policy(self, model: torch.nn.Module):
-        if dist.is_initialized() and dist.get_rank() != 0: return True
-        unwrapped = model.module if isinstance(model, DistributedDataParallel) else model
-        unwrapped = getattr(unwrapped, '_orig_mod', unwrapped)
-        abs_path = os.path.abspath(self.shared_ckpt_path)
-        state_dict = {k: v.detach().half().cpu() for k, v in unwrapped.state_dict().items()}
-        unwrapped.save_pretrained(abs_path, state_dict=state_dict, safe_serialization=False)
-        self.tokenizer.save_pretrained(abs_path)
-        resp = self.http.post(
-            f"{self.base_url}/update_weights_from_disk",
-            json={"model_path": abs_path},
-            timeout=self.timeout
-        )
-        if resp.status_code != 200: print(f"[SGLANG WARNING] update_weights 失败: {resp.status_code}, {resp.text}")
-        return resp.status_code == 200
+        ok = True
+        if not dist.is_initialized() or dist.get_rank() == 0:
+            unwrapped = model.module if isinstance(model, DistributedDataParallel) else model
+            unwrapped = getattr(unwrapped, '_orig_mod', unwrapped)
+            abs_path = os.path.abspath(self.shared_ckpt_path)
+            state_dict = {k: v.detach().half().cpu() for k, v in unwrapped.state_dict().items()}
+            unwrapped.save_pretrained(abs_path, state_dict=state_dict, safe_serialization=False)
+            self.tokenizer.save_pretrained(abs_path)
+            resp = self.http.post(
+                f"{self.base_url}/update_weights_from_disk",
+                json={"model_path": abs_path},
+                timeout=self.timeout
+            )
+            if resp.status_code != 200: print(f"[SGLANG WARNING] update_weights 失败: {resp.status_code}, {resp.text}")
+            ok = resp.status_code == 200
+        if dist.is_initialized(): dist.barrier()
+        return ok
     
     def flush_cache(self) -> bool:
         resp = self.http.post(f"{self.base_url}/flush_cache", timeout=30)

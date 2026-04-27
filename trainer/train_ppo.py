@@ -115,7 +115,6 @@ def ppo_train_epoch(epoch, loader, iters, rollout_engine, ref_model, actor_sched
         labels = gen_out[:, 1:].clone()  # [B, P+R-1]
         seq_len, resp_start = gen_out.size(1) - 1, prompt_length - 1
         resp_mask = torch.arange(seq_len, device=gen_out.device).unsqueeze(0) >= resp_start
-        final_mask = (resp_mask & (~labels.eq(tokenizer.pad_token_id))).float()  # [B, P+R-1]
         B = len(prompts)
         resp_labels = labels[:, resp_start:]  # [B, R]
         resp_idx = torch.arange(resp_labels.size(1), device=gen_out.device).unsqueeze(0)
@@ -250,7 +249,7 @@ def ppo_train_epoch(epoch, loader, iters, rollout_engine, ref_model, actor_sched
             actor_optimizer.zero_grad()
             critic_optimizer.zero_grad()
         
-        if is_main_process() and step % args.save_interval == 0: rollout_engine.update_policy(actor_model)
+        if step % args.save_interval == 0: rollout_engine.update_policy(actor_model)
 
         if is_main_process():
             critic_loss_val = value_loss_sum / max(log_count, 1)
@@ -296,7 +295,7 @@ def ppo_train_epoch(epoch, loader, iters, rollout_engine, ref_model, actor_sched
             del actor_state
 
         del enc, gen_out, responses_text, rewards, full_mask, values_seq, advantages
-        del logits, labels, final_mask, resp_labels, resp_idx, resp_pad_mask, eos_mask, has_eos, eos_pos, resp_lengths, resp_policy_mask, resp_value_mask, old_resp_logp, ref_logp_all, ref_resp_logp
+        del logits, labels, resp_labels, resp_idx, resp_pad_mask, eos_mask, has_eos, eos_pos, resp_lengths, resp_policy_mask, resp_value_mask, old_resp_logp, ref_logp_all, ref_resp_logp
         del kl, kl_ref, policy_loss, value_loss, loss, token_rewards, returns, old_resp_values
 
 
@@ -423,7 +422,7 @@ if __name__ == "__main__":
     if dist.is_initialized():
         actor_model = DistributedDataParallel(actor_model, device_ids=[local_rank])
         critic_model = DistributedDataParallel(critic_model, device_ids=[local_rank])
-    if is_main_process(): rollout_engine.update_policy(actor_model)
+    rollout_engine.update_policy(actor_model)
     
     # ========== 8. 开始训练 ==========
     for epoch in range(start_epoch, args.epochs):

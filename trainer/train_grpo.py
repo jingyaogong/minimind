@@ -87,20 +87,17 @@ def grpo_train_epoch(epoch, loader, iters, rollout_engine, ref_model, reward_mod
         completion_ids = rollout_result.completion_ids
         completions = rollout_result.completions
         old_per_token_logps = rollout_result.per_token_logps.to(args.device)
+        full_mask = (outputs != tokenizer.pad_token_id).long()
 
         model_unwrapped = model.module if isinstance(model, DistributedDataParallel) else model
         with autocast_ctx:
-            if use_sglang or lm_config.use_moe:
-                res = model_unwrapped(outputs)
-                aux_loss = res.aux_loss if lm_config.use_moe else torch.tensor(0.0, device=args.device)
-                logits = res.logits[:, :-1, :]
-                per_token_logps = F.log_softmax(logits, dim=-1).gather(2, outputs[:, 1:].unsqueeze(-1)).squeeze(-1)[:, -completion_ids.size(1):]
-            else:
-                aux_loss = torch.tensor(0.0, device=args.device)
-                per_token_logps = rollout_result.per_token_logps
+            res = model_unwrapped(outputs, attention_mask=full_mask)
+            aux_loss = res.aux_loss if lm_config.use_moe else torch.tensor(0.0, device=args.device)
+            logits = res.logits[:, :-1, :]
+            per_token_logps = F.log_softmax(logits, dim=-1).gather(2, outputs[:, 1:].unsqueeze(-1)).squeeze(-1)[:, -completion_ids.size(1):]
         
         with torch.no_grad():
-            ref_per_token_logps = compute_per_token_logps(ref_model, outputs, completion_ids.size(1))
+            ref_per_token_logps = compute_per_token_logps(ref_model, outputs, completion_ids.size(1), attention_mask=full_mask)
         rewards = calculate_rewards(prompts, completions, reward_model).to(args.device)  # [B*num_gen]
 
         if args.debug_mode and is_main_process() and step % args.debug_interval == 0:
@@ -120,7 +117,7 @@ def grpo_train_epoch(epoch, loader, iters, rollout_engine, ref_model, reward_mod
 
         grouped_rewards = rewards.view(-1, args.num_generations)  # [B, num_gen]
         mean_r = grouped_rewards.mean(dim=1).repeat_interleave(args.num_generations)  # [B*num_gen]
-        std_r = grouped_rewards.std(dim=1).repeat_interleave(args.num_generations)  # [B*num_gen]
+        std_r = grouped_rewards.std(dim=1, unbiased=False).repeat_interleave(args.num_generations)  # [B*num_gen]
         advantages = (rewards - mean_r) / (std_r + 1e-4)  # [B*num_gen]
 
         is_eos = completion_ids == tokenizer.eos_token_id  # [B*num_gen, R]
@@ -149,7 +146,6 @@ def grpo_train_epoch(epoch, loader, iters, rollout_engine, ref_model, reward_mod
             optimizer.step()
             scheduler.step()
             optimizer.zero_grad()
-            if is_main_process() and step % args.save_interval == 0: rollout_engine.update_policy(model)
 
         if step % args.log_interval == 0 or step == iters:
             policy_loss_val = loss.item() * args.accumulation_steps
@@ -190,16 +186,17 @@ def grpo_train_epoch(epoch, loader, iters, rollout_engine, ref_model, reward_mod
             model.train()
             del state_dict
 
+        if step % args.save_interval == 0 or step == iters: rollout_engine.update_policy(model)
+
+        del prompt_inputs, outputs, completion_ids, per_token_logps, ref_per_token_logps
+        del completions, rewards, grouped_rewards, mean_r, std_r, advantages, completion_mask
+
     if step > start_step and step % args.accumulation_steps != 0:
         if args.grad_clip > 0:
             torch.nn.utils.clip_grad_norm_(model.parameters(), args.grad_clip)
         optimizer.step()
         scheduler.step()
         optimizer.zero_grad()
-        if is_main_process() and step % args.save_interval == 0: rollout_engine.update_policy(model)
-
-        del prompt_inputs, outputs, completion_ids, per_token_logps, ref_per_token_logps
-        del completions, rewards, grouped_rewards, mean_r, std_r, advantages, completion_mask
 
 
 if __name__ == "__main__":
@@ -312,7 +309,7 @@ if __name__ == "__main__":
         rollout_engine.update_policy(model)
     if dist.is_initialized():
         model = DistributedDataParallel(model, device_ids=[local_rank])
-    if is_main_process(): rollout_engine.update_policy(model)
+    rollout_engine.update_policy(model)
     
     # ========== 8. 开始训练 ==========
     for epoch in range(start_epoch, args.epochs):
