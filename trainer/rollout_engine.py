@@ -43,6 +43,8 @@ class RolloutResult:
     completion_ids: Tensor
     per_token_logps: Tensor
     completions: List[str]
+    prompt_lens: Tensor
+    completion_mask: Tensor
 
 
 # ===== Rollout 引擎抽象基类 =====
@@ -71,12 +73,12 @@ class TorchRolloutEngine(RolloutEngine):
         ctx = self.autocast_ctx if self.autocast_ctx else nullcontext()
         with torch.no_grad(), ctx:
             output_ids = model.generate(
-                input_ids=prompt_ids,
-                attention_mask=attention_mask,
+                input_ids=prompt_ids.repeat_interleave(num_generations, dim=0),
+                attention_mask=attention_mask.repeat_interleave(num_generations, dim=0),
                 max_new_tokens=max_new_tokens,
                 do_sample=True,
                 temperature=temperature,
-                num_return_sequences=num_generations,
+                num_return_sequences=1,
                 pad_token_id=self.tokenizer.pad_token_id,
                 eos_token_id=self.tokenizer.eos_token_id,
             )  # [B*num_gen, P+R]
@@ -85,7 +87,9 @@ class TorchRolloutEngine(RolloutEngine):
             full_mask = (output_ids != self.tokenizer.pad_token_id).long()
             per_token_logps = compute_per_token_logps(self.policy_model, output_ids, completion_ids.size(1), attention_mask=full_mask)
         completions = self.tokenizer.batch_decode(completion_ids, skip_special_tokens=True)
-        return RolloutResult(output_ids, completion_ids, per_token_logps, completions)
+        return RolloutResult(output_ids, completion_ids, per_token_logps, completions,
+                             prompt_ids.new_full((output_ids.size(0),), prompt_len),
+                             attention_mask.new_ones(output_ids.size(0), completion_ids.size(1)))
     
     def update_policy(self, model: torch.nn.Module):
         self.policy_model = model
@@ -127,7 +131,6 @@ class SGLangRolloutEngine(RolloutEngine):
         
         all_output_ids, all_completion_ids, all_logprobs = [], [], []
         completions = []
-        prompt_len = prompt_ids.size(1)
         
         for i, result in enumerate(results):
             meta = result.get("meta_info", {})
@@ -144,7 +147,7 @@ class SGLangRolloutEngine(RolloutEngine):
             if len(logprobs) < len(completion_ids):
                 logprobs = [0.0] * (len(completion_ids) - len(logprobs)) + logprobs
             elif len(logprobs) > len(completion_ids):
-                logprobs = logprobs[-len(completion_ids):]
+                logprobs = logprobs[-len(completion_ids):] if completion_ids else []
             prompt = all_input_ids[i]
             full_output = prompt + completion_ids
             all_output_ids.append(full_output)
@@ -153,8 +156,8 @@ class SGLangRolloutEngine(RolloutEngine):
             completions.append(self.tokenizer.decode(completion_ids, skip_special_tokens=True))
         
         device = prompt_ids.device
-        max_out_len = max(len(ids) for ids in all_output_ids)
-        max_comp_len = max(len(ids) for ids in all_completion_ids)
+        max_comp_len = max(1, max(len(ids) for ids in all_completion_ids))
+        max_out_len = max(len(ids) for ids in all_input_ids) + max_comp_len
         
         def pad_to_tensor(seqs, max_len, pad_val=0):
             return torch.tensor([s + [pad_val] * (max_len - len(s)) for s in seqs], device=device)
@@ -165,25 +168,29 @@ class SGLangRolloutEngine(RolloutEngine):
             completion_ids=pad_to_tensor(all_completion_ids, max_comp_len, pad_val=pad_id),
             per_token_logps=pad_to_tensor(all_logprobs, max_comp_len, pad_val=0.0),
             completions=completions,
+            prompt_lens=torch.tensor([len(ids) for ids in all_input_ids], device=device),
+            completion_mask=torch.tensor([[1] * len(ids) + [0] * (max_comp_len - len(ids)) for ids in all_completion_ids], device=device),
         )
     
     def update_policy(self, model: torch.nn.Module):
         ok = True
         if not dist.is_initialized() or dist.get_rank() == 0:
-            unwrapped = model.module if isinstance(model, DistributedDataParallel) else model
-            unwrapped = getattr(unwrapped, '_orig_mod', unwrapped)
-            abs_path = os.path.abspath(self.shared_ckpt_path)
-            state_dict = {k: v.detach().half().cpu() for k, v in unwrapped.state_dict().items()}
-            unwrapped.save_pretrained(abs_path, state_dict=state_dict, safe_serialization=False)
-            self.tokenizer.save_pretrained(abs_path)
-            resp = self.http.post(
-                f"{self.base_url}/update_weights_from_disk",
-                json={"model_path": abs_path},
-                timeout=self.timeout
-            )
-            if resp.status_code != 200: print(f"[SGLANG WARNING] update_weights 失败: {resp.status_code}, {resp.text}")
-            ok = resp.status_code == 200
-        if dist.is_initialized(): dist.barrier()
+            try:
+                unwrapped = model.module if isinstance(model, DistributedDataParallel) else model
+                unwrapped = getattr(unwrapped, '_orig_mod', unwrapped)
+                abs_path = os.path.abspath(self.shared_ckpt_path)
+                state_dict = {k: v.detach().half().cpu() for k, v in unwrapped.state_dict().items()}
+                unwrapped.save_pretrained(abs_path, state_dict=state_dict, safe_serialization=False)
+                self.tokenizer.save_pretrained(abs_path)
+                resp = self.http.post(f"{self.base_url}/update_weights_from_disk", json={"model_path": abs_path}, timeout=self.timeout)
+                if resp.status_code != 200: print(f"[SGLANG WARNING] update_weights 失败: {resp.status_code}, {resp.text}")
+                ok = resp.status_code == 200
+            except Exception as e:
+                print(f"[SGLANG WARNING] update_weights 异常: {e}"); ok = False
+        if dist.is_initialized():
+            ok_t = torch.tensor(int(ok), device=next(model.parameters()).device)
+            dist.broadcast(ok_t, src=0); dist.barrier(); ok = bool(ok_t.item())
+        if not ok: raise RuntimeError("SGLang update_policy failed")
         return ok
     
     def flush_cache(self) -> bool:
