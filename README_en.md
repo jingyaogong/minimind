@@ -101,7 +101,7 @@ Meanwhile, third-party large model frameworks and tool libraries, such as `trans
 | Model | Parameters | Release |
 |------|--------|---------|
 | minimind-3 | 64M | 2026.04.01 |
-| minimind-3-moe | 198M / A64M | 2026.04.01 |
+| minimind-3-moe | 198M-A64M | 2026.04.01 |
 | minimind2-small | 26M | 2025.04.26 |
 | minimind2-moe | 145M | 2025.04.26 |
 | minimind2 | 104M | 2025.04.26 |
@@ -117,7 +117,7 @@ Meanwhile, third-party large model frameworks and tool libraries, such as `trans
 <summary> <b>🔥 2026-04-01</b> </summary>
 
  - Released `minimind-3` / `minimind-3-moe`: comprehensive updates to structure, Tokenizer, training pipeline, inference interface, and default configuration
-- Main branch structure aligned with `Qwen3 / Qwen3-MoE` ecosystem: Dense approximately `64M`, MoE approximately `198M / A64M`, and removed shared expert design
+- Main branch structure aligned with `Qwen3 / Qwen3-MoE` ecosystem: Dense approximately `64M`, MoE approximately `198M-A64M`, and removed shared expert design
 - Default training data switched to `pretrain_t2t(_mini).jsonl`, `sft_t2t(_mini).jsonl`, `rlaif.jsonl`, `agent_rl.jsonl`, and `agent_rl_math.jsonl`
 - Removed standalone `train_reason.py`; thinking capability is now unified through `chat_template + <think>` and `open_thinking` adaptive switch control
 - `toolcall` capability has been merged into `sft_t2t / sft_t2t_mini` main branch data, default `full_sft` already has basic Tool Call capability; also added inference examples such as `scripts/chat_api.py`
@@ -574,7 +574,7 @@ To modify model configuration, see [./model/model_minimind.py](./model/model_min
 | Model Name | params | len_vocab | max_pos | rope_theta | n_layers | d_model | kv_heads | q_heads | note |
 |------------|--------|-----------|---------|------------|----------|---------|----------|---------|------|
 | minimind-3 | 64M | 6400 | 32768 | 1e6 | 8 | 768 | 4 | 8 | Dense |
-| minimind-3-moe | 198M / A64M | 6400 | 32768 | 1e6 | 8 | 768 | 4 | 8 | 4 experts / top-1 |
+| minimind-3-moe | 198M-A64M | 6400 | 32768 | 1e6 | 8 | 768 | 4 | 8 | 4 experts / top-1 |
 | minimind2-small | 26M | 6400 | 32768 | 1e6 | 8 | 512 | 2 | 8 | Historical version |
 | minimind2-moe | 145M | 6400 | 32768 | 1e6 | 8 | 640 | 2 | 8 | Historical version |
 | minimind2 | 104M | 6400 | 32768 | 1e6 | 16 | 768 | 2 | 8 | Historical version |
@@ -620,7 +620,7 @@ For reference, GPT-3's parameter settings are as follows:
 | Model Name | params | pretrain_t2t_mini | sft_t2t_mini | toolcall | RLAIF |
 |------------|--------|-------------------|--------------|----------|-------|
 | minimind-3 | 64M | ≈1.21h<br/>≈1.57￥ | ≈1.10h<br/>≈1.43￥ | ≈0.9h<br/>≈1.17￥ | ≈1.1h<br/>≈1.43￥ |
-| minimind-3-moe | 198M / A64M | ≈1.69h<br/>≈2.20￥ | ≈1.54h<br/>≈2.00￥ | ≈1.26h<br/>≈1.64￥ | ≈1.54h<br/>≈2.00￥ |
+| minimind-3-moe | 198M-A64M | ≈1.69h<br/>≈2.20￥ | ≈1.54h<br/>≈2.00￥ | ≈1.26h<br/>≈1.64￥ | ≈1.54h<br/>≈2.00￥ |
 
 ---
 
