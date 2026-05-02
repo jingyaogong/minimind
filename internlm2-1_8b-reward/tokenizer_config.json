@@ -1,0 +1,112 @@
+{
+    "add_bos_token": true,
+    "add_eos_token": false,
+    "added_tokens_decoder": {
+      "0": {
+        "content": "<unk>",
+        "lstrip": false,
+        "normalized": false,
+        "rstrip": false,
+        "single_word": false,
+        "special": true
+      },
+      "1": {
+        "content": "<s>",
+        "lstrip": false,
+        "normalized": false,
+        "rstrip": false,
+        "single_word": false,
+        "special": true
+      },
+      "2": {
+        "content": "</s>",
+        "lstrip": false,
+        "normalized": false,
+        "rstrip": false,
+        "single_word": false,
+        "special": true
+      },
+      "92527": {
+        "content": "<|reward|>",
+        "lstrip": false,
+        "normalized": false,
+        "rstrip": false,
+        "single_word": false,
+        "special": true
+      },
+      "92538": {
+        "content": "<|plugin|>",
+        "lstrip": false,
+        "normalized": false,
+        "rstrip": false,
+        "single_word": false,
+        "special": true
+      },
+      "92539": {
+        "content": "<|interpreter|>",
+        "lstrip": false,
+        "normalized": false,
+        "rstrip": false,
+        "single_word": false,
+        "special": true
+      },
+      "92540": {
+        "content": "<|action_end|>",
+        "lstrip": false,
+        "normalized": false,
+        "rstrip": false,
+        "single_word": false,
+        "special": true
+      },
+      "92541": {
+        "content": "<|action_start|>",
+        "lstrip": false,
+        "normalized": false,
+        "rstrip": false,
+        "single_word": false,
+        "special": true
+      },
+      "92542": {
+        "content": "<|im_end|>",
+        "lstrip": false,
+        "normalized": false,
+        "rstrip": false,
+        "single_word": false,
+        "special": true
+      },
+      "92543": {
+        "content": "<|im_start|>",
+        "lstrip": false,
+        "normalized": false,
+        "rstrip": false,
+        "single_word": false,
+        "special": true
+      }
+      
+    },
+    "additional_special_tokens": [
+      "<|im_start|>",
+      "<|im_end|>",
+      "<|action_start|>",
+      "<|action_end|>",
+      "<|interpreter|>",
+      "<|plugin|>",
+      "<|reward|>"
+    ],
+    "auto_map": {
+      "AutoTokenizer": [
+        "tokenization_internlm2.InternLM2Tokenizer",
+        "tokenization_internlm2_fast.InternLM2TokenizerFast"
+      ]
+    },
+    "bos_token": "<s>",
+    "chat_template": "{{ bos_token }}{% for message in messages %}{{'<|im_start|>' + message['role'] + '\n' + message['content'] + '<|im_end|>' + '\n'}}{% endfor %}{% if add_generation_prompt %}{{ '<|im_start|>assistant\n' }}{% endif %}{{ '<|reward|>' }}",
+    "clean_up_tokenization_spaces": false,
+    "decode_with_prefix_space": false,
+    "eos_token": "</s>",
+    "model_max_length": 1000000000000000019884624838656,
+    "pad_token": "</s>",
+    "sp_model_kwargs": null,
+    "tokenizer_class": "InternLM2Tokenizer",
+    "unk_token": "<unk>"
+  }
