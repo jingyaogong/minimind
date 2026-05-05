@@ -220,7 +220,7 @@ minimind2系列旧模型均经过权重映射+（微调训练）QKVO线性层校
 * Ubuntu==20.04
 * CUDA==12.2
 * Python==3.10.16
-* [requirements.txt](./requirements.txt)
+* [uv](https://docs.astral.sh/uv/) + [pyproject.toml](./pyproject.toml)
 
 </details>
 
@@ -229,7 +229,8 @@ minimind2系列旧模型均经过权重映射+（微调训练）QKVO线性层校
 ```bash
 # 克隆仓库、安装依赖
 git clone --depth 1 https://github.com/jingyaogong/minimind
-cd minimind && pip install -r requirements.txt -i https://mirrors.aliyun.com/pypi/simple
+cd minimind
+uv sync
 ```
 
 ## Ⅰ 🚀 模型推理
@@ -239,7 +240,7 @@ cd minimind && pip install -r requirements.txt -i https://mirrors.aliyun.com/pyp
 在项目根目录：
 ```bash
 # 方式1
-modelscope download --model gongjy/minimind-3 --local_dir ./minimind-3
+uv run modelscope download --model gongjy/minimind-3 --local_dir ./minimind-3
 # 方式2
 git clone https://huggingface.co/jingyaogong/minimind-3
 ```
@@ -248,17 +249,17 @@ git clone https://huggingface.co/jingyaogong/minimind-3
 
 ```bash
 # 方式1：使用 Transformers 格式模型
-python eval_llm.py --load_from ./minimind-3
+uv run python eval_llm.py --load_from ./minimind-3
 # 方式2：基于 PyTorch 模型（确保./out目录下有对应权重）
-python eval_llm.py --load_from ./model --weight full_sft
+uv run python eval_llm.py --load_from ./model --weight full_sft
 ```
 
 ### 3'（可选）WebUI
 
 ```bash
-# 可能需要`python>=3.10`，安装 `pip install streamlit`
+# 使用 `uv sync` 安装依赖后即可运行
 # ⚠️ 须先将 transformers 格式模型文件夹复制到 ./scripts/ 目录下（例如：cp -r minimind-3 ./scripts/minimind-3），web_demo 脚本会自动扫描该目录下包含权重文件的子文件夹，如不存在则报错
-cd scripts && streamlit run web_demo.py
+cd scripts && uv run streamlit run web_demo.py
 ```
 
 ### 4'（可选）第三方推理框架
@@ -282,7 +283,7 @@ print(torch.cuda.is_available())
 
 若你计划使用 CUDA 训练，建议先确认当前环境是否已正确识别 GPU。  
 若 `cuda` 不可用，也仍可根据自身设备选择 `CPU` 或 `MPS` 运行，但训练速度与兼容性会有非常大的差异。  
-如需安装或更换 PyTorch 版本，可参考 [torch_stable](https://download.pytorch.org/whl/torch_stable.html) 与[链接](https://blog.csdn.net/weixin_45456738/article/details/141029610?ops_request_misc=&request_id=&biz_id=102&utm_term=%E5%AE%89%E8%A3%85torch&utm_medium=distribute.pc_search_result.none-task-blog-2~all~sobaiduweb~default-2-141029610.nonecase&spm=1018.2226.3001.4187)
+默认 `pyproject.toml` 使用 PyTorch 官方 `cu128` wheel，可覆盖 Windows 11 + RTX 50 系显卡的常见 CUDA 运行环境；如需切换 CPU 或其它 CUDA 版本，请调整 `pyproject.toml` 中的 `pytorch-cu128` 索引与 `torch` / `torchvision` 版本后重新执行 `uv sync`。
 
 </details>
 
@@ -301,8 +302,8 @@ print(torch.cuda.is_available())
 所有训练脚本均支持检查点保存。添加 `--from_resume 1` 参数后，即可自动检测并恢复训练进度：
 
 ```bash
-python train_pretrain.py --from_resume 1
-python train_full_sft.py --from_resume 1
+uv run python train_pretrain.py --from_resume 1
+uv run python train_full_sft.py --from_resume 1
 # ...
 ```
 
@@ -319,7 +320,7 @@ python train_full_sft.py --from_resume 1
 #### 2.1 预训练（必须）
 
 ```bash
-cd trainer && python train_pretrain.py
+cd trainer && uv run python train_pretrain.py
 ```
 
 > 训练后，将得到 `out/pretrain_*.pth` 作为输出权重（其中 `*` 为模型 dimension，默认为 `768`）
@@ -327,7 +328,7 @@ cd trainer && python train_pretrain.py
 #### 2.2 指令微调（必须）
 
 ```bash
-cd trainer && python train_full_sft.py
+cd trainer && uv run python train_full_sft.py
 ```
 
 > 训练后，将得到 `out/full_sft_*.pth` 作为输出权重（其中 `full` 表示全参数微调）
@@ -337,7 +338,7 @@ cd trainer && python train_full_sft.py
 确保待测试的模型 `*.pth` 文件位于 `./out/` 目录下；也可直接前往[此处](https://www.modelscope.cn/models/gongjy/minimind-3-pytorch/files)下载我已训练好的 `*.pth` 权重。
 
 ```bash
-python eval_llm.py --weight full_sft
+uv run python eval_llm.py --weight full_sft
 ```
 
 > `--weight` 用于指定权重名称前缀，例如 `pretrain`、`full_sft` 等；更多参数可直接参考 `eval_llm.py`
@@ -350,7 +351,7 @@ python eval_llm.py --weight full_sft
 2、若你的设备有 `N (N > 1)` 张显卡，可通过以下方式启动单机 `N` 卡训练（DDP，也支持扩展到多机多卡）：
 
 ```bash
-torchrun --nproc_per_node N train_xxx.py
+uv run torchrun --nproc_per_node N train_xxx.py
 ```
 
 3、可根据需要开启 wandb 记录训练过程。

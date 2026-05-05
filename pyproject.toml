@@ -1,0 +1,62 @@
+[project]
+name = "minimind"
+version = "0.1.0"
+description = "MiniMind training and inference scripts."
+readme = "README.md"
+requires-python = ">=3.10,<3.11"
+dependencies = [
+    "datasets==3.6.0",
+    "datasketch==1.6.4",
+    "einops==0.8.1",
+    "fastapi==0.115.14",
+    "flask==3.0.3",
+    "flask-cors==4.0.0",
+    "jieba==0.42.1",
+    "jinja2==3.1.2",
+    "jsonlines==4.0.0",
+    "marshmallow==3.22.0",
+    "modelscope>=1.36.3",
+    "ngrok==1.4.0",
+    "nltk==3.8",
+    "numpy==1.26.4",
+    "openai==1.59.6",
+    "psutil==5.9.8",
+    "pydantic==2.11.5",
+    "requests==2.32.5",
+    "rich==13.7.1",
+    "scikit-learn==1.5.1",
+    "sentence-transformers==2.3.1",
+    "setuptools>=82.0.1",
+    "simhash==2.1.2",
+    "streamlit==1.50.0",
+    "swanlab==0.7.11",
+    "tiktoken==0.10.0",
+    "tokenizers==0.22.1",
+    "torch==2.10.0",
+    "torchvision==0.25.0",
+    "transformers==4.57.6",
+    "trl==0.13.0",
+    "ujson==5.1.0",
+    "uvicorn==0.35.0",
+    "wandb==0.18.3",
+]
+
+[tool.uv]
+package = false
+
+[tool.uv.sources]
+torch = [
+    { index = "pytorch-cu128", marker = "sys_platform == 'win32' or sys_platform == 'linux'" },
+]
+torchvision = [
+    { index = "pytorch-cu128", marker = "sys_platform == 'win32' or sys_platform == 'linux'" },
+]
+
+[[tool.uv.index]]
+url = "https://pypi.tuna.tsinghua.edu.cn/simple"
+default = true
+
+[[tool.uv.index]]
+name = "pytorch-cu128"
+url = "https://download.pytorch.org/whl/cu128"
+explicit = true

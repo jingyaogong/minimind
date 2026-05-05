@@ -219,7 +219,7 @@ After this update, maintenance for the entire `minimind-v1` series will be disco
 * Ubuntu==20.04
 * CUDA==12.2
 * Python==3.10.16
-* [requirements.txt](./requirements.txt)
+* [uv](https://docs.astral.sh/uv/) + [pyproject.toml](./pyproject.toml)
 
 </details>
 
@@ -228,7 +228,8 @@ After this update, maintenance for the entire `minimind-v1` series will be disco
 ```bash
 # Clone repository and install dependencies
 git clone --depth 1 https://github.com/jingyaogong/minimind
-cd minimind && pip install -r requirements.txt -i https://mirrors.aliyun.com/pypi/simple
+cd minimind
+uv sync
 ```
 
 ## Ⅰ 🚀 Model Inference
@@ -238,7 +239,7 @@ cd minimind && pip install -r requirements.txt -i https://mirrors.aliyun.com/pyp
 In the project root directory:
 ```bash
 # Method 1
-modelscope download --model gongjy/minimind-3 --local_dir ./minimind-3
+uv run modelscope download --model gongjy/minimind-3 --local_dir ./minimind-3
 # Method 2
 git clone https://huggingface.co/jingyaogong/minimind-3
 ```
@@ -247,17 +248,17 @@ git clone https://huggingface.co/jingyaogong/minimind-3
 
 ```bash
 # Method 1: Using Transformers format model
-python eval_llm.py --load_from ./minimind-3
+uv run python eval_llm.py --load_from ./minimind-3
 # Method 2: Based on PyTorch model (ensure corresponding weights are in the ./out directory)
-python eval_llm.py --load_from ./model --weight full_sft
+uv run python eval_llm.py --load_from ./model --weight full_sft
 ```
 
 ### 3' (Optional) WebUI
 
 ```bash
-# May need `python>=3.10`, install `pip install streamlit`
+# Run this after installing dependencies with `uv sync`
 # ⚠️ You must first copy the transformers-format model folder into ./scripts/ (e.g.: cp -r minimind-3 ./scripts/minimind-3). The web_demo script will auto-scan subdirectories containing weight files; it will throw an error if none are found.
-cd scripts && streamlit run web_demo.py
+cd scripts && uv run streamlit run web_demo.py
 ```
 
 ### 4' (Optional) Third-party Inference Frameworks
@@ -281,7 +282,7 @@ print(torch.cuda.is_available())
 
 If you plan to use CUDA for training, it is recommended to first confirm whether the current environment has correctly recognized the GPU.  
 If `cuda` is not available, you can still choose `CPU` or `MPS` to run based on your device, but training speed and compatibility will differ significantly.  
-If you need to install or switch PyTorch versions, refer to [torch_stable](https://download.pytorch.org/whl/torch_stable.html) and [this link](https://blog.csdn.net/weixin_45456738/article/details/141029610?ops_request_misc=&request_id=&biz_id=102&utm_term=%E5%AE%89%E8%A3%85torch&utm_medium=distribute.pc_search_result.none-task-blog-2~all~sobaiduweb~default-2-141029610.nonecase&spm=1018.2226.3001.4187)
+By default, `pyproject.toml` uses the official PyTorch `cu128` wheels, which cover common CUDA runtime setups for Windows 11 + RTX 50-series GPUs. To switch to CPU or another CUDA version, adjust the `pytorch-cu128` index and the `torch` / `torchvision` versions in `pyproject.toml`, then run `uv sync` again.
 
 </details>
 
@@ -300,8 +301,8 @@ If you have more needs, various combination schemes are provided below, which ca
 All training scripts support checkpoint saving. After adding the `--from_resume 1` parameter, training progress can be automatically detected and resumed:
 
 ```bash
-python train_pretrain.py --from_resume 1
-python train_full_sft.py --from_resume 1
+uv run python train_pretrain.py --from_resume 1
+uv run python train_full_sft.py --from_resume 1
 # ...
 ```
 
@@ -318,7 +319,7 @@ python train_full_sft.py --from_resume 1
 #### 2.1 Pretraining (Required)
 
 ```bash
-cd trainer && python train_pretrain.py
+cd trainer && uv run python train_pretrain.py
 ```
 
 > After training, `out/pretrain_*.pth` will be produced as output weights (where `*` is the model dimension, default `768`)
@@ -326,7 +327,7 @@ cd trainer && python train_pretrain.py
 #### 2.2 Instruction Fine-tuning (Required)
 
 ```bash
-cd trainer && python train_full_sft.py
+cd trainer && uv run python train_full_sft.py
 ```
 
 > After training, `out/full_sft_*.pth` will be produced as output weights (where `full` indicates full-parameter fine-tuning)
@@ -336,7 +337,7 @@ cd trainer && python train_full_sft.py
 Ensure the model `*.pth` files to be tested are located in the `./out/` directory; you can also go directly to [here](https://www.modelscope.cn/models/gongjy/minimind-3-pytorch/files) to download my pre-trained `*.pth` weights.
 
 ```bash
-python eval_llm.py --weight full_sft
+uv run python eval_llm.py --weight full_sft
 ```
 
 > `--weight` is used to specify the weight name prefix, such as `pretrain`, `full_sft`, etc.; for more parameters, refer directly to `eval_llm.py`
@@ -349,7 +350,7 @@ python eval_llm.py --weight full_sft
 2. If your device has `N (N > 1)` GPUs, you can start single-machine `N`-GPU training as follows (DDP, also supports extension to multi-machine multi-GPU):
 
 ```bash
-torchrun --nproc_per_node N train_xxx.py
+uv run torchrun --nproc_per_node N train_xxx.py
 ```
 
 3. You can enable wandb to record the training process as needed.
