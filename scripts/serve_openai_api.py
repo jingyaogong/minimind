@@ -13,8 +13,9 @@ import uvicorn
 
 from threading import Thread
 from queue import Queue
-from fastapi import FastAPI, HTTPException
+from fastapi import FastAPI, HTTPException, Depends
 from fastapi.responses import StreamingResponse
+from fastapi.security import HTTPBearer, HTTPAuthorizationCredentials
 from pydantic import BaseModel
 from transformers import AutoTokenizer, AutoModelForCausalLM, TextStreamer
 from model.model_minimind import MiniMindConfig, MiniMindForCausalLM
@@ -23,6 +24,14 @@ from model.model_lora import apply_lora, load_lora
 warnings.filterwarnings('ignore')
 
 app = FastAPI()
+
+_security = HTTPBearer(auto_error=False)
+
+
+def _verify_api_key(credentials: HTTPAuthorizationCredentials = Depends(_security)):
+    api_key = os.environ.get("MINIMIND_API_KEY")
+    if api_key and (credentials is None or credentials.credentials != api_key):
+        raise HTTPException(status_code=401, detail="Invalid or missing API key")
 
 
 def init_model(args):
@@ -169,7 +178,7 @@ def generate_stream_response(messages, temperature, top_p, max_tokens, tools=Non
 
 
 @app.post("/v1/chat/completions")
-async def chat_completions(request: ChatRequest):
+async def chat_completions(request: ChatRequest, _: None = Depends(_verify_api_key)):
     try:
         if request.stream:
             return StreamingResponse(
