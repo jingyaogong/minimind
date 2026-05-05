@@ -292,7 +292,11 @@ print(torch.cuda.is_available())
 从下文提供的[数据集下载链接](https://www.modelscope.cn/datasets/gongjy/minimind_dataset/files) 下载所需数据文件，并放入 `./dataset` 目录
 
 > 当前默认仅需下载 `pretrain_t2t_mini.jsonl` 与 `sft_t2t_mini.jsonl`，即可较快复现 `MiniMind Zero` 对话模型。
-如有更多需求，下文提供多种搭配方案，可根据自身任务目标与 GPU 资源灵活选择。
+
+```bash
+// （可选）如有更多需求，下文提供多种搭配方案，可根据自身任务目标与 GPU 资源灵活选择。
+uv run modelscope download --dataset gongjy/minimind_dataset --local_dir .\dataset
+```
 
 ### 2' 开始训练
 
