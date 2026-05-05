@@ -339,9 +339,10 @@ cd trainer && uv run python train_full_sft.py
 
 #### 2.3 测试已训练模型（可选）
 
-确保待测试的模型 `*.pth` 文件位于 `./out/` 目录下；也可直接前往[此处](https://www.modelscope.cn/models/gongjy/minimind-3-pytorch/files)下载我已训练好的 `*.pth` 权重。
+确保待测试的模型 `*.pth` 文件位于 `./out/` 目录下。
 
 ```bash
+（可选）也可直接前往[此处](https://www.modelscope.cn/models/gongjy/minimind-3-pytorch/files)下载我已训练好的 `*.pth` 权重
 uv run modelscope download --model gongjy/minimind-3-pytorch --local_dir ./out    
 ```
 
