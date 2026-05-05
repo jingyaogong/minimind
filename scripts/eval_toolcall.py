@@ -54,15 +54,27 @@ TEST_CASES = [
 ]
 
 
+def _resolve_path(path):
+    if os.path.isabs(path):
+        return path
+    abs_path = os.path.abspath(path)
+    if os.path.isdir(abs_path):
+        return abs_path
+    script_dir = os.path.dirname(os.path.abspath(__file__))
+    return os.path.abspath(os.path.join(script_dir, path))
+
+
 def init_model(args):
-    tokenizer = AutoTokenizer.from_pretrained(args.load_from)
+    load_path = _resolve_path(args.load_from)
+    tokenizer = AutoTokenizer.from_pretrained(load_path)
     if 'model' in args.load_from:
         model = MiniMindForCausalLM(MiniMindConfig(hidden_size=args.hidden_size, num_hidden_layers=args.num_hidden_layers, use_moe=bool(args.use_moe)))
         moe_suffix = '_moe' if args.use_moe else ''
-        ckp = f'./{args.save_dir}/{args.weight}_{args.hidden_size}{moe_suffix}.pth'
+        save_dir = _resolve_path(args.save_dir)
+        ckp = os.path.join(save_dir, f'{args.weight}_{args.hidden_size}{moe_suffix}.pth')
         model.load_state_dict(torch.load(ckp, map_location=args.device), strict=True)
     else:
-        model = AutoModelForCausalLM.from_pretrained(args.load_from, trust_remote_code=True)
+        model = AutoModelForCausalLM.from_pretrained(load_path, trust_remote_code=True)
     get_model_params(model, model.config)
     return model.half().eval().to(args.device), tokenizer
 
