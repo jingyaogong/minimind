@@ -295,7 +295,7 @@ print(torch.cuda.is_available())
 
 ```bash
 // （可选）如有更多需求，下文提供多种搭配方案，可根据自身任务目标与 GPU 资源灵活选择。
-uv run modelscope download --dataset gongjy/minimind_dataset --local_dir .\dataset
+uv run modelscope download --dataset gongjy/minimind_dataset --local_dir ./dataset
 ```
 
 ### 2' 开始训练
