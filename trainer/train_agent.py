@@ -269,6 +269,8 @@ def rl_train_epoch(epoch, loader, iters, rollout_engine, ref_model, reward_model
         old_per_token_logps = torch.tensor([old_logps + [0.0] * ((max_len - 1) - len(old_logps)) for _, _, _, old_logps in packed_samples], device=args.device, dtype=torch.float32)
         full_mask = (input_ids != tokenizer.pad_token_id).long()
 
+        rewards = calculate_rewards(prompts, completions, gt_batch, tools_batch, args.num_generations, reward_model, device=args.device, turn_outputs_batch=turn_outputs_batch, unfinished_batch=unfinished_batch)
+
         model_unwrapped = model.module if isinstance(model, DistributedDataParallel) else model
         with autocast_ctx:
             res = model_unwrapped(input_ids, attention_mask=full_mask)
@@ -288,7 +290,6 @@ def rl_train_epoch(epoch, loader, iters, rollout_engine, ref_model, reward_model
         completion_mask = completion_mask * (pos <= eos_idx.unsqueeze(1)).float()
         token_counts = completion_mask.sum(dim=1)
         valid_rows = token_counts > 0
-        rewards = calculate_rewards(prompts, completions, gt_batch, tools_batch, args.num_generations, reward_model, device=args.device, turn_outputs_batch=turn_outputs_batch, unfinished_batch=unfinished_batch)
 
         if args.debug_mode and is_main_process() and step % args.debug_interval == 0:
             for i in range(len(messages_batch)):
