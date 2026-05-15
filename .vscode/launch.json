@@ -1,0 +1,227 @@
+{
+    // 使用 IntelliSense 了解可用属性。
+    // 悬停以查看现有属性的相关描述。
+    // 欲了解更多信息，请访问: https://go.microsoft.com/fwlink/?linkid=830387
+    //
+    // 使用说明：
+    // 1. 先执行 `uv sync` 安装依赖
+    // 2. 在 VS Code 中按 Ctrl+Shift+P → "Python: Select Interpreter"
+    //    选择 `./.venv/Scripts/python.exe` (Windows) 或 `./.venv/bin/python` (Linux/Mac)
+    // 3. 按 F5 或 Ctrl+Shift+D 选择对应配置启动调试
+    //
+    // 注：对应 README.md 中所有 `uv run python` / `uv run streamlit` 的单卡命令
+    //     多卡训练 (`torchrun`) 建议在终端直接执行，不在此列出
+    "version": "0.2.0",
+    "configurations": [
+        // ==================== 1. 推理与评测 ====================
+        {
+            "name": "推理: eval_llm (transformers格式)",
+            "type": "debugpy",
+            "request": "launch",
+            "program": "${workspaceFolder}/eval_llm.py",
+            "cwd": "${workspaceFolder}",
+            "console": "integratedTerminal",
+            "args": ["--load_from", "./minimind-3"]
+        },
+        {
+            "name": "推理: eval_llm (pytorch格式)",
+            "type": "debugpy",
+            "request": "launch",
+            "program": "${workspaceFolder}/eval_llm.py",
+            "cwd": "${workspaceFolder}",
+            "console": "integratedTerminal",
+            "args": ["--load_from", "./model", "--weight", "full_sft"]
+        },
+        {
+            "name": "推理: eval_llm (open_thinking)",
+            "type": "debugpy",
+            "request": "launch",
+            "program": "${workspaceFolder}/eval_llm.py",
+            "cwd": "${workspaceFolder}",
+            "console": "integratedTerminal",
+            "args": ["--load_from", "./minimind-3", "--open_thinking", "1"]
+        },
+        {
+            "name": "推理: eval_llm (RoPE外推)",
+            "type": "debugpy",
+            "request": "launch",
+            "program": "${workspaceFolder}/eval_llm.py",
+            "cwd": "${workspaceFolder}",
+            "console": "integratedTerminal",
+            "args": ["--weight", "full_sft", "--inference_rope_scaling"]
+        },
+        {
+            "name": "评测: eval_toolcall (full_sft)",
+            "type": "debugpy",
+            "request": "launch",
+            "program": "${workspaceFolder}/scripts/eval_toolcall.py",
+            "cwd": "${workspaceFolder}",
+            "console": "integratedTerminal",
+            "args": ["--weight", "full_sft"]
+        },
+        {
+            "name": "评测: eval_toolcall (agent)",
+            "type": "debugpy",
+            "request": "launch",
+            "program": "${workspaceFolder}/scripts/eval_toolcall.py",
+            "cwd": "${workspaceFolder}",
+            "console": "integratedTerminal",
+            "args": ["--weight", "agent"]
+        },
+
+        // ==================== 2. WebUI 与服务 ====================
+        {
+            "name": "服务: WebUI (streamlit)",
+            "type": "debugpy",
+            "request": "launch",
+            "module": "streamlit",
+            "cwd": "${workspaceFolder}/scripts",
+            "console": "integratedTerminal",
+            "args": ["run", "web_demo.py"]
+        },
+        {
+            "name": "服务: OpenAI API Server",
+            "type": "debugpy",
+            "request": "launch",
+            "program": "${workspaceFolder}/scripts/serve_openai_api.py",
+            "cwd": "${workspaceFolder}/scripts",
+            "console": "integratedTerminal"
+        },
+        {
+            "name": "服务: Chat API 测试",
+            "type": "debugpy",
+            "request": "launch",
+            "program": "${workspaceFolder}/scripts/chat_api.py",
+            "cwd": "${workspaceFolder}/scripts",
+            "console": "integratedTerminal"
+        },
+
+        // ==================== 3. 预训练与微调 ====================
+        {
+            "name": "训练: Pretrain (预训练)",
+            "type": "debugpy",
+            "request": "launch",
+            "program": "${workspaceFolder}/trainer/train_pretrain.py",
+            "cwd": "${workspaceFolder}/trainer",
+            "console": "integratedTerminal"
+        },
+        {
+            "name": "训练: Pretrain (断点续训)",
+            "type": "debugpy",
+            "request": "launch",
+            "program": "${workspaceFolder}/trainer/train_pretrain.py",
+            "cwd": "${workspaceFolder}/trainer",
+            "console": "integratedTerminal",
+            "args": ["--from_resume", "1"]
+        },
+        {
+            "name": "训练: Full SFT (全参数微调)",
+            "type": "debugpy",
+            "request": "launch",
+            "program": "${workspaceFolder}/trainer/train_full_sft.py",
+            "cwd": "${workspaceFolder}/trainer",
+            "console": "integratedTerminal"
+        },
+        {
+            "name": "训练: Full SFT (断点续训)",
+            "type": "debugpy",
+            "request": "launch",
+            "program": "${workspaceFolder}/trainer/train_full_sft.py",
+            "cwd": "${workspaceFolder}/trainer",
+            "console": "integratedTerminal",
+            "args": ["--from_resume", "1"]
+        },
+        {
+            "name": "训练: LoRA",
+            "type": "debugpy",
+            "request": "launch",
+            "program": "${workspaceFolder}/trainer/train_lora.py",
+            "cwd": "${workspaceFolder}/trainer",
+            "console": "integratedTerminal"
+        },
+        {
+            "name": "训练: Distillation (知识蒸馏)",
+            "type": "debugpy",
+            "request": "launch",
+            "program": "${workspaceFolder}/trainer/train_distillation.py",
+            "cwd": "${workspaceFolder}/trainer",
+            "console": "integratedTerminal"
+        },
+        {
+            "name": "训练: Tokenizer (分词器训练)",
+            "type": "debugpy",
+            "request": "launch",
+            "program": "${workspaceFolder}/trainer/train_tokenizer.py",
+            "cwd": "${workspaceFolder}/trainer",
+            "console": "integratedTerminal"
+        },
+
+        // ==================== 4. 强化学习 ====================
+        {
+            "name": "RL: DPO",
+            "type": "debugpy",
+            "request": "launch",
+            "program": "${workspaceFolder}/trainer/train_dpo.py",
+            "cwd": "${workspaceFolder}/trainer",
+            "console": "integratedTerminal"
+        },
+        {
+            "name": "RL: PPO",
+            "type": "debugpy",
+            "request": "launch",
+            "program": "${workspaceFolder}/trainer/train_ppo.py",
+            "cwd": "${workspaceFolder}/trainer",
+            "console": "integratedTerminal"
+        },
+        {
+            "name": "RL: GRPO",
+            "type": "debugpy",
+            "request": "launch",
+            "program": "${workspaceFolder}/trainer/train_grpo.py",
+            "cwd": "${workspaceFolder}/trainer",
+            "console": "integratedTerminal"
+        },
+        {
+            "name": "RL: CISPO (GRPO变体)",
+            "type": "debugpy",
+            "request": "launch",
+            "program": "${workspaceFolder}/trainer/train_grpo.py",
+            "cwd": "${workspaceFolder}/trainer",
+            "console": "integratedTerminal",
+            "args": ["--loss_type", "cispo"]
+        },
+        {
+            "name": "RL: Agentic RL",
+            "type": "debugpy",
+            "request": "launch",
+            "program": "${workspaceFolder}/trainer/train_agent.py",
+            "cwd": "${workspaceFolder}/trainer",
+            "console": "integratedTerminal"
+        },
+        {
+            "name": "RL: Agentic RL (SGLang)",
+            "type": "debugpy",
+            "request": "launch",
+            "program": "${workspaceFolder}/trainer/train_agent.py",
+            "cwd": "${workspaceFolder}/trainer",
+            "console": "integratedTerminal",
+            "args": [
+                "--rollout_engine", "sglang",
+                "--sglang_base_url", "http://localhost:8998",
+                "--sglang_shared_path", "./ckpt_mm",
+                "--data_path", "../dataset/agent_rl_math.jsonl",
+                "--use_wandb"
+            ]
+        },
+
+        // ==================== 5. 工具与转换 ====================
+        {
+            "name": "工具: 模型转换",
+            "type": "debugpy",
+            "request": "launch",
+            "program": "${workspaceFolder}/scripts/convert_model.py",
+            "cwd": "${workspaceFolder}/scripts",
+            "console": "integratedTerminal"
+        }
+    ]
+}

@@ -4,3 +4,11 @@ __pycache__/
 out
 website/
 docs-minimind/
+minimind-3
+dataset/**
+!dataset/lm_dataset.py
+!dataset/__init__.py
+!dataset/dataset.md
+checkpoints/
+.venv/
+.uv-cache/

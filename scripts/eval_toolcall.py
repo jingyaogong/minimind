@@ -54,15 +54,27 @@ TEST_CASES = [
 ]
 
 
+def _resolve_path(path):
+    if os.path.isabs(path):
+        return path
+    abs_path = os.path.abspath(path)
+    if os.path.isdir(abs_path):
+        return abs_path
+    script_dir = os.path.dirname(os.path.abspath(__file__))
+    return os.path.abspath(os.path.join(script_dir, path))
+
+
 def init_model(args):
-    tokenizer = AutoTokenizer.from_pretrained(args.load_from)
+    load_path = _resolve_path(args.load_from)
+    tokenizer = AutoTokenizer.from_pretrained(load_path)
     if 'model' in args.load_from:
         model = MiniMindForCausalLM(MiniMindConfig(hidden_size=args.hidden_size, num_hidden_layers=args.num_hidden_layers, use_moe=bool(args.use_moe)))
         moe_suffix = '_moe' if args.use_moe else ''
-        ckp = f'./{args.save_dir}/{args.weight}_{args.hidden_size}{moe_suffix}.pth'
+        save_dir = _resolve_path(args.save_dir)
+        ckp = os.path.join(save_dir, f'{args.weight}_{args.hidden_size}{moe_suffix}.pth')
         model.load_state_dict(torch.load(ckp, map_location=args.device), strict=True)
     else:
-        model = AutoModelForCausalLM.from_pretrained(args.load_from, trust_remote_code=True)
+        model = AutoModelForCausalLM.from_pretrained(load_path, trust_remote_code=True)
     get_model_params(model, model.config)
     return model.half().eval().to(args.device), tokenizer
 
@@ -212,7 +224,7 @@ def main():
     parser.add_argument('--temperature', default=0.9, type=float, help="生成温度，控制随机性（0-1，越大越随机）")
     parser.add_argument('--top_p', default=0.9, type=float, help="nucleus采样阈值（0-1）")
     parser.add_argument('--show_speed', default=0, type=int, help="显示decode速度（tokens/s）")
-    parser.add_argument('--device', default='cuda' if torch.cuda.is_available() else 'cpu', type=str, help="运行设备")
+    parser.add_argument('--device', default='cuda' if torch.cuda.is_available() else 'mps' if torch.backends.mps.is_available() and torch.backends.mps.is_built() else 'cpu', type=str, help="运行设备")
     parser.add_argument('--api_base_url', default="http://localhost:11434/v1", type=str, help="OpenAI兼容接口的base_url")
     parser.add_argument('--api_key', default='sk-123', type=str, help="OpenAI兼容接口的api_key")
     parser.add_argument('--api_model', default='jingyaogong/minimind-3:latest', type=str, help="API请求时使用的模型名称")
