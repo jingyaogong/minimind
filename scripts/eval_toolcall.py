@@ -224,7 +224,7 @@ def main():
     parser.add_argument('--temperature', default=0.9, type=float, help="生成温度，控制随机性（0-1，越大越随机）")
     parser.add_argument('--top_p', default=0.9, type=float, help="nucleus采样阈值（0-1）")
     parser.add_argument('--show_speed', default=0, type=int, help="显示decode速度（tokens/s）")
-    parser.add_argument('--device', default='cuda' if torch.cuda.is_available() else 'cpu', type=str, help="运行设备")
+    parser.add_argument('--device', default='cuda' if torch.cuda.is_available() else 'mps' if torch.backends.mps.is_available() and torch.backends.mps.is_built() else 'cpu', type=str, help="运行设备")
     parser.add_argument('--api_base_url', default="http://localhost:11434/v1", type=str, help="OpenAI兼容接口的base_url")
     parser.add_argument('--api_key', default='sk-123', type=str, help="OpenAI兼容接口的api_key")
     parser.add_argument('--api_model', default='jingyaogong/minimind-3:latest', type=str, help="API请求时使用的模型名称")
