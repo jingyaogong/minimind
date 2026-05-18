@@ -13,6 +13,10 @@ import signal
 import argparse
 import warnings
 import torch
+try:
+    import torch_npu
+except:
+    torch_npu = None
 import torch.nn.functional as F
 import torch.distributed as dist
 from contextlib import nullcontext
@@ -377,7 +381,6 @@ if __name__ == "__main__":
     parser.add_argument("--epochs", type=int, default=1, help="训练轮数")
     parser.add_argument("--batch_size", type=int, default=2, help="批次大小")
     parser.add_argument("--learning_rate", type=float, default=3e-7, help="学习率")
-    parser.add_argument("--device", type=str, default="cuda:0" if torch.cuda.is_available() else "cpu", help="训练设备")
     parser.add_argument("--dtype", type=str, default="bfloat16", help="数据类型 bfloat16/float16")
     parser.add_argument("--num_workers", type=int, default=8, help="数据加载线程数")
     parser.add_argument("--accumulation_steps", type=int, default=1, help="梯度累积步数")
@@ -409,10 +412,14 @@ if __name__ == "__main__":
     parser.add_argument("--sglang_base_url", type=str, default="http://localhost:8998", help="SGLang服务器URL")
     parser.add_argument("--sglang_model_path", type=str, default="../model", help="SGLang tokenizer路径")
     parser.add_argument("--sglang_shared_path", type=str, default="./sglang_ckpt_agent", help="SGLang共享存储路径")
+    parser.add_argument("--device",
+                        type=str,
+                        default="cuda:0" if torch.cuda.is_available() else ("npu:0" if torch_npu and torch_npu.npu.is_available() else "cpu"),
+                        help="训练设备")
     args = parser.parse_args()
 
-    local_rank = init_distributed_mode()
-    if dist.is_initialized(): args.device = f"cuda:{local_rank}"
+    local_rank = init_distributed_mode("nccl" if torch.cuda.is_available() else "hccl")
+    if dist.is_initialized(): args.device = f"cuda:{local_rank}" if torch.cuda.is_available() else f"npu:{local_rank}"
     setup_seed(42 + (dist.get_rank() if dist.is_initialized() else 0))
 
     os.makedirs(args.save_dir, exist_ok=True)
@@ -420,7 +427,7 @@ if __name__ == "__main__":
                                max_seq_len=args.max_seq_len + args.max_gen_len, use_moe=bool(args.use_moe))
     ckp_data = lm_checkpoint(lm_config, weight=args.save_weight, save_dir='../checkpoints') if args.from_resume == 1 else None
 
-    device_type = "cuda" if "cuda" in args.device else "cpu"
+    device_type = "cuda" if "cuda" in args.device else ("npu" if "npu" in args.device else "cpu")
     dtype = torch.bfloat16 if args.dtype == "bfloat16" else torch.float16
     autocast_ctx = nullcontext() if device_type == "cpu" else torch.cuda.amp.autocast(dtype=dtype)
 
