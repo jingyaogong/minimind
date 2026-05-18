@@ -21,6 +21,8 @@ while True:
         extra_body={"chat_template_kwargs": {"open_thinking": True}, "reasoning_effort": "medium"} # 思考开关
     )
     if not stream:
+        if not response.choices or response.choices[0].message is None:
+            raise ValueError("LLM returned empty or filtered response")
         assistant_res = response.choices[0].message.content
         print('[A]: ', assistant_res)
     else:
