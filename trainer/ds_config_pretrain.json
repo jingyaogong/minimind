@@ -4,7 +4,7 @@
     "gradient_accumulation_steps": "auto",
     "gradient_clipping": 1.0,
     "zero_optimization": {
-        "stage": 2,
+        "stage": 1,
         "allgather_partitions": true,
         "allgather_bucket_size": 5e6,
         "reduce_scatter": true,
@@ -12,8 +12,13 @@
         "overlap_comm": true,
         "contiguous_gradients": true
     },
-    "bf16": {
-        "enabled": true
+    "fp16": {
+        "enabled": true,
+        "loss_scale": 0,
+        "loss_scale_window": 1000,
+        "initial_scale_power": 16,
+        "hysteresis": 2,
+        "min_loss_scale": 1
     },
     "optimizer": {
         "type": "AdamW",
