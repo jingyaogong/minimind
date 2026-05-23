@@ -102,7 +102,7 @@ def train_epoch(epoch, loader, iters, start_step=0, wandb=None):
 if __name__ == "__main__":
     parser = argparse.ArgumentParser(description="MiniMind Pretraining (DeepSpeed)")
     parser.add_argument("--save_dir", type=str, default="../out")
-    parser.add_argument('--save_weight', default='pretrain', type=str)
+    parser.add_argument('--save_weight', default='pretrain_deepspeed', type=str)
     parser.add_argument("--epochs", type=int, default=2)
     parser.add_argument("--batch_size", type=int, default=128)
     parser.add_argument("--learning_rate", type=float, default=5e-4)
@@ -119,7 +119,7 @@ if __name__ == "__main__":
     parser.add_argument('--use_moe', default=0, type=int, choices=[0, 1])
     parser.add_argument('--use_mla', default=0, type=int, choices=[0, 1])
     parser.add_argument('--kv_lora_rank', default=128, type=int)
-    parser.add_argument("--data_path", type=str, default="../dataset/pretrain_t2t_mini.jsonl")
+    parser.add_argument("--data_path", type=str, default="../dataset/pretrain_t2t.jsonl")
     parser.add_argument('--from_weight', default='none', type=str)
     parser.add_argument('--from_resume', default=0, type=int, choices=[0, 1])
     parser.add_argument("--use_wandb", action="store_true")
