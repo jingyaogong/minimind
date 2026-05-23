@@ -129,11 +129,14 @@ if __name__ == "__main__":
     parser.add_argument("--local_rank", type=int, default=-1, help="DeepSpeed 自动注入")
     args = parser.parse_args()
 
-    # ========== 1. 初始化环境 ==========
-    local_rank = init_distributed_mode()
-    if dist.is_initialized():
-        args.device = f"cuda:{local_rank}"
-    setup_seed(42 + (dist.get_rank() if dist.is_initialized() else 0))
+    # ========== 1. 初始化环境（DeepSpeed 全权负责）==========
+    # deepspeed.initialize() 内部会自动 init_process_group + set_device
+    local_rank = int(os.environ.get("LOCAL_RANK", 0))
+    if not dist.is_initialized():
+        dist.init_process_group(backend="nccl")
+        torch.cuda.set_device(local_rank)
+    args.device = f"cuda:{local_rank}" if torch.cuda.is_available() else "cpu"
+    setup_seed(42 + local_rank)
 
     # ========== 2. 模型配置 ==========
     os.makedirs(args.save_dir, exist_ok=True)
