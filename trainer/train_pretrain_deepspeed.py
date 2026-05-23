@@ -17,8 +17,7 @@ from model.model_minimind import MiniMindConfig
 from model.model_minimind_mla import MiniMindMLAConfig
 from dataset.lm_dataset import PretrainDataset
 from trainer.trainer_utils import (
-    Logger, is_main_process, setup_seed, init_model, SkipBatchSampler, get_model_suffix,
-    init_distributed_mode
+    Logger, is_main_process, setup_seed, init_model, SkipBatchSampler, get_model_suffix
 )
 
 warnings.filterwarnings('ignore')
