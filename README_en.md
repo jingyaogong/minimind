@@ -31,8 +31,8 @@
 
 </div>
 
-* This open-source project aims to train MiniMind, an ultra-small language model with about 64M parameters, entirely from scratch with only about RMB 3 in cost and 2 hours of training time.
-* The MiniMind series is intentionally lightweight. The smallest model on the main branch is about $\frac{1}{2700}$ the size of GPT-3, making full training and reproduction feasible even on ordinary personal GPUs.
+* This open-source project aims to train MiniMind, an ultra-small language model with about 64M parameters, entirely from scratch with only about RMB 3 in cost and about 2 hours of training time.
+* The MiniMind series is intentionally lightweight. The smallest model on the main branch is about $\frac{1}{2700}$ the size of GPT-3, making full training and reproduction realistic even on ordinary personal GPUs.
 * The project provides a minimalist model architecture and an end-to-end LLM training pipeline, covering MoE, data cleaning, pretraining, Supervised Fine-Tuning (SFT), LoRA, RLHF (DPO), RLAIF (PPO / GRPO / CISPO), Tool Use, Agentic RL, Adaptive Thinking, and Model Distillation.
 * MiniMind has also been extended to a vision model [MiniMind-V](https://github.com/jingyaogong/minimind-v), a multimodal Omni model [MiniMind-O](https://github.com/jingyaogong/minimind-o), a diffusion language model (MiniMind-dLM), and a linear attention model (MiniMind-Linear). See [Discussion](https://github.com/jingyaogong/minimind/discussions) for details.
 * All core algorithms are implemented directly in native PyTorch, without relying on high-level abstractions from third-party libraries.
@@ -72,6 +72,38 @@
 
 ---
 
+# Why this repo is worth sharing on X
+
+- **Shows the full LLM training stack in a form individuals can actually run.**
+- **Makes from-scratch training concrete** with a tiny model, low cost, and an end-to-end code path.
+- **Covers far more than pretraining**: SFT, LoRA, DPO, PPO/GRPO/CISPO, tool use, agentic RL, adaptive thinking, and distillation.
+- **Optimizes for understanding, not just usage** by implementing the core pieces directly in PyTorch.
+
+# TL;DR
+
+> MiniMind is a highly educational, from-scratch LLM project that lets people train and study a tiny but complete language model pipeline without needing frontier-scale compute.
+
+# Suggested X / Twitter post
+
+```text
+Most open LLM repos help you fine-tune.
+MiniMind helps you actually understand the whole pipeline.
+
+- tiny model you can train from scratch
+- native PyTorch implementation
+- covers pretrain, SFT, LoRA, RLHF/RLAIF, tool use, agentic RL, distillation
+
+Great repo for learning by building:
+https://github.com/jingyaogong/minimind
+```
+
+# Quick links
+
+- **English README**: [README_en.md](./README_en.md)
+- **Chinese README**: [README.md](./README.md)
+- **Model collection**: https://huggingface.co/collections/jingyaogong/minimind-66caf8d999f5c7fa64f399e5
+- **Online demo**: https://www.modelscope.cn/studios/gongjy/MiniMind
+
 # 📌 Project Introduction
 
 The emergence of Large Language Models (LLMs) has drawn unprecedented global attention to AI. ChatGPT, DeepSeek, Qwen, and many other models have impressed people with their remarkable performance, making the impact of this technological wave feel very real. However, models with tens or hundreds of billions of parameters are not only difficult to train on personal devices, but often out of reach even for deployment. Opening the "black box" of large models and truly understanding how they work internally should have been an exciting thing. Unfortunately, most explorations eventually stop at applying techniques such as LoRA to fine-tune existing large models on a few new instructions or specific tasks. This is more like teaching Newton how to use a 21st-century smartphone — interesting, but not quite the original goal of understanding the essence of physics.
@@ -85,7 +117,7 @@ At the same time, third-party LLM frameworks and toolkits such as `transformers`
 #### 🎉 This Project Includes the Following
 
 - Provides the full MiniMind-LLM architecture implementation (Dense + MoE), aligned with the `Qwen3 / Qwen3-MoE` ecosystem.
-- Provides the tokenizer and tokenizer training code, supporting template tokens such as `<tool_call>`, `<tool_response>`, `<think>`, etc.
+- Provides the tokenizer and tokenizer training code, supporting template tokens such as `<tool_call>`, `<tool_response>`, `<think>`, and more.
 - Covers end-to-end training pipelines including pretraining, SFT, LoRA, RLHF-DPO, RLAIF (PPO / GRPO / CISPO), Tool Use, Agentic RL, Adaptive Thinking, and Model Distillation.
 - Provides open-source data for all stages, covering collected, distilled, cleaned, and deduplicated high-quality datasets.
 - Key training algorithms and core modules are all implemented from scratch, without relying on third-party framework wrappers.
