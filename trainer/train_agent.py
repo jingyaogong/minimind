@@ -427,7 +427,7 @@ if __name__ == "__main__":
 
     wandb = None
     if args.use_wandb and is_main_process():
-        import swanlab as wandb
+        import wandb as wandb
         wandb_id = ckp_data.get('wandb_id') if ckp_data else None
         resume = 'must' if wandb_id else None
         wandb.init(project=args.wandb_project, name=f"Agent-RL-E{args.epochs}-B{args.batch_size}-LR{args.learning_rate}", id=wandb_id, resume=resume)
