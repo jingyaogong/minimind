@@ -20,7 +20,15 @@ class MiniMindConfig(PretrainedConfig):
         self.eos_token_id = kwargs.get("eos_token_id", 2)
         self.flash_attn = kwargs.get("flash_attn", True)
         self.num_attention_heads = kwargs.get("num_attention_heads", 8)
-        self.num_key_value_heads = kwargs.get("num_key_value_heads", 4)
+        self.attention_type = kwargs.get("attention_type", "gqa")
+        num_key_value_heads = kwargs.get("num_key_value_heads", 4)
+        if self.attention_type == "mha":
+            num_key_value_heads = self.num_attention_heads
+        elif self.attention_type == "mqa":
+            num_key_value_heads = 1
+        self.num_key_value_heads = num_key_value_heads
+        if self.num_attention_heads % self.num_key_value_heads != 0:
+            raise ValueError("num_attention_heads must be divisible by num_key_value_heads")
         self.head_dim = kwargs.get("head_dim", self.hidden_size // self.num_attention_heads)
         self.hidden_act = kwargs.get("hidden_act", 'silu')
         self.intermediate_size = kwargs.get("intermediate_size", math.ceil(hidden_size * math.pi / 64) * 64)
@@ -68,11 +76,11 @@ def precompute_freqs_cis(dim: int, end: int = int(32 * 1024), rope_base: float =
     把原本只能支持较短上下文的RoPE，平滑地扩展到更长上下文
     普通rope的频率是f，位置m的旋转角度是mf，如果上下文长度很长，m很大，角度会转的太快，模型泛化不好
     YaRN的做法是对一部分频率进行缩放，让他们转的慢一点
-    一部分频率保持原样，保留短上下文能力
-    一部分频率平滑过渡
-    一部分频率缩小，用于支持长上下文
+    高频部分频率保持原样，保留短上下文能力，
+    中频部分频率平滑过渡
+    低频部分缩小，用于支持长上下文
     """
-    if rope_scaling is not None: # YaRN: f'(i) = f(i)((1-γ) + γ/s), where γ∈[0,1] is linear ramp
+    if rope_scaling is not None: # YaRN: f'(i) = f(i)((1-γ) + γ/s), where γ∈[0,1] is linear ramp，y=1是表示低频部分缩小，y=0表示高频部分不变
         """
         orig_max是原模型训练时支持的最大位置长度
         factor是上下文扩展倍数
@@ -306,10 +314,12 @@ class MiniMindForCausalLM(PreTrainedModel, GenerationMixin):
 
     def forward(self, input_ids, attention_mask=None, past_key_values=None, use_cache=False, logits_to_keep=0, labels=None, **kwargs):
         hidden_states, past_key_values, aux_loss = self.model(input_ids, attention_mask, past_key_values, use_cache, **kwargs)
+        #创建一个切片对象 x[3:5]和x[slice(3,5)]等价，这里等价于[-logits_to_keep:]
         slice_indices = slice(-logits_to_keep, None) if isinstance(logits_to_keep, int) else logits_to_keep
         logits = self.lm_head(hidden_states[:, slice_indices, :])
         loss = None
         if labels is not None:
+            #训练时输入和输出的长度相同，由 12345预测 23456 所以要计算2345的loss
             x, y = logits[..., :-1, :].contiguous(), labels[..., 1:].contiguous()
             loss = F.cross_entropy(x.view(-1, x.size(-1)), y.view(-1), ignore_index=-100)
         #把loss，aux_loss，logits等封装成一个标准输出对象，方便训练，推理,以后可以用字典的方式访问
@@ -319,7 +329,7 @@ class MiniMindForCausalLM(PreTrainedModel, GenerationMixin):
     #表示这个函数在推理模式下运行，不计算梯度
     @torch.inference_mode()
     def generate(self, inputs=None, attention_mask=None, max_new_tokens=8192, temperature=0.85, top_p=0.85, top_k=50, eos_token_id=2, streamer=None, use_cache=True, num_return_sequences=1, do_sample=True, repetition_penalty=1.0, **kwargs):
-        #这里的repeat是向量复制，这里是在第0维复制num_return_sequences次，第1维复制1次，也就是不变
+        #这里的repeat是向量复制，这里是在第0维复制num_return_sequences次，第1维复制1次，也就是不变，repeat（a,b,c)是第一维复制a次，第二维复制b次，第三维复制c次，以此类推
         input_ids = kwargs.pop("input_ids", inputs).repeat(num_return_sequences, 1)
         attention_mask = attention_mask.repeat(num_return_sequences, 1) if attention_mask is not None else None
         past_key_values = kwargs.pop("past_key_values", None)

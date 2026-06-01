@@ -1,8 +1,8 @@
 """
-DeepSpeed ZeRO-2 预训练入口。
+DeepSpeed ZeRO-2 全参 SFT 入口。
 
 推荐在 trainer/ 目录启动：
-    deepspeed --num_gpus=7 train_pretrain_deepspeed.py --model_profile SearchLM-300M
+    deepspeed --num_gpus=7 train_full_sft_deepspeed.py --model_profile SearchLM-300M
 """
 import os
 import sys
@@ -19,7 +19,7 @@ import torch
 import torch.distributed as dist
 from torch.utils.data import DataLoader, DistributedSampler
 
-from dataset.lm_dataset import PretrainDataset
+from dataset.lm_dataset import SFTDataset
 from trainer.trainer_utils import (
     Logger,
     SkipBatchSampler,
@@ -121,16 +121,16 @@ def train_epoch(args, lm_config, model_engine, loader, iters, start_step=0, wand
 
 
 def parse_args():
-    parser = argparse.ArgumentParser(description="Pretraining with DeepSpeed ZeRO")
+    parser = argparse.ArgumentParser(description="Full SFT with DeepSpeed ZeRO")
     parser.add_argument("--save_dir", type=str, default="../out")
-    parser.add_argument("--save_weight", default="pretrain", type=str)
+    parser.add_argument("--save_weight", default="full_sft", type=str)
     parser.add_argument("--epochs", type=int, default=2)
-    parser.add_argument("--batch_size", type=int, default=128)
-    parser.add_argument("--learning_rate", type=float, default=5e-4)
+    parser.add_argument("--batch_size", type=int, default=48)
+    parser.add_argument("--learning_rate", type=float, default=1e-5)
     parser.add_argument("--device", type=str, default="cuda:0" if torch.cuda.is_available() else "cpu")
     parser.add_argument("--dtype", type=str, default="float16", choices=["float16", "bfloat16", "float32"])
     parser.add_argument("--num_workers", type=int, default=8)
-    parser.add_argument("--accumulation_steps", type=int, default=8)
+    parser.add_argument("--accumulation_steps", type=int, default=1)
     parser.add_argument("--grad_clip", type=float, default=1.0)
     parser.add_argument("--log_interval", type=int, default=100)
     parser.add_argument("--save_interval", type=int, default=1000)
@@ -139,18 +139,18 @@ def parse_args():
     parser.add_argument("--num_attention_heads", default=8, type=int)
     parser.add_argument("--num_key_value_heads", default=4, type=int)
     parser.add_argument("--intermediate_size", default=None, type=int)
-    parser.add_argument("--max_seq_len", default=340, type=int)
+    parser.add_argument("--max_seq_len", default=768, type=int)
     parser.add_argument("--use_moe", default=0, type=int, choices=[0, 1])
     parser.add_argument("--attention_type", default="gqa", choices=["gqa", "mha", "mqa", "mla"])
     parser.add_argument("--use_mla", default=0, type=int, choices=[0, 1])
     parser.add_argument("--kv_lora_rank", default=128, type=int)
     parser.add_argument("--q_lora_rank", default=256, type=int)
     parser.add_argument("--rope_dim", default=None, type=int)
-    parser.add_argument("--data_path", type=str, default="../dataset/pretrain_t2t_mini.jsonl")
-    parser.add_argument("--from_weight", default="none", type=str)
+    parser.add_argument("--data_path", type=str, default="../dataset/sft_t2t_mini.jsonl")
+    parser.add_argument("--from_weight", default="pretrain", type=str)
     parser.add_argument("--from_resume", default=0, type=int, choices=[0, 1])
     parser.add_argument("--use_wandb", action="store_true")
-    parser.add_argument("--wandb_project", type=str, default="SearchLM-Pretrain-DS")
+    parser.add_argument("--wandb_project", type=str, default="SearchLM-Full-SFT-DS")
     parser.add_argument("--use_compile", default=0, type=int, choices=[0, 1])
     add_model_profile_args(parser)
     add_deepspeed_args(parser)
@@ -187,7 +187,7 @@ if __name__ == "__main__":
         model = torch.compile(model)
         Logger("torch.compile enabled before DeepSpeed initialize")
 
-    train_ds = PretrainDataset(args.data_path, tokenizer, max_length=args.max_seq_len)
+    train_ds = SFTDataset(args.data_path, tokenizer, max_length=args.max_seq_len)
     train_sampler = DistributedSampler(train_ds) if dist.is_initialized() else None
     loader_for_count = DataLoader(train_ds, batch_size=args.batch_size, sampler=train_sampler)
     iters = len(loader_for_count)
@@ -216,7 +216,7 @@ if __name__ == "__main__":
         wandb_id = ckp_data.get("wandb_id") if ckp_data else None
         wandb.init(
             project=args.wandb_project,
-            name=f"SearchLM-Pretrain-DS-{args.attention_type}-{args.hidden_size}",
+            name=f"SearchLM-Full-SFT-DS-{args.attention_type}-{args.hidden_size}",
             id=wandb_id,
             resume="must" if wandb_id else None,
         )
@@ -230,7 +230,7 @@ if __name__ == "__main__":
     log_training_setup(
         args,
         lm_config,
-        stage="pretrain_deepspeed",
+        stage="full_sft_deepspeed",
         dataset_len=len(train_ds),
         iters=iters,
         tokens_per_sample=args.max_seq_len,

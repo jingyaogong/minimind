@@ -28,5 +28,7 @@ streamlit==1.50.0
 einops==0.8.1
 swanlab==0.7.11
 modelscope==1.30.0
+# DeepSpeed建议只在Linux/CUDA服务器安装，本地Mac环境可能无法编译
+# deepspeed>=0.15.0
 # torch==2.6.0
 # torchvision==0.21.0

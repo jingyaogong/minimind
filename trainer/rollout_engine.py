@@ -1,6 +1,12 @@
 """
 # 如果使用sglang加速，需通过以下命令首先启动（transformers格式）模型：
 python -m sglang.launch_server --model-path ./minimind-3 --attention-backend triton --host 0.0.0.0 --port 8998
+
+
+sglang引擎是一个高性能LLM推理引擎
+1.RadixAttention 前缀树缓存，共享前缀时自动复用kv cache
+2.连续批处理
+3.结构化输出
 """
 import os
 import sys
@@ -20,11 +26,16 @@ from torch.nn.parallel import DistributedDataParallel
 from transformers import AutoTokenizer
 
 
+def unwrap_policy_model(model: torch.nn.Module) -> torch.nn.Module:
+    raw_model = model.module if isinstance(model, DistributedDataParallel) else getattr(model, "module", model)
+    return getattr(raw_model, "_orig_mod", raw_model)
+
+
 # ===== 计算每个 token 的 logprob =====
 def compute_per_token_logps(model, input_ids: Tensor, n_keep: int, attention_mask: Optional[Tensor] = None) -> Tensor:
     if n_keep <= 0:
         return input_ids.new_empty((input_ids.size(0), 0), dtype=torch.float32)
-    unwrapped = model.module if isinstance(model, DistributedDataParallel) else model
+    unwrapped = unwrap_policy_model(model)
     input_ids = input_ids.detach().clone() if input_ids.is_inference() else input_ids
     logits = unwrapped(input_ids, attention_mask=attention_mask, logits_to_keep=n_keep + 1).logits[:, :-1, :]
     per_token_logps = []
@@ -69,23 +80,29 @@ class TorchRolloutEngine(RolloutEngine):
         self.autocast_ctx = autocast_ctx
     
     def rollout(self, prompt_ids: Tensor, attention_mask: Tensor, num_generations: int, max_new_tokens: int, temperature: float = 0.8) -> RolloutResult:
-        model = self.policy_model.module if isinstance(self.policy_model, DistributedDataParallel) else self.policy_model
+        model = unwrap_policy_model(self.policy_model)
         ctx = self.autocast_ctx if self.autocast_ctx else nullcontext()
-        with torch.no_grad(), ctx:
-            output_ids = model.generate(
-                input_ids=prompt_ids.repeat_interleave(num_generations, dim=0),
-                attention_mask=attention_mask.repeat_interleave(num_generations, dim=0),
-                max_new_tokens=max_new_tokens,
-                do_sample=True,
-                temperature=temperature,
-                num_return_sequences=1,
-                pad_token_id=self.tokenizer.pad_token_id,
-                eos_token_id=self.tokenizer.eos_token_id,
-            ).clone()  # [B*num_gen, P+R]
-            prompt_len = prompt_ids.size(1)
-            completion_ids = output_ids[:, prompt_len:]  # [B*num_gen, R]
-            full_mask = (output_ids != self.tokenizer.pad_token_id).long()
-            per_token_logps = compute_per_token_logps(self.policy_model, output_ids, completion_ids.size(1), attention_mask=full_mask)
+        was_training = model.training
+        model.eval()
+        try:
+            with torch.no_grad(), ctx:
+                output_ids = model.generate(
+                    input_ids=prompt_ids.repeat_interleave(num_generations, dim=0),
+                    attention_mask=attention_mask.repeat_interleave(num_generations, dim=0),
+                    max_new_tokens=max_new_tokens,
+                    do_sample=True,
+                    temperature=temperature,
+                    num_return_sequences=1,
+                    pad_token_id=self.tokenizer.pad_token_id,
+                    eos_token_id=self.tokenizer.eos_token_id,
+                ).clone()  # [B*num_gen, P+R]
+                prompt_len = prompt_ids.size(1)
+                completion_ids = output_ids[:, prompt_len:]  # [B*num_gen, R]
+                full_mask = (output_ids != self.tokenizer.pad_token_id).long()
+                per_token_logps = compute_per_token_logps(self.policy_model, output_ids, completion_ids.size(1), attention_mask=full_mask)
+        finally:
+            if was_training:
+                model.train()
         completions = self.tokenizer.batch_decode(completion_ids, skip_special_tokens=True)
         return RolloutResult(output_ids, completion_ids, per_token_logps, completions,
                              prompt_ids.new_full((output_ids.size(0),), prompt_len),
@@ -98,6 +115,7 @@ class TorchRolloutEngine(RolloutEngine):
 # ===== SGLang HTTP API 推理引擎 =====
 class SGLangRolloutEngine(RolloutEngine):
     def __init__(self, base_url: str, model_path: str, shared_ckpt_path: str = "./sglang_ckpt", timeout: int = 120):
+        #rstrip，用来删除字符串右边的指定字符
         self.base_url = base_url.rstrip('/')
         self.shared_ckpt_path = shared_ckpt_path
         self.timeout = timeout
@@ -121,11 +139,14 @@ class SGLangRolloutEngine(RolloutEngine):
             },
             "return_logprob": True,
         }
-        
+        #像SGLang服务器发送HTTP POST请求，让他根据prompt里的payload生成结果
+        #调用了python的request库发HTTP请求
         resp = self.http.post(f"{self.base_url}/generate", json=payload, timeout=self.timeout)
+        #响应处理，如果响应失败会返回404，500
         resp.raise_for_status()
-        
+        #把SGLang返回的json对象解析为python对象
         results = resp.json()
+
         if not isinstance(results, list):
             results = [results]
         
@@ -151,12 +172,15 @@ class SGLangRolloutEngine(RolloutEngine):
             prompt = all_input_ids[i]
             full_output = prompt + completion_ids
             all_output_ids.append(full_output)
+            #模型生成的ids
             all_completion_ids.append(completion_ids)
             all_logprobs.append(logprobs)
             completions.append(self.tokenizer.decode(completion_ids, skip_special_tokens=True))
         
         device = prompt_ids.device
+        #统计最长回答长度
         max_comp_len = max(1, max(len(ids) for ids in all_completion_ids))
+        #统计最长输入输出长度
         max_out_len = max(len(ids) for ids in all_input_ids) + max_comp_len
         
         def pad_to_tensor(seqs, max_len, pad_val=0):
@@ -173,13 +197,17 @@ class SGLangRolloutEngine(RolloutEngine):
         )
     
     def update_policy(self, model: torch.nn.Module):
+        #把当前训练的policy模型的权重保存到磁盘上，然后通知SGLang服务器从磁盘加载新的权重
         ok = True
+        #dist.is_initialized()判断当前进程是否已经初始化了分布式环境，如果单卡就为false，多卡为true
+        #dist.get_rank()获取当前进程的编号，单卡时为0，多卡时为0,1,2...
         if not dist.is_initialized() or dist.get_rank() == 0:
             try:
-                unwrapped = model.module if isinstance(model, DistributedDataParallel) else model
-                unwrapped = getattr(unwrapped, '_orig_mod', unwrapped)
+                unwrapped = unwrap_policy_model(model)
                 abs_path = os.path.abspath(self.shared_ckpt_path)
                 state_dict = {k: v.detach().half().cpu() for k, v in unwrapped.state_dict().items()}
+                #safe_serialization=False表示保存成Pytorch的model.bin格式
+                #safe_serialization=True表示保存成model.safetensors格式
                 unwrapped.save_pretrained(abs_path, state_dict=state_dict, safe_serialization=False)
                 self.tokenizer.save_pretrained(abs_path)
                 resp = self.http.post(f"{self.base_url}/update_weights_from_disk", json={"model_path": abs_path}, timeout=self.timeout)
@@ -188,16 +216,23 @@ class SGLangRolloutEngine(RolloutEngine):
             except Exception as e:
                 print(f"[SGLANG WARNING] update_weights 异常: {e}"); ok = False
         if dist.is_initialized():
+            #将ok转为0/1，然后放到模型所在的设备上
             ok_t = torch.tensor(int(ok), device=next(model.parameters()).device)
+            #在分布式训练里同步ok的值
+            #broadcast把rank0上ok广播到所有其他rank
+            #dist.barrier()让所有rank等一下，直到所有rank都执行到这里，才继续一起往下走
+            #item（）把tensor重新转成python的bool
             dist.broadcast(ok_t, src=0); dist.barrier(); ok = bool(ok_t.item())
         if not ok: raise RuntimeError("SGLang update_policy failed")
         return ok
     
     def flush_cache(self) -> bool:
+        #向SGLang服务器发请求，清理缓存
         resp = self.http.post(f"{self.base_url}/flush_cache", timeout=30)
         return resp.status_code == 200
     
     def health(self) -> bool:
+        #向SGLang服务器发请求，检查服务器是否健康
         try:
             resp = self.http.get(f"{self.base_url}/health", timeout=5)
             return resp.status_code == 200

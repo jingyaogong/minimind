@@ -86,6 +86,7 @@ class SFTDataset(Dataset):
                 #json.loads把json格式字符串解析为python对象
                 tools = json.loads(message["tools"]) if isinstance(message["tools"], str) else message["tools"]
             if message.get("tool_calls") and isinstance(message["tool_calls"], str):
+                #把tool_calls字符串对象转成list
                 message["tool_calls"] = json.loads(message["tool_calls"])
             messages.append(message)
         return self.tokenizer.apply_chat_template(
@@ -93,7 +94,6 @@ class SFTDataset(Dataset):
             messages,
             # 返回文本字符串，不做分词，如果是true则返回文本token id 列表
             tokenize=False,
-
             add_generation_prompt=False,
             # 传入工具定义，模版会在开头插入工具描述
             tools=tools

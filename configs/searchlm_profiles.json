@@ -1,0 +1,41 @@
+{
+  "SearchLM-100M": {
+    "hidden_size": 768,
+    "num_hidden_layers": 12,
+    "num_attention_heads": 8,
+    "num_key_value_heads": 4,
+    "attention_type": "gqa",
+    "intermediate_size": 2432,
+    "max_seq_len": 1024,
+    "usage": "debug, smoke tests, architecture ablation"
+  },
+  "SearchLM-300M": {
+    "hidden_size": 1024,
+    "num_hidden_layers": 24,
+    "num_attention_heads": 8,
+    "num_key_value_heads": 4,
+    "attention_type": "mla",
+    "intermediate_size": 3264,
+    "kv_lora_rank": 192,
+    "q_lora_rank": 384,
+    "max_seq_len": 1536,
+    "usage": "main resume model for SearchShortQA SFT + GRPO"
+  },
+  "SearchLM-500M": {
+    "hidden_size": 1280,
+    "num_hidden_layers": 28,
+    "num_attention_heads": 10,
+    "num_key_value_heads": 5,
+    "attention_type": "mla",
+    "intermediate_size": 4096,
+    "kv_lora_rank": 256,
+    "q_lora_rank": 512,
+    "max_seq_len": 2048,
+    "usage": "larger optional run if 7x3090 memory permits"
+  },
+  "Qwen-LoRA-Control": {
+    "base_model": "Qwen2.5-1.5B-or-3B",
+    "training": "LoRA or QLoRA only",
+    "usage": "open-source large model baseline, not trained from scratch"
+  }
+}

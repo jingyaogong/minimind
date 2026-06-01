@@ -20,6 +20,7 @@ from transformers import AutoTokenizer, AutoModelForCausalLM, TextStreamer
 from model.model_minimind import MiniMindConfig, MiniMindForCausalLM
 from model.model_minimind_mla import MiniMindMLAConfig, MiniMindMLAForCausalLM
 from model.model_lora import apply_lora, load_lora
+from trainer.trainer_utils import build_lm_config, resolve_attention_type, get_model_suffix
 
 warnings.filterwarnings('ignore')
 
@@ -29,27 +30,21 @@ app = FastAPI()
 def init_model(args):
     tokenizer = AutoTokenizer.from_pretrained(args.load_from)
     if 'model' in args.load_from:
-        model_suffix = '_moe' if args.use_moe else ''
-        if args.use_mla: model_suffix += '_mla'
+        config = build_lm_config(
+            hidden_size=args.hidden_size,
+            num_hidden_layers=args.num_hidden_layers,
+            max_seq_len=args.max_seq_len,
+            use_moe=bool(args.use_moe),
+            attention_type=resolve_attention_type(args),
+            inference_rope_scaling=args.inference_rope_scaling,
+            kv_lora_rank=args.kv_lora_rank
+        )
+        model_suffix = get_model_suffix(config)
         ckp = f'../{args.save_dir}/{args.weight}_{args.hidden_size}{model_suffix}.pth'
-        if args.use_mla:
-            config = MiniMindMLAConfig(
-                hidden_size=args.hidden_size,
-                num_hidden_layers=args.num_hidden_layers,
-                max_seq_len=args.max_seq_len,
-                use_moe=bool(args.use_moe),
-                inference_rope_scaling=args.inference_rope_scaling,
-                kv_lora_rank=args.kv_lora_rank
-            )
+        if isinstance(config, MiniMindMLAConfig):
             model = MiniMindMLAForCausalLM(config)
         else:
-            model = MiniMindForCausalLM(MiniMindConfig(
-                hidden_size=args.hidden_size,
-                num_hidden_layers=args.num_hidden_layers,
-                max_seq_len=args.max_seq_len,
-                use_moe=bool(args.use_moe),
-                inference_rope_scaling=args.inference_rope_scaling
-            ))
+            model = MiniMindForCausalLM(config)
         model.load_state_dict(torch.load(ckp, map_location=device), strict=True)
         if args.lora_weight != 'None':
             apply_lora(model)
@@ -250,7 +245,8 @@ if __name__ == "__main__":
     parser.add_argument('--num_hidden_layers', default=8, type=int, help="隐藏层数量")
     parser.add_argument('--max_seq_len', default=8192, type=int, help="最大序列长度")
     parser.add_argument('--use_moe', default=0, type=int, choices=[0, 1], help="是否使用MoE架构（0=否，1=是）")
-    parser.add_argument('--use_mla', default=0, type=int, choices=[0, 1], help="是否使用MLA注意力架构（0=否，1=是）")
+    parser.add_argument('--attention_type', default='gqa', choices=['gqa', 'mha', 'mqa', 'mla'], help="注意力架构")
+    parser.add_argument('--use_mla', default=0, type=int, choices=[0, 1], help="兼容旧参数：是否使用MLA注意力架构（0=否，1=是）")
     parser.add_argument('--kv_lora_rank', default=128, type=int, help="MLA的KV压缩秩（仅use_mla=1时生效）")
     parser.add_argument('--inference_rope_scaling', default=False, action='store_true', help="启用RoPE位置编码外推（4倍，仅解决位置编码问题）")
     parser.add_argument('--device', default='cuda' if torch.cuda.is_available() else 'cpu', type=str, help="运行设备")

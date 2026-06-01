@@ -17,13 +17,14 @@ from torch.utils.data import DataLoader, DistributedSampler
 from model.model_minimind import MiniMindConfig
 from model.model_minimind_mla import MiniMindMLAConfig
 from dataset.lm_dataset import SFTDataset
-from trainer.trainer_utils import get_lr, Logger, is_main_process, lm_checkpoint, init_distributed_mode, setup_seed, init_model, SkipBatchSampler, get_model_suffix
+from trainer.trainer_utils import get_lr, Logger, is_main_process, lm_checkpoint, init_distributed_mode, setup_seed, init_model, SkipBatchSampler, get_model_suffix, build_lm_config, resolve_attention_type
 
 warnings.filterwarnings('ignore')
 
 
 def distillation_loss(student_logits, teacher_logits, temperature=1.0, reduction='batchmean'):
     with torch.no_grad():
+        #detach的作用是把张量从计算图里摘出来，返回一个共享相同数据但不需要梯度的新张量
         teacher_probs = F.softmax(teacher_logits / temperature, dim=-1).detach()
 
     student_log_probs = F.log_softmax(student_logits / temperature, dim=-1)
@@ -31,6 +32,7 @@ def distillation_loss(student_logits, teacher_logits, temperature=1.0, reduction
     kl = F.kl_div(
         student_log_probs,
         teacher_probs,
+        #batchmean是将求和后的结果除以batchsize，是正确的kl散度定义
         reduction=reduction
     )
     return (temperature ** 2) * kl
@@ -166,7 +168,9 @@ if __name__ == "__main__":
     parser.add_argument('--teacher_num_layers', default=8, type=int, help="教师模型隐藏层数量")
     parser.add_argument('--student_use_moe', default=0, type=int, choices=[0, 1], help="学生模型是否使用MoE（0=否，1=是）")
     parser.add_argument('--teacher_use_moe', default=1, type=int, choices=[0, 1], help="教师模型是否使用MoE（0=否，1=是）")
-    parser.add_argument('--use_mla', default=0, type=int, choices=[0, 1], help="是否使用MLA注意力架构（0=否，1=是）")
+    parser.add_argument('--attention_type', default='gqa', choices=['gqa', 'mha', 'mqa', 'mla'], help="学生模型注意力架构")
+    parser.add_argument('--teacher_attention_type', default='gqa', choices=['gqa', 'mha', 'mqa', 'mla'], help="教师模型注意力架构")
+    parser.add_argument('--use_mla', default=0, type=int, choices=[0, 1], help="兼容旧参数：是否使用MLA注意力架构（0=否，1=是）")
     parser.add_argument('--kv_lora_rank', default=128, type=int, help="MLA的KV压缩秩（仅use_mla=1时生效）")
     parser.add_argument('--from_student_weight', default='full_sft', type=str, help="学生模型基于哪个权重")
     parser.add_argument('--from_teacher_weight', default='full_sft', type=str, help="教师模型基于哪个权重")
@@ -185,8 +189,20 @@ if __name__ == "__main__":
     
     # ========== 2. 配置目录、模型参数、检查ckp ==========
     os.makedirs(args.save_dir, exist_ok=True)
-    lm_config_student = MiniMindMLAConfig(hidden_size=args.student_hidden_size, num_hidden_layers=args.student_num_layers, use_moe=bool(args.student_use_moe), kv_lora_rank=args.kv_lora_rank) if args.use_mla else MiniMindConfig(hidden_size=args.student_hidden_size, num_hidden_layers=args.student_num_layers, use_moe=bool(args.student_use_moe))
-    lm_config_teacher = MiniMindConfig(hidden_size=args.teacher_hidden_size, num_hidden_layers=args.teacher_num_layers, use_moe=bool(args.teacher_use_moe))
+    lm_config_student = build_lm_config(
+        hidden_size=args.student_hidden_size,
+        num_hidden_layers=args.student_num_layers,
+        use_moe=bool(args.student_use_moe),
+        attention_type=resolve_attention_type(args),
+        kv_lora_rank=args.kv_lora_rank
+    )
+    lm_config_teacher = build_lm_config(
+        hidden_size=args.teacher_hidden_size,
+        num_hidden_layers=args.teacher_num_layers,
+        use_moe=bool(args.teacher_use_moe),
+        attention_type=args.teacher_attention_type,
+        kv_lora_rank=args.kv_lora_rank
+    )
     ckp_data = lm_checkpoint(lm_config_student, weight=args.save_weight, save_dir='../checkpoints') if args.from_resume==1 else None
     
     # ========== 3. 设置混合精度 ==========

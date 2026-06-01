@@ -11,6 +11,7 @@ from transformers import AutoTokenizer, AutoModelForCausalLM, Qwen3Config, Qwen3
 from model.model_minimind import MiniMindConfig, MiniMindForCausalLM
 from model.model_minimind_mla import MiniMindMLAConfig, MiniMindMLAForCausalLM
 from model.model_lora import apply_lora, merge_lora
+from trainer.trainer_utils import build_lm_config, resolve_attention_type, get_model_suffix
 
 warnings.filterwarnings('ignore', category=UserWarning)
 
@@ -140,18 +141,22 @@ if __name__ == '__main__':
     parser.add_argument('--hidden_size', default=768, type=int, help="隐藏层维度")
     parser.add_argument('--num_hidden_layers', default=8, type=int, help="隐藏层数量")
     parser.add_argument('--use_moe', default=0, type=int, choices=[0, 1], help="是否使用MoE架构（0=否，1=是）")
-    parser.add_argument('--use_mla', default=0, type=int, choices=[0, 1], help="是否使用MLA注意力架构（0=否，1=是）")
+    parser.add_argument('--attention_type', default='gqa', choices=['gqa', 'mha', 'mqa', 'mla'], help="注意力架构")
+    parser.add_argument('--use_mla', default=0, type=int, choices=[0, 1], help="兼容旧参数：是否使用MLA注意力架构（0=否，1=是）")
     parser.add_argument('--kv_lora_rank', default=128, type=int, help="MLA的KV压缩秩（仅use_mla=1时生效）")
     parser.add_argument('--weight', default='full_sft', type=str, help="权重名称前缀")
     parser.add_argument('--save_dir', default='out', type=str, help="模型权重目录")
     args = parser.parse_args()
 
-    if args.use_mla:
-        lm_config = MiniMindMLAConfig(hidden_size=args.hidden_size, num_hidden_layers=args.num_hidden_layers, max_seq_len=8192, use_moe=bool(args.use_moe), kv_lora_rank=args.kv_lora_rank)
-    else:
-        lm_config = MiniMindConfig(hidden_size=args.hidden_size, num_hidden_layers=args.num_hidden_layers, max_seq_len=8192, use_moe=bool(args.use_moe))
-    model_suffix = '_moe' if lm_config.use_moe else ''
-    if isinstance(lm_config, MiniMindMLAConfig): model_suffix += '_mla'
+    lm_config = build_lm_config(
+        hidden_size=args.hidden_size,
+        num_hidden_layers=args.num_hidden_layers,
+        max_seq_len=8192,
+        use_moe=bool(args.use_moe),
+        attention_type=resolve_attention_type(args),
+        kv_lora_rank=args.kv_lora_rank
+    )
+    model_suffix = get_model_suffix(lm_config)
 
     # convert torch to transformers
     torch_path = f"../{args.save_dir}/{args.weight}_{lm_config.hidden_size}{model_suffix}.pth"

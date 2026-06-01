@@ -5,6 +5,7 @@ import os
 import sys
 __package__ = "trainer"
 sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), '..')))
+import json
 import random
 import math
 import numpy as np
@@ -13,15 +14,228 @@ import torch.distributed as dist
 from torch.nn.parallel import DistributedDataParallel
 from torch.utils.data import Sampler
 from transformers import AutoTokenizer, AutoModel, AutoModelForSequenceClassification
-from model.model_minimind import MiniMindForCausalLM
+from model.model_minimind import MiniMindConfig, MiniMindForCausalLM
 from model.model_minimind_mla import MiniMindMLAConfig, MiniMindMLAForCausalLM
+
+DEFAULT_DEEPSPEED_CONFIG = os.path.join(os.path.dirname(__file__), "ds_config_zero2.json")
+
+
+def _resolve_repo_path(path):
+    if os.path.isabs(path) and os.path.exists(path):
+        return path
+    if os.path.exists(path):
+        return path
+    repo_root = os.path.abspath(os.path.join(os.path.dirname(__file__), '..'))
+    candidate = os.path.join(repo_root, path)
+    return candidate
+
+
+def add_model_profile_args(parser):
+    parser.add_argument("--model_profile", type=str, default="", help="SearchLM模型规模配置名，如 SearchLM-100M/SearchLM-300M")
+    parser.add_argument("--model_profiles_path", type=str, default="configs/searchlm_profiles.json", help="模型规模配置文件")
+
+
+def add_deepspeed_args(parser, default_config=DEFAULT_DEEPSPEED_CONFIG):
+    parser.add_argument("--deepspeed_config", type=str, default=default_config, help="DeepSpeed ZeRO配置JSON")
+    parser.add_argument("--local_rank", type=int, default=-1, help="DeepSpeed launcher自动注入")
+
+
+def apply_model_profile(args):
+    """将 SearchLM profile 写入 argparse args；显式传空则不修改。"""
+    profile_name = getattr(args, "model_profile", "")
+    if not profile_name:
+        return None
+    profiles_path = _resolve_repo_path(getattr(args, "model_profiles_path", "configs/searchlm_profiles.json"))
+    with open(profiles_path, "r", encoding="utf-8") as f:
+        profiles = json.load(f)
+    if profile_name not in profiles:
+        raise ValueError(f"Unknown model_profile={profile_name}. Available: {', '.join(profiles)}")
+    profile = profiles[profile_name]
+    if "hidden_size" not in profile:
+        raise ValueError(f"Profile {profile_name} is not a trainable from-scratch profile")
+    fields = [
+        "hidden_size", "num_hidden_layers", "num_attention_heads", "num_key_value_heads",
+        "attention_type", "intermediate_size", "kv_lora_rank", "q_lora_rank", "rope_dim", "max_seq_len"
+    ]
+    for field in fields:
+        if field in profile and hasattr(args, field):
+            setattr(args, field, profile[field])
+    return profile
 
 def get_model_suffix(lm_config):
     """根据模型配置返回 checkpoint 文件名后缀"""
     suffix = ''
     if getattr(lm_config, 'use_moe', False): suffix += '_moe'
-    if isinstance(lm_config, MiniMindMLAConfig): suffix += '_mla'
+    attention_type = getattr(lm_config, "attention_type", "gqa")
+    if isinstance(lm_config, MiniMindMLAConfig) or attention_type == "mla":
+        suffix += '_mla'
+    elif attention_type in {"mha", "mqa"}:
+        suffix += f'_{attention_type}'
     return suffix
+
+
+def unwrap_model(model):
+    """兼容 DDP / DeepSpeed / torch.compile 的模型解包。"""
+    raw_model = getattr(model, "module", model)
+    return getattr(raw_model, "_orig_mod", raw_model)
+
+
+def save_model_weights(lm_config, model, save_dir="../out", weight="model", dtype=torch.float16):
+    """保存一份轻量推理权重；DeepSpeed完整训练状态由 save_checkpoint 单独保存。"""
+    os.makedirs(save_dir, exist_ok=True)
+    model_suffix = get_model_suffix(lm_config)
+    ckp_path = f"{save_dir}/{weight}_{lm_config.hidden_size}{model_suffix}.pth"
+    raw_model = unwrap_model(model)
+    state_dict = raw_model.state_dict()
+    state_dict = {k: v.detach().to(dtype).cpu() for k, v in state_dict.items()}
+    tmp_path = ckp_path + ".tmp"
+    torch.save(state_dict, tmp_path)
+    os.replace(tmp_path, ckp_path)
+    del state_dict
+    if torch.cuda.is_available():
+        torch.cuda.empty_cache()
+    return ckp_path
+
+
+def load_deepspeed_config(args, total_steps):
+    """加载并补全 DeepSpeed 配置，保持 batch / lr / precision 与 CLI 参数一致。"""
+    ds_path = _resolve_repo_path(getattr(args, "deepspeed_config", DEFAULT_DEEPSPEED_CONFIG))
+    with open(ds_path, "r", encoding="utf-8") as f:
+        cfg = json.load(f)
+
+    world_size = dist.get_world_size() if dist.is_initialized() else int(os.environ.get("WORLD_SIZE", "1"))
+    if cfg.get("train_micro_batch_size_per_gpu") == "auto":
+        cfg["train_micro_batch_size_per_gpu"] = args.batch_size
+    if cfg.get("gradient_accumulation_steps") == "auto":
+        cfg["gradient_accumulation_steps"] = args.accumulation_steps
+    if cfg.get("train_batch_size") == "auto":
+        cfg["train_batch_size"] = args.batch_size * args.accumulation_steps * world_size
+    if "gradient_clipping" in cfg:
+        cfg["gradient_clipping"] = args.grad_clip
+
+    optimizer_cfg = cfg.setdefault("optimizer", {"type": "AdamW", "params": {}})
+    optimizer_cfg.setdefault("params", {})["lr"] = args.learning_rate
+
+    scheduler_cfg = cfg.get("scheduler")
+    if scheduler_cfg and scheduler_cfg.get("type") == "WarmupDecayLR":
+        sched_params = scheduler_cfg.setdefault("params", {})
+        if sched_params.get("warmup_max_lr") == "auto":
+            sched_params["warmup_max_lr"] = args.learning_rate
+        if sched_params.get("warmup_num_steps") == "auto":
+            sched_params["warmup_num_steps"] = max(1, total_steps // 20)
+        if sched_params.get("total_num_steps") == "auto":
+            sched_params["total_num_steps"] = max(1, total_steps)
+
+    dtype = getattr(args, "dtype", "float16")
+    cfg.setdefault("fp16", {})["enabled"] = dtype == "float16"
+    cfg.setdefault("bf16", {})["enabled"] = dtype == "bfloat16"
+    return cfg
+
+
+def get_wandb_id(wandb=None):
+    if not wandb:
+        return None
+    if hasattr(wandb, "get_run"):
+        run = wandb.get_run()
+        return getattr(run, "id", None) if run else None
+    return getattr(wandb, "id", None)
+
+
+def get_cuda_peak_memory_gb():
+    if not torch.cuda.is_available():
+        return None
+    return torch.cuda.max_memory_allocated(torch.cuda.current_device()) / (1024 ** 3)
+
+
+def reduce_metrics(metrics, average=True):
+    """聚合所有 rank 的标量指标，避免日志只反映 rank0 局部 batch。"""
+    if not dist.is_initialized():
+        return metrics
+    numeric_items = [(key, value) for key, value in metrics.items() if isinstance(value, (int, float))]
+    if not numeric_items:
+        return metrics
+    device = torch.device("cuda", torch.cuda.current_device()) if torch.cuda.is_available() else torch.device("cpu")
+    values = torch.tensor([float(value) for _, value in numeric_items], device=device)
+    dist.all_reduce(values, op=dist.ReduceOp.SUM)
+    if average:
+        values /= dist.get_world_size()
+    reduced = dict(metrics)
+    for (key, _), value in zip(numeric_items, values.tolist()):
+        reduced[key] = value
+    return reduced
+
+
+def get_deepspeed_tag(lm_config, weight):
+    return f"{weight}_{lm_config.hidden_size}{get_model_suffix(lm_config)}"
+
+
+def save_deepspeed_checkpoint(model_engine, lm_config, weight, epoch=0, step=0, wandb=None, save_dir="../checkpoints", **kwargs):
+    """DeepSpeed checkpoint 必须所有 rank 都调用，不能只在 rank0 保存。"""
+    os.makedirs(save_dir, exist_ok=True)
+    wandb_id = get_wandb_id(wandb) if is_main_process() else None
+    if dist.is_initialized():
+        wandb_box = [wandb_id]
+        dist.broadcast_object_list(wandb_box, src=0)
+        wandb_id = wandb_box[0]
+    client_state = {
+        "epoch": epoch,
+        "step": step,
+        "world_size": dist.get_world_size() if dist.is_initialized() else 1,
+        "wandb_id": wandb_id,
+    }
+    client_state.update({k: v for k, v in kwargs.items() if v is not None})
+    tag = get_deepspeed_tag(lm_config, weight)
+    model_engine.save_checkpoint(save_dir, tag=tag, client_state=client_state)
+    if is_main_process():
+        Logger(f"DeepSpeed checkpoint saved: {save_dir}/{tag}")
+    return tag
+
+
+def load_deepspeed_checkpoint(model_engine, lm_config, weight, save_dir="../checkpoints"):
+    tag = get_deepspeed_tag(lm_config, weight)
+    try:
+        load_path, client_state = model_engine.load_checkpoint(save_dir, tag=tag)
+    except Exception as exc:
+        if is_main_process():
+            Logger(f"DeepSpeed checkpoint not loaded: {exc}")
+        return None
+    if load_path is None:
+        return None
+    saved_ws = client_state.get("world_size", 1) if client_state else 1
+    current_ws = dist.get_world_size() if dist.is_initialized() else 1
+    if saved_ws != current_ws and is_main_process():
+        Logger(f"DeepSpeed checkpoint world_size changed: {saved_ws} -> {current_ws}")
+    if is_main_process():
+        Logger(f"DeepSpeed checkpoint loaded: {load_path}")
+    return client_state or {}
+
+
+def build_lm_config(hidden_size=768, num_hidden_layers=8, use_moe=False, attention_type="gqa", kv_lora_rank=128, **kwargs):
+    """统一构建不同注意力结构的 MiniMind 配置。"""
+    if attention_type == "mla":
+        return MiniMindMLAConfig(
+            hidden_size=hidden_size,
+            num_hidden_layers=num_hidden_layers,
+            use_moe=use_moe,
+            kv_lora_rank=kv_lora_rank,
+            **kwargs
+        )
+    if attention_type not in {"gqa", "mha", "mqa"}:
+        raise ValueError(f"Unsupported attention_type: {attention_type}")
+    return MiniMindConfig(
+        hidden_size=hidden_size,
+        num_hidden_layers=num_hidden_layers,
+        use_moe=use_moe,
+        attention_type=attention_type,
+        **kwargs
+    )
+
+
+def resolve_attention_type(args):
+    """兼容旧参数 --use_mla，同时支持新的 --attention_type。"""
+    if getattr(args, "use_mla", 0):
+        return "mla"
+    return getattr(args, "attention_type", "gqa")
 
 
 def get_model_params(model, config):
@@ -36,6 +250,61 @@ def get_model_params(model, config):
     active = base + (expert * n_active) + (shared_expert * n_shared)
     if active < total: Logger(f'Model Params: {total:.2f}M-A{active:.2f}M')
     else: Logger(f'Model Params: {total:.2f}M')
+
+
+def log_training_setup(args, lm_config, stage="train", dataset_len=None, iters=None, tokens_per_sample=None, extra=None):
+    """打印可直接沉淀到实验报告里的 DDP/训练配置信息。"""
+    world_size = dist.get_world_size() if dist.is_initialized() else 1
+    rank = dist.get_rank() if dist.is_initialized() else 0
+    per_gpu_batch = getattr(args, "batch_size", 1)
+    accumulation = getattr(args, "accumulation_steps", 1)
+    effective_batch = per_gpu_batch * world_size * accumulation
+    max_seq_len = tokens_per_sample or getattr(args, "max_seq_len", None)
+    tokens_per_step = effective_batch * max_seq_len if max_seq_len else None
+    attention_type = getattr(lm_config, "attention_type", "gqa")
+    device = getattr(args, "device", "unknown")
+    gpu_name = None
+    if torch.cuda.is_available() and "cuda" in str(device):
+        try:
+            gpu_name = torch.cuda.get_device_name(torch.cuda.current_device())
+        except Exception:
+            gpu_name = None
+
+    if rank == 0:
+        Logger("=" * 80)
+        Logger(f"[Training Setup] stage={stage}")
+        backend = getattr(args, "training_backend", None)
+        if backend is None:
+            backend = "DDP" if world_size > 1 else "single-process"
+        Logger(
+            f"  distributed={backend}, world_size={world_size}, "
+            f"device={device}" + (f", gpu={gpu_name}" if gpu_name else "")
+        )
+        Logger(
+            f"  model: attention_type={attention_type}, hidden_size={lm_config.hidden_size}, "
+            f"num_layers={lm_config.num_hidden_layers}, use_moe={getattr(lm_config, 'use_moe', False)}"
+        )
+        if attention_type == "mla" or isinstance(lm_config, MiniMindMLAConfig):
+            Logger(
+                f"  mla: kv_lora_rank={lm_config.kv_lora_rank}, q_lora_rank={lm_config.q_lora_rank}, "
+                f"rope_dim={lm_config.rope_dim}"
+            )
+        Logger(
+            f"  batch: per_gpu={per_gpu_batch}, accumulation_steps={accumulation}, "
+            f"effective_batch={effective_batch}"
+        )
+        if tokens_per_step:
+            Logger(f"  sequence: max_seq_len={max_seq_len}, tokens_per_optimizer_step~{tokens_per_step:,}")
+        if dataset_len is not None:
+            Logger(f"  data: samples={dataset_len:,}" + (f", batches_per_epoch={iters:,}" if iters is not None else ""))
+        Logger(
+            f"  precision={getattr(args, 'dtype', 'unknown')}, lr={getattr(args, 'learning_rate', 'unknown')}, "
+            f"epochs={getattr(args, 'epochs', 'unknown')}, compile={getattr(args, 'use_compile', 0)}"
+        )
+        if extra:
+            for key, value in extra.items():
+                Logger(f"  {key}: {value}")
+        Logger("=" * 80)
 
 
 def is_main_process():
@@ -78,8 +347,7 @@ def lm_checkpoint(lm_config, weight='full_sft', model=None, optimizer=None, epoc
 
     if model is not None:#存储模型模式
         #如果模型被DDP包了，真正的模型在model.module里
-        raw_model = model.module if isinstance(model, DistributedDataParallel) else model
-        raw_model = getattr(raw_model, '_orig_mod', raw_model)
+        raw_model = unwrap_model(model)
         state_dict = raw_model.state_dict()
         #half表示转成float16，然后移到cpu上
         state_dict = {k: v.half().cpu() for k, v in state_dict.items()}
@@ -107,8 +375,7 @@ def lm_checkpoint(lm_config, weight='full_sft', model=None, optimizer=None, epoc
         for key, value in kwargs.items():
             if value is not None:
                 if hasattr(value, 'state_dict'):
-                    raw_value = value.module if isinstance(value, DistributedDataParallel) else value
-                    raw_value = getattr(raw_value, '_orig_mod', raw_value)
+                    raw_value = unwrap_model(value)
                     resume_data[key] = raw_value.state_dict()
                 else:
                     resume_data[key] = value
@@ -149,7 +416,7 @@ def init_model(lm_config, from_weight='pretrain', tokenizer_path='../model', sav
     Logger(f'Trainable Params: {sum(p.numel() for p in model.parameters() if p.requires_grad) / 1e6:.3f}M')
     return model.to(device), tokenizer
 
-
+#对sampler的重写，主要重写iter方法和len方法，sampler决定取哪些数据，给dataloaer拿到索引后，通过getitem方法取数据
 class SkipBatchSampler(Sampler):
     def __init__(self, sampler, batch_size, skip_batches=0):
         self.sampler = sampler
@@ -159,6 +426,7 @@ class SkipBatchSampler(Sampler):
     def __iter__(self):
         batch = []
         skipped = 0
+        #self.sampler每次吐出一个样本的索引
         for idx in self.sampler:
             batch.append(idx)
             if len(batch) == self.batch_size:
@@ -193,4 +461,5 @@ class LMForRewardModel:
             {"role": "assistant", "content": response}
         ]
         score = self.model.get_score(self.tokenizer, eval_messages)
+        #clip到[-3,3]
         return max(min(score, 3.0), -3.0)

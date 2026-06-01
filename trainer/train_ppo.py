@@ -21,13 +21,22 @@ from torch.optim.lr_scheduler import CosineAnnealingLR
 from model.model_minimind import MiniMindConfig, MiniMindForCausalLM
 from model.model_minimind_mla import MiniMindMLAConfig, MiniMindMLAForCausalLM
 from dataset.lm_dataset import RLAIFDataset
-from trainer.trainer_utils import Logger, is_main_process, lm_checkpoint, init_distributed_mode, setup_seed, SkipBatchSampler, init_model, LMForRewardModel, get_model_suffix
+from trainer.trainer_utils import Logger, is_main_process, lm_checkpoint, init_distributed_mode, setup_seed, SkipBatchSampler, init_model, LMForRewardModel, get_model_suffix, build_lm_config, resolve_attention_type, log_training_setup
 from trainer.rollout_engine import create_rollout_engine
 
 warnings.filterwarnings('ignore')
 
 
 def rep_penalty(text, n=3, cap=0.5):
+    #处理重复回答，是因为PPO/RL训练里模型很容易钻奖励函数空子，比如reward有长度奖励，奖励模型打分，格式奖励等
+
+    #reward hacking 表示模型没有真正学好任务，而是学会了钻奖励函数的空子
+    #解决reward hacking方法：规则函数做约束，分项监控reward来源，加kl约束防止偏离参考模型，降低ppo更新强度，还要监控行为指标
+
+    #参数n代表，检查n-gram，也就是连续n个token的重复，cap表示最多惩罚的分数
+    #计算重复惩罚，回答的越重复，reward扣除的越多，用于惩罚模型回答里重复出现的n-gram
+    #先把文本转为小写， \w+表示匹配连续的单词字符 [^\w\s]表示既不是单词，又不是空白字符的东西，一般是标点符号
+    #中间的 ｜ 表示或者，所以整体意思是，匹配一个单词或者匹配一个标点
     toks = re.findall(r"\w+|[^\w\s]", text.lower())
     grams = [tuple(toks[i:i + n]) for i in range(len(toks) - n + 1)]
     return min(cap, (len(grams) - len(set(grams))) * cap * 2 / len(grams)) if grams else 0.0
@@ -56,14 +65,39 @@ def calculate_rewards(prompts, responses, reward_model):
     with torch.no_grad():
         reward_model_scores = []
         for i, (prompt, response) in enumerate(zip(prompts, responses)):
+            """
+            下面这两行是在从prompt字符串中解析出来对话消息，比如把
+            <|im_start|>system
+            你是一个助手<|im_end|>
+            <|im_start|>user
+            你好<|im_end|>
+            <|im_start|>assistant
+            你好，有什么可以帮你？<|im_end|>
+            解析为
+            [
+                ("system", "你是一个助手"),
+                ("user", "你好"),
+                ("assistant", "你好，有什么可以帮你？"),
+            ]
+
+            """
+            #前面的r表示raw string ，｜在正则里是特殊字符，或的意思，所以要写成\|
+            #(system|user|assistant) 这一段匹配角色名，括号()表示捕获组，匹配三者之一
+            #\s+表示匹配一个或多个空白字符，(.*?)表示非贪婪匹配内容直到下一个<|im_end|>，也是一个捕获组
+            #.表示匹配任意字符，*表示匹配0或多次，？表示变成非贪婪模式，直到遇到下一个<|im_end|>为止
             pattern = r"<\|im_start\|>(system|user|assistant)\s+(.*?)<\|im_end\|>"
+            #默认情况下，正则里的.不能匹配换行符，加上re.DOTALL参数后，.就能匹配换行符了，这样就能正确解析多行的消息内容
             matches = re.findall(pattern, prompt, re.DOTALL)
             messages = [{"role": role, "content": content.strip()} for role, content in matches]
             answer = response
+            #如果回答的长度在20到800之间则奖励分数，限制模型回答长度
             rewards[i] += 0.5 if 20 <= len(response.strip()) <= 800 else -0.5
             if '</think>' in response:
+                #这里的1表示最多切割一次，根据</think>切成两部分
                 thinking_content, answer_content = response.split('</think>', 1)
+                #限制思考内容的长度
                 rewards[i] += 1.0 if 20 <= len(thinking_content.strip()) <= 300 else -0.5
+                #限制模型有且只有一个</think>
                 rewards[i] += 0.25 if response.count('</think>') == 1 else -0.25
                 answer = answer_content.strip()
             rewards[i] -= rep_penalty(answer)
@@ -99,9 +133,11 @@ def ppo_train_epoch(epoch, loader, iters, rollout_engine, ref_model, actor_sched
         prompt_lens = rollout_result.prompt_lens.to(args.device)
         responses_text = rollout_result.completions
         old_resp_logp = rollout_result.per_token_logps.to(args.device)
+        #responses_text [B]  为每条回答计算一个reward
         rewards = calculate_rewards(prompts, responses_text, reward_model)  # [B]
 
         if args.debug_mode and is_main_process() and step % args.debug_interval == 0:
+            #debug模式就是程序运行时额外打开的一种调试开关
             for i in range(len(prompts)):
                 Logger(f"[DEBUG] step={step}, sample[{i}]")
                 Logger('-'*100)
@@ -118,40 +154,54 @@ def ppo_train_epoch(epoch, loader, iters, rollout_engine, ref_model, actor_sched
         full_mask = (gen_out != tokenizer.pad_token_id).long()  # [B, P+R]
         labels = gen_out[:, 1:].clone()  # [B, P+R-1]
         B = len(prompts)
+        #[B*num_gen,R]
         resp_labels = completion_ids
+        #[1,R]
         resp_idx = torch.arange(resp_labels.size(1), device=gen_out.device).unsqueeze(0)
+        #[B*num_gen,R]，第0个位置的logits预测第1个token，所以要-1
         logp_pos = prompt_lens.unsqueeze(1) - 1 + resp_idx
+        #[B*num_gen,R]
         resp_pad_mask = rollout_result.completion_mask.to(args.device).bool()
+        #[B*num_gen]，找真实eos_token,是真实生成的那种
         resp_lengths = resp_pad_mask.sum(dim=1); valid_resp = resp_lengths > 0; eos_mask = resp_labels.eq(tokenizer.eos_token_id) & resp_pad_mask
+        #判断每个batch是否有eos，找到eos的位置
         has_eos = eos_mask.any(dim=1); eos_pos = torch.argmax(eos_mask.int(), dim=1)
-        resp_lengths = torch.where(has_eos, eos_pos + 1, resp_lengths).long().clamp(min=1)
+        resp_lengths = torch.where(has_eos, eos_pos + 1, resp_lengths).long().clamp(min=1)#clamp把张量裁剪到至少为1
         resp_policy_mask = ((resp_idx < resp_lengths.unsqueeze(1)) & resp_pad_mask).float()
         resp_value_mask = resp_policy_mask.clone()
 
         with torch.no_grad():  # Rollout阶段只需推理获取old_logp和old_values，切断梯度省显存
             critic_for_rollout = critic_model.module if isinstance(critic_model, DistributedDataParallel) else critic_model
             values_seq = critic_for_rollout(input_ids=gen_out, attention_mask=full_mask)
+            #[B，R]
             old_resp_values = values_seq.gather(1, logp_pos) * resp_value_mask
-            
+            #返回输出的logp
             ref_resp_logp = F.log_softmax(ref_model(input_ids=gen_out, attention_mask=full_mask).logits[:, :-1], dim=-1).gather(2, labels.unsqueeze(-1)).squeeze(-1).gather(1, logp_pos)
             token_rewards = torch.zeros_like(old_resp_logp)
             last_idx = resp_lengths - 1  # [B]
             token_rewards[torch.arange(B, device=args.device)[valid_resp], last_idx[valid_resp]] += rewards[valid_resp]  # 末尾加外部奖励
 
+            #old_resp_values [R]
             gen_len = old_resp_values.size(1); lastgaelam = torch.zeros(B, device=args.device); advs_rev = []
             for t in reversed(range(gen_len)):
+                #GAE过程，GAE其实就是两个公式，别害怕
                 nv = old_resp_values[:, t + 1] if t < gen_len - 1 else 0.0
                 delta = token_rewards[:, t] + args.gamma * nv - old_resp_values[:, t]
                 lastgaelam = delta + args.gamma * args.lam * lastgaelam
                 advs_rev.append(lastgaelam)
+            #stack是把多个tensor堆叠为一个新tensor
+            #advs_rev[::-1] 是把列表反过来 start:end:step
             advantages = torch.stack(advs_rev[::-1], dim=1)  # [B, R]
             returns = advantages + old_resp_values  # [B, R]
 
+            #对adv做归一化
             adv_mean = (advantages * resp_policy_mask).sum() / resp_policy_mask.sum().clamp(min=1)
             adv_var = ((advantages - adv_mean) ** 2 * resp_policy_mask).sum() / resp_policy_mask.sum().clamp(min=1)
+            #rsqrt等价于1/sqrt
             advantages = (advantages - adv_mean) * torch.rsqrt(adv_var + 1e-8) * resp_policy_mask
 
         mb_size = max(1, min(args.mini_batch_size, B))
+        #ppo 早停标志
         stop_ppo = False
         policy_loss_sum = 0.0
         value_loss_sum = 0.0
@@ -165,6 +215,8 @@ def ppo_train_epoch(epoch, loader, iters, rollout_engine, ref_model, actor_sched
         for ppo_epoch in range(args.ppo_update_iters):
             if stop_ppo:
                 break
+            #生成当前batch样本编号的随机排列。后面会用它取数据
+            #这里重新算的意义是前面算的old_resp_values是参考值
             b_inds = torch.randperm(B, device=args.device)
             for i in range(0, B, mb_size):
                 inds = b_inds[i:i + mb_size]
@@ -177,27 +229,37 @@ def ppo_train_epoch(epoch, loader, iters, rollout_engine, ref_model, actor_sched
                     aux_loss = res.aux_loss if lm_config.use_moe else torch.tensor(0.0, device=args.device)
 
                 mb_resp_logp = F.log_softmax(res.logits[:, :-1], dim=-1).gather(2, labels[inds].unsqueeze(-1)).squeeze(-1).gather(1, logp_pos[inds])
-                
+
+                #policy ratio：π_new / π_old
                 log_ratio = mb_resp_logp - old_resp_logp[inds]
+                #算出每个位置上平均的kl散度，resp_policy_mask是为了只计算有效位置的kl散度，最后除以有效位置的数量得到平均kl散度
                 approx_kl = (0.5 * (log_ratio ** 2) * resp_policy_mask[inds]).sum() / resp_policy_mask[inds].sum().clamp(min=1)
                 
                 # 同步各卡的 approx_kl，防止某卡 break 而其它卡继续导致 DDP 死锁
+                #把approx_kl从计算图中切出来，不参与反向传播
                 approx_kl_val = approx_kl.detach().clone()
                 if dist.is_initialized():
+                    #在多卡之间做平均，然后同步到每张卡上
                     dist.all_reduce(approx_kl_val, op=dist.ReduceOp.AVG)
                     
                 if approx_kl_val > args.early_stop_kl:
                     stop_ppo = True
                 
                 ratio = torch.exp(log_ratio)
+                #计算有多少比例的token触发了PPO clip范围
                 clipfrac = ((((ratio - 1.0).abs() > args.clip_epsilon).float() * resp_policy_mask[inds]).sum()
                             / resp_policy_mask[inds].sum().clamp(min=1))
+                #这里用的是k3 KL estimator，k3_t=r-log(r)-1 其中r为policy ratio
                 kl_ref_penalty = ((torch.exp(ref_resp_logp[inds] - mb_resp_logp) - (ref_resp_logp[inds] - mb_resp_logp) - 1.0)
                                   * resp_policy_mask[inds]).sum() / resp_policy_mask[inds].sum().clamp(min=1)
+                #计算ppo loss，kl_coef是kl惩罚项的系数，当actor偏离ref model时 要罚多重
                 policy_loss = ((torch.max(-advantages[inds] * ratio,
                                           -advantages[inds] * torch.clamp(ratio, 1.0 - args.clip_epsilon, 1.0 + args.clip_epsilon))
                                * resp_policy_mask[inds]).sum() / resp_policy_mask[inds].sum().clamp(min=1)
                                + args.kl_coef * kl_ref_penalty)
+                #value loss 是critic的损失，用来训练critic模型，让他学会预测，当前生成到某个token时，后面大概能得到多少reward
+                #计算两版本的loss，一个是有裁剪，当critic预测的token价值超过[old value - cliprange, old value + cliprange]范围时，就把预测值裁剪到这个范围内，另一个是直接用critic预测的值，两者取最大，保证更新的稳定性
+                #不让v_new相比v_old跳的太大，取max就是在两者选择更猛的惩罚，防止critic更新太猛
                 value_loss = 0.5 * (torch.max((mb_resp_values - returns[inds]) ** 2,
                                               (torch.clamp(mb_resp_values, old_resp_values[inds] - args.cliprange_value,
                                                            old_resp_values[inds] + args.cliprange_value) - returns[inds]) ** 2)
@@ -227,8 +289,10 @@ def ppo_train_epoch(epoch, loader, iters, rollout_engine, ref_model, actor_sched
                 if grad_accum_step % args.accumulation_steps == 0:
                     clip_grad_norm_(actor_model.parameters(), args.grad_clip)
                     clip_grad_norm_(critic_model.parameters(), args.grad_clip)
+                    #优化器更新参数
                     actor_optimizer.step()
                     critic_optimizer.step()
+                    #优化器的学习率调度参数
                     actor_scheduler.step()
                     critic_scheduler.step()
                     actor_optimizer.zero_grad()
@@ -243,7 +307,8 @@ def ppo_train_epoch(epoch, loader, iters, rollout_engine, ref_model, actor_sched
             critic_scheduler.step()
             actor_optimizer.zero_grad()
             critic_optimizer.zero_grad()
-        
+        #定期把训练后的actor权重同步给rollout引擎
+        #如果当前到了save_interval间隔或者当前step是本轮的最后一步
         if step % args.save_interval == 0 or step == iters: rollout_engine.update_policy(actor_model)
 
         if is_main_process():
@@ -299,6 +364,7 @@ if __name__ == "__main__":
     parser.add_argument("--save_dir", type=str, default="../out", help="模型保存目录")
     parser.add_argument('--save_weight', default='ppo_actor', type=str, help="保存权重的前缀名")
     parser.add_argument("--epochs", type=int, default=1, help="训练轮数")
+    #这里的batchsize是一次rollout多少条prompt，batch_size影响的是采样质量和统计稳定性，比如reward均值，advantage，kl估计，critic学的的valude，actor更新的方向都会受到影响
     parser.add_argument("--batch_size", type=int, default=2, help="batch size")
     parser.add_argument("--learning_rate", type=float, default=3e-7, help="Actor学习率")
     parser.add_argument("--critic_learning_rate", type=float, default=5e-7, help="Critic学习率")
@@ -312,7 +378,8 @@ if __name__ == "__main__":
     parser.add_argument('--hidden_size', default=768, type=int, help="隐藏层维度")
     parser.add_argument('--num_hidden_layers', default=8, type=int, help="隐藏层数量")
     parser.add_argument('--use_moe', default=0, type=int, choices=[0, 1], help="是否使用MoE架构（0=否，1=是）")
-    parser.add_argument('--use_mla', default=0, type=int, choices=[0, 1], help="是否使用MLA注意力架构（0=否，1=是）")
+    parser.add_argument('--attention_type', default='gqa', choices=['gqa', 'mha', 'mqa', 'mla'], help="注意力架构")
+    parser.add_argument('--use_mla', default=0, type=int, choices=[0, 1], help="兼容旧参数：是否使用MLA注意力架构（0=否，1=是）")
     parser.add_argument('--kv_lora_rank', default=128, type=int, help="MLA的KV压缩秩（仅use_mla=1时生效）")
     parser.add_argument('--max_seq_len', default=768, type=int, help="Prompt最大长度")
     parser.add_argument("--max_gen_len", type=int, default=1024, help="生成的最大长度")
@@ -325,6 +392,7 @@ if __name__ == "__main__":
     parser.add_argument("--cliprange_value", type=float, default=0.2, help="Value function裁剪范围")
     parser.add_argument("--ppo_update_iters", type=int, default=2, help="同一批rollout重复更新次数")
     parser.add_argument("--early_stop_kl", type=float, default=0.25, help="PPO early stop 的 KL 阈值")
+    #mini_batch_size是每次ppo更新时，计算loss的mini-batch大小，通常小于batch_size，mini_batch_size解决的是更新显存问题
     parser.add_argument("--mini_batch_size", type=int, default=2, help="PPO每次更新的minibatch大小")
     parser.add_argument('--from_weight', default='full_sft', type=str, help="基于哪个权重训练")
     parser.add_argument("--reward_model_path", type=str, default="../../internlm2-1_8b-reward", help="Reward模型路径")
@@ -348,7 +416,13 @@ if __name__ == "__main__":
     
     # ========== 2. 配置目录、模型参数、检查ckp ==========
     os.makedirs(args.save_dir, exist_ok=True)
-    lm_config = MiniMindMLAConfig(hidden_size=args.hidden_size, num_hidden_layers=args.num_hidden_layers, use_moe=bool(args.use_moe), kv_lora_rank=args.kv_lora_rank) if args.use_mla else MiniMindConfig(hidden_size=args.hidden_size, num_hidden_layers=args.num_hidden_layers, use_moe=bool(args.use_moe))
+    lm_config = build_lm_config(
+        hidden_size=args.hidden_size,
+        num_hidden_layers=args.num_hidden_layers,
+        use_moe=bool(args.use_moe),
+        attention_type=resolve_attention_type(args),
+        kv_lora_rank=args.kv_lora_rank
+    )
     ckp_data = lm_checkpoint(lm_config, weight=args.save_weight, save_dir='../checkpoints') if args.from_resume==1 else None
     
     # ========== 3. 设置混合精度 ==========
@@ -396,10 +470,22 @@ if __name__ == "__main__":
     critic_optimizer = optim.AdamW(critic_model.parameters(), lr=args.critic_learning_rate)
     loader_for_count = DataLoader(train_ds, batch_size=args.batch_size, sampler=train_sampler)
     iters = len(loader_for_count)
+    #在计算一个batch能分出来几个minibatchsize，math.ceil向上取整
     mb_factor = max(1, math.ceil(args.batch_size / args.mini_batch_size))
+    #优化器更新的次数
     total_optimizer_steps = math.ceil(iters * args.epochs * args.ppo_update_iters * mb_factor / args.accumulation_steps)
+    #让learning_rate按余弦曲线下降到最小值，T_max是最大更新步数（学习率从初始值降到最小值需要多少个step），eta_min是最小学习率，让学习率按照余弦曲线下降到eta_min
     actor_scheduler = CosineAnnealingLR(actor_optimizer, T_max=total_optimizer_steps, eta_min=args.learning_rate / 10)
     critic_scheduler = CosineAnnealingLR(critic_optimizer, T_max=total_optimizer_steps, eta_min=args.critic_learning_rate / 10)
+    log_training_setup(args, lm_config, stage="ppo", dataset_len=len(train_ds), iters=iters,
+                       tokens_per_sample=args.max_seq_len + args.max_gen_len,
+                       extra={
+                           "rollout_engine": args.rollout_engine,
+                           "ppo_update_iters": args.ppo_update_iters,
+                           "mini_batch_size": args.mini_batch_size,
+                           "kl_coef": args.kl_coef,
+                           "total_optimizer_steps": total_optimizer_steps,
+                       })
 
     start_epoch, start_step = 0, 0
     if ckp_data:
@@ -414,12 +500,17 @@ if __name__ == "__main__":
     
     # ========== 7. 编译和分布式包装 ==========
     if args.use_compile == 1:
+        #会把actor_model包一层编译后的模型，让forward更快
+        #torch.compile()包装后的模型，原始模型通常都在_orig_mod里
         actor_model = torch.compile(actor_model)
         Logger('torch.compile enabled')
+        #把当前的actor同步给rollout engine
         rollout_engine.update_policy(actor_model)
     if dist.is_initialized():
+        #DDP包装
         actor_model = DistributedDataParallel(actor_model, device_ids=[local_rank])
         critic_model = DistributedDataParallel(critic_model, device_ids=[local_rank])
+    #将DDP包装后的模型同步给rollout engine
     rollout_engine.update_policy(actor_model)
     
     # ========== 8. 开始训练 ==========

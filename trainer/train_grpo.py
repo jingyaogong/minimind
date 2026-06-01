@@ -22,7 +22,7 @@ from transformers import AutoModel
 from model.model_minimind import MiniMindConfig, MiniMindForCausalLM
 from model.model_minimind_mla import MiniMindMLAConfig, MiniMindMLAForCausalLM
 from dataset.lm_dataset import RLAIFDataset
-from trainer.trainer_utils import Logger, is_main_process, lm_checkpoint, init_distributed_mode, setup_seed, SkipBatchSampler, init_model, LMForRewardModel, get_model_suffix
+from trainer.trainer_utils import Logger, is_main_process, lm_checkpoint, init_distributed_mode, setup_seed, SkipBatchSampler, init_model, LMForRewardModel, get_model_suffix, build_lm_config, resolve_attention_type, log_training_setup
 from trainer.rollout_engine import create_rollout_engine
 
 warnings.filterwarnings('ignore')
@@ -34,8 +34,15 @@ def rep_penalty(text, n=3, cap=0.5):
     return min(cap, (len(grams) - len(set(grams))) * cap * 2 / len(grams)) if grams else 0.0
 
 
-def calculate_rewards(prompts, responses, reward_model):
+def calculate_rewards(prompts, responses, reward_model, return_stats=False):
     rewards = torch.zeros(len(responses), device=args.device)
+    reward_parts = {
+        "length": torch.zeros(len(responses), device=args.device),
+        "thinking": torch.zeros(len(responses), device=args.device),
+        "format": torch.zeros(len(responses), device=args.device),
+        "repetition": torch.zeros(len(responses), device=args.device),
+        "reward_model": torch.zeros(len(responses), device=args.device),
+    }
 
     with torch.no_grad():
         reward_model_scores = []
@@ -51,21 +58,34 @@ def calculate_rewards(prompts, responses, reward_model):
                 matches = re.findall(pattern, prompt, re.DOTALL)
                 messages = [{"role": role, "content": content.strip()} for role, content in matches]
                 answer = response
-                rewards[response_idx] += 0.5 if 20 <= len(response.strip()) <= 800 else -0.5
+                length_reward = 0.5 if 20 <= len(response.strip()) <= 800 else -0.5
+                rewards[response_idx] += length_reward
+                reward_parts["length"][response_idx] = length_reward
                 if '</think>' in response:
                     thinking_content, answer_content = response.split('</think>', 1)
-                    rewards[response_idx] += 1.0 if 20 <= len(thinking_content.strip()) <= 300 else -0.5
-                    rewards[response_idx] += 0.25 if response.count('</think>') == 1 else -0.25
+                    thinking_reward = 1.0 if 20 <= len(thinking_content.strip()) <= 300 else -0.5
+                    format_reward = 0.25 if response.count('</think>') == 1 else -0.25
+                    rewards[response_idx] += thinking_reward
+                    rewards[response_idx] += format_reward
+                    reward_parts["thinking"][response_idx] = thinking_reward
+                    reward_parts["format"][response_idx] = format_reward
                     answer = answer_content.strip()
-                rewards[response_idx] -= rep_penalty(answer)
+                repetition_reward = -rep_penalty(answer)
+                rewards[response_idx] += repetition_reward
+                reward_parts["repetition"][response_idx] = repetition_reward
 
                 score = reward_model.get_score(messages, answer)
                 reward_model_scores.append(score)
 
         reward_model_scores = torch.tensor(reward_model_scores, device=args.device)
         rewards += reward_model_scores
+        reward_parts["reward_model"] = reward_model_scores
 
-    return rewards
+    if not return_stats:
+        return rewards
+    reward_stats = {f"reward_{name}": value.mean().item() for name, value in reward_parts.items()}
+    reward_stats["reward_total_std"] = rewards.std(unbiased=False).item()
+    return rewards, reward_stats
 
 
 def grpo_train_epoch(epoch, loader, iters, rollout_engine, ref_model, reward_model, start_step=0, wandb=None, use_sglang=False):
@@ -92,7 +112,8 @@ def grpo_train_epoch(epoch, loader, iters, rollout_engine, ref_model, reward_mod
         full_mask = (outputs != tokenizer.pad_token_id).long()
         logp_pos = prompt_lens.unsqueeze(1) - 1 + torch.arange(completion_ids.size(1), device=args.device).unsqueeze(0)
 
-        rewards = calculate_rewards(prompts, completions, reward_model).to(args.device)  # [B*num_gen]
+        rewards, reward_stats = calculate_rewards(prompts, completions, reward_model, return_stats=True)
+        rewards = rewards.to(args.device)  # [B*num_gen]
 
         model_unwrapped = model.module if isinstance(model, DistributedDataParallel) else model
         with autocast_ctx:
@@ -164,10 +185,12 @@ def grpo_train_epoch(epoch, loader, iters, rollout_engine, ref_model, reward_mod
             Logger(f'Epoch:[{epoch + 1}/{args.epochs}]({step}/{iters}), '
                    f'Reward: {avg_reward_val:.4f}, KL_ref: {kl_ref_val:.4f}, '
                    f'Adv Std: {advantages_std_val:.4f}, Adv Mean: {advantages_mean_val:.4f}, '
-                   f'Actor Loss: {policy_loss_val:.4f}, Avg Response Len: {avg_len_val:.2f}, Learning Rate: {current_lr:.8f}')
+                   f'Actor Loss: {policy_loss_val:.4f}, Avg Response Len: {avg_len_val:.2f}, '
+                   f'RM: {reward_stats["reward_reward_model"]:.4f}, Repeat: {reward_stats["reward_repetition"]:.4f}, '
+                   f'Learning Rate: {current_lr:.8f}')
 
             if wandb and is_main_process():
-                wandb.log({
+                log_data = {
                     "reward": avg_reward_val,
                     "kl_ref": kl_ref_val,
                     "advantages_std": advantages_std_val,
@@ -175,7 +198,9 @@ def grpo_train_epoch(epoch, loader, iters, rollout_engine, ref_model, reward_mod
                     "policy_loss": policy_loss_val,
                     "avg_response_len": avg_len_val,
                     "learning_rate": current_lr
-                })
+                }
+                log_data.update(reward_stats)
+                wandb.log(log_data)
 
         if (step % args.save_interval == 0 or step == iters) and is_main_process():
             model.eval()
@@ -193,7 +218,7 @@ def grpo_train_epoch(epoch, loader, iters, rollout_engine, ref_model, reward_mod
         if step % args.save_interval == 0 or step == iters: rollout_engine.update_policy(model)
 
         del prompt_inputs, outputs, completion_ids, per_token_logps, ref_per_token_logps
-        del completions, rewards, grouped_rewards, mean_r, std_r, advantages, completion_mask, completion_pad_mask, prompt_lens, logp_pos
+        del completions, rewards, reward_stats, grouped_rewards, mean_r, std_r, advantages, completion_mask, completion_pad_mask, prompt_lens, logp_pos
 
     if step > start_step and step % args.accumulation_steps != 0:
         if args.grad_clip > 0:
@@ -220,7 +245,8 @@ if __name__ == "__main__":
     parser.add_argument('--hidden_size', default=768, type=int, help="隐藏层维度")
     parser.add_argument('--num_hidden_layers', default=8, type=int, help="隐藏层数量")
     parser.add_argument('--use_moe', default=0, type=int, choices=[0, 1], help="是否使用MoE架构（0=否，1=是）")
-    parser.add_argument('--use_mla', default=0, type=int, choices=[0, 1], help="是否使用MLA注意力架构（0=否，1=是）")
+    parser.add_argument('--attention_type', default='gqa', choices=['gqa', 'mha', 'mqa', 'mla'], help="注意力架构")
+    parser.add_argument('--use_mla', default=0, type=int, choices=[0, 1], help="兼容旧参数：是否使用MLA注意力架构（0=否，1=是）")
     parser.add_argument('--kv_lora_rank', default=128, type=int, help="MLA的KV压缩秩（仅use_mla=1时生效）")
     parser.add_argument('--max_seq_len', default=768, type=int, help="Prompt最大长度")
     parser.add_argument("--max_gen_len", type=int, default=1024, help="生成的最大长度")
@@ -252,10 +278,14 @@ if __name__ == "__main__":
     
     # ========== 2. 配置目录、模型参数、检查ckp ==========
     os.makedirs(args.save_dir, exist_ok=True)
-    lm_config = MiniMindMLAConfig(hidden_size=args.hidden_size, num_hidden_layers=args.num_hidden_layers,
-                               max_seq_len=args.max_seq_len + args.max_gen_len, use_moe=bool(args.use_moe),
-                               kv_lora_rank=args.kv_lora_rank) if args.use_mla else MiniMindConfig(hidden_size=args.hidden_size, num_hidden_layers=args.num_hidden_layers,
-                               max_seq_len=args.max_seq_len + args.max_gen_len, use_moe=bool(args.use_moe))
+    lm_config = build_lm_config(
+        hidden_size=args.hidden_size,
+        num_hidden_layers=args.num_hidden_layers,
+        max_seq_len=args.max_seq_len + args.max_gen_len,
+        use_moe=bool(args.use_moe),
+        attention_type=resolve_attention_type(args),
+        kv_lora_rank=args.kv_lora_rank
+    )
     ckp_data = lm_checkpoint(lm_config, weight=args.save_weight, save_dir='../checkpoints') if args.from_resume==1 else None
     
     # ========== 3. 设置混合精度 ==========
@@ -300,6 +330,15 @@ if __name__ == "__main__":
     iters = len(loader_for_count)
     total_optimizer_steps = math.ceil(iters / args.accumulation_steps) * args.epochs
     scheduler = CosineAnnealingLR(optimizer, T_max=total_optimizer_steps, eta_min=args.learning_rate / 10)
+    log_training_setup(args, lm_config, stage="grpo", dataset_len=len(train_ds), iters=iters,
+                       tokens_per_sample=args.max_seq_len + args.max_gen_len,
+                       extra={
+                           "rollout_engine": args.rollout_engine,
+                           "num_generations": args.num_generations,
+                           "loss_type": args.loss_type,
+                           "beta": args.beta,
+                           "total_optimizer_steps": total_optimizer_steps,
+                       })
     
     # ========== 6. 从ckp恢复状态 ==========
     start_epoch, start_step = 0, 0

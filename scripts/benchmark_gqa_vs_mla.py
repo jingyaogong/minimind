@@ -78,8 +78,8 @@ def cleanup_gpu(device):
 
 # ────────────────────── model factories ──────────────────────────
 
-def build_gqa(hidden_size):
-    config = MiniMindConfig(hidden_size=hidden_size)
+def build_dense_attention(hidden_size, attention_type):
+    config = MiniMindConfig(hidden_size=hidden_size, attention_type=attention_type)
     return MiniMindForCausalLM(config)
 
 
@@ -96,17 +96,19 @@ def benchmark_model_info(hidden_size):
     print("=" * 70)
 
     models = {
-        "GQA": build_gqa(hidden_size),
+        "MHA": build_dense_attention(hidden_size, "mha"),
+        "GQA": build_dense_attention(hidden_size, "gqa"),
+        "MQA": build_dense_attention(hidden_size, "mqa"),
         "MLA(128)": build_mla(hidden_size, 128),
         "MLA(64)": build_mla(hidden_size, 64),
         "MLA(256)": build_mla(hidden_size, 256),
     }
 
-    # GQA: KV-Cache floats/token/layer = 2 * num_kv_heads * head_dim
-    gqa_config = MiniMindConfig(hidden_size=hidden_size)
+    # Dense attention: KV-Cache floats/token/layer = 2 * num_kv_heads * head_dim
+    gqa_config = MiniMindConfig(hidden_size=hidden_size, attention_type="gqa")
     kv_cache_gqa = 2 * gqa_config.num_key_value_heads * gqa_config.head_dim
 
-    header = f"{'指标':<28}{'GQA':>12}{'MLA(128)':>12}{'MLA(64)':>12}{'MLA(256)':>12}"
+    header = f"{'指标':<28}" + "".join(f"{name:>12}" for name in models)
     print(header)
     print("-" * len(header))
 
@@ -121,7 +123,7 @@ def benchmark_model_info(hidden_size):
             rank = int(name.split("(")[1].rstrip(")"))
             kv_cache[name] = rank + m.config.rope_dim  # kv_latent + k_rope
         else:
-            kv_cache[name] = kv_cache_gqa
+            kv_cache[name] = 2 * m.config.num_key_value_heads * m.config.head_dim
 
     row = f"{'总参数量':<28}" + "".join(f"{fmt_num(total_params[n]):>12}" for n in models)
     print(row)
@@ -424,13 +426,13 @@ def print_markdown_summary(models_info, hidden_size):
     print("=" * 70)
     print()
 
-    gqa_config = MiniMindConfig(hidden_size=hidden_size)
+    gqa_config = MiniMindConfig(hidden_size=hidden_size, attention_type="gqa")
     kv_cache_gqa = 2 * gqa_config.num_key_value_heads * gqa_config.head_dim
 
     print("### Model Info")
     print()
-    print(f"| Metric | GQA | MLA(128) | MLA(64) | MLA(256) |")
-    print(f"|--------|-----|----------|---------|----------|")
+    print("| Metric | " + " | ".join(models_info.keys()) + " |")
+    print("|--------|" + "|".join(["------"] * len(models_info)) + "|")
 
     total_params = {}
     attn_params = {}
@@ -442,7 +444,7 @@ def print_markdown_summary(models_info, hidden_size):
             rank = int(name.split("(")[1].rstrip(")"))
             kv_cache[name] = rank + m.config.rope_dim  # kv_latent + k_rope
         else:
-            kv_cache[name] = kv_cache_gqa
+            kv_cache[name] = 2 * m.config.num_key_value_heads * m.config.head_dim
 
     row = "| Total Params |"
     for n in models_info:
@@ -507,7 +509,9 @@ def main():
     if device.type == "cuda":
         # Benchmark 2: 推理速度
         models_gpu = {
-            "GQA": build_gqa(hidden_size),
+            "MHA": build_dense_attention(hidden_size, "mha"),
+            "GQA": build_dense_attention(hidden_size, "gqa"),
+            "MQA": build_dense_attention(hidden_size, "mqa"),
             "MLA(128)": build_mla(hidden_size, 128),
             "MLA(64)": build_mla(hidden_size, 64),
             "MLA(256)": build_mla(hidden_size, 256),
@@ -516,7 +520,9 @@ def main():
 
         # Benchmark 3: KV-Cache 显存
         models_gpu = {
-            "GQA": build_gqa(hidden_size),
+            "MHA": build_dense_attention(hidden_size, "mha"),
+            "GQA": build_dense_attention(hidden_size, "gqa"),
+            "MQA": build_dense_attention(hidden_size, "mqa"),
             "MLA(128)": build_mla(hidden_size, 128),
             "MLA(64)": build_mla(hidden_size, 64),
             "MLA(256)": build_mla(hidden_size, 256),
@@ -525,7 +531,9 @@ def main():
 
         # Benchmark 4: 训练吞吐量
         models_gpu = {
-            "GQA": build_gqa(hidden_size),
+            "MHA": build_dense_attention(hidden_size, "mha"),
+            "GQA": build_dense_attention(hidden_size, "gqa"),
+            "MQA": build_dense_attention(hidden_size, "mqa"),
             "MLA(128)": build_mla(hidden_size, 128),
             "MLA(64)": build_mla(hidden_size, 64),
             "MLA(256)": build_mla(hidden_size, 256),

@@ -19,6 +19,7 @@ class MiniMindMLAConfig(MiniMindConfig):
     model_type = "minimind_mla"
 
     def __init__(self, kv_lora_rank=128, q_lora_rank=256, rope_dim=None, **kwargs):
+        kwargs["attention_type"] = "mla"
         super().__init__(**kwargs)
         self.kv_lora_rank = kv_lora_rank
         self.q_lora_rank = q_lora_rank

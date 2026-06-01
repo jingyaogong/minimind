@@ -1,0 +1,46 @@
+{
+  "preferred_language": "zh-en",
+  "sources": [
+    {
+      "name": "DuReader",
+      "language": "zh",
+      "role": "primary Chinese QA/RAG source",
+      "url": "https://github.com/baidu/DuReader",
+      "paper": "https://arxiv.org/abs/1711.05073",
+      "notes": "Real Chinese search questions with evidence documents and human answers. Check the upstream license before redistributing converted data."
+    },
+    {
+      "name": "Natural Questions",
+      "language": "en",
+      "role": "open-domain QA source",
+      "url": "https://github.com/google-research-datasets/natural-questions",
+      "notes": "Google search questions with Wikipedia-based annotations. Useful for English QA and cross-lingual ablations."
+    },
+    {
+      "name": "MS MARCO",
+      "language": "en",
+      "role": "retrieval and passage QA source",
+      "url": "https://microsoft.github.io/msmarco/",
+      "paper": "https://arxiv.org/abs/1611.09268",
+      "notes": "Bing search queries, passages, and answers. Useful for hard negative construction and retrieval-style evaluation."
+    },
+    {
+      "name": "KILT",
+      "language": "en",
+      "role": "provenance-oriented evaluation source",
+      "url": "https://github.com/facebookresearch/KILT",
+      "paper": "https://arxiv.org/abs/2009.02252",
+      "notes": "Knowledge-intensive benchmark with provenance. Useful for citation/provenance metrics."
+    }
+  ],
+  "derived_format": {
+    "name": "SearchShortQA v1",
+    "required_fields": ["id", "question", "answer", "answers", "gold_doc_ids", "contexts"],
+    "recommended_splits": {
+      "sft_train": "30000-100000",
+      "grpo_train": "3000-10000",
+      "dev": "1000-3000",
+      "test": "1000-3000"
+    }
+  }
+}
