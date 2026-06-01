@@ -181,4 +181,6 @@ if __name__ == "__main__":
             train_epoch(epoch, loader, len(loader), lora_params, 0, wandb)
     
     # ========== 10. 清理分布进程 ==========
-    if dist.is_initialized(): dist.destroy_process_group()
+    if dist.is_initialized():
+        dist.barrier()
+        dist.destroy_process_group()
