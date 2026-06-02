@@ -2,6 +2,8 @@ __pycache__/
 *.pyc
 .DS_Store
 out
+checkpoints/
+dataset/*.jsonl
 website/
 docs-minimind/
 .gstack/
