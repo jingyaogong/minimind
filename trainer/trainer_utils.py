@@ -169,6 +169,55 @@ def get_deepspeed_tag(lm_config, weight):
     return f"{weight}_{lm_config.hidden_size}{get_model_suffix(lm_config)}"
 
 
+def get_deepspeed_step_tag(lm_config, weight, epoch, step):
+    return f"{get_deepspeed_tag(lm_config, weight)}_epoch{epoch}_step{step}"
+
+
+def get_deepspeed_latest_file(lm_config, weight, save_dir="../checkpoints"):
+    return os.path.join(save_dir, f"{get_deepspeed_tag(lm_config, weight)}_latest")
+
+
+def _read_deepspeed_latest_tag(lm_config, weight, save_dir="../checkpoints"):
+    latest_file = get_deepspeed_latest_file(lm_config, weight, save_dir)
+    if not os.path.exists(latest_file):
+        return None
+    with open(latest_file, "r", encoding="utf-8") as f:
+        tag = f.read().strip()
+    return tag or None
+
+
+def _write_deepspeed_latest_tag(lm_config, weight, tag, save_dir="../checkpoints"):
+    latest_file = get_deepspeed_latest_file(lm_config, weight, save_dir)
+    tmp_file = latest_file + ".tmp"
+    with open(tmp_file, "w", encoding="utf-8") as f:
+        f.write(tag)
+    os.replace(tmp_file, latest_file)
+
+
+def _candidate_deepspeed_tags(lm_config, weight, save_dir="../checkpoints"):
+    base_tag = get_deepspeed_tag(lm_config, weight)
+    candidates = []
+    latest_tag = _read_deepspeed_latest_tag(lm_config, weight, save_dir)
+    if latest_tag:
+        candidates.append(latest_tag)
+    candidates.append(base_tag)
+    if os.path.exists(save_dir):
+        step_tags = []
+        prefix = f"{base_tag}_epoch"
+        for name in os.listdir(save_dir):
+            path = os.path.join(save_dir, name)
+            if name.startswith(prefix) and os.path.isdir(path):
+                step_tags.append((os.path.getmtime(path), name))
+        candidates.extend(name for _, name in sorted(step_tags, reverse=True))
+    dedup = []
+    seen = set()
+    for tag in candidates:
+        if tag not in seen:
+            seen.add(tag)
+            dedup.append(tag)
+    return dedup
+
+
 def save_deepspeed_checkpoint(model_engine, lm_config, weight, epoch=0, step=0, wandb=None, save_dir="../checkpoints", **kwargs):
     """DeepSpeed checkpoint 必须所有 rank 都调用，不能只在 rank0 保存。"""
     os.makedirs(save_dir, exist_ok=True)
@@ -184,22 +233,29 @@ def save_deepspeed_checkpoint(model_engine, lm_config, weight, epoch=0, step=0, 
         "wandb_id": wandb_id,
     }
     client_state.update({k: v for k, v in kwargs.items() if v is not None})
-    tag = get_deepspeed_tag(lm_config, weight)
+    tag = get_deepspeed_step_tag(lm_config, weight, epoch, step)
     model_engine.save_checkpoint(save_dir, tag=tag, client_state=client_state)
     if is_main_process():
+        _write_deepspeed_latest_tag(lm_config, weight, tag, save_dir)
         Logger(f"DeepSpeed checkpoint saved: {save_dir}/{tag}")
     return tag
 
 
 def load_deepspeed_checkpoint(model_engine, lm_config, weight, save_dir="../checkpoints"):
-    tag = get_deepspeed_tag(lm_config, weight)
-    try:
-        load_path, client_state = model_engine.load_checkpoint(save_dir, tag=tag)
-    except Exception as exc:
+    errors = []
+    for tag in _candidate_deepspeed_tags(lm_config, weight, save_dir):
+        try:
+            load_path, client_state = model_engine.load_checkpoint(save_dir, tag=tag)
+        except Exception as exc:
+            errors.append(f"{tag}: {exc}")
+            continue
+        if load_path is None:
+            errors.append(f"{tag}: load_path=None")
+            continue
+        break
+    else:
         if is_main_process():
-            Logger(f"DeepSpeed checkpoint not loaded: {exc}")
-        return None
-    if load_path is None:
+            Logger("DeepSpeed checkpoint not loaded" + (f": {'; '.join(errors)}" if errors else ""))
         return None
     saved_ws = client_state.get("world_size", 1) if client_state else 1
     current_ws = dist.get_world_size() if dist.is_initialized() else 1

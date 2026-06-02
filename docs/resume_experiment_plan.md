@@ -69,6 +69,30 @@ deepspeed --num_gpus=7 train_search_grpo_deepspeed.py \
   --accumulation_steps 4
 ```
 
+断点续训：
+
+```bash
+cd trainer
+
+deepspeed --num_gpus=7 train_search_grpo_deepspeed.py \
+  --model_profile SearchLM-300M \
+  --data_path ../dataset/search_shortqa/search_shortqa_train.jsonl \
+  --from_weight full_sft_search \
+  --save_weight search_grpo \
+  --num_generations 6 \
+  --dtype float16 \
+  --batch_size 1 \
+  --accumulation_steps 4 \
+  --save_interval 25 \
+  --from_resume 1
+```
+
+注意：
+
+- 恢复时 `--epochs` 是总 epoch，不是剩余 epoch。
+- 严格连续训练时不要改变 GPU 数量、batch、accumulation、数据文件和模型结构。
+- `../checkpoints/` 是完整训练状态；`../out/` 是推理权重。在线 GPU 环境要保证这两个目录都在持久磁盘上。
+
 3090 不支持 bf16 的完整高效路径时，优先用 `float16`。如果 GRPO 显存吃紧，先降：
 
 - `--batch_size 1`

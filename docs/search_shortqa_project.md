@@ -246,6 +246,48 @@ pip install deepspeed
 
 默认使用 `trainer/ds_config_zero2.json`，采用 ZeRO-2 切分 optimizer state 和 gradient，适合 7×RTX3090 的 100M/300M/500M 训练链路。完整 DeepSpeed checkpoint 保存在 `../checkpoints/`，同时 rank0 会导出一份轻量 `.pth` 权重到 `../out/` 用于评测和推理。
 
+## 断点续训
+
+DeepSpeed 训练脚本支持 `--from_resume 1`。恢复的是 `../checkpoints/` 下的完整训练状态，包括模型、optimizer、scheduler、DeepSpeed engine 和已训练到的 `epoch/step`；`../out/` 下的 `.pth` 只是轻量推理权重，不能单独用于连续训练。
+
+第一次训练建议降低 `save_interval`，减少在线 GPU 中断后的损失：
+
+```bash
+cd trainer
+
+deepspeed --num_gpus=7 train_pretrain_deepspeed.py \
+  --model_profile SearchLM-300M \
+  --data_path ../dataset/pretrain_t2t_mini.jsonl \
+  --save_weight pretrain_searchlm \
+  --dtype float16 \
+  --save_interval 200
+```
+
+中断后用同样的核心参数恢复：
+
+```bash
+cd trainer
+
+deepspeed --num_gpus=7 train_pretrain_deepspeed.py \
+  --model_profile SearchLM-300M \
+  --data_path ../dataset/pretrain_t2t_mini.jsonl \
+  --save_weight pretrain_searchlm \
+  --dtype float16 \
+  --save_interval 200 \
+  --from_resume 1
+```
+
+恢复时需要保持以下参数一致：`--model_profile`、模型结构相关参数、`--save_weight`、`--data_path`、`--max_seq_len`、GPU 数量、`--batch_size` 和 `--accumulation_steps`。`--epochs` 表示总目标 epoch 数，不是剩余 epoch 数。
+
+恢复成功时日志会出现：
+
+```text
+DeepSpeed checkpoint loaded: ...
+Epoch [x/y]: 跳过前N个step，从step N+1开始
+```
+
+为了避免中断时覆盖最后一个可用 checkpoint，DeepSpeed checkpoint 会保存成 step 级目录，例如 `search_grpo_1024_mla_epoch0_step50`，并用 `search_grpo_1024_mla_latest` 指针记录最后完整保存的 checkpoint。
+
 推荐完整训练顺序：
 
 ```bash
