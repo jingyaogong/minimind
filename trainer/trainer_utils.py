@@ -8,6 +8,7 @@ sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), '..')))
 import json
 import random
 import math
+import shutil
 import numpy as np
 import torch
 import torch.distributed as dist
@@ -80,11 +81,16 @@ def unwrap_model(model):
     return getattr(raw_model, "_orig_mod", raw_model)
 
 
+def get_model_weight_path(lm_config, save_dir="../out", weight="model", epoch=None, step=None):
+    model_suffix = get_model_suffix(lm_config)
+    step_suffix = f"_epoch{epoch}_step{step}" if epoch is not None and step is not None else ""
+    return f"{save_dir}/{weight}_{lm_config.hidden_size}{model_suffix}{step_suffix}.pth"
+
+
 def save_model_weights(lm_config, model, save_dir="../out", weight="model", dtype=torch.float16):
     """保存一份轻量推理权重；DeepSpeed完整训练状态由 save_checkpoint 单独保存。"""
     os.makedirs(save_dir, exist_ok=True)
-    model_suffix = get_model_suffix(lm_config)
-    ckp_path = f"{save_dir}/{weight}_{lm_config.hidden_size}{model_suffix}.pth"
+    ckp_path = get_model_weight_path(lm_config, save_dir=save_dir, weight=weight)
     raw_model = unwrap_model(model)
     state_dict = raw_model.state_dict()
     state_dict = {k: v.detach().to(dtype).cpu() for k, v in state_dict.items()}
@@ -218,6 +224,48 @@ def _candidate_deepspeed_tags(lm_config, weight, save_dir="../checkpoints"):
     return dedup
 
 
+def _prune_old_deepspeed_step_tags(lm_config, weight, keep_tag, save_dir="../checkpoints"):
+    if not os.path.exists(save_dir):
+        return
+    base_tag = get_deepspeed_tag(lm_config, weight)
+    prefix = f"{base_tag}_epoch"
+    for name in os.listdir(save_dir):
+        if name == keep_tag or not name.startswith(prefix):
+            continue
+        path = os.path.join(save_dir, name)
+        if os.path.isdir(path):
+            shutil.rmtree(path, ignore_errors=True)
+
+
+def assert_no_training_output_collision(lm_config, weight, save_dir="../out", checkpoint_dir="../checkpoints", from_resume=0, overwrite=0):
+    if int(from_resume) == 1 or int(overwrite) == 1:
+        return
+    base_tag = get_deepspeed_tag(lm_config, weight)
+    latest_weight = get_model_weight_path(lm_config, save_dir=save_dir, weight=weight)
+    latest_file = get_deepspeed_latest_file(lm_config, weight, checkpoint_dir)
+    existing = []
+    if os.path.exists(latest_weight):
+        existing.append(latest_weight)
+    if os.path.exists(latest_file):
+        existing.append(latest_file)
+    if os.path.exists(os.path.join(checkpoint_dir, base_tag)):
+        existing.append(os.path.join(checkpoint_dir, base_tag))
+    if os.path.exists(checkpoint_dir):
+        prefix = f"{base_tag}_epoch"
+        for name in os.listdir(checkpoint_dir):
+            if name.startswith(prefix):
+                existing.append(os.path.join(checkpoint_dir, name))
+                break
+    if not existing:
+        return
+    raise RuntimeError(
+        "检测到同名训练产物，已阻止覆盖。"
+        f" save_weight={weight}, hidden_size={lm_config.hidden_size}, existing={existing}. "
+        "如果是继续训练，请加 --from_resume 1；如果是新实验，请换一个 --save_weight；"
+        "如果确认要覆盖/复用旧目录，请显式加 --overwrite_output 1。"
+    )
+
+
 def save_deepspeed_checkpoint(model_engine, lm_config, weight, epoch=0, step=0, wandb=None, save_dir="../checkpoints", **kwargs):
     """DeepSpeed checkpoint 必须所有 rank 都调用，不能只在 rank0 保存。"""
     os.makedirs(save_dir, exist_ok=True)
@@ -237,7 +285,10 @@ def save_deepspeed_checkpoint(model_engine, lm_config, weight, epoch=0, step=0, 
     model_engine.save_checkpoint(save_dir, tag=tag, client_state=client_state)
     if is_main_process():
         _write_deepspeed_latest_tag(lm_config, weight, tag, save_dir)
+        _prune_old_deepspeed_step_tags(lm_config, weight, keep_tag=tag, save_dir=save_dir)
         Logger(f"DeepSpeed checkpoint saved: {save_dir}/{tag}")
+    if dist.is_initialized():
+        dist.barrier()
     return tag
 
 

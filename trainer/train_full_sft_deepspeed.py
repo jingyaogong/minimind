@@ -27,6 +27,7 @@ from trainer.trainer_utils import (
     add_model_profile_args,
     apply_model_profile,
     build_lm_config,
+    assert_no_training_output_collision,
     init_model,
     is_main_process,
     get_cuda_peak_memory_gb,
@@ -149,6 +150,7 @@ def parse_args():
     parser.add_argument("--data_path", type=str, default="../dataset/sft_t2t_mini.jsonl")
     parser.add_argument("--from_weight", default="pretrain", type=str)
     parser.add_argument("--from_resume", default=0, type=int, choices=[0, 1])
+    parser.add_argument("--overwrite_output", default=0, type=int, choices=[0, 1])
     parser.add_argument("--use_wandb", action="store_true")
     parser.add_argument("--wandb_project", type=str, default="SearchLM-Full-SFT-DS")
     parser.add_argument("--use_compile", default=0, type=int, choices=[0, 1])
@@ -180,6 +182,14 @@ if __name__ == "__main__":
         num_attention_heads=args.num_attention_heads,
         num_key_value_heads=args.num_key_value_heads,
         intermediate_size=args.intermediate_size,
+    )
+    assert_no_training_output_collision(
+        lm_config,
+        weight=args.save_weight,
+        save_dir=args.save_dir,
+        checkpoint_dir="../checkpoints",
+        from_resume=args.from_resume,
+        overwrite=args.overwrite_output,
     )
 
     model, tokenizer = init_model(lm_config, args.from_weight, device=args.device)
