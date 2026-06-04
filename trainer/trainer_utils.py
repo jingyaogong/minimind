@@ -5,6 +5,7 @@ import os
 import sys
 __package__ = "trainer"
 sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), '..')))
+import re
 import json
 import random
 import math
@@ -224,6 +225,16 @@ def _candidate_deepspeed_tags(lm_config, weight, save_dir="../checkpoints"):
     return dedup
 
 
+def _parse_deepspeed_tag_metadata(tag):
+    match = re.search(r"_epoch(\d+)_step(\d+)$", tag)
+    if not match:
+        return {}
+    return {
+        "epoch": int(match.group(1)),
+        "step": int(match.group(2)),
+    }
+
+
 def _prune_old_deepspeed_step_tags(lm_config, weight, keep_tag, save_dir="../checkpoints"):
     if not os.path.exists(save_dir):
         return
@@ -294,6 +305,7 @@ def save_deepspeed_checkpoint(model_engine, lm_config, weight, epoch=0, step=0, 
 
 def load_deepspeed_checkpoint(model_engine, lm_config, weight, save_dir="../checkpoints"):
     errors = []
+    loaded_tag = None
     for tag in _candidate_deepspeed_tags(lm_config, weight, save_dir):
         try:
             load_path, client_state = model_engine.load_checkpoint(save_dir, tag=tag)
@@ -303,18 +315,27 @@ def load_deepspeed_checkpoint(model_engine, lm_config, weight, save_dir="../chec
         if load_path is None:
             errors.append(f"{tag}: load_path=None")
             continue
+        loaded_tag = tag
         break
     else:
         if is_main_process():
             Logger("DeepSpeed checkpoint not loaded" + (f": {'; '.join(errors)}" if errors else ""))
         return None
-    saved_ws = client_state.get("world_size", 1) if client_state else 1
+    client_state = client_state or {}
+    tag_state = _parse_deepspeed_tag_metadata(loaded_tag or "")
+    for key, value in tag_state.items():
+        client_state.setdefault(key, value)
+    client_state.setdefault("world_size", 1)
+    saved_ws = client_state.get("world_size", 1)
     current_ws = dist.get_world_size() if dist.is_initialized() else 1
     if saved_ws != current_ws and is_main_process():
         Logger(f"DeepSpeed checkpoint world_size changed: {saved_ws} -> {current_ws}")
     if is_main_process():
-        Logger(f"DeepSpeed checkpoint loaded: {load_path}")
-    return client_state or {}
+        Logger(
+            f"DeepSpeed checkpoint loaded: {load_path}, "
+            f"resume epoch={client_state.get('epoch')}, step={client_state.get('step')}"
+        )
+    return client_state
 
 
 def build_lm_config(hidden_size=768, num_hidden_layers=8, use_moe=False, attention_type="gqa", kv_lora_rank=128, **kwargs):
