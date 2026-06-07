@@ -214,6 +214,7 @@ def _candidate_deepspeed_tags(lm_config, weight, save_dir="../checkpoints"):
         for name in os.listdir(save_dir):
             path = os.path.join(save_dir, name)
             if name.startswith(prefix) and os.path.isdir(path):
+                #获取文件夹最后修改时间的函数
                 step_tags.append((os.path.getmtime(path), name))
         candidates.extend(name for _, name in sorted(step_tags, reverse=True))
     dedup = []
@@ -308,6 +309,7 @@ def load_deepspeed_checkpoint(model_engine, lm_config, weight, save_dir="../chec
     loaded_tag = None
     for tag in _candidate_deepspeed_tags(lm_config, weight, save_dir):
         try:
+            #deepspeed会从save_dir中找tag对应的checkpoint
             load_path, client_state = model_engine.load_checkpoint(save_dir, tag=tag)
         except Exception as exc:
             errors.append(f"{tag}: {exc}")
@@ -317,6 +319,7 @@ def load_deepspeed_checkpoint(model_engine, lm_config, weight, save_dir="../chec
             continue
         loaded_tag = tag
         break
+    #这个的else的for else 意思是如果for循环没有被break打断就走else分支
     else:
         if is_main_process():
             Logger("DeepSpeed checkpoint not loaded" + (f": {'; '.join(errors)}" if errors else ""))

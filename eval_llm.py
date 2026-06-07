@@ -1,41 +1,51 @@
 import time
 import argparse
+import os
 import random
 import warnings
 import torch
 from transformers import AutoTokenizer, AutoModelForCausalLM, TextStreamer
-from model.model_minimind import MiniMindConfig, MiniMindForCausalLM
-from model.model_minimind_mla import MiniMindMLAConfig, MiniMindMLAForCausalLM
+from model.model_minimind import MiniMindForCausalLM
+from model.model_minimind_mla import MiniMindMLAForCausalLM
 from model.model_lora import *
-from trainer.trainer_utils import setup_seed, get_model_params
+from trainer.trainer_utils import (
+    add_model_profile_args,
+    apply_model_profile,
+    build_lm_config,
+    get_model_params,
+    get_model_suffix,
+    resolve_attention_type,
+    setup_seed,
+)
 warnings.filterwarnings('ignore')
 
 def init_model(args):
     tokenizer = AutoTokenizer.from_pretrained(args.load_from)
     if 'model' in args.load_from:
-        if args.use_mla:
-            config = MiniMindMLAConfig(
-                hidden_size=args.hidden_size,
-                num_hidden_layers=args.num_hidden_layers,
-                use_moe=bool(args.use_moe),
-                inference_rope_scaling=args.inference_rope_scaling,
-                kv_lora_rank=args.kv_lora_rank
-            )
+        attention_type = resolve_attention_type(args)
+        config = build_lm_config(
+            hidden_size=args.hidden_size,
+            num_hidden_layers=args.num_hidden_layers,
+            use_moe=bool(args.use_moe),
+            attention_type=attention_type,
+            num_attention_heads=args.num_attention_heads,
+            num_key_value_heads=args.num_key_value_heads,
+            intermediate_size=args.intermediate_size,
+            kv_lora_rank=args.kv_lora_rank,
+            q_lora_rank=args.q_lora_rank,
+            rope_dim=args.rope_dim,
+            inference_rope_scaling=args.inference_rope_scaling,
+        )
+        if attention_type == "mla":
             model = MiniMindMLAForCausalLM(config)
         else:
-            model = MiniMindForCausalLM(MiniMindConfig(
-                hidden_size=args.hidden_size,
-                num_hidden_layers=args.num_hidden_layers,
-                use_moe=bool(args.use_moe),
-                inference_rope_scaling=args.inference_rope_scaling
-            ))
-        model_suffix = '_moe' if args.use_moe else ''
-        if args.use_mla: model_suffix += '_mla'
-        ckp = f'./{args.save_dir}/{args.weight}_{args.hidden_size}{model_suffix}.pth'
+            model = MiniMindForCausalLM(config)
+        model_suffix = get_model_suffix(config)
+        ckp = os.path.join(args.save_dir, f'{args.weight}_{args.hidden_size}{model_suffix}.pth')
         model.load_state_dict(torch.load(ckp, map_location=args.device), strict=True)
         if args.lora_weight != 'None':
             apply_lora(model)
-            load_lora(model, f'./{args.save_dir}/{args.lora_weight}_{args.hidden_size}.pth')
+            load_lora(model, os.path.join(args.save_dir, f'{args.lora_weight}_{args.hidden_size}.pth'))
     else:
         model = AutoModelForCausalLM.from_pretrained(args.load_from, trust_remote_code=True)
     get_model_params(model, model.config)
@@ -49,9 +59,15 @@ def main():
     parser.add_argument('--lora_weight', default='None', type=str, help="LoRA权重名称（None表示不使用，可选：lora_identity, lora_medical）")
     parser.add_argument('--hidden_size', default=768, type=int, help="隐藏层维度")
     parser.add_argument('--num_hidden_layers', default=8, type=int, help="隐藏层数量")
+    parser.add_argument('--num_attention_heads', default=8, type=int, help="注意力头数量")
+    parser.add_argument('--num_key_value_heads', default=4, type=int, help="KV头数量")
+    parser.add_argument('--intermediate_size', default=None, type=int, help="FFN中间层维度")
     parser.add_argument('--use_moe', default=0, type=int, choices=[0, 1], help="是否使用MoE架构（0=否，1=是）")
+    parser.add_argument('--attention_type', default='gqa', type=str, choices=['gqa', 'mha', 'mqa', 'mla'], help="注意力结构")
     parser.add_argument('--use_mla', default=0, type=int, choices=[0, 1], help="是否使用MLA注意力架构（0=否，1=是）")
     parser.add_argument('--kv_lora_rank', default=128, type=int, help="MLA的KV压缩秩（仅use_mla=1时生效）")
+    parser.add_argument('--q_lora_rank', default=256, type=int, help="MLA的Q压缩秩（仅use_mla=1时生效）")
+    parser.add_argument('--rope_dim', default=None, type=int, help="MLA解耦RoPE维度")
     parser.add_argument('--inference_rope_scaling', default=False, action='store_true', help="启用RoPE位置编码外推（4倍，仅解决位置编码问题）")
     parser.add_argument('--max_new_tokens', default=8192, type=int, help="最大生成长度（注意：并非模型实际长文本能力）")
     parser.add_argument('--temperature', default=0.85, type=float, help="生成温度，控制随机性（0-1，越大越随机）")
@@ -60,7 +76,9 @@ def main():
     parser.add_argument('--historys', default=0, type=int, help="携带历史对话轮数（需为偶数，0表示不携带历史）")
     parser.add_argument('--show_speed', default=1, type=int, help="显示decode速度（tokens/s）")
     parser.add_argument('--device', default='cuda' if torch.cuda.is_available() else 'cpu', type=str, help="运行设备")
+    add_model_profile_args(parser)
     args = parser.parse_args()
+    apply_model_profile(args)
     
     prompts = [
         '你有什么特长？',
