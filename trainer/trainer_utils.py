@@ -154,6 +154,74 @@ def get_cuda_peak_memory_gb():
     return torch.cuda.max_memory_allocated(torch.cuda.current_device()) / (1024 ** 3)
 
 
+def build_training_signature(args, data_path, dataset_len, iters):
+    """记录恢复训练必须保持一致的关键参数。"""
+    resolved_data_path = os.path.realpath(data_path)
+    data_stat = os.stat(resolved_data_path)
+    return {
+        "data_path": resolved_data_path,
+        "data_size": data_stat.st_size,
+        "data_mtime_ns": data_stat.st_mtime_ns,
+        "dataset_len": int(dataset_len),
+        "iters_per_epoch": int(iters),
+        "epochs": int(args.epochs),
+        "batch_size": int(args.batch_size),
+        "accumulation_steps": int(args.accumulation_steps),
+        "max_seq_len": int(args.max_seq_len),
+        "learning_rate": float(args.learning_rate),
+        "dtype": getattr(args, "dtype", "float16"),
+        "world_size": dist.get_world_size() if dist.is_initialized() else 1,
+        "model_profile": getattr(args, "model_profile", ""),
+        "hidden_size": int(args.hidden_size),
+        "num_hidden_layers": int(args.num_hidden_layers),
+        "num_attention_heads": int(args.num_attention_heads),
+        "num_key_value_heads": int(args.num_key_value_heads),
+        "intermediate_size": getattr(args, "intermediate_size", None),
+        "attention_type": resolve_attention_type(args),
+        "use_moe": int(getattr(args, "use_moe", 0)),
+        "kv_lora_rank": int(getattr(args, "kv_lora_rank", 0)),
+        "q_lora_rank": int(getattr(args, "q_lora_rank", 0)),
+        "rope_dim": getattr(args, "rope_dim", None),
+    }
+
+
+def validate_training_signature(saved, current, allow_mismatch=False):
+    """阻止参数变化后伪装成严格断点续训。旧 checkpoint 没有签名时保持兼容。"""
+    if not saved:
+        if is_main_process():
+            Logger("Checkpoint has no training signature; resume compatibility cannot be fully verified")
+        return
+    mismatches = []
+    for key, current_value in current.items():
+        saved_value = saved.get(key)
+        if saved_value != current_value:
+            mismatches.append(f"{key}: checkpoint={saved_value!r}, current={current_value!r}")
+    if not mismatches:
+        return
+    message = "Resume configuration mismatch: " + "; ".join(mismatches)
+    if allow_mismatch:
+        if is_main_process():
+            Logger("WARNING: " + message)
+        return
+    raise RuntimeError(message + ". Use the original settings, or pass --allow_resume_mismatch 1 only if discontinuity is acceptable.")
+
+
+def normalize_resume_position(epoch, step, iters):
+    """若 checkpoint 位于 epoch 末尾，直接从下一 epoch 开始。"""
+    epoch = int(epoch or 0)
+    step = int(step or 0)
+    if iters <= 0:
+        return epoch, step
+    if step > iters:
+        raise RuntimeError(
+            f"Checkpoint step {step} exceeds current iters_per_epoch {iters}; "
+            "the dataset, GPU count, or batch size likely changed."
+        )
+    if step == iters:
+        return epoch + 1, 0
+    return epoch, step
+
+
 def reduce_metrics(metrics, average=True):
     """聚合所有 rank 的标量指标，避免日志只反映 rank0 局部 batch。"""
     if not dist.is_initialized():
@@ -304,7 +372,9 @@ def save_deepspeed_checkpoint(model_engine, lm_config, weight, epoch=0, step=0, 
     return tag
 
 
-def load_deepspeed_checkpoint(model_engine, lm_config, weight, save_dir="../checkpoints"):
+def load_deepspeed_checkpoint(model_engine, lm_config, weight, save_dir="../checkpoints", required=False):
+    # 这些 checkpoint 由本项目生成，包含 optimizer/scheduler 等非纯权重状态。
+    os.environ.setdefault("TORCH_FORCE_NO_WEIGHTS_ONLY_LOAD", "1")
     errors = []
     loaded_tag = None
     for tag in _candidate_deepspeed_tags(lm_config, weight, save_dir):
@@ -321,8 +391,11 @@ def load_deepspeed_checkpoint(model_engine, lm_config, weight, save_dir="../chec
         break
     #这个的else的for else 意思是如果for循环没有被break打断就走else分支
     else:
+        message = "DeepSpeed checkpoint not loaded" + (f": {'; '.join(errors)}" if errors else "")
+        if required:
+            raise RuntimeError(message)
         if is_main_process():
-            Logger("DeepSpeed checkpoint not loaded" + (f": {'; '.join(errors)}" if errors else ""))
+            Logger(message)
         return None
     client_state = client_state or {}
     tag_state = _parse_deepspeed_tag_metadata(loaded_tag or "")

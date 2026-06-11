@@ -27,6 +27,7 @@ from trainer.trainer_utils import (
     add_model_profile_args,
     apply_model_profile,
     build_lm_config,
+    build_training_signature,
     assert_no_training_output_collision,
     init_model,
     is_main_process,
@@ -34,11 +35,13 @@ from trainer.trainer_utils import (
     load_deepspeed_checkpoint,
     load_deepspeed_config,
     log_training_setup,
+    normalize_resume_position,
     reduce_metrics,
     resolve_attention_type,
     save_deepspeed_checkpoint,
     save_model_weights,
     setup_seed,
+    validate_training_signature,
 )
 
 warnings.filterwarnings("ignore")
@@ -112,6 +115,7 @@ def train_epoch(args, lm_config, model_engine, loader, iters, start_step=0, wand
                 step=step,
                 wandb=wandb,
                 save_dir="../checkpoints",
+                training_signature=args.training_signature,
             )
             if is_main_process():
                 ckp = save_model_weights(lm_config, model_engine, save_dir=args.save_dir, weight=args.save_weight)
@@ -150,6 +154,7 @@ def parse_args():
     parser.add_argument("--data_path", type=str, default="../dataset/pretrain_t2t_mini.jsonl")
     parser.add_argument("--from_weight", default="none", type=str)
     parser.add_argument("--from_resume", default=0, type=int, choices=[0, 1])
+    parser.add_argument("--allow_resume_mismatch", default=0, type=int, choices=[0, 1])
     parser.add_argument("--overwrite_output", default=0, type=int, choices=[0, 1])
     parser.add_argument("--use_wandb", action="store_true")
     parser.add_argument("--wandb_project", type=str, default="SearchLM-Pretrain-DS")
@@ -201,6 +206,7 @@ if __name__ == "__main__":
     train_sampler = DistributedSampler(train_ds) if dist.is_initialized() else None
     loader_for_count = DataLoader(train_ds, batch_size=args.batch_size, sampler=train_sampler)
     iters = len(loader_for_count)
+    args.training_signature = build_training_signature(args, args.data_path, len(train_ds), iters)
     total_optimizer_steps = max(1, math.ceil(iters / args.accumulation_steps) * args.epochs)
     ds_config = load_deepspeed_config(args, total_optimizer_steps)
 
@@ -217,6 +223,12 @@ if __name__ == "__main__":
             lm_config,
             weight=args.save_weight,
             save_dir="../checkpoints",
+            required=True,
+        )
+        validate_training_signature(
+            ckp_data.get("training_signature"),
+            args.training_signature,
+            allow_mismatch=bool(args.allow_resume_mismatch),
         )
 
     wandb = None
@@ -249,6 +261,11 @@ if __name__ == "__main__":
 
     start_epoch = ckp_data.get("epoch", 0) if ckp_data else 0
     start_step = ckp_data.get("step", 0) if ckp_data else 0
+    start_epoch, start_step = normalize_resume_position(start_epoch, start_step, iters)
+    if args.from_resume == 1 and is_main_process():
+        Logger(f"Pretrain resume position: epoch={start_epoch}, step={start_step}, iters_per_epoch={iters}")
+    if start_epoch >= args.epochs and is_main_process():
+        Logger(f"Training already complete: resume epoch={start_epoch}, target epochs={args.epochs}")
 
     for epoch in range(start_epoch, args.epochs):
         args.current_epoch = epoch
