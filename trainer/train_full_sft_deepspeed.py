@@ -71,6 +71,29 @@ def validate_sft_supervision(train_ds, max_samples=32):
         )
 
 
+def validate_chat_template(tokenizer):
+    try:
+        rendered = tokenizer.apply_chat_template(
+            [
+                {"role": "user", "content": "template check"},
+                {"role": "assistant", "content": "ok"},
+            ],
+            tokenize=False,
+            add_generation_prompt=False,
+        )
+    except Exception as exc:
+        raise RuntimeError(
+            "Tokenizer chat template is invalid. Check model/chat_template.jinja and "
+            "model/tokenizer_config.json before loading the SFT dataset."
+        ) from exc
+    required_markers = ("<|im_start|>user", "<|im_start|>assistant", "<|im_end|>")
+    missing = [marker for marker in required_markers if marker not in rendered]
+    if missing:
+        raise RuntimeError(f"Tokenizer chat template is missing required markers: {missing}")
+    if is_main_process():
+        Logger("Tokenizer chat template validation passed")
+
+
 def init_deepspeed_runtime(args, deepspeed):
     deepspeed.init_distributed(dist_backend="nccl")
     local_rank = int(os.environ.get("LOCAL_RANK", args.local_rank if args.local_rank >= 0 else 0))
@@ -129,7 +152,12 @@ def train_epoch(args, lm_config, model_engine, loader, iters, start_step=0, wand
                     }
                 )
 
-        if step % args.save_interval == 0 or step == iters:
+        should_save = step % args.save_interval == 0 or step == iters
+        del input_ids, labels, res, loss, aux_loss
+
+        if should_save:
+            if torch.cuda.is_available():
+                torch.cuda.empty_cache()
             model_engine.eval()
             save_deepspeed_checkpoint(
                 model_engine,
@@ -144,9 +172,12 @@ def train_epoch(args, lm_config, model_engine, loader, iters, start_step=0, wand
             if is_main_process():
                 ckp = save_model_weights(lm_config, model_engine, save_dir=args.save_dir, weight=args.save_weight)
                 Logger(f"Lightweight model saved: {ckp}")
+            if torch.cuda.is_available():
+                torch.cuda.empty_cache()
+            # rank0 导出轻量权重时，其他 rank 必须等待，避免提前销毁 NCCL process group。
+            if dist.is_initialized():
+                dist.barrier()
             model_engine.train()
-
-        del input_ids, labels, res, loss, aux_loss
 
 
 def parse_args():
@@ -222,6 +253,7 @@ if __name__ == "__main__":
     )
 
     model, tokenizer = init_model(lm_config, args.from_weight, device=args.device)
+    validate_chat_template(tokenizer)
     if args.use_compile == 1:
         model = torch.compile(model)
         Logger("torch.compile enabled before DeepSpeed initialize")
