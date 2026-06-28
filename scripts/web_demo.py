@@ -5,6 +5,10 @@ import os
 from threading import Thread
 
 import torch
+try:
+    import torch_npu
+except:
+    torch_npu = None
 import numpy as np
 import streamlit as st
 from transformers import AutoModelForCausalLM, AutoTokenizer, TextIteratorStreamer
@@ -67,7 +71,7 @@ st.markdown("""
     </style>
 """, unsafe_allow_html=True)
 
-device = "cuda" if torch.cuda.is_available() else "cpu"
+device = "cuda" if torch.cuda.is_available() else ("npu" if torch_npu and torch_npu.npu.is_available() else "cpu")
 
 # 多语言文本
 LANG_TEXTS = {

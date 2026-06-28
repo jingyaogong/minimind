@@ -41,11 +41,11 @@ def get_lr(current_step, total_steps, lr):
     return lr*(0.1 + 0.45*(1 + math.cos(math.pi * current_step / total_steps)))
 
 
-def init_distributed_mode():
+def init_distributed_mode(backend="nccl"):
     if int(os.environ.get("RANK", -1)) == -1:
         return 0  # 非DDP模式
 
-    dist.init_process_group(backend="nccl")
+    dist.init_process_group(backend=backend)
     local_rank = int(os.environ["LOCAL_RANK"])
     torch.cuda.set_device(local_rank)
     return local_rank
