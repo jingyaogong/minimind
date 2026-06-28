@@ -765,16 +765,16 @@ Its core idea is to introduce low-rank incremental branches alongside the origin
 ```bash
 # train_lora.py can usually be completed fairly quickly even on CPU
 # Method 1
-torchrun --nproc_per_node 1 train_lora.py
+cd trainer && torchrun --nproc_per_node 1 train_lora.py
 # Method 2
-python train_lora.py
+cd trainer && python train_lora.py
 ```
 
 > The trained model weight files are saved by default every `save_interval steps` as: `lora_xxx_*.pth` (* is the specific model dimension, each save overwrites the previous file)
 
 
 LoRA is well-suited for handling problems like "how to let the model quickly adapt to private domains or vertical scenarios while preserving general capabilities as much as possible." For example, when the base model lacks medical knowledge, a medical-oriented LoRA weight layer can be stacked on top of the original model to achieve better domain performance at relatively small cost.
-Usually you only need to prepare multi-turn dialogue format data in the same way, place it in `lora_xxx.jsonl`, and then run `python train_lora.py` to obtain new `LoRA` model weights.
+Usually you only need to prepare multi-turn dialogue format data in the same way, place it in `lora_xxx.jsonl`, and then run `cd trainer && python train_lora.py` from the repository root to obtain new `LoRA` model weights.
 
 Example 1: Vertical domain data
 

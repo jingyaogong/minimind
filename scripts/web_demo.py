@@ -339,8 +339,8 @@ def main():
         st.markdown(
             f'<div style="display: flex; justify-content: flex-end;"><div style="display: inline-block; margin: 10px 0; padding: 8px 12px 8px 12px; background-color: #3d4450; border-radius: 22px; color: white;">{prompt}</div></div>',
             unsafe_allow_html=True)
-        messages.append({"role": "user", "content": prompt[-st.session_state.max_new_tokens:]})
-        st.session_state.chat_messages.append({"role": "user", "content": prompt[-st.session_state.max_new_tokens:]})
+        messages.append({"role": "user", "content": prompt})
+        st.session_state.chat_messages.append({"role": "user", "content": prompt})
 
         placeholder = st.empty()
 
