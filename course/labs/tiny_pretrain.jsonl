@@ -1,0 +1,4 @@
+{"text":"MiniMind 是一个用于学习大语言模型训练流程的小型项目。"}
+{"text":"预训练的目标是根据前面的 token 预测下一个 token。"}
+{"text":"A language model learns patterns from text by next-token prediction."}
+{"text":"训练脚本会读取 jsonl 数据，经过 tokenizer 后送入模型。"}
