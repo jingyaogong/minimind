@@ -16,17 +16,23 @@ from torch.nn.parallel import DistributedDataParallel
 from torch.utils.data import DataLoader, DistributedSampler
 from model.model_minimind import MiniMindConfig
 from dataset.lm_dataset import SFTDataset
-from trainer.trainer_utils import get_lr, Logger, is_main_process, lm_checkpoint, init_distributed_mode, setup_seed, init_model, SkipBatchSampler
+from trainer.trainer_utils import (
+    get_lr, Logger, is_main_process, lm_checkpoint, init_distributed_mode,
+    setup_seed, init_model, SkipBatchSampler,
+    detect_gpu_peak_tflops_bf16, compute_model_flops_per_token,
+)
 
 warnings.filterwarnings('ignore')
 
 
 def train_epoch(epoch, loader, iters, start_step=0, wandb=None):
     start_time = time.time()
+    last_log_time, last_log_step = start_time, start_step
     last_step = start_step
     for step, (input_ids, labels) in enumerate(loader, start=start_step + 1):
-        input_ids = input_ids.to(args.device)
-        labels = labels.to(args.device)
+        # non_blocking 仅在 --enable_optimizations=1 + pin_memory=True 时有效
+        input_ids = input_ids.to(args.device, non_blocking=args.enable_optimizations == 1)
+        labels = labels.to(args.device, non_blocking=args.enable_optimizations == 1)
         last_step = step
         lr = get_lr(epoch * iters + step, args.epochs * iters, args.learning_rate)
         for param_group in optimizer.param_groups:
@@ -49,14 +55,21 @@ def train_epoch(epoch, loader, iters, start_step=0, wandb=None):
             optimizer.zero_grad(set_to_none=True)
 
         if step % args.log_interval == 0 or step == iters:
-            spend_time = time.time() - start_time
+            now = time.time()
+            spend_time = now - start_time
+            window_dt = max(now - last_log_time, 1e-6)
+            window_steps = step - last_log_step
+            window_its = window_steps / window_dt
+            tokens_window = window_steps * args.batch_size * args.max_seq_len * world_size
+            mfu = (flops_per_token * tokens_window / window_dt) / (gpu_peak_tflops * 1e12) * 100
+            last_log_time, last_log_step = now, step
             current_loss = loss.item() * args.accumulation_steps
             current_aux_loss = res.aux_loss.item() if res.aux_loss is not None else 0.0
             current_logits_loss = current_loss - current_aux_loss
             current_lr = optimizer.param_groups[-1]['lr']
             eta_min = spend_time / max(step - start_step, 1) * (iters - step) // 60
-            Logger(f'Epoch:[{epoch + 1}/{args.epochs}]({step}/{iters}), loss: {current_loss:.4f}, logits_loss: {current_logits_loss:.4f}, aux_loss: {current_aux_loss:.4f}, lr: {current_lr:.8f}, epoch_time: {eta_min:.1f}min')
-            if wandb: wandb.log({"loss": current_loss, "logits_loss": current_logits_loss, "aux_loss": current_aux_loss, "learning_rate": current_lr, "epoch_time": eta_min})
+            Logger(f'[{time.strftime("%H:%M:%S")}] Epoch:[{epoch + 1}/{args.epochs}]({step}/{iters}), it/s: {window_its:.2f}, MFU: {mfu:.1f}%, loss: {current_loss:.4f}, logits_loss: {current_logits_loss:.4f}, aux_loss: {current_aux_loss:.4f}, lr: {current_lr:.8f}, epoch_time: {eta_min:.1f}min')
+            if wandb: wandb.log({"loss": current_loss, "logits_loss": current_logits_loss, "aux_loss": current_aux_loss, "learning_rate": current_lr, "epoch_time": eta_min, "it/s": window_its, "MFU": mfu})
 
         if (step % args.save_interval == 0 or step == iters) and is_main_process():
             model.eval()
@@ -104,7 +117,13 @@ if __name__ == "__main__":
     parser.add_argument('--from_resume', default=0, type=int, choices=[0, 1], help="是否自动检测&续训（0=否，1=是）")
     parser.add_argument("--use_wandb", action="store_true", help="是否使用wandb")
     parser.add_argument("--wandb_project", type=str, default="MiniMind-Full-SFT", help="wandb项目名")
-    parser.add_argument("--use_compile", default=0, type=int, choices=[0, 1], help="是否使用torch.compile加速（0=否，1=是）")
+    parser.add_argument("--use_compile", default=1, type=int, choices=[0, 1],
+                        help="是否使用 torch.compile 加速（0=否，1=是，A100 上推荐 1）")
+    parser.add_argument("--enable_optimizations", default=1, type=int, choices=[0, 1],
+                        help="开关：A/B 对比优化效果。1=启用 fused AdamW + non_blocking + persistent_workers（默认）；"
+                             "0=baseline（关掉这些，仅保留 log 测量）。compile 由 --use_compile 独立控制。")
+    parser.add_argument("--gpu_peak_tflops", type=float, default=0,
+                        help="GPU bf16 理论峰值 TFLOPS（用于 MFU 计算）；默认 0 表示按 GPU 名自动检测")
     args = parser.parse_args()
 
     # ========== 1. 初始化环境和随机种子 ==========
@@ -136,8 +155,20 @@ if __name__ == "__main__":
     train_ds = SFTDataset(args.data_path, tokenizer, max_length=args.max_seq_len)
     train_sampler = DistributedSampler(train_ds) if dist.is_initialized() else None
     scaler = torch.cuda.amp.GradScaler(enabled=(args.dtype == 'float16'))
-    optimizer = optim.AdamW(model.parameters(), lr=args.learning_rate)
-    
+    # fused=True 把所有 param 的 Adam 更新融成一个 CUDA kernel
+    optimizer = optim.AdamW(model.parameters(), lr=args.learning_rate,
+                            fused=(args.enable_optimizations == 1))
+
+    # ========== 5b. MFU 测量准备（始终启用，无 perf 影响）==========
+    flops_per_token = compute_model_flops_per_token(model, lm_config)
+    gpu_peak_tflops = detect_gpu_peak_tflops_bf16(override=args.gpu_peak_tflops)
+    world_size = dist.get_world_size() if dist.is_initialized() else 1
+    Logger(f'[MFU] params_flops/token={flops_per_token/1e9:.3f} GFLOPS, '
+           f'GPU peak={gpu_peak_tflops:.0f} TFLOPS bf16, world_size={world_size}')
+    Logger(f'[OPT] enable_optimizations={args.enable_optimizations} '
+           f'(non_blocking={args.enable_optimizations}, fused_adam={args.enable_optimizations}, '
+           f'persistent_workers={args.enable_optimizations}), use_compile={args.use_compile}')
+
     # ========== 6. 从ckp恢复状态 ==========
     start_epoch, start_step = 0, 0
     if ckp_data:
@@ -149,8 +180,10 @@ if __name__ == "__main__":
     
     # ========== 7. 编译和分布式包装 ==========
     if args.use_compile == 1:
-        model = torch.compile(model)
-        Logger('torch.compile enabled')
+        # enable_optimizations=1 时用 max-autotune（找更优 kernel），0 时用 default mode
+        compile_mode = "max-autotune" if args.enable_optimizations == 1 else "default"
+        model = torch.compile(model, mode=compile_mode)
+        Logger(f'torch.compile enabled (mode={compile_mode})')
     if dist.is_initialized():
         model = DistributedDataParallel(model, device_ids=[local_rank])
     
@@ -160,7 +193,9 @@ if __name__ == "__main__":
         setup_seed(42 + epoch); indices = torch.randperm(len(train_ds)).tolist()
         skip = start_step if (epoch == start_epoch and start_step > 0) else 0
         batch_sampler = SkipBatchSampler(train_sampler or indices, args.batch_size, skip)
-        loader = DataLoader(train_ds, batch_sampler=batch_sampler, num_workers=args.num_workers, pin_memory=True)
+        loader = DataLoader(train_ds, batch_sampler=batch_sampler, num_workers=args.num_workers,
+                            pin_memory=True,
+                            persistent_workers=(args.enable_optimizations == 1 and args.num_workers > 0))
         if skip > 0: 
             Logger(f'Epoch [{epoch + 1}/{args.epochs}]: 跳过前{start_step}个step，从step {start_step + 1}开始')
             train_epoch(epoch, loader, len(loader) + skip, start_step, wandb)
