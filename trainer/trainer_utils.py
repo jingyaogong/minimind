@@ -51,14 +51,18 @@ def init_distributed_mode():
     return local_rank
 
 
-def setup_seed(seed: int):
+def setup_seed(seed: int, deterministic: bool = False):
+    # cudnn 决定性 + 禁 benchmark 是预训练吞吐杀手（A100 上 ~3-5x 慢）。
+    # 默认走 benchmark=True 让 cudnn 选最快 kernel；要严格复现传 deterministic=True。
     random.seed(seed)
     np.random.seed(seed)
     torch.manual_seed(seed)
     torch.cuda.manual_seed(seed)
     torch.cuda.manual_seed_all(seed)
-    torch.backends.cudnn.deterministic = True
-    torch.backends.cudnn.benchmark = False
+    torch.backends.cudnn.deterministic = deterministic
+    torch.backends.cudnn.benchmark = not deterministic
+    # A100 TF32 矩阵乘加速（autocast bf16 路径之外的 fp32 matmul 才生效，但无副作用）
+    torch.set_float32_matmul_precision('high')
 
 def lm_checkpoint(lm_config, weight='full_sft', model=None, optimizer=None, epoch=0, step=0, wandb=None, save_dir='../checkpoints', **kwargs):
     os.makedirs(save_dir, exist_ok=True)
