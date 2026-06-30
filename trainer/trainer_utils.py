@@ -41,6 +41,53 @@ def get_lr(current_step, total_steps, lr):
     return lr*(0.1 + 0.45*(1 + math.cos(math.pi * current_step / total_steps)))
 
 
+# A100/H100/3090 等常见卡的 bf16 理论峰值 TFLOPS。MoE 等价 FLOPs 是 active params 不是 total，
+# active params 算出来的 MFU 才有意义；MoE 的 active 比例由 num_experts_per_tok / num_experts 决定。
+_GPU_PEAK_BF16_TFLOPS = {
+    'A100': 312, 'A100-SXM4-80GB': 312, 'A100-SXM4-40GB': 312, 'A100-PCIE-80GB': 312, 'A100-PCIE-40GB': 312,
+    'H100': 989, 'H100-SXM5-80GB': 989, 'H100-PCIE-80GB': 756, 'H100 80GB HBM3': 989,
+    'H200': 989,
+    'RTX 3090': 71, 'GeForce RTX 3090': 71, 'RTX 3090 Ti': 80,
+    'RTX 4090': 165, 'GeForce RTX 4090': 165,
+    'V100': 125, 'V100-SXM2-32GB': 125,
+    'L40': 181, 'L40S': 362,
+}
+
+
+def detect_gpu_peak_tflops_bf16(device_index: int = 0, override: float = None) -> float:
+    """Look up the bf16 TensorCore peak for the current GPU; fall back to A100 (312)."""
+    if override is not None and override > 0:
+        return float(override)
+    if not torch.cuda.is_available():
+        return 312.0
+    name = torch.cuda.get_device_name(device_index)
+    for key, peak in _GPU_PEAK_BF16_TFLOPS.items():
+        if key in name:
+            return float(peak)
+    Logger(f'[MFU] Unknown GPU "{name}", falling back to A100 (312 TFLOPS). Pass --gpu_peak_tflops to override.')
+    return 312.0
+
+
+def compute_model_flops_per_token(model, config=None) -> float:
+    """Compute the "model FLOPs" per training token (forward + backward).
+
+    Standard approximation for dense transformers: 6 × P, where P is the total
+    trainable params count. For MoE we use active params = base + experts_per_tok × per_expert.
+    """
+    raw = model.module if isinstance(model, DistributedDataParallel) else model
+    raw = getattr(raw, '_orig_mod', raw)
+    total = sum(p.numel() for p in raw.parameters())
+    if config is not None and getattr(config, 'use_moe', False):
+        n_routed = getattr(config, 'num_experts', 0)
+        n_active = getattr(config, 'num_experts_per_tok', 1)
+        if n_routed > 0:
+            expert = sum(p.numel() for n, p in raw.named_parameters() if 'mlp.experts.0.' in n)
+            base = total - expert * n_routed
+            active = base + expert * n_active
+            return 6.0 * active
+    return 6.0 * total
+
+
 def init_distributed_mode():
     if int(os.environ.get("RANK", -1)) == -1:
         return 0  # 非DDP模式
