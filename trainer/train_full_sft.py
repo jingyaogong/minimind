@@ -30,6 +30,10 @@ def train_epoch(epoch, loader, iters, start_step=0, wandb=None):
     last_log_time, last_log_step = start_time, start_step
     last_step = start_step
     for step, (input_ids, labels) in enumerate(loader, start=start_step + 1):
+        # torch.compile(mode="max-autotune") + CUDA graph 每步必须 mark step 边界，
+        # 否则 backward 拿到被下一步 forward 覆盖的 tensor 报错。见 train_pretrain.py 同处注释。
+        if args.use_compile == 1:
+            torch.compiler.cudagraph_mark_step_begin()
         # non_blocking 仅在 --enable_optimizations=1 + pin_memory=True 时有效
         input_ids = input_ids.to(args.device, non_blocking=args.enable_optimizations == 1)
         labels = labels.to(args.device, non_blocking=args.enable_optimizations == 1)

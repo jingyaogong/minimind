@@ -30,6 +30,12 @@ def train_epoch(epoch, loader, iters, start_step=0, wandb=None):
     last_log_time, last_log_step = start_time, start_step
     last_step = start_step
     for step, (input_ids, labels) in enumerate(loader, start=start_step + 1):
+        # torch.compile(mode="max-autotune") 会启用 CUDA graph capture 复用输出 buffer；
+        # 训练循环里每步都是新 batch，必须显式 mark step 边界告诉 CUDAGraph "上一步的输出
+        # 现在不能再复用了"。否则 backward 拿到被覆盖的 tensor 报 "accessing tensor output
+        # of CUDAGraphs that has been overwritten" 错。torch 2.6+ 严格执行此检查。
+        if args.use_compile == 1:
+            torch.compiler.cudagraph_mark_step_begin()
         # non_blocking=True overlaps host->device copy with compute (pin_memory=True 已在 DataLoader)
         input_ids = input_ids.to(args.device, non_blocking=True)
         labels = labels.to(args.device, non_blocking=True)
@@ -113,7 +119,7 @@ if __name__ == "__main__":
     parser.add_argument('--num_hidden_layers', default=8, type=int, help="隐藏层数量")
     parser.add_argument('--max_seq_len', default=340, type=int, help="训练的最大截断长度（中文1token≈1.5~1.7字符）")
     parser.add_argument('--use_moe', default=0, type=int, choices=[0, 1], help="是否使用MoE架构（0=否，1=是）")
-    parser.add_argument("--data_path", type=str, default="../dataset/pretrain_t2t_mini.jsonl", help="预训练数据路径")
+    parser.add_argument("--data_path", type=str, default="../dataset/pretrain_t2t.jsonl", help="预训练数据路径")
     parser.add_argument('--from_weight', default='none', type=str, help="基于哪个权重训练，为none则从头开始")
     parser.add_argument('--from_resume', default=0, type=int, choices=[0, 1], help="是否自动检测&续训（0=否，1=是）")
     parser.add_argument("--use_wandb", action="store_true", help="是否使用wandb")
@@ -127,17 +133,17 @@ if __name__ == "__main__":
     local_rank = init_distributed_mode()
     if dist.is_initialized(): args.device = f"cuda:{local_rank}"
     setup_seed(42 + (dist.get_rank() if dist.is_initialized() else 0))
-    
+
     # ========== 2. 配置目录、模型参数、检查ckp ==========
     os.makedirs(args.save_dir, exist_ok=True)
     lm_config = MiniMindConfig(hidden_size=args.hidden_size, num_hidden_layers=args.num_hidden_layers, use_moe=bool(args.use_moe))
     ckp_data = lm_checkpoint(lm_config, weight=args.save_weight, save_dir='../checkpoints') if args.from_resume==1 else None
-    
+
     # ========== 3. 设置混合精度 ==========
     device_type = "cuda" if "cuda" in args.device else "cpu"
     dtype = torch.bfloat16 if args.dtype == "bfloat16" else torch.float16
     autocast_ctx = nullcontext() if device_type == "cpu" else torch.cuda.amp.autocast(dtype=dtype)
-    
+
     # ========== 4. 配wandb ==========
     wandb = None
     if args.use_wandb and is_main_process():
@@ -146,7 +152,7 @@ if __name__ == "__main__":
         resume = 'must' if wandb_id else None
         wandb_run_name = f"MiniMind-Pretrain-Epoch-{args.epochs}-BatchSize-{args.batch_size}-LearningRate-{args.learning_rate}"
         wandb.init(project=args.wandb_project, name=wandb_run_name, id=wandb_id, resume=resume)
-    
+
     # ========== 5. 定义模型、数据、优化器 ==========
     model, tokenizer = init_model(lm_config, args.from_weight, device=args.device)
     train_ds = PretrainDataset(args.data_path, tokenizer, max_length=args.max_seq_len)
@@ -170,16 +176,19 @@ if __name__ == "__main__":
         scaler.load_state_dict(ckp_data['scaler'])
         start_epoch = ckp_data['epoch']
         start_step = ckp_data.get('step', 0)
-    
+
     # ========== 7. 编译和分布式包装 ==========
     if args.use_compile == 1:
-        # max-autotune 在 Triton 层为每个 fused kernel 试多套 tile/block 配置，挑最快的。
-        # 编译时间多 ~30-60s，稳态可比 default 快 5-15%。
-        model = torch.compile(model, mode="max-autotune")
-        Logger('torch.compile enabled (mode=max-autotune)')
+        # 新 CUDA 13 stack 上 max-autotune 会为每个 GEMM shape 试 21 种 triton kernel（分钟级
+        # autotune 循环，且实测 cuBLAS aten mm 几乎每次都赢过 triton 变体，autotune 白花时间）。
+        # 用 default 更实惠——inductor 融合仍在，只是不额外扫 triton kernel。
+        # (max-autotune 还需要 model 无 graph break，否则 CUDA graph 跨 step 覆盖崩溃；
+        # 我们已消除 RoPE graph break，若将来单独 GEMM shape 少可再试 max-autotune)
+        model = torch.compile(model)
+        Logger('torch.compile enabled (mode=default)')
     if dist.is_initialized():
         model = DistributedDataParallel(model, device_ids=[local_rank])
-    
+
     # ========== 8. 开始训练 ==========
     for epoch in range(start_epoch, args.epochs):
         train_sampler and train_sampler.set_epoch(epoch)
@@ -188,12 +197,12 @@ if __name__ == "__main__":
         batch_sampler = SkipBatchSampler(train_sampler or indices, args.batch_size, skip)
         loader = DataLoader(train_ds, batch_sampler=batch_sampler, num_workers=args.num_workers,
                             pin_memory=True, persistent_workers=args.num_workers > 0)
-        if skip > 0: 
+        if skip > 0:
             Logger(f'Epoch [{epoch + 1}/{args.epochs}]: 跳过前{start_step}个step，从step {start_step + 1}开始')
             train_epoch(epoch, loader, len(loader) + skip, start_step, wandb)
         else:
             train_epoch(epoch, loader, len(loader), 0, wandb)
-    
+
     # ========== 9. 清理分布进程 ==========
     if dist.is_initialized():
         dist.barrier()

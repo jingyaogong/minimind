@@ -45,6 +45,9 @@ def get_lr(current_step, total_steps, lr):
 # active params 算出来的 MFU 才有意义；MoE 的 active 比例由 num_experts_per_tok / num_experts 决定。
 _GPU_PEAK_BF16_TFLOPS = {
     'A100': 312, 'A100-SXM4-80GB': 312, 'A100-SXM4-40GB': 312, 'A100-PCIE-80GB': 312, 'A100-PCIE-40GB': 312,
+    'PG509-210': 312, 'PG509-200': 312,  # NVIDIA marketing name for A100 80/40GB on some devservers
+    'PG506-243': 989,  # H100 SXM5 devserver naming
+    'HGX': 989, 'HGX H100': 989,
     'H100': 989, 'H100-SXM5-80GB': 989, 'H100-PCIE-80GB': 756, 'H100 80GB HBM3': 989,
     'H200': 989,
     'RTX 3090': 71, 'GeForce RTX 3090': 71, 'RTX 3090 Ti': 80,

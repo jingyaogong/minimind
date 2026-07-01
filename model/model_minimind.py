@@ -206,20 +206,24 @@ class MiniMindModel(nn.Module):
         self.register_buffer("freqs_cos", freqs_cos, persistent=False)
         self.register_buffer("freqs_sin", freqs_sin, persistent=False)
 
+    def warmup_rope(self, device=None):
+        """Meta-device init 下 buffer 可能为空，manual 调用重新 precompute。正常 code path 不需要。"""
+        if self.freqs_cos.numel() == 0:
+            freqs_cos, freqs_sin = precompute_freqs_cis(dim=self.config.head_dim, end=self.config.max_position_embeddings, rope_base=self.config.rope_theta, rope_scaling=self.config.rope_scaling)
+            device = device or self.embed_tokens.weight.device
+            self.freqs_cos, self.freqs_sin = freqs_cos.to(device), freqs_sin.to(device)
+
     def forward(self, input_ids, attention_mask=None, past_key_values=None, use_cache=False, **kwargs):
         batch_size, seq_length = input_ids.shape
         if hasattr(past_key_values, 'layers'): past_key_values = None
         past_key_values = past_key_values or [None] * len(self.layers)
         start_pos = past_key_values[0][0].shape[1] if past_key_values[0] is not None else 0
         hidden_states = self.dropout(self.embed_tokens(input_ids))
-        # Lazy recompute of RoPE buffers if they were dropped by transformers>=5.x meta-device init.
-        # Hot path: skipped via cheap python bool (no GPU sync). The original `freqs_cos[0,0]==0`
-        # tensor compare forced a device-to-host sync on every forward.
-        if getattr(self, '_rope_ready', False) is False:
-            if self.freqs_cos.numel() == 0 or bool(self.freqs_cos[0, 0].eq(0).cpu()):
-                freqs_cos, freqs_sin = precompute_freqs_cis(dim=self.config.head_dim, end=self.config.max_position_embeddings, rope_base=self.config.rope_theta, rope_scaling=self.config.rope_scaling)
-                self.freqs_cos, self.freqs_sin = freqs_cos.to(hidden_states.device), freqs_sin.to(hidden_states.device)
-            self._rope_ready = True
+        # RoPE buffers 已在 __init__ 里 precompute + register_buffer；forward 直接切片即可。
+        # (原来这里有 lazy re-compute 兜底 transformers>=5.x meta-device init 掉 buffer 的情况，
+        # 但那段 `bool(freqs_cos[0,0].eq(0).cpu())` 是 torch.compile graph break——每步 forward
+        # 都要在 compiled ↔ eager 间切换 + guard 检查，短 step 下吃掉一半吞吐。如需 meta-init
+        # 兼容，在 model.to(device) 后手动调 warmup_rope() 即可，不要放 forward hot path。)
         position_embeddings = (self.freqs_cos[start_pos:start_pos + seq_length], self.freqs_sin[start_pos:start_pos + seq_length])
         presents = []
         for layer, past_key_value in zip(self.layers, past_key_values):

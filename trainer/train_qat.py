@@ -31,6 +31,10 @@ def train_epoch(epoch, loader, iters, start_step=0, wandb=None):
     last_log_time, last_log_step = start_time, start_step
     last_step = start_step
     for step, (input_ids, labels) in enumerate(loader, start=start_step + 1):
+        # torch.compile + CUDA graph 每步必须 mark step 边界，见 train_pretrain.py 同处注释。
+        # QAT 默认 --use_compile 0（fake-quant 阻断 fusion，即使开也少受益），此处保护性写入。
+        if args.use_compile == 1:
+            torch.compiler.cudagraph_mark_step_begin()
         input_ids = input_ids.to(args.device, non_blocking=True)
         labels = labels.to(args.device, non_blocking=True)
         last_step = step
