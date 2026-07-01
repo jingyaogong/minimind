@@ -70,13 +70,14 @@ def train_epoch(epoch, loader, iters, start_step=0, wandb=None, eval_loader=None
         for param_group in optimizer.param_groups:
             param_group['lr'] = lr
 
-        # DDP gradient accumulation optimization：
-        # 默认 DDP 每次 .backward() 都做全参数 all-reduce（4GB grad × 85 bucket ≈ 30ms）。
-        # 但 accum=N 时前 N-1 次 all-reduce 是浪费（grad 还要继续累积）。用 model.no_sync()
-        # 让 DDP 在非最后一个 micro-step 里 skip all-reduce，只在最后一个 micro-step 才同步。
-        # profile 显示 all-reduce 占 73% 时间 → 修完预期总时间省 ~55%，MFU 17%→~35%。
+        # DDP / FSDP gradient accumulation optimization：
+        # 默认每次 .backward() 都做全参数 collective（DDP: all-reduce grad；FSDP: reduce-scatter grad）。
+        # 但 accum=N 时前 N-1 次 collective 是浪费（grad 还要继续累积）。DDP.no_sync() 和 FSDP.no_sync()
+        # 都提供 context 让 collective 只在最后一个 micro-step 才触发。
+        # profile 显示（DDP）all-reduce 占 73% 时间 → 修完预期总时间省 ~55%，MFU 17%→~35%。
         is_last_accum_step = (step % args.accumulation_steps == 0)
-        need_sync = is_last_accum_step or not isinstance(model, DistributedDataParallel)
+        has_no_sync = callable(getattr(model, 'no_sync', None))
+        need_sync = is_last_accum_step or not has_no_sync
         sync_ctx = nullcontext() if need_sync else model.no_sync()
 
         with sync_ctx:
@@ -128,9 +129,21 @@ def train_epoch(epoch, loader, iters, start_step=0, wandb=None, eval_loader=None
             # torch.compile recompile → rank 0 长 stall → 下一步 all-reduce seq 不同步 → NCCL 10min timeout。
             # 解决：所有 rank 用同一份 eval_loader (顺序一致) 跑同样的 batch，然后 all-reduce mean loss。
             # 每 rank 都工作，无 rank 掉队问题。max_batches=20 * 5 rank = 20 batch × ~0.3s ≈ 6s 开销。
-            raw_model = model.module if isinstance(model, DistributedDataParallel) else model
-            raw_model = getattr(raw_model, '_orig_mod', raw_model)
-            val_loss_local, _ = eval_holdout(raw_model, eval_loader, args.eval_max_batches, autocast_ctx, args.device)
+            #
+            # DDP: unwrap 拿裸 model（避免走 DDP forward 的 hook 触发 collective）
+            # FSDP: 不能 unwrap！FSDP forward 负责 all-gather 分片的 weight，unwrap 后 weight 不完整。
+            #       FSDP.forward 天然要求所有 rank 参与——正好符合我们的全-rank eval 设计
+            try:
+                from torch.distributed.fsdp import FullyShardedDataParallel as FSDP
+                is_fsdp = isinstance(model, FSDP)
+            except ImportError:
+                is_fsdp = False
+            if is_fsdp:
+                eval_model = model
+            else:
+                eval_model = model.module if isinstance(model, DistributedDataParallel) else model
+                eval_model = getattr(eval_model, '_orig_mod', eval_model)
+            val_loss_local, _ = eval_holdout(eval_model, eval_loader, args.eval_max_batches, autocast_ctx, args.device)
             if dist.is_initialized():
                 loss_t = torch.tensor(val_loss_local, device=args.device)
                 dist.all_reduce(loss_t, op=dist.ReduceOp.AVG)
@@ -143,21 +156,46 @@ def train_epoch(epoch, loader, iters, start_step=0, wandb=None, eval_loader=None
                 if wandb: wandb.log({"val_loss": val_loss, "val_ppl": val_ppl, "step": step})
 
         if step % args.save_interval == 0 or step == iters:
-            if is_main_process():
-                model.eval()
-                moe_suffix = '_moe' if lm_config.use_moe else ''
-                ckp = f'{args.save_dir}/{args.save_weight}_{lm_config.hidden_size}{moe_suffix}.pth'
-                raw_model = model.module if isinstance(model, DistributedDataParallel) else model
-                raw_model = getattr(raw_model, '_orig_mod', raw_model)
-                state_dict = raw_model.state_dict()
-                # atomic: tmp + rename 避免读者读到半写文件（当前的 torch.save 直接写不 atomic，
-                # 极端情况 kill -9 会留 corrupt ckpt；lm_checkpoint 内部已 atomic，此处也补上）
-                ckp_tmp = ckp + '.tmp'
-                torch.save({k: v.half().cpu() for k, v in state_dict.items()}, ckp_tmp)
-                os.replace(ckp_tmp, ckp)
-                lm_checkpoint(lm_config, weight=args.save_weight, model=model, optimizer=optimizer, scaler=scaler, epoch=epoch, step=step, wandb=wandb, save_dir='../checkpoints')
-                model.train()
-                del state_dict
+            # FSDP: 拿 full state_dict 是 collective，所有 rank 必须进入 FSDP.state_dict_type 上下文；
+            # 只 rank 0 通过 rank0_only=True 拿到实际数据，其他 rank 拿空 dict。
+            # DDP: 单 rank 就能拿完整 state_dict。
+            try:
+                from torch.distributed.fsdp import FullyShardedDataParallel as FSDP
+                is_fsdp = isinstance(model, FSDP)
+            except ImportError:
+                is_fsdp = False
+
+            if is_fsdp:
+                from torch.distributed.fsdp import StateDictType, FullStateDictConfig
+                cfg = FullStateDictConfig(offload_to_cpu=True, rank0_only=True)
+                with FSDP.state_dict_type(model, StateDictType.FULL_STATE_DICT, cfg):
+                    state_dict = model.state_dict()   # 所有 rank 调用（collective），只 rank 0 拿到完整
+                # rank 0 才写盘
+                if is_main_process() and state_dict:
+                    moe_suffix = '_moe' if lm_config.use_moe else ''
+                    ckp = f'{args.save_dir}/{args.save_weight}_{lm_config.hidden_size}{moe_suffix}.pth'
+                    ckp_tmp = ckp + '.tmp'
+                    torch.save({k: v.half() for k, v in state_dict.items()}, ckp_tmp)
+                    os.replace(ckp_tmp, ckp)
+                    # 注意：FSDP 下 optimizer state 也是分片的，简化起见此处不存 optimizer resume
+                    # （resume 会从头 warmup 起，接受此代价换代码简单）
+                    del state_dict
+            else:
+                if is_main_process():
+                    model.eval()
+                    moe_suffix = '_moe' if lm_config.use_moe else ''
+                    ckp = f'{args.save_dir}/{args.save_weight}_{lm_config.hidden_size}{moe_suffix}.pth'
+                    raw_model = model.module if isinstance(model, DistributedDataParallel) else model
+                    raw_model = getattr(raw_model, '_orig_mod', raw_model)
+                    state_dict = raw_model.state_dict()
+                    # atomic: tmp + rename 避免读者读到半写文件（当前的 torch.save 直接写不 atomic，
+                    # 极端情况 kill -9 会留 corrupt ckpt；lm_checkpoint 内部已 atomic，此处也补上）
+                    ckp_tmp = ckp + '.tmp'
+                    torch.save({k: v.half().cpu() for k, v in state_dict.items()}, ckp_tmp)
+                    os.replace(ckp_tmp, ckp)
+                    lm_checkpoint(lm_config, weight=args.save_weight, model=model, optimizer=optimizer, scaler=scaler, epoch=epoch, step=step, wandb=wandb, save_dir='../checkpoints')
+                    model.train()
+                    del state_dict
             # 所有 rank 在此汇合，让非 rank-0 等 rank-0 写完再进下一 step
             # （防止 NCCL 隐式同步下的 timing race，也确保 ckpt 文件对 resume 一致）
             if dist.is_initialized():
@@ -215,6 +253,15 @@ if __name__ == "__main__":
                              "trace 存到 --profile_out 目录，chrome://tracing 打开或 tensorboard --logdir profile_out")
     parser.add_argument("--profile_out", type=str, default="../profile_out",
                         help="profile trace 输出目录")
+    parser.add_argument("--parallel_strategy", type=str, default="ddp",
+                        choices=["ddp", "fsdp_full", "fsdp_grad_op", "fsdp_no", "tp"],
+                        help="分布式策略：ddp=DataParallel（默认）· fsdp_full=ZeRO-3（切 weight+grad+optim）· "
+                             "fsdp_grad_op=ZeRO-2（切 grad+optim，weight 复制）· fsdp_no=NO_SHARD（等价 DDP，用 FSDP wrap 走一遍）· "
+                             "tp=Tensor Parallel（用 PyTorch DTensor 切每层 Linear）"
+                             "。对比数据见 Design Doc #2。1B 用 DDP 足够；FSDP/TP 主要是学习/对比用途")
+    parser.add_argument("--tp_size", type=int, default=1,
+                        help="Tensor Parallel size（仅当 parallel_strategy=tp 时生效）。world_size 必须能整除 tp_size；"
+                             "dp_size = world_size / tp_size。例如 4 卡 tp_size=4 → 纯 TP=4；tp_size=2 → TP=2 × DP=2")
     args = parser.parse_args()
 
     # ========== 1. 初始化环境和随机种子 ==========
@@ -278,7 +325,91 @@ if __name__ == "__main__":
         model = torch.compile(model)
         Logger('torch.compile enabled (mode=default)')
     if dist.is_initialized():
-        model = DistributedDataParallel(model, device_ids=[local_rank])
+        if args.parallel_strategy == "ddp":
+            model = DistributedDataParallel(model, device_ids=[local_rank])
+            Logger('parallel strategy: DDP (每 rank 全参数复制)')
+        elif args.parallel_strategy == "tp":
+            # Tensor Parallel with PyTorch DTensor：把 Attention 和 MLP 的 Linear 切到 tp_size 卡上
+            # 关键：需要先修 Attention 里的 n_local_heads / n_local_kv_heads（每卡本地头数减少），
+            # 再用 parallelize_module 把 weight 切开。否则 xq.view(bsz, seq, n_local_heads, head_dim)
+            # 会因为 q_proj 输出宽度已经被切成 hidden/tp_size 而 shape mismatch。
+            from torch.distributed.tensor.parallel import (
+                parallelize_module, ColwiseParallel, RowwiseParallel
+            )
+            from torch.distributed.device_mesh import init_device_mesh
+            world_size_actual = dist.get_world_size()
+            tp_size = args.tp_size
+            dp_size = world_size_actual // tp_size
+            if tp_size * dp_size != world_size_actual:
+                raise ValueError(f"world_size {world_size_actual} 不能被 tp_size {tp_size} 整除")
+            # GQA 校验：kv_heads 必须能被 tp_size 整除，否则某 rank 分到 0.x 个 kv head 会崩
+            if lm_config.num_key_value_heads % tp_size != 0:
+                raise ValueError(f"num_key_value_heads={lm_config.num_key_value_heads} 不能被 tp_size={tp_size} 整除")
+            mesh = init_device_mesh("cuda", (dp_size, tp_size), mesh_dim_names=("dp", "tp"))
+            tp_mesh = mesh["tp"]
+            # 修正 Attention 的本地头数（否则 forward 里 view 会 shape 错）
+            raw_model_for_tp = model  # 此时还未 compile / wrap
+            for layer in raw_model_for_tp.model.layers:
+                layer.self_attn.n_local_heads = lm_config.num_attention_heads // tp_size
+                layer.self_attn.n_local_kv_heads = lm_config.num_key_value_heads // tp_size
+                # n_rep = n_local_heads // n_local_kv_heads，两边都除 tp_size 后比例不变，无需改
+            # 应用 TP 切分：q/k/v/gate/up 列切（out 维），o/down 行切（in 维）
+            tp_plan = {
+                "self_attn.q_proj": ColwiseParallel(),
+                "self_attn.k_proj": ColwiseParallel(),
+                "self_attn.v_proj": ColwiseParallel(),
+                "self_attn.o_proj": RowwiseParallel(),
+                "mlp.gate_proj":    ColwiseParallel(),
+                "mlp.up_proj":      ColwiseParallel(),
+                "mlp.down_proj":    RowwiseParallel(),
+            }
+            for layer in raw_model_for_tp.model.layers:
+                parallelize_module(layer, tp_mesh, tp_plan)
+            # DP wrap（若 dp_size > 1）：DDP over TP groups
+            if dp_size > 1:
+                dp_mesh = mesh["dp"]
+                # 用 dp_mesh 的 process group 建 DDP
+                model = DistributedDataParallel(
+                    model, device_ids=[local_rank], process_group=dp_mesh.get_group(),
+                )
+            Logger(f'parallel strategy: TP={tp_size} × DP={dp_size} (world={world_size_actual})')
+            Logger('⚠️  TP 是 experimental：ckpt 保存尚未处理 DTensor（--save_interval 0 关闭 save；如需 save 请等 Month 2）')
+        else:
+            # FSDP 三档：分别对应 ZeRO-3 / ZeRO-2 / DDP-等价
+            from torch.distributed.fsdp import FullyShardedDataParallel as FSDP
+            from torch.distributed.fsdp import ShardingStrategy, MixedPrecision, BackwardPrefetch
+            from torch.distributed.fsdp.wrap import transformer_auto_wrap_policy
+            from functools import partial
+            from model.model_minimind import MiniMindBlock
+            strategy_map = {
+                "fsdp_full":    ShardingStrategy.FULL_SHARD,     # ZeRO-3: weight + grad + optim 都切
+                "fsdp_grad_op": ShardingStrategy.SHARD_GRAD_OP,  # ZeRO-2: grad + optim 切，weight 复制
+                "fsdp_no":      ShardingStrategy.NO_SHARD,       # 等价 DDP，走 FSDP 代码路径便于对比
+            }
+            # bf16 混合精度：param bf16 forward，reduce fp32 保证 grad 数值稳定
+            mixed_precision = MixedPrecision(
+                param_dtype=torch.bfloat16,
+                reduce_dtype=torch.float32,
+                buffer_dtype=torch.float32,
+            )
+            # auto_wrap 每个 MiniMindBlock 单独作为 FSDP unit（不是整个 model 一个 unit）
+            # 这样 all_gather 是每层触发，粒度更细，memory peak 更低
+            auto_wrap_policy = partial(
+                transformer_auto_wrap_policy,
+                transformer_layer_cls={MiniMindBlock},
+            )
+            model = FSDP(
+                model,
+                sharding_strategy=strategy_map[args.parallel_strategy],
+                mixed_precision=mixed_precision,
+                auto_wrap_policy=auto_wrap_policy,
+                device_id=local_rank,
+                forward_prefetch=True,                              # 提前 all-gather 下一层 weight
+                backward_prefetch=BackwardPrefetch.BACKWARD_PRE,    # 提前 all-gather backward 需要的 weight
+                use_orig_params=True,                               # 兼容 torch.compile 和 param_groups
+            )
+            Logger(f'parallel strategy: FSDP {args.parallel_strategy} '
+                   f'({strategy_map[args.parallel_strategy].name})')
 
     # ========== 7b. eval loader（可选） ==========
     # 全 rank 都建 eval loader（不能只 rank 0，否则 all-reduce 时 rank 1/2/3 无 eval loss 参与聚合）
