@@ -56,12 +56,16 @@ class PretrainDataset(Dataset):
 
 
 class SFTDataset(Dataset):
-    def __init__(self, jsonl_path, tokenizer, max_length=1024):
+    def __init__(self, jsonl_path, tokenizer, max_length=1024, subset_size=0, subset_seed=42):
         super().__init__()
         self.tokenizer = tokenizer
         self.max_length = max_length
         features = Features({'conversations': [{'role': Value('string'), 'content': Value('string'), 'reasoning_content': Value('string'), 'tools': Value('string'), 'tool_calls': Value('string')}]})
         self.samples = load_dataset('json', data_files=jsonl_path, split='train', features=features)
+        # QAT / dry-run 用途：shuffle 后 select，避免取前 N 引入 jsonl 顺序偏置
+        # (activation observer 的 running_max 需要看到代表性输入分布)
+        if subset_size and 0 < subset_size < len(self.samples):
+            self.samples = self.samples.shuffle(seed=subset_seed).select(range(subset_size))
         self.bos_id = tokenizer(f'{tokenizer.bos_token}assistant\n', add_special_tokens=False).input_ids
         self.eos_id = tokenizer(f'{tokenizer.eos_token}\n', add_special_tokens=False).input_ids
 

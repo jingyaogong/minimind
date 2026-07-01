@@ -38,6 +38,11 @@ from model.model_minimind import MiniMindConfig, MiniMindForCausalLM
 warnings.filterwarnings('ignore')
 
 
+def _is_qat_state_dict(sd):
+    """QAT ckpt 会带 act_fq.running_max / act_fq.step buffer——用它判定要不要先 wrap。"""
+    return any('act_fq.running_max' in k for k in sd.keys())
+
+
 def load_model(args):
     cfg = MiniMindConfig(
         hidden_size=args.hidden_size,
@@ -48,10 +53,71 @@ def load_model(args):
     moe_suffix = '_moe' if args.use_moe else ''
     ckp = f'{args.save_dir}/{args.weight}_{args.hidden_size}{moe_suffix}.pth'
     state_dict = torch.load(ckp, map_location='cpu', weights_only=True)
-    # strict=False — tied embeddings have duplicate keys; load handles via shared storage
-    model.load_state_dict(state_dict, strict=False)
-    model = model.half().eval().to(args.device)
-    return model, cfg
+
+    is_qat_ckpt = _is_qat_state_dict(state_dict)
+    apply_qat = bool(args.apply_qat) or is_qat_ckpt
+
+    if apply_qat:
+        from model.quant import prepare_qat, bake_quantized_weights
+        skip_patterns = tuple(s.strip() for s in args.quant_skip.split(',') if s.strip())
+        if is_qat_ckpt:
+            # QAT ckpt 已含 buffer——先 wrap 出对应 module，再整体 load
+            replaced = prepare_qat(model, w_bits=args.w_bits, a_bits=args.a_bits,
+                                   skip_patterns=skip_patterns)
+            model.load_state_dict(state_dict, strict=False)
+            print(f'[QAT] loaded QAT ckpt, wrapped {replaced} Linear modules')
+        else:
+            # fp ckpt——先 load 权重，再 wrap（QATLinear.from_float 保留原 weight tensor）
+            model.load_state_dict(state_dict, strict=False)
+            replaced = prepare_qat(model, w_bits=args.w_bits, a_bits=args.a_bits,
+                                   skip_patterns=skip_patterns)
+            print(f'[QAT] wrapped fp ckpt with {replaced} QATLinear (observer un-calibrated)')
+
+        model = model.half().to(args.device)
+
+        if not is_qat_ckpt and args.qat_calibrate > 0:
+            # 对未训练过的 QAT 模型：observer running_max 全 0，直接 eval 会 scale ~= 0 全饱和
+            # 跑一段 train() 模式的 forward 让 EMA 收敛，再切 eval
+            _calibrate_observer(model, args)
+
+        if args.qat_bake:
+            print('[QAT] baking fake-quantized weights in-place (simulates deployed int8)')
+            bake_quantized_weights(model)
+    else:
+        # strict=False — tied embeddings have duplicate keys; load handles via shared storage
+        model.load_state_dict(state_dict, strict=False)
+        model = model.half().to(args.device)
+
+    return model.eval(), cfg
+
+
+@torch.no_grad()
+def _calibrate_observer(model, args):
+    """在 train() 模式下跑 N 个 forward 把 ActFakeQuant.running_max EMA 跑起来。
+
+    ActFakeQuant.forward 里 self.training 分支才会更新 EMA + 记 step；observer_steps
+    warmup 期内也不做 fake-quant，只统计。这里跑够 observer_steps 步保证之后 eval
+    切进真正 fake-quant 分支。
+    """
+    tokenizer = AutoTokenizer.from_pretrained(args.tokenizer_path)
+    bos_id, eos_id = tokenizer.bos_token_id, tokenizer.eos_token_id
+    model.train()
+    fed = 0
+    for text in iter_holdout(args):
+        if not text or len(text) < 10:
+            continue
+        body = tokenizer(text, max_length=args.max_seq_len - 2,
+                         truncation=True, add_special_tokens=False).input_ids
+        tokens = [bos_id] + body + [eos_id]
+        if len(tokens) < 2:
+            continue
+        ids = torch.tensor([tokens], device=args.device)
+        model(input_ids=ids)
+        fed += 1
+        if fed >= args.qat_calibrate:
+            break
+    model.eval()
+    print(f'[QAT] calibration done ({fed} forwards; observer_steps warmup = {args.qat_calibrate})')
 
 
 def iter_holdout(args):
@@ -91,6 +157,18 @@ def main():
     parser.add_argument('--max_samples', type=int, default=500)
     parser.add_argument('--max_seq_len', type=int, default=512)
     parser.add_argument('--device', type=str, default='cuda' if torch.cuda.is_available() else 'cpu')
+
+    # ---- QAT eval options ----
+    parser.add_argument('--apply_qat', type=int, default=0, choices=[0, 1],
+                        help='对 fp ckpt 也用 QATLinear 包一层，测纯量化噪声；QAT ckpt 会自动识别')
+    parser.add_argument('--w_bits', type=int, default=8)
+    parser.add_argument('--a_bits', type=int, default=8)
+    parser.add_argument('--qat_calibrate', type=int, default=200,
+                        help='fp ckpt + apply_qat 时的 observer 预热步数；QAT ckpt 时忽略')
+    parser.add_argument('--qat_bake', type=int, default=0, choices=[0, 1],
+                        help='把 fake-quantized 权重 in-place 写回 weight（模拟真实 int8 部署）')
+    parser.add_argument('--quant_skip', type=str, default='lm_head,mlp.gate',
+                        help='要跳过量化的 Linear 名（逗号分隔），需和训练一致')
     args = parser.parse_args()
 
     print(f'[load] ckpt={args.save_dir}/{args.weight}_{args.hidden_size}.pth')

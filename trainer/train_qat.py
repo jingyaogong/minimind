@@ -20,6 +20,7 @@ from dataset.lm_dataset import SFTDataset
 from trainer.trainer_utils import (
     get_lr, Logger, is_main_process, lm_checkpoint,
     init_distributed_mode, setup_seed, init_model, SkipBatchSampler,
+    detect_gpu_peak_tflops_bf16, compute_model_flops_per_token,
 )
 
 warnings.filterwarnings('ignore')
@@ -27,10 +28,11 @@ warnings.filterwarnings('ignore')
 
 def train_epoch(epoch, loader, iters, start_step=0, wandb=None):
     start_time = time.time()
+    last_log_time, last_log_step = start_time, start_step
     last_step = start_step
     for step, (input_ids, labels) in enumerate(loader, start=start_step + 1):
-        input_ids = input_ids.to(args.device)
-        labels = labels.to(args.device)
+        input_ids = input_ids.to(args.device, non_blocking=True)
+        labels = labels.to(args.device, non_blocking=True)
         last_step = step
         lr = get_lr(epoch * iters + step, args.epochs * iters, args.learning_rate)
         for param_group in optimizer.param_groups:
@@ -51,14 +53,26 @@ def train_epoch(epoch, loader, iters, start_step=0, wandb=None):
             optimizer.zero_grad(set_to_none=True)
 
         if step % args.log_interval == 0 or step == iters:
-            spend_time = time.time() - start_time
+            now = time.time()
+            spend_time = now - start_time
+            window_dt = max(now - last_log_time, 1e-6)
+            window_steps = step - last_log_step
+            window_its = window_steps / window_dt
+            # MFU 报的是 dense 6P 等价吞吐；QAT 会因 fake-quant 逐 Linear 加 round/clamp/dequant
+            # 有额外内存搬运，MFU 通常比同 seq 下的 SFT 低 5-15%——这本身就是我们要观测的量。
+            tokens_window = window_steps * args.batch_size * args.max_seq_len * world_size
+            mfu = (flops_per_token * tokens_window / window_dt) / (gpu_peak_tflops * 1e12) * 100
+            last_log_time, last_log_step = now, step
             current_loss = loss.item() * args.accumulation_steps
             current_aux_loss = res.aux_loss.item() if res.aux_loss is not None else 0.0
             current_logits_loss = current_loss - current_aux_loss
             current_lr = optimizer.param_groups[-1]['lr']
             eta_min = spend_time / max(step - start_step, 1) * (iters - step) // 60
+            # observer_warmup 期内 act_fq 只统计不量化，日志上会看到一个"200 步后 loss 抖一下"的转折点。
+            qat_phase = 'observe' if step <= args.quant_observer_steps else 'fake-quant'
             Logger(
-                f'Epoch:[{epoch + 1}/{args.epochs}]({step}/{iters}), '
+                f'[{time.strftime("%H:%M:%S")}] Epoch:[{epoch + 1}/{args.epochs}]({step}/{iters}), '
+                f'it/s: {window_its:.2f}, MFU: {mfu:.1f}%, phase: {qat_phase}, '
                 f'loss: {current_loss:.4f}, logits_loss: {current_logits_loss:.4f}, '
                 f'aux_loss: {current_aux_loss:.4f}, lr: {current_lr:.8f}, '
                 f'epoch_time: {eta_min:.1f}min'
@@ -67,7 +81,7 @@ def train_epoch(epoch, loader, iters, start_step=0, wandb=None):
                 wandb.log({
                     "loss": current_loss, "logits_loss": current_logits_loss,
                     "aux_loss": current_aux_loss, "learning_rate": current_lr,
-                    "epoch_time": eta_min,
+                    "epoch_time": eta_min, "it_per_s": window_its, "mfu_pct": mfu,
                 })
 
         if (step % args.save_interval == 0 or step == iters) and is_main_process():
@@ -114,9 +128,13 @@ if __name__ == "__main__":
     parser.add_argument('--num_hidden_layers', default=8, type=int)
     parser.add_argument('--max_seq_len', default=768, type=int)
     parser.add_argument('--use_moe', default=0, type=int, choices=[0, 1])
-    parser.add_argument("--data_path", type=str, default="../dataset/sft_t2t_mini.jsonl")
+    parser.add_argument("--data_path", type=str, default="../dataset/sft_t2t.jsonl")
+    parser.add_argument("--qat_subset_size", type=int, default=0,
+                        help="QAT 数据子集大小（0=用全量）；64M dry run 建议 100000，1B 正式建议 200000")
+    parser.add_argument("--gpu_peak_tflops", type=float, default=0,
+                        help="GPU bf16 理论峰值 TFLOPS，用于 MFU 计算；0=按 GPU 名自动检测")
     parser.add_argument('--from_weight', default='full_sft', type=str,
-                        help="QAT 起点权重前缀（默认基于 full_sft 微调）")
+                        help="QAT 起点权重前缀（部署走 full_sft；1.12 dry run 走 pretrain）")
     parser.add_argument('--from_resume', default=0, type=int, choices=[0, 1])
     parser.add_argument("--use_wandb", action="store_true")
     parser.add_argument("--wandb_project", type=str, default="MiniMind-QAT")
@@ -179,10 +197,20 @@ if __name__ == "__main__":
            f'(W{args.w_bits}A{args.a_bits}, skip={skip_patterns}, '
            f'observer_warmup={args.quant_observer_steps} steps)')
 
-    train_ds = SFTDataset(args.data_path, tokenizer, max_length=args.max_seq_len)
+    train_ds = SFTDataset(args.data_path, tokenizer, max_length=args.max_seq_len,
+                          subset_size=args.qat_subset_size)
+    Logger(f'QAT dataset: {len(train_ds)} samples '
+           f'(subset_size={args.qat_subset_size}, seq_len={args.max_seq_len})')
     train_sampler = DistributedSampler(train_ds) if dist.is_initialized() else None
     scaler = torch.cuda.amp.GradScaler(enabled=(args.dtype == 'float16'))
-    optimizer = optim.AdamW(model.parameters(), lr=args.learning_rate)
+    optimizer = optim.AdamW(model.parameters(), lr=args.learning_rate, fused=True)
+
+    # MFU 测量准备
+    flops_per_token = compute_model_flops_per_token(model, lm_config)
+    gpu_peak_tflops = detect_gpu_peak_tflops_bf16(override=args.gpu_peak_tflops)
+    world_size = dist.get_world_size() if dist.is_initialized() else 1
+    Logger(f'[MFU] params_flops/token={flops_per_token/1e9:.3f} GFLOPS, '
+           f'GPU peak={gpu_peak_tflops:.0f} TFLOPS bf16, world_size={world_size}')
 
     # 6. resume
     start_epoch, start_step = 0, 0
@@ -208,7 +236,8 @@ if __name__ == "__main__":
         skip = start_step if (epoch == start_epoch and start_step > 0) else 0
         batch_sampler = SkipBatchSampler(train_sampler or indices, args.batch_size, skip)
         loader = DataLoader(train_ds, batch_sampler=batch_sampler,
-                            num_workers=args.num_workers, pin_memory=True)
+                            num_workers=args.num_workers, pin_memory=True,
+                            persistent_workers=args.num_workers > 0)
         if skip > 0:
             Logger(f'Epoch [{epoch + 1}/{args.epochs}]: 跳过前{start_step}个step，从step {start_step + 1}开始')
             train_epoch(epoch, loader, len(loader) + skip, start_step, wandb)
