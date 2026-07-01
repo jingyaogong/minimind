@@ -5,3 +5,6 @@ out
 website/
 docs-minimind/
 .venv/
+checkpoints/
+dataset/
+profile_out/
