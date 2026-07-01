@@ -88,20 +88,25 @@ def train_epoch(epoch, loader, iters, start_step=0, wandb=None):
                     "epoch_time": eta_min, "it_per_s": window_its, "mfu_pct": mfu,
                 })
 
-        if (step % args.save_interval == 0 or step == iters) and is_main_process():
-            model.eval()
-            moe_suffix = '_moe' if lm_config.use_moe else ''
-            ckp = f'{args.save_dir}/{args.save_weight}_{lm_config.hidden_size}{moe_suffix}.pth'
-            raw_model = model.module if isinstance(model, DistributedDataParallel) else model
-            raw_model = getattr(raw_model, '_orig_mod', raw_model)
-            state_dict = raw_model.state_dict()
-            torch.save({k: v.half().cpu() for k, v in state_dict.items()}, ckp)
-            lm_checkpoint(
-                lm_config, weight=args.save_weight, model=model, optimizer=optimizer,
-                epoch=epoch, step=step, wandb=wandb, save_dir='../checkpoints', scaler=scaler,
-            )
-            model.train()
-            del state_dict
+        if step % args.save_interval == 0 or step == iters:
+            if is_main_process():
+                model.eval()
+                moe_suffix = '_moe' if lm_config.use_moe else ''
+                ckp = f'{args.save_dir}/{args.save_weight}_{lm_config.hidden_size}{moe_suffix}.pth'
+                raw_model = model.module if isinstance(model, DistributedDataParallel) else model
+                raw_model = getattr(raw_model, '_orig_mod', raw_model)
+                state_dict = raw_model.state_dict()
+                ckp_tmp = ckp + '.tmp'
+                torch.save({k: v.half().cpu() for k, v in state_dict.items()}, ckp_tmp)
+                os.replace(ckp_tmp, ckp)
+                lm_checkpoint(
+                    lm_config, weight=args.save_weight, model=model, optimizer=optimizer,
+                    epoch=epoch, step=step, wandb=wandb, save_dir='../checkpoints', scaler=scaler,
+                )
+                model.train()
+                del state_dict
+            if dist.is_initialized():
+                dist.barrier()
 
         del input_ids, labels, res, loss
 

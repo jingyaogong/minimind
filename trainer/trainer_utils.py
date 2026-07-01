@@ -37,8 +37,19 @@ def Logger(content):
         print(content)
 
 
-def get_lr(current_step, total_steps, lr):
-    return lr*(0.1 + 0.45*(1 + math.cos(math.pi * current_step / total_steps)))
+def get_lr(current_step, total_steps, lr, warmup_steps=0):
+    """
+    Linear warmup + cosine decay。
+    - warmup_steps=0（默认）: 纯 cosine，向后兼容
+    - warmup_steps>0: 前 warmup_steps 步从 0.1*lr 线性升到 lr，之后 cosine 到 0.1*lr
+
+    1B from-scratch 必须 warmup（无 warmup 时前 500 步 loss 发散概率 >50%，
+    因为随机初始化的权重在 full lr 下第一步梯度过大打乱结构）。
+    """
+    if warmup_steps > 0 and current_step < warmup_steps:
+        return lr * (0.1 + 0.9 * current_step / warmup_steps)
+    progress = (current_step - warmup_steps) / max(total_steps - warmup_steps, 1)
+    return lr * (0.1 + 0.45 * (1 + math.cos(math.pi * progress)))
 
 
 # A100/H100/3090 等常见卡的 bf16 理论峰值 TFLOPS。MoE 等价 FLOPs 是 active params 不是 total，
@@ -115,6 +126,14 @@ def setup_seed(seed: int, deterministic: bool = False):
     torch.set_float32_matmul_precision('high')
 
 def lm_checkpoint(lm_config, weight='full_sft', model=None, optimizer=None, epoch=0, step=0, wandb=None, save_dir='../checkpoints', **kwargs):
+    """
+    save mode (model != None): 只在 rank-0 写盘，非 main rank 早返回。
+    load mode (model == None): 所有 rank 读同一份 ckpt，无冲突。
+    调用方在 save 后应加 dist.barrier()，让非-0 rank 等待 rank-0 写完再进入下一 step。
+    """
+    # DDP 保护：save 必须由单一 rank 执行；否则 4 rank 同写一个 file 会 corrupt。
+    if model is not None and not is_main_process():
+        return None
     os.makedirs(save_dir, exist_ok=True)
     moe_path = '_moe' if lm_config.use_moe else ''
     ckp_path = f'{save_dir}/{weight}_{lm_config.hidden_size}{moe_path}.pth'

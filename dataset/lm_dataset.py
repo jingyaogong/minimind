@@ -39,7 +39,16 @@ class PretrainDataset(Dataset):
         super().__init__()
         self.tokenizer = tokenizer
         self.max_length = max_length
-        self.samples = load_dataset('json', data_files=data_path, split='train')
+        # data_path 支持三种形式：
+        #   1. 单文件路径 str          → 单 jsonl
+        #   2. 逗号分隔多路径 str      → 从 CLI 传入的多文件混合（"a.jsonl,b.jsonl"）
+        #   3. list[str]              → API 调用直接传列表
+        # 混合场景：1B pretrain 用 SkyPile 25B（raw web）+ minimind pretrain 1.76B（curated Q&A）
+        if isinstance(data_path, str) and ',' in data_path:
+            data_files = [p.strip() for p in data_path.split(',') if p.strip()]
+        else:
+            data_files = data_path
+        self.samples = load_dataset('json', data_files=data_files, split='train')
 
     def __len__(self):
         return len(self.samples)

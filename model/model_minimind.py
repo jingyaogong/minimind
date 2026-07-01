@@ -205,6 +205,13 @@ class MiniMindModel(nn.Module):
         freqs_cos, freqs_sin = precompute_freqs_cis(dim=config.head_dim, end=config.max_position_embeddings, rope_base=config.rope_theta, rope_scaling=config.rope_scaling)
         self.register_buffer("freqs_cos", freqs_cos, persistent=False)
         self.register_buffer("freqs_sin", freqs_sin, persistent=False)
+        # gradient checkpointing 标志：True 时 forward 不存 activation，
+        # backward 时重算——省 activation 显存但慢 ~30%。1B + seq=1024 在 80GB 无需，
+        # 但 seq=2048 或 8B+ 模型必须。由 trainer 通过 set_grad_checkpointing() 打开。
+        self.grad_checkpointing = False
+
+    def set_grad_checkpointing(self, enable: bool = True):
+        self.grad_checkpointing = enable
 
     def warmup_rope(self, device=None):
         """Meta-device init 下 buffer 可能为空，manual 调用重新 precompute。正常 code path 不需要。"""
@@ -226,14 +233,25 @@ class MiniMindModel(nn.Module):
         # 兼容，在 model.to(device) 后手动调 warmup_rope() 即可，不要放 forward hot path。)
         position_embeddings = (self.freqs_cos[start_pos:start_pos + seq_length], self.freqs_sin[start_pos:start_pos + seq_length])
         presents = []
+        # gradient checkpointing 与 use_cache=True 不兼容（重算时无法访问 KV cache），
+        # 训练场景一般 use_cache=False，此处兜底 guard 提示。
+        use_ckpt = self.grad_checkpointing and self.training and not use_cache
         for layer, past_key_value in zip(self.layers, past_key_values):
-            hidden_states, present = layer(
-                hidden_states,
-                position_embeddings,
-                past_key_value=past_key_value,
-                use_cache=use_cache,
-                attention_mask=attention_mask
-            )
+            if use_ckpt:
+                # use_reentrant=False 是 torch>=2.1 推荐（旧 reentrant 版本对 DDP/compile 有问题）
+                hidden_states, present = torch.utils.checkpoint.checkpoint(
+                    layer, hidden_states, position_embeddings,
+                    past_key_value, use_cache, attention_mask,
+                    use_reentrant=False,
+                )
+            else:
+                hidden_states, present = layer(
+                    hidden_states,
+                    position_embeddings,
+                    past_key_value=past_key_value,
+                    use_cache=use_cache,
+                    attention_mask=attention_mask
+                )
             presents.append(present)
         hidden_states = self.norm(hidden_states)
         aux_loss = sum([l.mlp.aux_loss for l in self.layers if isinstance(l.mlp, MOEFeedForward)], hidden_states.new_zeros(1).squeeze())

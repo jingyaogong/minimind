@@ -6,6 +6,7 @@ sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), '..')))
 
 import datasets  # noqa: F401  # Windows pyarrow/torch DLL conflict workaround (issue #771)
 import argparse
+import math
 import time
 import warnings
 import torch
@@ -25,7 +26,32 @@ from trainer.trainer_utils import (
 warnings.filterwarnings('ignore')
 
 
-def train_epoch(epoch, loader, iters, start_step=0, wandb=None):
+@torch.no_grad()
+def eval_holdout(model, eval_loader, max_batches, autocast_ctx, device):
+    """
+    rank-0 only 跑 holdout PPL；调用方需保证只 rank-0 进入。
+    返回 (avg_loss, ppl)。max_batches 控制 eval 时长（1B 时 20-50 batch 足够，~1s）。
+    """
+    was_training = model.training
+    model.eval()
+    total_loss, total_tokens = 0.0, 0
+    for i, (input_ids, labels) in enumerate(eval_loader):
+        if i >= max_batches: break
+        input_ids = input_ids.to(device, non_blocking=True)
+        labels = labels.to(device, non_blocking=True)
+        with autocast_ctx:
+            res = model(input_ids, labels=labels)
+        # loss 已经是 mean over non-pad tokens；乘 n_tokens 便于跨 batch weighted avg
+        n_tokens = (labels != -100).sum().item()
+        if n_tokens > 0:
+            total_loss += res.loss.item() * n_tokens
+            total_tokens += n_tokens
+    if was_training: model.train()
+    avg_loss = total_loss / max(total_tokens, 1)
+    return avg_loss, math.exp(avg_loss)
+
+
+def train_epoch(epoch, loader, iters, start_step=0, wandb=None, eval_loader=None):
     start_time = time.time()
     last_log_time, last_log_step = start_time, start_step
     last_step = start_step
@@ -40,7 +66,7 @@ def train_epoch(epoch, loader, iters, start_step=0, wandb=None):
         input_ids = input_ids.to(args.device, non_blocking=True)
         labels = labels.to(args.device, non_blocking=True)
         last_step = step
-        lr = get_lr(epoch * iters + step, args.epochs * iters, args.learning_rate)
+        lr = get_lr(epoch * iters + step, args.epochs * iters, args.learning_rate, args.warmup_steps)
         for param_group in optimizer.param_groups:
             param_group['lr'] = lr
 
@@ -79,17 +105,34 @@ def train_epoch(epoch, loader, iters, start_step=0, wandb=None):
             Logger(f'[{time.strftime("%H:%M:%S")}] Epoch:[{epoch + 1}/{args.epochs}]({step}/{iters}), it/s: {window_its:.2f}, MFU: {mfu:.1f}%, loss: {current_loss:.4f}, logits_loss: {current_logits_loss:.4f}, aux_loss: {current_aux_loss:.4f}, lr: {current_lr:.8f}, epoch_time: {eta_min:.1f}min')
             if wandb: wandb.log({"loss": current_loss, "logits_loss": current_logits_loss, "aux_loss": current_aux_loss, "learning_rate": current_lr, "epoch_time": eta_min})
 
-        if (step % args.save_interval == 0 or step == iters) and is_main_process():
-            model.eval()
-            moe_suffix = '_moe' if lm_config.use_moe else ''
-            ckp = f'{args.save_dir}/{args.save_weight}_{lm_config.hidden_size}{moe_suffix}.pth'
-            raw_model = model.module if isinstance(model, DistributedDataParallel) else model
-            raw_model = getattr(raw_model, '_orig_mod', raw_model)
-            state_dict = raw_model.state_dict()
-            torch.save({k: v.half().cpu() for k, v in state_dict.items()}, ckp)
-            lm_checkpoint(lm_config, weight=args.save_weight, model=model, optimizer=optimizer, scaler=scaler, epoch=epoch, step=step, wandb=wandb, save_dir='../checkpoints')
-            model.train()
-            del state_dict
+        # ---- eval loop（可选） ----
+        if args.eval_interval > 0 and step % args.eval_interval == 0 and eval_loader is not None:
+            if is_main_process():
+                val_loss, val_ppl = eval_holdout(model, eval_loader, args.eval_max_batches, autocast_ctx, args.device)
+                Logger(f'[eval] step={step} val_loss={val_loss:.4f} val_ppl={val_ppl:.2f}')
+                if wandb: wandb.log({"val_loss": val_loss, "val_ppl": val_ppl, "step": step})
+            if dist.is_initialized(): dist.barrier()
+
+        if step % args.save_interval == 0 or step == iters:
+            if is_main_process():
+                model.eval()
+                moe_suffix = '_moe' if lm_config.use_moe else ''
+                ckp = f'{args.save_dir}/{args.save_weight}_{lm_config.hidden_size}{moe_suffix}.pth'
+                raw_model = model.module if isinstance(model, DistributedDataParallel) else model
+                raw_model = getattr(raw_model, '_orig_mod', raw_model)
+                state_dict = raw_model.state_dict()
+                # atomic: tmp + rename 避免读者读到半写文件（当前的 torch.save 直接写不 atomic，
+                # 极端情况 kill -9 会留 corrupt ckpt；lm_checkpoint 内部已 atomic，此处也补上）
+                ckp_tmp = ckp + '.tmp'
+                torch.save({k: v.half().cpu() for k, v in state_dict.items()}, ckp_tmp)
+                os.replace(ckp_tmp, ckp)
+                lm_checkpoint(lm_config, weight=args.save_weight, model=model, optimizer=optimizer, scaler=scaler, epoch=epoch, step=step, wandb=wandb, save_dir='../checkpoints')
+                model.train()
+                del state_dict
+            # 所有 rank 在此汇合，让非 rank-0 等 rank-0 写完再进下一 step
+            # （防止 NCCL 隐式同步下的 timing race，也确保 ckpt 文件对 resume 一致）
+            if dist.is_initialized():
+                dist.barrier()
 
         del input_ids, labels, res, loss
 
@@ -127,6 +170,17 @@ if __name__ == "__main__":
     parser.add_argument("--use_compile", default=1, type=int, choices=[0, 1], help="是否使用torch.compile加速（0=否，1=是，A100 上推荐默认 1）")
     parser.add_argument("--gpu_peak_tflops", type=float, default=0,
                         help="GPU bf16 理论峰值 TFLOPS，用于 MFU 计算；默认 0 表示按 GPU 名自动检测（A100=312）")
+    parser.add_argument("--warmup_steps", type=int, default=0,
+                        help="linear warmup 步数。1B from-scratch 建议 500-2000；64M 用现有 pretrain ckpt 微调设 0 即可")
+    parser.add_argument("--grad_checkpointing", type=int, default=0, choices=[0, 1],
+                        help="激活值 gradient checkpointing：省 30-50%% activation 显存，慢 ~30%%。"
+                             "1B + seq=1024 在 80GB 用不上；seq=2048 或 8B+ 或大 batch 时需要打开")
+    parser.add_argument("--eval_interval", type=int, default=0,
+                        help="每 N step 跑一次 holdout eval（0=关闭）。1B 建议 500-1000")
+    parser.add_argument("--eval_data_path", type=str, default=None,
+                        help="holdout jsonl 路径；不设则关闭 eval")
+    parser.add_argument("--eval_max_batches", type=int, default=20,
+                        help="每次 eval 最多跑几个 batch（20*batch_size 通常够 ~1s 内出数）")
     args = parser.parse_args()
 
     # ========== 1. 初始化环境和随机种子 ==========
@@ -155,6 +209,9 @@ if __name__ == "__main__":
 
     # ========== 5. 定义模型、数据、优化器 ==========
     model, tokenizer = init_model(lm_config, args.from_weight, device=args.device)
+    if args.grad_checkpointing == 1:
+        model.model.set_grad_checkpointing(True)
+        Logger('gradient checkpointing enabled (activation 省 30-50%%, 慢 ~30%%)')
     train_ds = PretrainDataset(args.data_path, tokenizer, max_length=args.max_seq_len)
     train_sampler = DistributedSampler(train_ds) if dist.is_initialized() else None
     scaler = torch.cuda.amp.GradScaler(enabled=(args.dtype == 'float16'))
@@ -189,6 +246,16 @@ if __name__ == "__main__":
     if dist.is_initialized():
         model = DistributedDataParallel(model, device_ids=[local_rank])
 
+    # ========== 7b. eval loader（可选） ==========
+    eval_loader = None
+    if args.eval_interval > 0 and args.eval_data_path and is_main_process():
+        # rank-0 only：只 main rank 需要 eval loader（其他 rank barrier 等待）
+        eval_ds = PretrainDataset(args.eval_data_path, tokenizer, max_length=args.max_seq_len)
+        eval_loader = DataLoader(eval_ds, batch_size=args.batch_size,
+                                 shuffle=False, num_workers=2, pin_memory=True)
+        Logger(f'[eval] loader ready: {len(eval_ds)} samples from {args.eval_data_path}, '
+               f'eval_interval={args.eval_interval}, max_batches={args.eval_max_batches}')
+
     # ========== 8. 开始训练 ==========
     for epoch in range(start_epoch, args.epochs):
         train_sampler and train_sampler.set_epoch(epoch)
@@ -199,9 +266,9 @@ if __name__ == "__main__":
                             pin_memory=True, persistent_workers=args.num_workers > 0)
         if skip > 0:
             Logger(f'Epoch [{epoch + 1}/{args.epochs}]: 跳过前{start_step}个step，从step {start_step + 1}开始')
-            train_epoch(epoch, loader, len(loader) + skip, start_step, wandb)
+            train_epoch(epoch, loader, len(loader) + skip, start_step, wandb, eval_loader)
         else:
-            train_epoch(epoch, loader, len(loader), 0, wandb)
+            train_epoch(epoch, loader, len(loader), 0, wandb, eval_loader)
 
     # ========== 9. 清理分布进程 ==========
     if dist.is_initialized():
