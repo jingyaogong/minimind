@@ -51,7 +51,7 @@ def eval_holdout(model, eval_loader, max_batches, autocast_ctx, device):
     return avg_loss, math.exp(avg_loss)
 
 
-def train_epoch(epoch, loader, iters, start_step=0, wandb=None, eval_loader=None):
+def train_epoch(epoch, loader, iters, start_step=0, wandb=None, eval_loader=None, profiler=None):
     start_time = time.time()
     last_log_time, last_log_step = start_time, start_step
     last_step = start_step
@@ -70,12 +70,21 @@ def train_epoch(epoch, loader, iters, start_step=0, wandb=None, eval_loader=None
         for param_group in optimizer.param_groups:
             param_group['lr'] = lr
 
-        with autocast_ctx:
-            res = model(input_ids, labels=labels)
-            loss = res.loss + res.aux_loss
-            loss = loss / args.accumulation_steps
+        # DDP gradient accumulation optimization：
+        # 默认 DDP 每次 .backward() 都做全参数 all-reduce（4GB grad × 85 bucket ≈ 30ms）。
+        # 但 accum=N 时前 N-1 次 all-reduce 是浪费（grad 还要继续累积）。用 model.no_sync()
+        # 让 DDP 在非最后一个 micro-step 里 skip all-reduce，只在最后一个 micro-step 才同步。
+        # profile 显示 all-reduce 占 73% 时间 → 修完预期总时间省 ~55%，MFU 17%→~35%。
+        is_last_accum_step = (step % args.accumulation_steps == 0)
+        need_sync = is_last_accum_step or not isinstance(model, DistributedDataParallel)
+        sync_ctx = nullcontext() if need_sync else model.no_sync()
 
-        scaler.scale(loss).backward()
+        with sync_ctx:
+            with autocast_ctx:
+                res = model(input_ids, labels=labels)
+                loss = res.loss + res.aux_loss
+                loss = loss / args.accumulation_steps
+            scaler.scale(loss).backward()
 
         if step % args.accumulation_steps == 0:
             scaler.unscale_(optimizer)
@@ -86,16 +95,24 @@ def train_epoch(epoch, loader, iters, start_step=0, wandb=None, eval_loader=None
 
             optimizer.zero_grad(set_to_none=True)
 
+        # profiler step 打点（每 step 一次；schedule 决定何时真的记录）
+        if profiler is not None:
+            profiler.step()
+
         if step % args.log_interval == 0 or step == iters:
             now = time.time()
             spend_time = now - start_time
             window_dt = max(now - last_log_time, 1e-6)
             window_steps = step - last_log_step
             window_its = window_steps / window_dt
-            # MFU = 实际 FLOPs/s / GPU 峰值；按 window 内的 token 吞吐算（避开 warmup / ckpt save 污染）
-            # tokens 用 per-rank batch × seq_len × world_size × window_steps（DDP 每卡同时处理 batch）
+            # MFU = per-card 实际 FLOPs/s / per-card 峰值。分子分母都要一致口径：
+            # - 分子: 4 卡总 tokens × flops/token = 总 flops；÷ world_size 得 per-card flops
+            # - 分母: gpu_peak_tflops (单卡峰值，312 TFLOPS on A100)
+            # 早期版本 bug：分子用全部 tokens 但分母只除 1 卡峰值 → 报数是真实 MFU 的 world_size 倍。
             tokens_window = window_steps * args.batch_size * args.max_seq_len * world_size
-            mfu = (flops_per_token * tokens_window / window_dt) / (gpu_peak_tflops * 1e12) * 100
+            total_flops_per_s = flops_per_token * tokens_window / window_dt
+            per_card_flops_per_s = total_flops_per_s / world_size
+            mfu = per_card_flops_per_s / (gpu_peak_tflops * 1e12) * 100
             last_log_time, last_log_step = now, step
             current_loss = loss.item() * args.accumulation_steps
             current_aux_loss = res.aux_loss.item() if res.aux_loss is not None else 0.0
@@ -107,11 +124,23 @@ def train_epoch(epoch, loader, iters, start_step=0, wandb=None, eval_loader=None
 
         # ---- eval loop（可选） ----
         if args.eval_interval > 0 and step % args.eval_interval == 0 and eval_loader is not None:
+            # ⚠️ 全 rank 都跑 eval：单 rank eval (即使 unwrap raw model) 也会导致 DDP guard 失效 /
+            # torch.compile recompile → rank 0 长 stall → 下一步 all-reduce seq 不同步 → NCCL 10min timeout。
+            # 解决：所有 rank 用同一份 eval_loader (顺序一致) 跑同样的 batch，然后 all-reduce mean loss。
+            # 每 rank 都工作，无 rank 掉队问题。max_batches=20 * 5 rank = 20 batch × ~0.3s ≈ 6s 开销。
+            raw_model = model.module if isinstance(model, DistributedDataParallel) else model
+            raw_model = getattr(raw_model, '_orig_mod', raw_model)
+            val_loss_local, _ = eval_holdout(raw_model, eval_loader, args.eval_max_batches, autocast_ctx, args.device)
+            if dist.is_initialized():
+                loss_t = torch.tensor(val_loss_local, device=args.device)
+                dist.all_reduce(loss_t, op=dist.ReduceOp.AVG)
+                val_loss = loss_t.item()
+            else:
+                val_loss = val_loss_local
+            val_ppl = math.exp(val_loss)
             if is_main_process():
-                val_loss, val_ppl = eval_holdout(model, eval_loader, args.eval_max_batches, autocast_ctx, args.device)
                 Logger(f'[eval] step={step} val_loss={val_loss:.4f} val_ppl={val_ppl:.2f}')
                 if wandb: wandb.log({"val_loss": val_loss, "val_ppl": val_ppl, "step": step})
-            if dist.is_initialized(): dist.barrier()
 
         if step % args.save_interval == 0 or step == iters:
             if is_main_process():
@@ -181,6 +210,11 @@ if __name__ == "__main__":
                         help="holdout jsonl 路径；不设则关闭 eval")
     parser.add_argument("--eval_max_batches", type=int, default=20,
                         help="每次 eval 最多跑几个 batch（20*batch_size 通常够 ~1s 内出数）")
+    parser.add_argument("--profile_steps", type=int, default=0,
+                        help="torch.profiler 抓 N 步（0=关）；建议 20。会在 wait=10 warmup=5 active=N 后自动退出。"
+                             "trace 存到 --profile_out 目录，chrome://tracing 打开或 tensorboard --logdir profile_out")
+    parser.add_argument("--profile_out", type=str, default="../profile_out",
+                        help="profile trace 输出目录")
     args = parser.parse_args()
 
     # ========== 1. 初始化环境和随机种子 ==========
@@ -247,16 +281,34 @@ if __name__ == "__main__":
         model = DistributedDataParallel(model, device_ids=[local_rank])
 
     # ========== 7b. eval loader（可选） ==========
+    # 全 rank 都建 eval loader（不能只 rank 0，否则 all-reduce 时 rank 1/2/3 无 eval loss 参与聚合）
     eval_loader = None
-    if args.eval_interval > 0 and args.eval_data_path and is_main_process():
-        # rank-0 only：只 main rank 需要 eval loader（其他 rank barrier 等待）
+    if args.eval_interval > 0 and args.eval_data_path:
         eval_ds = PretrainDataset(args.eval_data_path, tokenizer, max_length=args.max_seq_len)
+        # 所有 rank 用同一份数据 + shuffle=False → 保证跑相同 batch → all-reduce 有意义
         eval_loader = DataLoader(eval_ds, batch_size=args.batch_size,
                                  shuffle=False, num_workers=2, pin_memory=True)
         Logger(f'[eval] loader ready: {len(eval_ds)} samples from {args.eval_data_path}, '
                f'eval_interval={args.eval_interval}, max_batches={args.eval_max_batches}')
 
+    # ========== 7c. profiler（可选） ==========
+    profiler_ctx = None
+    if args.profile_steps > 0 and is_main_process():
+        # schedule: 前 10 步 warmup（skip compile 编译期），5 步观察，profile_steps 步真记录
+        from torch.profiler import profile, schedule, ProfilerActivity, tensorboard_trace_handler
+        os.makedirs(args.profile_out, exist_ok=True)
+        profiler_ctx = profile(
+            activities=[ProfilerActivity.CPU, ProfilerActivity.CUDA],
+            schedule=schedule(wait=10, warmup=5, active=args.profile_steps, repeat=1),
+            on_trace_ready=tensorboard_trace_handler(args.profile_out),
+            record_shapes=True, with_stack=False, with_flops=False,
+        )
+        Logger(f'[profile] enabled: warmup 15 step → capture {args.profile_steps} step → trace to {args.profile_out}')
+        Logger('[profile] 训练完 profile 步后不自动退出——手动 Ctrl+C 停即可。trace 已 flush 到磁盘。')
+
     # ========== 8. 开始训练 ==========
+    if profiler_ctx is not None:
+        profiler_ctx.__enter__()
     for epoch in range(start_epoch, args.epochs):
         train_sampler and train_sampler.set_epoch(epoch)
         setup_seed(42 + epoch); indices = torch.randperm(len(train_ds)).tolist()
@@ -266,9 +318,11 @@ if __name__ == "__main__":
                             pin_memory=True, persistent_workers=args.num_workers > 0)
         if skip > 0:
             Logger(f'Epoch [{epoch + 1}/{args.epochs}]: 跳过前{start_step}个step，从step {start_step + 1}开始')
-            train_epoch(epoch, loader, len(loader) + skip, start_step, wandb, eval_loader)
+            train_epoch(epoch, loader, len(loader) + skip, start_step, wandb, eval_loader, profiler_ctx)
         else:
-            train_epoch(epoch, loader, len(loader), 0, wandb, eval_loader)
+            train_epoch(epoch, loader, len(loader), 0, wandb, eval_loader, profiler_ctx)
+    if profiler_ctx is not None:
+        profiler_ctx.__exit__(None, None, None)
 
     # ========== 9. 清理分布进程 ==========
     if dist.is_initialized():
