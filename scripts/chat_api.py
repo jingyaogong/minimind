@@ -1,7 +1,8 @@
+import os
 from openai import OpenAI
 
 client = OpenAI(
-    api_key="sk-123",
+    api_key=os.environ.get("OPENAI_API_KEY", "sk-123"),
     base_url="http://localhost:11434/v1"
 )
 stream = True
