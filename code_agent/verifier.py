@@ -21,7 +21,7 @@ import time
 from dataclasses import asdict, dataclass, field
 from enum import Enum
 from pathlib import Path
-from typing import Any, Iterable
+from typing import Any
 
 
 class VerificationStatus(str, Enum):
@@ -44,6 +44,14 @@ class TestCase:
     def to_json(self) -> dict[str, Any]:
         return {"args": list(self.args), "kwargs": self.kwargs, "expected": self.expected}
 
+    @classmethod
+    def from_dict(cls, payload: dict[str, Any]) -> "TestCase":
+        return cls(
+            args=tuple(payload.get("args", ())),
+            kwargs=dict(payload.get("kwargs", {})),
+            expected=payload.get("expected"),
+        )
+
 
 @dataclass(frozen=True)
 class CodeTask:
@@ -59,6 +67,23 @@ class CodeTask:
             raise ValueError("a code task must contain at least one test")
         # Fail early instead of discovering non-serializable tests in a worker.
         json.dumps([case.to_json() for case in self.tests], ensure_ascii=False)
+
+    def to_dict(self) -> dict[str, Any]:
+        return {
+            "task_id": self.task_id,
+            "prompt": self.prompt,
+            "entry_point": self.entry_point,
+            "tests": [case.to_json() for case in self.tests],
+        }
+
+    @classmethod
+    def from_dict(cls, payload: dict[str, Any]) -> "CodeTask":
+        return cls(
+            task_id=str(payload["task_id"]),
+            prompt=str(payload["prompt"]),
+            entry_point=str(payload["entry_point"]),
+            tests=tuple(TestCase.from_dict(case) for case in payload["tests"]),
+        )
 
 
 @dataclass(frozen=True)
