@@ -1,6 +1,7 @@
 """Utilities for execution-feedback code generation experiments."""
 
 from .agent import AgentResult, AttemptRecord, ExecutionFeedbackAgent
+from .backends import OpenAICompatibleGenerator
 from .dataset import CodeRLDataset, collate_code_rl
 from .reward import CodeReward, score_code_batch, score_verification
 from .evaluation import (
@@ -26,6 +27,7 @@ __all__ = [
     "CodeTask",
     "EvaluationReport",
     "ExecutionFeedbackAgent",
+    "OpenAICompatibleGenerator",
     "TestCase",
     "VerificationResult",
     "VerificationStatus",
