@@ -24,6 +24,7 @@ from model.model_minimind import MiniMindConfig, MiniMindForCausalLM
 from dataset.lm_dataset import RLAIFDataset
 from trainer.trainer_utils import Logger, is_main_process, lm_checkpoint, init_distributed_mode, setup_seed, SkipBatchSampler, init_model, LMForRewardModel
 from trainer.rollout_engine import create_rollout_engine
+from code_agent import CodeRLDataset, collate_code_rl, score_code_batch
 
 warnings.filterwarnings('ignore')
 
@@ -34,7 +35,17 @@ def rep_penalty(text, n=3, cap=0.5):
     return min(cap, (len(grams) - len(set(grams))) * cap * 2 / len(grams)) if grams else 0.0
 
 
-def calculate_rewards(prompts, responses, reward_model):
+def calculate_rewards(prompts, responses, reward_model, tasks=None):
+    if args.reward_type == "code":
+        code_rewards = score_code_batch(
+            tasks,
+            responses,
+            num_generations=args.num_generations,
+            timeout_seconds=args.code_timeout,
+            memory_mb=args.code_memory_mb,
+        )
+        return torch.tensor([reward.total for reward in code_rewards], device=args.device)
+
     rewards = torch.zeros(len(responses), device=args.device)
 
     with torch.no_grad():
@@ -92,7 +103,7 @@ def grpo_train_epoch(epoch, loader, iters, rollout_engine, ref_model, reward_mod
         full_mask = (outputs != tokenizer.pad_token_id).long()
         logp_pos = prompt_lens.unsqueeze(1) - 1 + torch.arange(completion_ids.size(1), device=args.device).unsqueeze(0)
 
-        rewards = calculate_rewards(prompts, completions, reward_model).to(args.device)  # [B*num_gen]
+        rewards = calculate_rewards(prompts, completions, reward_model, batch.get('tasks')).to(args.device)  # [B*num_gen]
 
         model_unwrapped = model.module if isinstance(model, DistributedDataParallel) else model
         with autocast_ctx:
@@ -119,6 +130,7 @@ def grpo_train_epoch(epoch, loader, iters, rollout_engine, ref_model, reward_mod
                 Logger('='*100)
 
         grouped_rewards = rewards.view(-1, args.num_generations)  # [B, num_gen]
+        degenerate_group_rate = (grouped_rewards.std(dim=1, unbiased=False) < 1e-6).float().mean()
         mean_r = grouped_rewards.mean(dim=1).repeat_interleave(args.num_generations)  # [B*num_gen]
         std_r = grouped_rewards.std(dim=1, unbiased=False).repeat_interleave(args.num_generations)  # [B*num_gen]
         advantages = (rewards - mean_r) / (std_r + 1e-4)  # [B*num_gen]
@@ -163,6 +175,7 @@ def grpo_train_epoch(epoch, loader, iters, rollout_engine, ref_model, reward_mod
 
             Logger(f'Epoch:[{epoch + 1}/{args.epochs}]({step}/{iters}), '
                    f'Reward: {avg_reward_val:.4f}, KL_ref: {kl_ref_val:.4f}, '
+                   f'Degenerate Groups: {degenerate_group_rate.item():.4f}, '
                    f'Adv Std: {advantages_std_val:.4f}, Adv Mean: {advantages_mean_val:.4f}, '
                    f'Actor Loss: {policy_loss_val:.4f}, Avg Response Len: {avg_len_val:.2f}, Learning Rate: {current_lr:.8f}')
 
@@ -174,6 +187,7 @@ def grpo_train_epoch(epoch, loader, iters, rollout_engine, ref_model, reward_mod
                     "advantages_mean": advantages_mean_val,
                     "policy_loss": policy_loss_val,
                     "avg_response_len": avg_len_val,
+                    "degenerate_group_rate": degenerate_group_rate.item(),
                     "learning_rate": current_lr
                 })
 
@@ -230,6 +244,9 @@ if __name__ == "__main__":
     parser.add_argument("--epsilon_high", type=float, default=5.0, help="epsilon上界")
     parser.add_argument('--from_weight', default='full_sft', type=str, help="基于哪个权重训练")
     parser.add_argument("--reward_model_path", type=str, default="../../internlm2-1_8b-reward", help="Reward模型路径")
+    parser.add_argument("--reward_type", type=str, default="reward_model", choices=["reward_model", "code"], help="Reward source")
+    parser.add_argument("--code_timeout", type=float, default=2.0, help="Code execution timeout per candidate")
+    parser.add_argument("--code_memory_mb", type=int, default=256, help="POSIX memory limit for each code worker")
     parser.add_argument('--from_resume', default=0, type=int, choices=[0, 1], help="是否自动检测&续训（0=否，1=是）")
     parser.add_argument("--use_wandb", action="store_true", help="是否使用wandb")
     parser.add_argument("--wandb_project", type=str, default="MiniMind-GRPO", help="wandb项目名")
@@ -276,7 +293,10 @@ if __name__ == "__main__":
     ref_model, _ = init_model(lm_config, base_weight, device=args.device)
     ref_model = ref_model.eval().requires_grad_(False)
     # Reward模型
-    reward_model = LMForRewardModel(args.reward_model_path, device=args.device, dtype=torch.float16)
+    reward_model = (
+        LMForRewardModel(args.reward_model_path, device=args.device, dtype=torch.float16)
+        if args.reward_type == "reward_model" else None
+    )
     # Rollout引擎（可插拔替换，只负责 policy 推理）
     rollout_engine = create_rollout_engine(
         engine_type=args.rollout_engine,
@@ -289,7 +309,11 @@ if __name__ == "__main__":
         sglang_shared_path=args.sglang_shared_path,
     )
     # 数据和优化器
-    train_ds = RLAIFDataset(args.data_path, tokenizer, max_length=lm_config.max_seq_len, thinking_ratio=args.thinking_ratio)
+    train_ds = (
+        CodeRLDataset(args.data_path, tokenizer, thinking_ratio=args.thinking_ratio)
+        if args.reward_type == "code"
+        else RLAIFDataset(args.data_path, tokenizer, max_length=lm_config.max_seq_len, thinking_ratio=args.thinking_ratio)
+    )
     train_sampler = DistributedSampler(train_ds) if dist.is_initialized() else None
     optimizer = optim.AdamW(model.parameters(), lr=args.learning_rate)
     loader_for_count = DataLoader(train_ds, batch_size=args.batch_size, sampler=train_sampler)
@@ -321,7 +345,8 @@ if __name__ == "__main__":
         setup_seed(42 + epoch); indices = torch.randperm(len(train_ds)).tolist()
         skip = start_step if (epoch == start_epoch and start_step > 0) else 0
         batch_sampler = SkipBatchSampler(train_sampler or indices, args.batch_size, skip)
-        loader = DataLoader(train_ds, batch_sampler=batch_sampler, num_workers=args.num_workers, pin_memory=True)
+        collate_fn = collate_code_rl if args.reward_type == "code" else None
+        loader = DataLoader(train_ds, batch_sampler=batch_sampler, num_workers=args.num_workers, pin_memory=True, collate_fn=collate_fn)
         if skip > 0: 
             Logger(f'Epoch [{epoch + 1}/{args.epochs}]: 跳过前{start_step}个step，从step {start_step + 1}开始')
             grpo_train_epoch(epoch, loader, len(loader) + skip, rollout_engine, ref_model, reward_model, start_step, wandb, use_sglang = (args.rollout_engine == "sglang"))

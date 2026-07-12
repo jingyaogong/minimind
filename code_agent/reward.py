@@ -3,8 +3,9 @@
 from __future__ import annotations
 
 from dataclasses import dataclass
+from typing import Sequence
 
-from .verifier import VerificationResult, VerificationStatus
+from .verifier import CodeTask, VerificationResult, VerificationStatus, verify_code
 
 
 @dataclass(frozen=True)
@@ -34,3 +35,31 @@ def score_verification(result: VerificationResult) -> CodeReward:
     if status in {VerificationStatus.NO_CODE, VerificationStatus.POLICY_VIOLATION}:
         return CodeReward(-1.0, 0.0, 0.0, -1.0, status.value)
     return CodeReward(-1.0, 0.0, -1.0, 0.0, "verifier failure")
+
+
+def score_code_batch(
+    tasks: Sequence[CodeTask],
+    responses: Sequence[str],
+    *,
+    num_generations: int,
+    timeout_seconds: float = 2.0,
+    memory_mb: int = 256,
+) -> list[CodeReward]:
+    """Score grouped generations in task-major order for GRPO/CISPO."""
+    if num_generations < 1:
+        raise ValueError("num_generations must be at least 1")
+    expected = len(tasks) * num_generations
+    if len(responses) != expected:
+        raise ValueError(f"expected {expected} responses for {len(tasks)} tasks, got {len(responses)}")
+    rewards: list[CodeReward] = []
+    for task_index, task in enumerate(tasks):
+        start = task_index * num_generations
+        for response in responses[start:start + num_generations]:
+            result = verify_code(
+                response,
+                task,
+                timeout_seconds=timeout_seconds,
+                memory_mb=memory_mb,
+            )
+            rewards.append(score_verification(result))
+    return rewards
