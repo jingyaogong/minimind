@@ -1,5 +1,6 @@
 """Utilities for execution-feedback code generation experiments."""
 
+from .agent import AgentResult, AttemptRecord, ExecutionFeedbackAgent
 from .reward import CodeReward, score_verification
 from .evaluation import (
     EvaluationReport,
@@ -17,9 +18,12 @@ from .verifier import (
 )
 
 __all__ = [
+    "AgentResult",
+    "AttemptRecord",
     "CodeReward",
     "CodeTask",
     "EvaluationReport",
+    "ExecutionFeedbackAgent",
     "TestCase",
     "VerificationResult",
     "VerificationStatus",
