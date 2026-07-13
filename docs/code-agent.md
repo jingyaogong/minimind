@@ -111,7 +111,7 @@ Use the same held-out tasks and sampling parameters for three comparisons:
 2. inference-time execution feedback and repair;
 3. execution-reward GRPO/CISPO followed by the same inference procedure.
 
-Record pass@1, pass@k, test pass rate, compile rate, timeout rate, average attempts, average generation length, reward mean/std, KL to the reference model, and degenerate-group rate. Model results should only be added to the resume after this protocol has been run on AutoDL and the raw logs are retained.
+Record pass@1, pass@k, test pass rate, compile rate, timeout rate, average attempts, average generation length, reward mean/std, KL to the reference model, and degenerate-group rate. Publish model results only after this protocol has been run and the raw logs and configuration have been retained for reproduction.
 
 ## Attribution
 
