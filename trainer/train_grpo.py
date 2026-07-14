@@ -168,7 +168,7 @@ def grpo_train_epoch(epoch, loader, iters, rollout_engine, ref_model, reward_mod
             current_aux_loss = aux_loss.item()
             avg_reward_val = rewards.mean().item()
             avg_len_val = completion_mask.sum(dim=1).float().mean().item()
-            kl_ref_val = ((ref_per_token_logps - per_token_logps) * completion_mask).sum().item() / max(completion_mask.sum().item(), 1)
+            kl_ref_val = (per_token_kl * completion_mask).sum().item() / max(completion_mask.sum().item(), 1)
             advantages_mean_val = advantages.mean().item()
             advantages_std_val = advantages.std().item()
             current_lr = optimizer.param_groups[0]['lr']
