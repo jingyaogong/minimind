@@ -57,6 +57,8 @@ python scripts/generate_codegen.py \
   --output out/code_predictions.jsonl
 ```
 
+Each completed task is flushed to JSONL immediately. If a long run is interrupted, rerun the same command with `--resume`; task-specific seed ranges keep completed and resumed outputs reproducible.
+
 Then execute and aggregate them:
 
 ```bash

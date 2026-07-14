@@ -45,6 +45,22 @@ def generate_predictions(tasks, generator, samples_per_task):
     ]
 
 
+def read_completed_task_ids(path):
+    completed = set()
+    if not Path(path).exists():
+        return completed
+    with Path(path).open("r", encoding="utf-8") as handle:
+        for line_number, line in enumerate(handle, start=1):
+            if not line.strip():
+                continue
+            try:
+                record = json.loads(line)
+                completed.add(str(record["task_id"]))
+            except (KeyError, json.JSONDecodeError) as exc:
+                raise ValueError(f"Invalid existing prediction at {path}:{line_number}: {exc}") from exc
+    return completed
+
+
 def main():
     parser = argparse.ArgumentParser(description="Generate code candidates through an OpenAI-compatible API")
     parser.add_argument("--tasks", required=True, help="CodeTask JSONL file")
@@ -57,25 +73,35 @@ def main():
     parser.add_argument("--max-tokens", type=int, default=512)
     parser.add_argument("--seed", type=int, default=42)
     parser.add_argument("--open-thinking", action="store_true")
+    parser.add_argument("--resume", action="store_true", help="Append missing tasks to an existing output file")
     args = parser.parse_args()
 
     tasks = read_tasks(args.tasks)
-    generator = OpenAICompatibleGenerator(
-        base_url=args.base_url,
-        api_key=args.api_key,
-        model=args.model,
-        temperature=args.temperature,
-        max_tokens=args.max_tokens,
-        open_thinking=args.open_thinking,
-        seed=args.seed,
-    )
-    records = generate_predictions(tasks, generator, args.samples_per_task)
     output_path = Path(args.output)
     output_path.parent.mkdir(parents=True, exist_ok=True)
-    with output_path.open("w", encoding="utf-8") as handle:
-        for record in records:
+    completed = read_completed_task_ids(output_path) if args.resume else set()
+    mode = "a" if args.resume else "w"
+    generated_count = 0
+    with output_path.open(mode, encoding="utf-8") as handle:
+        for task_index, task in enumerate(tasks):
+            if task.task_id in completed:
+                print(f"[{task_index + 1}/{len(tasks)}] {task.task_id}: already complete", flush=True)
+                continue
+            generator = OpenAICompatibleGenerator(
+                base_url=args.base_url,
+                api_key=args.api_key,
+                model=args.model,
+                temperature=args.temperature,
+                max_tokens=args.max_tokens,
+                open_thinking=args.open_thinking,
+                seed=args.seed + task_index * args.samples_per_task,
+            )
+            record = generate_predictions([task], generator, args.samples_per_task)[0]
             handle.write(json.dumps(record, ensure_ascii=False) + "\n")
-    print(f"Generated {len(tasks) * args.samples_per_task} candidates for {len(tasks)} tasks -> {output_path}")
+            handle.flush()
+            generated_count += args.samples_per_task
+            print(f"[{task_index + 1}/{len(tasks)}] {task.task_id}: wrote {args.samples_per_task} candidates", flush=True)
+    print(f"Generated {generated_count} new candidates -> {output_path}")
 
 
 if __name__ == "__main__":
