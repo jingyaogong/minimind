@@ -17,6 +17,7 @@ class OpenAICompatibleGenerator:
         temperature: float = 0.7,
         max_tokens: int = 1024,
         open_thinking: bool = False,
+        seed: int | None = None,
         client: Any = None,
     ) -> None:
         if client is None:
@@ -30,15 +31,23 @@ class OpenAICompatibleGenerator:
         self.temperature = temperature
         self.max_tokens = max_tokens
         self.open_thinking = open_thinking
+        self.seed = seed
+        self._request_index = 0
 
     def __call__(self, prompt: str) -> str:
+        request = {
+            "model": self.model,
+            "messages": [{"role": "user", "content": prompt}],
+            "temperature": self.temperature,
+            "max_tokens": self.max_tokens,
+            "stream": False,
+            "extra_body": {"open_thinking": self.open_thinking},
+        }
+        if self.seed is not None:
+            request["seed"] = self.seed + self._request_index
+            self._request_index += 1
         response = self.client.chat.completions.create(
-            model=self.model,
-            messages=[{"role": "user", "content": prompt}],
-            temperature=self.temperature,
-            max_tokens=self.max_tokens,
-            stream=False,
-            extra_body={"open_thinking": self.open_thinking},
+            **request,
         )
         if not response.choices or response.choices[0].message is None:
             raise RuntimeError("Model API returned no completion choice.")

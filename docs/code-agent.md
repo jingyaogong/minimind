@@ -37,13 +37,33 @@ Each JSONL record contains a prompt, a required function name, and JSON-serializ
 
 `dataset/code_rl_mini.jsonl` contains four smoke-test tasks. It is deliberately too small for a meaningful training claim; use it to validate the pipeline before preparing a larger train/validation/test split.
 
+For a standard public benchmark, convert the compatible subset of MBPP-sanitized while preserving its official train/validation/test split:
+
+```bash
+python scripts/prepare_mbpp.py --output-dir out/mbpp_sanitized
+```
+
+The converter accepts direct, JSON-serializable function assertions, validates every converted task against the published reference solution, and reports all skipped records. It also emits `train_sft.jsonl` from the official training references, enabling an SFT → execution-reward GRPO ablation without leaking validation or test solutions. Generated benchmark files remain under the ignored `out/` directory.
+
 ## Evaluate saved candidates
+
+Generate multiple candidates from a running OpenAI-compatible model service with deterministic per-request seeds:
+
+```bash
+python scripts/generate_codegen.py \
+  --tasks dataset/code_rl_mini.jsonl \
+  --samples-per-task 10 \
+  --seed 42 \
+  --output out/code_predictions.jsonl
+```
+
+Then execute and aggregate them:
 
 ```bash
 python scripts/eval_codegen.py \
   --tasks dataset/code_rl_mini.jsonl \
-  --predictions tests/fixtures/code_rl_predictions.jsonl \
-  --ks 1 2
+  --predictions out/code_predictions.jsonl \
+  --ks 1 5 10
 ```
 
 The report separates:
