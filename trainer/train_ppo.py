@@ -86,13 +86,23 @@ def ppo_train_epoch(epoch, loader, iters, rollout_engine, ref_model, actor_sched
         enc = tokenizer(prompts, return_tensors="pt", padding=True, truncation=True, max_length=args.max_seq_len,
                         padding_side="left").to(args.device)  # input_ids: [B, P], attention_mask: [B, P]
 
-        rollout_result = rollout_engine.rollout(
-            prompt_ids=enc.input_ids,
-            attention_mask=enc.attention_mask,
-            num_generations=1,
-            max_new_tokens=args.max_gen_len,
-            temperature=0.8,
-        )
+        # Rollout 是纯推理。--rollout_eval_mode=1 时把 actor 临时切到 eval 模式，
+        # 关闭 dropout，保证 old_resp_logp 与后续 PPO 前向（train 模式）在权重未更新时
+        # 逐元素一致（ratio≈1、KL≈0）。dropout=0 时为 no-op，但语义上 rollout 该 eval。
+        _was_training = actor_model.training
+        if args.rollout_eval_mode:
+            actor_model.eval()
+        try:
+            rollout_result = rollout_engine.rollout(
+                prompt_ids=enc.input_ids,
+                attention_mask=enc.attention_mask,
+                num_generations=1,
+                max_new_tokens=args.max_gen_len,
+                temperature=0.8,
+            )
+        finally:
+            if args.rollout_eval_mode and _was_training:
+                actor_model.train()
         gen_out = rollout_result.output_ids
         completion_ids = rollout_result.completion_ids
         prompt_lens = rollout_result.prompt_lens.to(args.device)
@@ -174,10 +184,28 @@ def ppo_train_epoch(epoch, loader, iters, rollout_engine, ref_model, actor_sched
                 with autocast_ctx:
                     res = actor_unwrapped(input_ids=gen_out[inds], attention_mask=full_mask[inds])
                     aux_loss = res.aux_loss if lm_config.use_moe else torch.tensor(0.0, device=args.device)
+                    # log_softmax 必须在 autocast 内执行：autocast 会把它 upcast 到 fp32，
+                    # 与 rollout 路径（compute_per_token_logps 在 no_grad+autocast 内）对齐。
+                    # 若放在 autocast 外，会对 fp16/bf16 logits 直接算 log_softmax，使 mb_resp_logp
+                    # 与 old_resp_logp 产生 ~1e-2 量级偏差，导致首次更新 ratio≠1、KL≠0，
+                    # PPO 在稀疏奖励（如数学规则奖励）下易持续下降/振荡。
+                    mb_resp_logp = F.log_softmax(res.logits[:, :-1], dim=-1).gather(2, labels[inds].unsqueeze(-1)).squeeze(-1).gather(1, logp_pos[inds])
 
-                mb_resp_logp = F.log_softmax(res.logits[:, :-1], dim=-1).gather(2, labels[inds].unsqueeze(-1)).squeeze(-1).gather(1, logp_pos[inds])
-                
                 log_ratio = mb_resp_logp - old_resp_logp[inds]
+
+                # 可开关的诊断：首轮首个 minibatch 打印 mb vs old 的逐元素差异量级，
+                # 用于确认 ratio≈1、KL≈0 在权重未更新时是否成立。--debug_log_ratio 开启。
+                if args.debug_log_ratio and ppo_epoch == 0 and i == 0 and is_main_process():
+                    _lr = log_ratio.detach()
+                    _m = resp_policy_mask[inds].bool()
+                    if _m.any():
+                        _lrv = _lr[_m]
+                        Logger(f"[DBG log_ratio] step={step} max|lr|={_lrv.abs().max().item():.6e} "
+                               f"mean|lr|={_lrv.abs().mean().item():.6e} "
+                               f"ratio_max={torch.exp(_lrv).max().item():.6f} "
+                               f"ratio_min={torch.exp(_lrv).min().item():.6f} "
+                               f"dropout={getattr(lm_config, 'dropout', None)} "
+                               f"training={actor_unwrapped.training}")
                 approx_kl = (0.5 * (log_ratio ** 2) * resp_policy_mask[inds]).sum() / resp_policy_mask[inds].sum().clamp(min=1)
                 
                 # 同步各卡的 approx_kl，防止某卡 break 而其它卡继续导致 DDP 死锁
@@ -331,6 +359,8 @@ if __name__ == "__main__":
     parser.add_argument("--use_compile", default=0, type=int, choices=[0, 1], help="是否使用torch.compile加速（0=否，1=是）")
     parser.add_argument("--debug_mode", action="store_true", help="是否打印训练调试采样")
     parser.add_argument("--debug_interval", type=int, default=20, help="debug模式下每隔多少step打印一次采样")
+    parser.add_argument("--debug_log_ratio", action="store_true", help="打印首轮首个minibatch的log_ratio差异量级，用于核查ratio≈1是否成立")
+    parser.add_argument("--rollout_eval_mode", default=1, type=int, choices=[0, 1], help="rollout时是否切eval关dropout以保证old/new logp一致（1=是，0=否，保持旧行为）")
     parser.add_argument("--thinking_ratio", type=float, default=0.9, help="按概率开启thinking（0.0~1.0）")
     parser.add_argument("--rollout_engine", type=str, default="torch", choices=["torch", "sglang"], help="rollout引擎类型")
     parser.add_argument("--sglang_base_url", type=str, default="http://localhost:8998", help="SGLang服务器URL")
