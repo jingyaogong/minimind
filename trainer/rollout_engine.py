@@ -52,7 +52,10 @@ class RolloutEngine(ABC):
     tokenizer = None
     
     @abstractmethod
-    def rollout(self, prompt_ids: Tensor, attention_mask: Tensor, num_generations: int, max_new_tokens: int, temperature: float = 0.8) -> RolloutResult:
+    def rollout(self, prompt_ids: Tensor, attention_mask: Tensor, num_generations: int,
+                max_new_tokens: int, temperature: float = 0.8,
+                top_p: Optional[float] = None, top_k: Optional[int] = None,
+                calculate_logps: bool = True) -> RolloutResult:
         pass
     
     @abstractmethod
@@ -68,9 +71,15 @@ class TorchRolloutEngine(RolloutEngine):
         self.device = device
         self.autocast_ctx = autocast_ctx
     
-    def rollout(self, prompt_ids: Tensor, attention_mask: Tensor, num_generations: int, max_new_tokens: int, temperature: float = 0.8) -> RolloutResult:
+    def rollout(self, prompt_ids: Tensor, attention_mask: Tensor, num_generations: int,
+                max_new_tokens: int, temperature: float = 0.8,
+                top_p: Optional[float] = None, top_k: Optional[int] = None,
+                calculate_logps: bool = True) -> RolloutResult:
         model = self.policy_model.module if isinstance(self.policy_model, DistributedDataParallel) else self.policy_model
         ctx = self.autocast_ctx if self.autocast_ctx else nullcontext()
+        sampling_kwargs = {}
+        if top_p is not None: sampling_kwargs['top_p'] = top_p
+        if top_k is not None: sampling_kwargs['top_k'] = top_k
         with torch.no_grad(), ctx:
             output_ids = model.generate(
                 input_ids=prompt_ids.repeat_interleave(num_generations, dim=0),
@@ -81,11 +90,20 @@ class TorchRolloutEngine(RolloutEngine):
                 num_return_sequences=1,
                 pad_token_id=self.tokenizer.pad_token_id,
                 eos_token_id=self.tokenizer.eos_token_id,
+                **sampling_kwargs,
             ).clone()  # [B*num_gen, P+R]
             prompt_len = prompt_ids.size(1)
             completion_ids = output_ids[:, prompt_len:]  # [B*num_gen, R]
             full_mask = (output_ids != self.tokenizer.pad_token_id).long()
-            per_token_logps = compute_per_token_logps(self.policy_model, output_ids, completion_ids.size(1), attention_mask=full_mask)
+            if calculate_logps:
+                per_token_logps = compute_per_token_logps(
+                    self.policy_model, output_ids, completion_ids.size(1), attention_mask=full_mask
+                )
+            else:
+                per_token_logps = torch.zeros(
+                    output_ids.size(0), completion_ids.size(1),
+                    device=output_ids.device, dtype=torch.float32
+                )
         completions = self.tokenizer.batch_decode(completion_ids, skip_special_tokens=True)
         return RolloutResult(output_ids, completion_ids, per_token_logps, completions,
                              prompt_ids.new_full((output_ids.size(0),), prompt_len),
@@ -104,7 +122,10 @@ class SGLangRolloutEngine(RolloutEngine):
         self.tokenizer = AutoTokenizer.from_pretrained(model_path, trust_remote_code=True)
         self.http = requests
     
-    def rollout(self, prompt_ids: Tensor, attention_mask: Tensor, num_generations: int, max_new_tokens: int, temperature: float = 0.8) -> RolloutResult:
+    def rollout(self, prompt_ids: Tensor, attention_mask: Tensor, num_generations: int,
+                max_new_tokens: int, temperature: float = 0.8,
+                top_p: Optional[float] = None, top_k: Optional[int] = None,
+                calculate_logps: bool = True) -> RolloutResult:
         # 去除左侧 padding tokens，只保留有效 token
         input_ids_list = []
         for ids, mask in zip(prompt_ids, attention_mask):
@@ -119,8 +140,10 @@ class SGLangRolloutEngine(RolloutEngine):
                 "max_new_tokens": max_new_tokens,
                 "stop_token_ids": [self.tokenizer.eos_token_id] if self.tokenizer.eos_token_id else [],
             },
-            "return_logprob": True,
+            "return_logprob": calculate_logps,
         }
+        if top_p is not None: payload['sampling_params']['top_p'] = top_p
+        if top_k is not None: payload['sampling_params']['top_k'] = top_k if top_k > 0 else -1
         
         resp = self.http.post(f"{self.base_url}/generate", json=payload, timeout=self.timeout)
         resp.raise_for_status()
