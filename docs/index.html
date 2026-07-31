@@ -1,0 +1,137 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <title>MiniMind 学习指南</title>
+  <meta name="description" content="从 0 训练你的第一个 64M 大语言模型 —— 理论 + 代码 + 实战，一站式入门">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta http-equiv="X-UA-Compatible" content="IE=edge">
+
+  <!-- docsify theme -->
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/docsify-themeable@0.4.12/dist/css/theme-simple-dark.css" title="dark">
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/docsify-themeable@0.4.12/dist/css/theme-simple.css" title="light">
+
+  <style>
+    :root {
+      --base-font-size: 16px;
+      --theme-color: #42b983;
+      --link-color: #42b983;
+      --link-color--hover: #2c8c5f;
+      --sidebar-background: #fafafa;
+      --sidebar-nav-link-color: #2c3e50;
+      --sidebar-nav-link-font-weight: 500;
+      --sidebar-nav-link-margin: 0.4em 0;
+      --sidebar-nav-link-padding: 2px 8px;
+      --sidebar-nav-active-link-background: #e8f7f0;
+      --code-theme-background: #1e1e1e;
+      --code-theme-text-color: #d4d4d4;
+      --cover-background-color: linear-gradient(135deg, #1e3c72 0%, #2a5298 100%);
+      --cover-color: #ffffff;
+      --cover-heading-color: #ffffff;
+    }
+
+    [data-theme="dark"] {
+      --sidebar-background: #1e1e1e;
+      --sidebar-nav-link-color: #d4d4d4;
+      --sidebar-nav-active-link-background: #2d4a3e;
+      --base-background-color: #1e1e1e;
+      --base-color: #d4d4d4;
+    }
+
+    .markdown-section {
+      max-width: 1000px;
+      padding: 30px 50px 50px;
+    }
+
+    .markdown-section h1, .markdown-section h2 {
+      border-bottom: 2px solid var(--theme-color);
+      padding-bottom: 0.3em;
+    }
+
+    table {
+      display: block;
+      width: 100%;
+      overflow: auto;
+    }
+
+    /* sidebar badge */
+    .sidebar-nav > ul > li > a {
+      font-weight: 600;
+    }
+    .sidebar-nav li > a {
+      border-radius: 4px;
+    }
+  </style>
+</head>
+<body>
+  <div id="app">加载中…请稍候</div>
+
+  <script>
+    window.$docsify = {
+      name: 'MiniMind 学习指南',
+      repo: 'https://github.com/jingyaogong/minimind',
+      logo: '/_logo.svg',
+      homepage: 'README.md',
+      loadSidebar: true,
+      loadNavbar: false,
+      coverpage: true,
+      maxLevel: 3,
+      subMaxLevel: 3,
+      auto2top: true,
+      sidebarDisplayLevel: 0,
+      search: {
+        maxAge: 86400000,
+        paths: 'auto',
+        placeholder: '🔍 搜索文档…',
+        noData: '😢 没有找到结果',
+        depth: 3,
+        hideOtherSidebarContent: false,
+      },
+      pagination: {
+        previousText: '上一篇',
+        nextText: '下一篇',
+        crossChapter: true,
+      },
+      copyCode: {
+        buttonText: '复制',
+        errorText: '复制失败',
+        successText: '已复制',
+      },
+      themeColor: '#42b983',
+      plugins: [
+        function (hook) {
+          var footer = [
+            '<hr/>',
+            '<footer style="text-align:center;color:#888;font-size:13px;">',
+            '📚 MiniMind 学习指南 · 融合 happy-llm 章节式 + learn-claude-code 交互式 + 心理学持续学习技巧',
+            '</footer>'
+          ].join('');
+          hook.afterEach(function (html) {
+            return html + footer;
+          });
+        }
+      ]
+    };
+  </script>
+
+  <!-- docsify core -->
+  <script src="https://cdn.jsdelivr.net/npm/docsify@4.13.0/lib/docsify.min.js"></script>
+
+  <!-- plugins -->
+  <script src="https://cdn.jsdelivr.net/npm/docsify@4.13.0/lib/plugins/search.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/docsify@4.13.0/lib/plugins/pagination.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/docsify-copy-code@2.1.0/dist/docsify-copy-code.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/docsify-themeable@0.4.12/dist/js/docsify-themeable.min.js"></script>
+
+  <!-- syntax highlighting -->
+  <script src="https://cdn.jsdelivr.net/npm/prismjs@1.29.0/components/prism-bash.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/prismjs@1.29.0/components/prism-python.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/prismjs@1.29.0/components/prism-json.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/prismjs@1.29.0/components/prism-yaml.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/prismjs@1.29.0/components/prism-markdown.min.js"></script>
+
+  <!-- mermaid for diagrams -->
+  <script src="https://cdn.jsdelivr.net/npm/mermaid@10.9.1/dist/mermaid.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/docsify-mermaid@1.0.4/dist/docsify-mermaid.js"></script>
+</body>
+</html>

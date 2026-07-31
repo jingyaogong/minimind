@@ -80,6 +80,10 @@
 
 😊 一起感受创造的乐趣吧！
 
+> 📚 **初学者？先看 [docs/ 学习教程](./docs/README.md)**
+> 配套了一份面向初学者的现代化学习路径，融合 [happy-llm](https://github.com/datawhalechina/happy-llm) 的章节式讲解与 [learn-claude-code](https://github.com/the-gigi/learn-claude-code) 的交互式 checklist，
+> 内嵌心理学持续学习技巧，5 条 Track（速通 Zero / 系统精读 / 研究者路线 / 应用工程 / 垂域微调）任选其一，让你"学得进，也学得完"。
+
 ---
 
 #### 🎉 本项目包含以下内容
