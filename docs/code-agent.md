@@ -85,10 +85,13 @@ python scripts/run_code_agent.py \
   --tasks dataset/code_rl_mini.jsonl \
   --base-url http://localhost:8998/v1 \
   --model minimind \
-  --max-attempts 3
+  --max-attempts 3 \
+  --seed 42 \
+  --output out/code_agent.json \
+  --resume
 ```
 
-Hidden-test details are not sent back to the model by default. Add `--reveal-test-details` only for public development tests.
+Each task receives a stable seed range, so the initial attempt remains comparable across single-pass and repair runs. With `--resume`, the output is atomically checkpointed after every task and completed tasks are skipped after an interruption. Hidden-test details are not sent back to the model by default. Add `--reveal-test-details` only for public development tests.
 
 ## Train with verifiable rewards
 

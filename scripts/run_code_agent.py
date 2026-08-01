@@ -11,6 +11,9 @@ sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), "..")))
 from code_agent import CodeTask, ExecutionFeedbackAgent, OpenAICompatibleGenerator
 
 
+TASK_SEED_STRIDE = 1000
+
+
 def read_tasks(path):
     tasks = []
     with Path(path).open("r", encoding="utf-8") as handle:
@@ -22,6 +25,42 @@ def read_tasks(path):
             except (KeyError, TypeError, ValueError, json.JSONDecodeError) as exc:
                 raise ValueError(f"Invalid task at {path}:{line_number}: {exc}") from exc
     return tasks
+
+
+def read_existing_results(path):
+    output_path = Path(path)
+    if not output_path.exists():
+        return []
+    payload = json.loads(output_path.read_text(encoding="utf-8"))
+    results = payload.get("results")
+    if not isinstance(results, list):
+        raise ValueError(f"Invalid agent output at {path}: missing results list")
+    seen = set()
+    for result in results:
+        task_id = str(result.get("task_id", ""))
+        if not task_id or task_id in seen:
+            raise ValueError(f"Invalid agent output at {path}: duplicate or missing task_id")
+        seen.add(task_id)
+    return results
+
+
+def build_output(results):
+    return {
+        "task_count": len(results),
+        "success_count": sum(result["success"] for result in results),
+        "results": results,
+    }
+
+
+def write_output(path, output):
+    output_path = Path(path)
+    output_path.parent.mkdir(parents=True, exist_ok=True)
+    temporary_path = output_path.with_suffix(output_path.suffix + ".tmp")
+    temporary_path.write_text(
+        json.dumps(output, ensure_ascii=False, indent=2) + "\n",
+        encoding="utf-8",
+    )
+    temporary_path.replace(output_path)
 
 
 def main():
@@ -37,40 +76,69 @@ def main():
     parser.add_argument("--max-attempts", type=int, default=3)
     parser.add_argument("--timeout", type=float, default=2.0)
     parser.add_argument("--memory-mb", type=int, default=256)
+    parser.add_argument("--seed", type=int, default=42, help="Base seed for reproducible task-level generation")
+    parser.add_argument("--resume", action="store_true", help="Resume completed tasks from --output")
     parser.add_argument("--open-thinking", action="store_true")
     parser.add_argument("--reveal-test-details", action="store_true")
     args = parser.parse_args()
 
-    tasks = read_tasks(args.tasks)
+    indexed_tasks = list(enumerate(read_tasks(args.tasks)))
     if args.task_id:
-        tasks = [task for task in tasks if task.task_id == args.task_id]
-        if not tasks:
+        indexed_tasks = [(index, task) for index, task in indexed_tasks if task.task_id == args.task_id]
+        if not indexed_tasks:
             raise ValueError(f"Unknown task id: {args.task_id}")
 
-    generator = OpenAICompatibleGenerator(
-        base_url=args.base_url,
-        api_key=args.api_key,
-        model=args.model,
-        temperature=args.temperature,
-        max_tokens=args.max_tokens,
-        open_thinking=args.open_thinking,
-    )
-    agent = ExecutionFeedbackAgent(
-        generator,
-        max_attempts=args.max_attempts,
-        timeout_seconds=args.timeout,
-        memory_mb=args.memory_mb,
-        reveal_test_details=args.reveal_test_details,
-    )
-    results = [agent.run(task).to_dict() for task in tasks]
-    output = {
-        "task_count": len(results),
-        "success_count": sum(result["success"] for result in results),
-        "results": results,
-    }
+    if args.resume and not args.output:
+        parser.error("--resume requires --output")
+    expected_task_ids = {task.task_id for _, task in indexed_tasks}
+    existing_results = read_existing_results(args.output) if args.resume else []
+    unexpected_task_ids = {result["task_id"] for result in existing_results} - expected_task_ids
+    if unexpected_task_ids:
+        raise ValueError(
+            f"Existing output contains tasks not selected for this run: {sorted(unexpected_task_ids)}"
+        )
+    results_by_id = {result["task_id"]: result for result in existing_results}
+
+    for position, (task_index, task) in enumerate(indexed_tasks, start=1):
+        if task.task_id in results_by_id:
+            print(f"[{position}/{len(indexed_tasks)}] {task.task_id}: already complete", flush=True)
+            continue
+        generator = OpenAICompatibleGenerator(
+            base_url=args.base_url,
+            api_key=args.api_key,
+            model=args.model,
+            temperature=args.temperature,
+            max_tokens=args.max_tokens,
+            open_thinking=args.open_thinking,
+            seed=args.seed + task_index * TASK_SEED_STRIDE,
+        )
+        agent = ExecutionFeedbackAgent(
+            generator,
+            max_attempts=args.max_attempts,
+            timeout_seconds=args.timeout,
+            memory_mb=args.memory_mb,
+            reveal_test_details=args.reveal_test_details,
+        )
+        result = agent.run(task).to_dict()
+        results_by_id[task.task_id] = result
+        ordered_results = [
+            results_by_id[selected_task.task_id]
+            for _, selected_task in indexed_tasks
+            if selected_task.task_id in results_by_id
+        ]
+        if args.output:
+            write_output(args.output, build_output(ordered_results))
+        print(
+            f"[{position}/{len(indexed_tasks)}] {task.task_id}: "
+            f"success={result['success']} attempts={result['attempt_count']}",
+            flush=True,
+        )
+
+    results = [results_by_id[task.task_id] for _, task in indexed_tasks]
+    output = build_output(results)
     rendered = json.dumps(output, ensure_ascii=False, indent=2)
     if args.output:
-        Path(args.output).write_text(rendered + "\n", encoding="utf-8")
+        write_output(args.output, output)
     print(rendered)
 
 
