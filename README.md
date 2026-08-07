@@ -1,28 +1,7 @@
 <div align="center">
-
-![logo](./images/logo.png)
-
-</div>
-
-<div align="center">
-
-![visitors](https://visitor-badge.laobi.icu/badge?page_id=jingyaogong/minimind)
-[![GitHub Repo stars](https://img.shields.io/github/stars/jingyaogong/minimind?style=social)](https://github.com/jingyaogong/minimind/stargazers)
-[![GitHub Code License](https://img.shields.io/github/license/jingyaogong/minimind)](LICENSE)
-[![GitHub last commit](https://img.shields.io/github/last-commit/jingyaogong/minimind)](https://github.com/jingyaogong/minimind/commits/master)
-[![GitHub pull request](https://img.shields.io/badge/PRs-welcome-blue)](https://github.com/jingyaogong/minimind/pulls)
-[![Collection](https://img.shields.io/badge/🤗-MiniMind%20%20Collection-blue)](https://huggingface.co/collections/jingyaogong/minimind-66caf8d999f5c7fa64f399e5)
-
-</div>
-
-<div align="center">
-
-![GitHub Trend](https://trendshift.io/api/badge/repositories/12586)
-
-</div>
-
-<div align="center">
-  <h3>"大道至简"</h3>
+  <h1>Lightweight LLM & Code Agent Lab</h1>
+  <p>基于 MiniMind 的轻量模型训练、代码生成与执行反馈实验</p>
+  <p><a href="./LICENSE">Apache-2.0 License</a></p>
 </div>
 
 <div align="center">
@@ -30,6 +9,8 @@
 中文 | [English](./README_en.md)
 
 </div>
+
+> 本仓库基于开源项目 [jingyaogong/minimind](https://github.com/jingyaogong/minimind) 进行复现与二次开发，保留原许可证、模型兼容性和上游致谢。新增的代码生成 Agent 支持代码提取、受控执行、隐藏测试反馈、pass@k 评估，以及面向 GRPO/CISPO 的可验证奖励。详见 [代码生成 Agent 文档](./docs/code-agent.md)。
 
 * 此开源项目旨在完全从 0 开始，仅用 3 块钱成本与 2 小时训练时间，即可训练出规模约为 64M 的超小语言模型 MiniMind。
 * MiniMind 系列极其轻量，主线最小版本体积约为 GPT-3 的 $\frac{1}{2700}$，力求让普通个人 GPU 也能快速完成训练与复现。
@@ -786,8 +767,8 @@ LoRA 很适合处理“如何在尽量保留通用能力的前提下，让模型
 例2：自我认知数据
 
 ```jsonl
- {"conversations": [{"role": "user", "content": "你叫什么名字？"}, {"role": "assistant", "content": "您好，我名叫 MiniMind，是由 Jingyao Gong 开发的人工智能助手。我可以帮助你解决各种问题，包括翻译、推荐内容等等。"}]}
- {"conversations": [{"role": "user", "content": "你是谁"}, {"role": "assistant", "content": "您好，我是 MiniMind，由 Jingyao Gong 创建。我的主要职责是提供准确的回答和帮助。"}]}
+ {"conversations": [{"role": "user", "content": "你叫什么名字？"}, {"role": "assistant", "content": "您好，我是一个开源的轻量级人工智能助手，可以帮助完成问答、翻译和内容整理等任务。"}]}
+ {"conversations": [{"role": "user", "content": "你是谁"}, {"role": "assistant", "content": "您好，我是一个用于语言模型实验的开源助手，主要职责是提供准确的回答和帮助。"}]}
 ```
 
 此时可将【基模 + LoRA 权重】组合使用，从而在保留基础模型通用能力的同时，增强特定领域表现。训练完成后也可以通过 `eval_llm.py` 做简单测试。
@@ -802,7 +783,7 @@ python eval_llm.py  --weight full_sft --lora_weight lora_medical
 python eval_llm.py  --weight full_sft --lora_weight lora_identity
 
 👶: 你和openai是什么关系？
-🤖️: 我是 MiniMind，一个由 Jingyao Gong 开发的人工智能助手。我通过自然语言处理和算法训练来与用户进行交互。
+🤖️: 我是一个开源的轻量级人工智能助手，通过自然语言处理模型与用户进行交互。
 ```
 
 PS：如果有更充足的数据，也可以直接做 `full_sft` 全参微调；不过这通常需要更谨慎地混合通用数据与领域数据，否则很容易因为过拟合垂域样本而损失模型原有的通用性。

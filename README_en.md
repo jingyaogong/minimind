@@ -1,28 +1,7 @@
 <div align="center">
-
-![logo](./images/logo.png)
-
-</div>
-
-<div align="center">
-
-![visitors](https://visitor-badge.laobi.icu/badge?page_id=jingyaogong/minimind)
-[![GitHub Repo stars](https://img.shields.io/github/stars/jingyaogong/minimind?style=social)](https://github.com/jingyaogong/minimind/stargazers)
-[![GitHub Code License](https://img.shields.io/github/license/jingyaogong/minimind)](LICENSE)
-[![GitHub last commit](https://img.shields.io/github/last-commit/jingyaogong/minimind)](https://github.com/jingyaogong/minimind/commits/master)
-[![GitHub pull request](https://img.shields.io/badge/PRs-welcome-blue)](https://github.com/jingyaogong/minimind/pulls)
-[![Collection](https://img.shields.io/badge/🤗-MiniMind%20%20Collection-blue)](https://huggingface.co/collections/jingyaogong/minimind-66caf8d999f5c7fa64f399e5)
-
-</div>
-
-<div align="center">
-
-![GitHub Trend](https://trendshift.io/api/badge/repositories/12586)
-
-</div>
-
-<div align="center">
-  <h3>"The Great Way is Simple"</h3>
+  <h1>Lightweight LLM & Code Agent Lab</h1>
+  <p>Lightweight model training, code generation, and execution-feedback experiments built on MiniMind</p>
+  <p><a href="./LICENSE">Apache-2.0 License</a></p>
 </div>
 
 <div align="center">
@@ -30,6 +9,8 @@
 [中文](./README.md) | English
 
 </div>
+
+> This repository reproduces and extends the open-source [jingyaogong/minimind](https://github.com/jingyaogong/minimind) project while preserving its license, model compatibility, and upstream attribution. The added code-generation agent provides code extraction, controlled execution, hidden-test feedback, pass@k evaluation, and verifiable rewards for GRPO/CISPO. See the [code agent documentation](./docs/code-agent.md).
 
 * This open-source project aims to train MiniMind, an ultra-small language model with about 64M parameters, entirely from scratch with only about RMB 3 in cost and 2 hours of training time.
 * The MiniMind series is intentionally lightweight. The smallest model on the main branch is about $\frac{1}{2700}$ the size of GPT-3, making full training and reproduction feasible even on ordinary personal GPUs.
@@ -786,8 +767,8 @@ Example 1: Vertical domain data
 Example 2: Self-awareness data
 
 ```jsonl
- {"conversations": [{"role": "user", "content": "你叫什么名字？"}, {"role": "assistant", "content": "您好，我名叫 MiniMind，是由 Jingyao Gong 开发的人工智能助手。我可以帮助你解决各种问题，包括翻译、推荐内容等等。"}]}
- {"conversations": [{"role": "user", "content": "你是谁"}, {"role": "assistant", "content": "您好，我是 MiniMind，由 Jingyao Gong 创建。我的主要职责是提供准确的回答和帮助。"}]}
+ {"conversations": [{"role": "user", "content": "你叫什么名字？"}, {"role": "assistant", "content": "您好，我是一个开源的轻量级人工智能助手，可以帮助完成问答、翻译和内容整理等任务。"}]}
+ {"conversations": [{"role": "user", "content": "你是谁"}, {"role": "assistant", "content": "您好，我是一个用于语言模型实验的开源助手，主要职责是提供准确的回答和帮助。"}]}
 ```
 
 At this point, the [base model + LoRA weights] can be used in combination, preserving the base model's general capabilities while enhancing specific domain performance. After training, simple tests can also be done via `eval_llm.py`.
@@ -802,7 +783,7 @@ python eval_llm.py  --weight full_sft --lora_weight lora_medical
 python eval_llm.py  --weight full_sft --lora_weight lora_identity
 
 👶: 你和openai是什么关系？
-🤖️: 我是 MiniMind，一个由 Jingyao Gong 开发的人工智能助手。我通过自然语言处理和算法训练来与用户进行交互。
+🤖️: 我是一个开源的轻量级人工智能助手，通过自然语言处理模型与用户进行交互。
 ```
 
 PS: If you have sufficient data, you can also perform `full_sft` full-parameter fine-tuning directly. This usually requires careful mixing of general and domain-specific data; otherwise, the model may lose part of its general capability due to overfitting on vertical-domain samples.

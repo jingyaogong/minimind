@@ -56,6 +56,7 @@ class ChatRequest(BaseModel):
     stream: bool = True
     tools: list = Field(default_factory=list)
     open_thinking: bool = False
+    seed: int | None = None
     chat_template_kwargs: dict = None
     
     def get_open_thinking(self) -> bool:
@@ -102,7 +103,7 @@ def parse_response(text):
     return text.strip(), reasoning_content, tool_calls or None
 
 
-def generate_stream_response(messages, temperature, top_p, max_tokens, tools=None, open_thinking=False):
+def generate_stream_response(messages, temperature, top_p, max_tokens, tools=None, open_thinking=False, seed=None):
     try:
         new_prompt = tokenizer.apply_chat_template(messages, tokenize=False, add_generation_prompt=True, tools=tools or None, open_thinking=open_thinking)
         inputs = tokenizer(new_prompt, return_tensors="pt", truncation=True).to(device)
@@ -112,6 +113,7 @@ def generate_stream_response(messages, temperature, top_p, max_tokens, tools=Non
 
         def _generate():
             try:
+                generator = torch.Generator(device=inputs.input_ids.device).manual_seed(seed) if seed is not None else None
                 model.generate(
                     inputs.input_ids,
                     max_new_tokens=max_tokens,
@@ -121,7 +123,8 @@ def generate_stream_response(messages, temperature, top_p, max_tokens, tools=Non
                     attention_mask=inputs.attention_mask,
                     pad_token_id=tokenizer.pad_token_id,
                     eos_token_id=tokenizer.eos_token_id,
-                    streamer=streamer
+                    streamer=streamer,
+                    generator=generator
                 )
             except Exception as e:
                 queue.put({"error": str(e)})
@@ -186,7 +189,8 @@ async def chat_completions(request: ChatRequest):
                     top_p=request.top_p,
                     max_tokens=request.max_tokens,
                     tools=request.tools,
-                    open_thinking=request.get_open_thinking()
+                    open_thinking=request.get_open_thinking(),
+                    seed=request.seed
                 )),
                 media_type="text/event-stream"
             )
@@ -200,6 +204,7 @@ async def chat_completions(request: ChatRequest):
             )
             inputs = tokenizer(new_prompt, return_tensors="pt", truncation=True).to(device)
             with torch.no_grad():
+                generator = torch.Generator(device=inputs["input_ids"].device).manual_seed(request.seed) if request.seed is not None else None
                 generated_ids = model.generate(
                     inputs["input_ids"],
                     max_length=inputs["input_ids"].shape[1] + request.max_tokens,
@@ -208,7 +213,8 @@ async def chat_completions(request: ChatRequest):
                     pad_token_id=tokenizer.pad_token_id,
                     eos_token_id=tokenizer.eos_token_id,
                     top_p=request.top_p,
-                    temperature=request.temperature
+                    temperature=request.temperature,
+                    generator=generator
                 )
                 answer = tokenizer.decode(generated_ids[0][inputs["input_ids"].shape[1]:], skip_special_tokens=True)
             content, reasoning_content, tool_calls = parse_response(answer)

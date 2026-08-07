@@ -1,5 +1,7 @@
 __pycache__/
 *.pyc
+.pytest_cache/
+.codex_pytest_tmp*/
 .DS_Store
 out
 website/

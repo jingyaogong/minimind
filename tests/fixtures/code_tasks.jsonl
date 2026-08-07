@@ -1,0 +1,1 @@
+{"task_id":"add-two","prompt":"Implement add(a, b) and return the sum.","entry_point":"add","tests":[{"args":[1,2],"expected":3},{"args":[-5,5],"expected":0}]}

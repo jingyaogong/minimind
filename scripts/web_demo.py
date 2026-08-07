@@ -250,7 +250,7 @@ if not MODEL_PATHS:
 # 模型选择
 selected_model = st.sidebar.selectbox('Model', list(MODEL_PATHS.keys()), index=0)
 model_path = MODEL_PATHS[selected_model][0]
-slogan = f"我是 {MODEL_PATHS[selected_model][1]}，有什么可以帮你的？" if st.session_state.get('lang', 'en') == 'zh' else f"I am {MODEL_PATHS[selected_model][1]}, how can I help you?"
+slogan = "轻量级语言模型实验助手" if st.session_state.get('lang', 'en') == 'zh' else "Lightweight Language Model Assistant"
 
 st.sidebar.markdown('<hr style="margin: 12px 0 16px 0;">', unsafe_allow_html=True)
 
@@ -285,12 +285,9 @@ with st.sidebar.expander(get_text('tools')):
         if checked and len(st.session_state.selected_tools) < 4:
             st.session_state.selected_tools.append(name)
 
-image_url = "https://www.modelscope.cn/api/v1/studio/gongjy/MiniMind/repo?Revision=master&FilePath=images%2Flogo2.png&View=true"
-
 st.markdown(
     f'<div style="display: flex; flex-direction: column; align-items: center; text-align: center; margin: 0; padding: 0;">'
     '<div style="font-style: italic; font-weight: 900; margin: 0; padding-top: 4px; display: flex; align-items: center; justify-content: center; flex-wrap: wrap; width: 100%;">'
-    f'<img src="{image_url}" style="width: 40px; height: 40px; "> '
     f'<span style="font-size: 26px; margin-left: 10px;">{slogan}</span>'
     '</div>'
     f'<span style="color: #bbb; font-style: italic; margin-top: 6px; margin-bottom: 10px;">{get_text("disclaimer")}</span>'
@@ -348,7 +345,7 @@ def main():
         setup_seed(random_seed)
 
         tools = [t for t in TOOLS if t['function']['name'] in st.session_state.get('selected_tools', [])] or None
-        sys_prompt = [] if tools else [{"role": "system", "content": "你是MiniMind，一个乐于助人、知识渊博的AI助手。请用完整且友好的方式回答用户问题。"}]
+        sys_prompt = [] if tools else [{"role": "system", "content": "你是一个用于轻量语言模型实验的AI助手。请准确、完整且友好地回答用户问题，不要虚构开发者或个人身份。"}]
         st.session_state.chat_messages = sys_prompt + st.session_state.chat_messages[-(st.session_state.history_chat_num + 1):]
         template_kwargs = {"tokenize": False, "add_generation_prompt": True}
         if st.session_state.get('enable_thinking', False):
