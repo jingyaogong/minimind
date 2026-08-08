@@ -230,6 +230,10 @@ minimind2系列旧模型均经过权重映射+（微调训练）QKVO线性层校
 # 克隆仓库、安装依赖
 git clone --depth 1 https://github.com/jingyaogong/minimind
 cd minimind && pip install -r requirements.txt -i https://mirrors.aliyun.com/pypi/simple
+#部分老版本Windows powershell不能识别&&，Windows用户应将&&链式命令改为分行写法
+git clone --depth 1 https://github.com/jingyaogong/minimind
+cd minimind 
+pip install -r requirements.txt -i https://mirrors.aliyun.com/pypi/simple
 ```
 
 ## Ⅰ 🚀 模型推理
@@ -242,6 +246,13 @@ cd minimind && pip install -r requirements.txt -i https://mirrors.aliyun.com/pyp
 modelscope download --model gongjy/minimind-3 --local_dir ./minimind-3
 # 方式2
 git clone https://huggingface.co/jingyaogong/minimind-3
+# 国内网络进入huggingface网站存在困难，可使用镜像站
+# Windows
+$env:HF_ENDPOINT = "https://hf-mirror.com" 
+git clone https://hf-mirror.com/jingyaogong/minimind-3
+#Linux
+export HF_ENDPOINT="https://hf-mirror.com"
+git clone https://hf-mirror.com/jingyaogong/minimind-3
 ```
 
 ### 2' CLI 推理
