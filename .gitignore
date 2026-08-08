@@ -4,3 +4,9 @@ __pycache__/
 out
 website/
 docs-minimind/
+
+checkpoints/
+dataset/
+
+minimind-3/
+minimind-3-moe/
