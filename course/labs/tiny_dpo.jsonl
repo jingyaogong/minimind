@@ -1,0 +1,2 @@
+{"chosen":[{"role":"user","content":"MiniMind 是什么？"},{"role":"assistant","content":"MiniMind 是一个用于学习大语言模型训练流程的小型开源项目。"}],"rejected":[{"role":"user","content":"MiniMind 是什么？"},{"role":"assistant","content":"不知道。"}]}
+{"chosen":[{"role":"user","content":"用一句话解释 tokenizer。"},{"role":"assistant","content":"tokenizer 负责把文本切分并映射成模型可以处理的 token id。"}],"rejected":[{"role":"user","content":"用一句话解释 tokenizer。"},{"role":"assistant","content":"tokenizer 是一个数据库。"}]}
