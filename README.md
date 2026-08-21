@@ -1,76 +1,63 @@
-<div align="center">
 
-![logo](./images/logo.png)
 
-</div>
+logo
 
-<div align="center">
 
-![visitors](https://visitor-badge.laobi.icu/badge?page_id=jingyaogong/minimind)
-[![GitHub Repo stars](https://img.shields.io/github/stars/jingyaogong/minimind?style=social)](https://github.com/jingyaogong/minimind/stargazers)
-[![GitHub Code License](https://img.shields.io/github/license/jingyaogong/minimind)](LICENSE)
-[![GitHub last commit](https://img.shields.io/github/last-commit/jingyaogong/minimind)](https://github.com/jingyaogong/minimind/commits/master)
-[![GitHub pull request](https://img.shields.io/badge/PRs-welcome-blue)](https://github.com/jingyaogong/minimind/pulls)
-[![Collection](https://img.shields.io/badge/🤗-MiniMind%20%20Collection-blue)](https://huggingface.co/collections/jingyaogong/minimind-66caf8d999f5c7fa64f399e5)
 
-</div>
 
-<div align="center">
 
-![GitHub Trend](https://trendshift.io/api/badge/repositories/12586)
+visitors
+[GitHub Repo stars](https://github.com/jingyaogong/minimind/stargazers)
+[GitHub Code License](LICENSE)
+[GitHub last commit](https://github.com/jingyaogong/minimind/commits/master)
+[GitHub pull request](https://github.com/jingyaogong/minimind/pulls)
+[Collection](https://huggingface.co/collections/jingyaogong/minimind-66caf8d999f5c7fa64f399e5)
 
-</div>
 
-<div align="center">
-  <h3>"大道至简"</h3>
-</div>
 
-<div align="center">
+
+
+GitHub Trend
+
+
+
+### "大道至简"
+
+
 
 中文 | [English](./README_en.md)
 
-</div>
 
-* 此开源项目旨在完全从 0 开始，仅用 3 块钱成本与 2 小时训练时间，即可训练出规模约为 64M 的超小语言模型 MiniMind。
-* MiniMind 系列极其轻量，主线最小版本体积约为 GPT-3 的 $\frac{1}{2700}$，力求让普通个人 GPU 也能快速完成训练与复现。
-* 项目同时开源了大模型的极简结构与完整训练链路，覆盖 MoE、数据清洗、预训练（Pretrain）、监督微调（SFT）、LoRA、RLHF（DPO）、RLAIF（PPO / GRPO / CISPO）、Tool Use、Agentic RL、自适应思考与模型蒸馏等全过程代码。
-* MiniMind 同时拓展了视觉模态模型 [MiniMind-V](https://github.com/jingyaogong/minimind-v)、多模态 Omni 模型 [MiniMind-O](https://github.com/jingyaogong/minimind-o)、扩散语言模型（MiniMind-dLM）、线性模型（MiniMind-Linear），详见 [Discussion](https://github.com/jingyaogong/minimind/discussions)。
-* 项目所有核心算法代码均从 0 使用 PyTorch 原生实现，不依赖第三方库提供的高层抽象接口。
-* 这不仅是一个大语言模型全阶段开源复现项目，也是一套面向 LLM 入门与实践的教程。
-* 希望此项目能为更多人提供一个可复现、可理解、可扩展的起点，一起感受创造的乐趣，并推动更广泛 AI 社区的进步。
+
+- 此开源项目旨在完全从 0 开始，仅用 3 块钱成本与 2 小时训练时间，即可训练出规模约为 64M 的超小语言模型 MiniMind。
+- MiniMind 系列极其轻量，主线最小版本体积约为 GPT-3 的 $\frac{1}{2700}$，力求让普通个人 GPU 也能快速完成训练与复现。
+- 项目同时开源了大模型的极简结构与完整训练链路，覆盖 MoE、数据清洗、预训练（Pretrain）、监督微调（SFT）、LoRA、RLHF（DPO）、RLAIF（PPO / GRPO / CISPO）、Tool Use、Agentic RL、自适应思考与模型蒸馏等全过程代码。
+- MiniMind 同时拓展了视觉模态模型 [MiniMind-V](https://github.com/jingyaogong/minimind-v)、多模态 Omni 模型 [MiniMind-O](https://github.com/jingyaogong/minimind-o)、扩散语言模型（MiniMind-dLM）、线性模型（MiniMind-Linear），详见 [Discussion](https://github.com/jingyaogong/minimind/discussions)。
+- 项目所有核心算法代码均从 0 使用 PyTorch 原生实现，不依赖第三方库提供的高层抽象接口。
+- 这不仅是一个大语言模型全阶段开源复现项目，也是一套面向 LLM 入门与实践的教程。
+- 希望此项目能为更多人提供一个可复现、可理解、可扩展的起点，一起感受创造的乐趣，并推动更广泛 AI 社区的进步。
 
 > 注：本项目基于 Apache 2.0 协议开源，完全免费。“2 小时” 指 SFT 阶段在单张 NVIDIA 3090 上跑完 `1 epoch` 的实测耗时，“3 块钱” 指对应时段的 GPU 租用成本。
 
 ---
 
-<div align="center">
 
-![minimind-3](./images/minimind-3.gif)
+
+minimind-3
 
 [🔗 在线体验](https://www.modelscope.cn/studios/gongjy/MiniMind) | [🔗 视频介绍](https://www.bilibili.com/video/BV12dHPeqE72)
 
 
-<div align="center">
-  <table>
-    <tr>
-      <td align="center">
-        <a href="https://huggingface.co/collections/jingyaogong/minimind" style="text-decoration: none;">
-          <img src="./images/with_huggingface.png" alt="Hugging Face Logo" style="vertical-align: middle; width: auto; max-width: 100%;" />
-        </a>
-      </td>
-      <td align="center">
-        <a href="https://www.modelscope.cn/profile/gongjy" style="text-decoration: none;">
-          <img src="./images/with_modelscope.png" alt="ModelScope Logo" style="vertical-align: middle; width: auto; max-width: 100%;" />
-        </a>
-      </td>
-    </tr>
-  </table>
-</div>
+|     |     |
+| --- | --- |
+|     |     |
 
 
-</div>
+
 
 ---
+
+
 
 # 📌 项目介绍
 
@@ -81,6 +68,8 @@
 😊 一起感受创造的乐趣吧！
 
 ---
+
+
 
 #### 🎉 本项目包含以下内容
 
@@ -96,28 +85,32 @@
 - 提供基于 Streamlit 的极简聊天 WebUI，支持思考展示、工具选择与多轮 Tool Call。
 - 包含实验性拓展：离散扩散语言模型（[dLM](https://github.com/jingyaogong/minimind/discussions/618)）与线性注意力模型（[Linear Attention](https://github.com/jingyaogong/minimind/discussions/704)），均可基于主线 AR 模型进行续训。
 
+
+
 #### 🎉 已发布模型列表
 
-| 模型 | 参数量 | Release |
-|------|--------|---------|
-| minimind-3 | 64M | 2026.04.01 |
-| minimind-3-moe | 198M-A64M | 2026.04.01 |
-| minimind2-small | 26M | 2025.04.26 |
-| minimind2-moe | 145M | 2025.04.26 |
-| minimind2 | 104M | 2025.04.26 |
-| minimind-v1-small | 26M | 2024.08.28 |
-| minimind-v1-moe | 4×26M | 2024.09.17 |
-| minimind-v1 | 108M | 2024.09.01 |
+
+| 模型                | 参数量       | Release    |
+| ----------------- | --------- | ---------- |
+| minimind-3        | 64M       | 2026.04.01 |
+| minimind-3-moe    | 198M-A64M | 2026.04.01 |
+| minimind2-small   | 26M       | 2025.04.26 |
+| minimind2-moe     | 145M      | 2025.04.26 |
+| minimind2         | 104M      | 2025.04.26 |
+| minimind-v1-small | 26M       | 2024.08.28 |
+| minimind-v1-moe   | 4×26M     | 2024.09.17 |
+| minimind-v1       | 108M      | 2024.09.01 |
 
 
 ---
 
+
+
 #### 📝 更新日志
 
-<details> 
-<summary> <b>🔥 2026-04-01</b> </summary>
+**🔥 2026-04-01**
 
- - 发布 `minimind-3` / `minimind-3-moe`：结构、Tokenizer、训练链路、推理接口与默认配置全面更新
+- 发布 `minimind-3` / `minimind-3-moe`：结构、Tokenizer、训练链路、推理接口与默认配置全面更新
 - 结构主线对齐 `Qwen3 / Qwen3-MoE` 生态：Dense 约 `64M`，MoE 约 `198M-A64M`，并移除了 shared expert 设计
 - 默认训练数据切换为 `pretrain_t2t(_mini).jsonl`、`sft_t2t(_mini).jsonl`、`rlaif.jsonl`、`agent_rl.jsonl` 与 `agent_rl_math.jsonl`
 - 移除独立 `train_reason.py`；思考能力统一由 `chat_template + <think>` 与 `open_thinking` 自适应开关控制
@@ -129,10 +122,9 @@
 - 新增 LoRA 权重合并导出流程，可通过 `scripts/convert_model.py` 将基础模型与 LoRA 权重合并为新的完整模型权重
 - 结构图资源更新，README 大面积更新
 
-</details>
 
-<details> 
-<summary> <b>2025-10-24</b> </summary>
+
+**2025-10-24**
 
 - 🔥 新增RLAIF训练算法：PPO、GRPO、SPO（从0原生实现）
 - 新增断点续训功能：支持训练自动恢复、跨GPU数量恢复、wandb记录连续性
@@ -144,10 +136,9 @@
 - [SwanLab](https://swanlab.cn/)替代WandB（国内访问友好，API完全兼容）
 - 规范化所有代码 & 修复一些已知bugs
 
-</details>
 
-<details> 
-<summary> <b>2025-04-26</b> </summary>
+
+**2025-04-26**
 
 - 重要更新
 - 如有兼容性需要，可访问[🔗旧仓库内容🔗](https://github.com/jingyaogong/minimind/tree/7da201a944a90ed49daef8a0265c959288dff83a)。
@@ -165,15 +156,15 @@ minimind2系列旧模型均经过权重映射+（微调训练）QKVO线性层校
 本次更新后将放弃对`minimind-v1`全系列的维护，并在仓库中下线。
 ```
 
-</details>
 
-<details>
-<summary> <b>More...</b> </summary>
+
+**More...**
 
 **2025-02-09**
+
 - 迎来发布以来重大更新，Release minimind2 Series。
 - 代码几乎全部重构，使用更简洁明了的统一结构。
-  如有旧代码的兼容性需要，可访问[🔗旧仓库内容🔗](https://github.com/jingyaogong/minimind/tree/6e9cd28ef9b34a0a10afbdf6f59e65cb6e628efb)。
+如有旧代码的兼容性需要，可访问[🔗旧仓库内容🔗](https://github.com/jingyaogong/minimind/tree/6e9cd28ef9b34a0a10afbdf6f59e65cb6e628efb)。
 - 免去数据预处理步骤。统一数据集格式，更换为`jsonl`格式杜绝数据集下载混乱的问题。
 - minimind2系列效果相比MiniMind-V1显著提升。
 - 小问题：{kv-cache写法更标准、MoE的负载均衡loss被考虑等等}
@@ -185,44 +176,50 @@ minimind2系列旧模型均经过权重映射+（微调训练）QKVO线性层校
 - 更新minimind2与第三方模型的基于更多大模型榜单测试性能的结果。
 
 **2024-10-05**
+
 - 为MiniMind拓展了多模态能力之---视觉
 - 移步孪生项目[minimind-v](https://github.com/jingyaogong/minimind-v)查看详情！
 
 **2024-09-27**
+
 - 09-27更新pretrain数据集的预处理方式，为了保证文本完整性，放弃预处理成.bin训练的形式（轻微牺牲训练速度）。
 - 目前pretrain预处理后的文件命名为：pretrain_data.csv。
 - 删除了一些冗余的代码。
 
 **2024-09-17**
+
 - 更新minimind-v1-moe模型
 - 为了防止歧义，不再使用mistral_tokenizer分词，全部采用自定义的minimind_tokenizer作为分词器。
 
 **2024-09-01**
+
 - 更新minimind-v1 (108M)模型，采用minimind_tokenizer，预训练轮次3 + SFT轮次10，更充分训练，性能更强。
 - 项目已部署至ModelScope创空间，可以在此网站上体验：
 - [🔗ModelScope在线体验🔗](https://www.modelscope.cn/studios/gongjy/minimind)
 
 **2024-08-27**
+
 - 项目首次开源
 
-</details>
+
 
 ---
 
+
+
 # 📌 快速开始
 
-<details>
-<summary>本人的软硬件配置（供参考）</summary>
+本人的软硬件配置（供参考）
 
-* CPU: Intel(R) Core(TM) i9-10980XE CPU @ 3.00GHz
-* RAM: 128 GB
-* GPU: NVIDIA GeForce RTX 3090 (24GB) * 8
-* Ubuntu==20.04
-* CUDA==12.2
-* Python==3.10.16
-* [requirements.txt](./requirements.txt)
+- CPU: Intel(R) Core(TM) i9-10980XE CPU @ 3.00GHz
+- RAM: 128 GB
+- GPU: NVIDIA GeForce RTX 3090 (24GB) * 8
+- Ubuntu==20.04
+- CUDA==12.2
+- Python==3.10.16
+- [requirements.txt](./requirements.txt)
 
-</details>
+
 
 ## 第0步
 
@@ -232,17 +229,24 @@ git clone --depth 1 https://github.com/jingyaogong/minimind
 cd minimind && pip install -r requirements.txt -i https://mirrors.aliyun.com/pypi/simple
 ```
 
+
+
 ## Ⅰ 🚀 模型推理
+
+
 
 ### 1' 下载模型
 
 在项目根目录：
+
 ```bash
 # 方式1
 modelscope download --model gongjy/minimind-3 --local_dir ./minimind-3
 # 方式2
 git clone https://huggingface.co/jingyaogong/minimind-3
 ```
+
+
 
 ### 2' CLI 推理
 
@@ -253,6 +257,8 @@ python eval_llm.py --load_from ./minimind-3
 python eval_llm.py --load_from ./model --weight full_sft
 ```
 
+
+
 ### 3'（可选）WebUI
 
 ```bash
@@ -260,6 +266,8 @@ python eval_llm.py --load_from ./model --weight full_sft
 # ⚠️ 须先将 transformers 格式模型文件夹复制到 ./scripts/ 目录下（例如：cp -r minimind-3 ./scripts/minimind-3），web_demo 脚本会自动扫描该目录下包含权重文件的子文件夹，如不存在则报错
 cd scripts && streamlit run web_demo.py
 ```
+
+
 
 ### 4'（可选）第三方推理框架
 
@@ -270,10 +278,11 @@ ollama run jingyaogong/minimind-3
 vllm serve /path/to/model --served-model-name "minimind"
 ```
 
+
+
 ## Ⅱ 🛠️ 模型训练
 
-<details>
-<summary>注：提前确认 Torch 的可用后端</summary>
+注：提前确认 Torch 的可用后端
 
 ```python
 import torch
@@ -284,19 +293,20 @@ print(torch.cuda.is_available())
 若 `cuda` 不可用，也仍可根据自身设备选择 `CPU` 或 `MPS` 运行，但训练速度与兼容性会有非常大的差异。  
 如需安装或更换 PyTorch 版本，可参考 [torch_stable](https://download.pytorch.org/whl/torch_stable.html) 与[链接](https://blog.csdn.net/weixin_45456738/article/details/141029610?ops_request_misc=&request_id=&biz_id=102&utm_term=%E5%AE%89%E8%A3%85torch&utm_medium=distribute.pc_search_result.none-task-blog-2~all~sobaiduweb~default-2-141029610.nonecase&spm=1018.2226.3001.4187)
 
-</details>
+
 
 ### 1' 下载数据
 
 从下文提供的[数据集下载链接](https://www.modelscope.cn/datasets/gongjy/minimind_dataset/files) 下载所需数据文件，并放入 `./dataset` 目录
 
 > 当前默认仅需下载 `pretrain_t2t_mini.jsonl` 与 `sft_t2t_mini.jsonl`，即可较快复现 `MiniMind Zero` 对话模型。
-如有更多需求，下文提供多种搭配方案，可根据自身任务目标与 GPU 资源灵活选择。
+> 如有更多需求，下文提供多种搭配方案，可根据自身任务目标与 GPU 资源灵活选择。
+
+
 
 ### 2' 开始训练
 
-<details>
-<summary>💡 检查点暂停续训</summary>
+💡 检查点暂停续训
 
 所有训练脚本均支持检查点保存。添加 `--from_resume 1` 参数后，即可自动检测并恢复训练进度：
 
@@ -307,6 +317,7 @@ python train_full_sft.py --from_resume 1
 ```
 
 **断点续训说明：**
+
 - 训练过程会自动在 `./checkpoints/` 目录保存完整检查点（模型、优化器、训练进度等）
 - 检查点文件命名：`<权重名>_<维度>_resume.pth`（如：`full_sft_512_resume.pth`）
 - 支持跨不同 GPU 数量恢复（自动调整 step）
@@ -314,7 +325,7 @@ python train_full_sft.py --from_resume 1
 
 > 适合长时间训练或不稳定环境，无需担心训练中断导致进度丢失
 
-</details>
+
 
 #### 2.1 预训练（必须）
 
@@ -324,6 +335,8 @@ cd trainer && python train_pretrain.py
 
 > 训练后，将得到 `out/pretrain_*.pth` 作为输出权重（其中 `*` 为模型 dimension，默认为 `768`）
 
+
+
 #### 2.2 指令微调（必须）
 
 ```bash
@@ -331,6 +344,8 @@ cd trainer && python train_full_sft.py
 ```
 
 > 训练后，将得到 `out/full_sft_*.pth` 作为输出权重（其中 `full` 表示全参数微调）
+
+
 
 #### 2.3 测试已训练模型（可选）
 
@@ -342,8 +357,7 @@ python eval_llm.py --weight full_sft
 
 > `--weight` 用于指定权重名称前缀，例如 `pretrain`、`full_sft` 等；更多参数可直接参考 `eval_llm.py`
 
-<details>
-<summary>注：其它须知</summary>
+注：其它须知
 
 1、所有训练脚本均基于 PyTorch 原生实现，并支持多卡加速。
 
@@ -358,40 +372,45 @@ torchrun --nproc_per_node N train_xxx.py
 ```bash
 ... train_xxx.py --use_wandb
 ```
+
 `2025` 年 `6` 月后，国内网络环境通常无法直连 WandB。MiniMind 当前默认转为使用 [SwanLab](https://swanlab.cn/) 作为训练可视化工具，其接口与 WandB 基本兼容；通常只需将 `import wandb` 替换为 `import swanlab as wandb`，其余调用方式基本无需改动。
 
-</details>
+
 
 ---
 
+
+
 # 📌 数据介绍
+
+
 
 ## Ⅰ Tokenizer
 
 分词器可以粗略理解成 LLM 使用的一本“词典”，负责把自然语言映射成 token id，再把 token id 解码回文本；项目中也提供了`train_tokenizer.py`作为词表训练示例。不建议重新训练 tokenizer，因为词表和切分规则一旦变化，模型权重、数据格式、推理接口与社区生态的兼容性都会下降，也会削弱模型的传播性。同时，tokenizer 还会影响 PPL 这类按 token 统计的指标，因此跨 tokenizer 比较时，BPB（Bits Per Byte）往往更有参考价值，可参考[这篇](https://skeptric.com/perplexity/)。
 对 MiniMind 这类小模型来说，词表大小还会直接影响 embedding 层和输出层的参数占比，因此保持词表精简通常是更合适的取舍。
 
-<details>
-<summary>Tokenizer介绍</summary>
+Tokenizer介绍
 
 第三方强大的开源模型例如 Yi、Qwen2、ChatGLM、Mistral、Llama 3 的 tokenizer 词表长度如下：
 
-<table>
-  <tr><th>Tokenizer模型</th><th>词表大小</th><th>来源</th></tr>
-  <tr><td>Yi</td><td>64,000</td><td>01万物（中国）</td></tr>
-  <tr><td>Qwen2</td><td>151,643</td><td>阿里云（中国）</td></tr>
-  <tr><td>ChatGLM</td><td>151,329</td><td>智谱AI（中国）</td></tr>
-  <tr><td>Mistral</td><td>32,000</td><td>Mistral AI（法国）</td></tr>
-  <tr><td>Llama 3</td><td>128,000</td><td>Meta（美国）</td></tr>
-  <tr><td>MiniMind</td><td>6,400</td><td>自定义</td></tr>
-</table>
+
+| Tokenizer模型 | 词表大小    | 来源             |
+| ----------- | ------- | -------------- |
+| Yi          | 64,000  | 01万物（中国）       |
+| Qwen2       | 151,643 | 阿里云（中国）        |
+| ChatGLM     | 151,329 | 智谱AI（中国）       |
+| Mistral     | 32,000  | Mistral AI（法国） |
+| Llama 3     | 128,000 | Meta（美国）       |
+| MiniMind    | 6,400   | 自定义            |
+
 
 > 当前主线为避免历史版本歧义并控制整体体积，统一使用 `minimind_tokenizer`，不再维护 `mistral_tokenizer` 版本。
 
 尽管 `minimind_tokenizer` 的词表只有 `6400`，编解码效率弱于 `qwen2`、`glm` 等更偏中文友好的 tokenizer，但它能显著压缩 embedding 层和输出层的参数占比，更适合 MiniMind 这类小模型的体积约束。
 从实际使用效果看，这套 tokenizer 并没有明显带来生僻词解码失败的问题，整体仍然足够稳定可用；因此当前主线训练也统一沿用这套词表，而不再额外分叉维护其他 tokenizer 版本。
 
-</details>
+
 
 ## Ⅱ Pretrain数据
 
@@ -417,6 +436,8 @@ torchrun --nproc_per_node N train_xxx.py
 {"text": "清晨的阳光透过窗帘洒进房间，桌上的书页被风轻轻翻动。"}
 {"text": "Transformer 通过自注意力机制建模上下文关系，是现代大语言模型的重要基础结构。"}
 ```
+
+
 
 ## Ⅲ SFT数据
 
@@ -455,6 +476,8 @@ torchrun --nproc_per_node N train_xxx.py
     ]
 }
 ```
+
+
 
 ## Ⅳ RL 数据
 
@@ -502,18 +525,16 @@ MiniMind训练数据集下载地址： [ModelScope](https://www.modelscope.cn/da
 └── sft_t2t.jsonl (14GB)
 ```
 
-<details>
-<summary>注：各数据集简介</summary>
+注：各数据集简介
 
-* `agent_rl.jsonl` --Agentic RL 主线训练数据，用于 `train_agent.py` 的多轮 Tool-Use / CISPO / GRPO 训练
-* `agent_rl_math.jsonl` --Agentic RL 纯数学补充数据，适合带最终校验目标的多轮推理/工具使用场景（用于RLVR）
-* `dpo.jsonl` --RLHF阶段偏好训练数据（DPO）
-* `pretrain_t2t_mini`✨ --`minimind-3` 轻量预训练数据，适合快速复现（推荐设置`max_seq_len≈768`）
-* `pretrain_t2t` --`minimind-3` 主线预训练数据（推荐设置`max_seq_len≈380`）
-* `rlaif.jsonl`✨ --RLAIF训练数据集，用于PPO/GRPO/CISPO等强化学习算法训练
-* `sft_t2t_mini.jsonl`✨ --`minimind-3` 轻量SFT数据（用于快速训练Zero模型），推荐设置`max_seq_len≈768`，其中已混入一部分 Tool Call 样本
-* `sft_t2t.jsonl` --`minimind-3` 主线SFT数据，适合完整复现，其中同样已混入 Tool Call 样本
-
+- `agent_rl.jsonl` --Agentic RL 主线训练数据，用于 `train_agent.py` 的多轮 Tool-Use / CISPO / GRPO 训练
+- `agent_rl_math.jsonl` --Agentic RL 纯数学补充数据，适合带最终校验目标的多轮推理/工具使用场景（用于RLVR）
+- `dpo.jsonl` --RLHF阶段偏好训练数据（DPO）
+- `pretrain_t2t_mini`✨ --`minimind-3` 轻量预训练数据，适合快速复现（推荐设置`max_seq_len≈768`）
+- `pretrain_t2t` --`minimind-3` 主线预训练数据（推荐设置`max_seq_len≈380`）
+- `rlaif.jsonl`✨ --RLAIF训练数据集，用于PPO/GRPO/CISPO等强化学习算法训练
+- `sft_t2t_mini.jsonl`✨ --`minimind-3` 轻量SFT数据（用于快速训练Zero模型），推荐设置`max_seq_len≈768`，其中已混入一部分 Tool Call 样本
+- `sft_t2t.jsonl` --`minimind-3` 主线SFT数据，适合完整复现，其中同样已混入 Tool Call 样本
 
 训练参数 `max_seq_len` 目前指的是 tokens 长度，而非绝对字符数。
 本项目tokenizer在中文文本上大约`1.5~1.7 字符/token`，纯英文的压缩比在`4~5 字符/token`，不同数据分布会有波动。
@@ -521,64 +542,64 @@ MiniMind训练数据集下载地址： [ModelScope](https://www.modelscope.cn/da
 
 例如：
 
-* 中文：`白日依山尽`5个字符可能被拆分为[`白日`,`依`,`山`,`尽`] 4个tokens；
-* 英文：`The sun sets in the west`24个字符可能被拆分为[`The `,`sun `,`sets `,`in `,`the`,`west`] 6个tokens
+- 中文：`白日依山尽`5个字符可能被拆分为[`白日`,`依`,`山`,`尽`] 4个tokens；
+- 英文：`The sun sets in the west`24个字符可能被拆分为[`The` ,`sun` ,`sets` ,`in` ,`the`,`west`] 6个tokens
 
 “推荐设置”给出了各个数据集上最大tokens长度的粗略估计。
 须知 `max_seq_len` 可以激进 / 保守 / 均衡地调整，因为更大或更小均无法避免副作用：一些样本短于 `max_seq_len` 后被 padding 浪费算力，一些样本长于 `max_seq_len` 后被截断语义。
 
 在算力效率与语义完整性之间找到平衡点即可
 
-</details>
 
 
-![dataset](./images/dataset.jpg)
+dataset
 
 > MiniMind 主线训练数据组成与推荐组合示意图
 
-<details>
-<summary>说明 & 推荐训练方案</summary>
+说明 & 推荐训练方案
 
-* `minimind-3` 主线推荐采用 `pretrain_t2t` + `sft_t2t` + `rlaif/agent_rl` 的阶段式训练组合。
+- `minimind-3` 主线推荐采用 `pretrain_t2t` + `sft_t2t` + `rlaif/agent_rl` 的阶段式训练组合。
+- 想要最快速度从0实现Zero模型，推荐使用`pretrain_t2t_mini.jsonl` + `sft_t2t_mini.jsonl` 的数据组合
+- 推荐具备一定算力资源或更在意效果的朋友完整复现 `minimind-3`；仅有单卡GPU或更在意快速复现的朋友强烈推荐 mini 组合。
+- 当前 `sft_t2t / sft_t2t_mini` 已经混入 Tool Call 数据，因此通常不需要再额外做一轮独立的 Tool Calling 监督微调。
 
-* 想要最快速度从0实现Zero模型，推荐使用`pretrain_t2t_mini.jsonl` + `sft_t2t_mini.jsonl` 的数据组合
 
-* 推荐具备一定算力资源或更在意效果的朋友完整复现 `minimind-3`；仅有单卡GPU或更在意快速复现的朋友强烈推荐 mini 组合。
-
-* 当前 `sft_t2t / sft_t2t_mini` 已经混入 Tool Call 数据，因此通常不需要再额外做一轮独立的 Tool Calling 监督微调。
-
-</details>
 
 # 📌 模型
+
+
 
 ## 结构
 
 `minimind-3` Dense 使用 Transformer Decoder-Only 结构，整体配置已经向 `Qwen3` 生态对齐，方便后续转换到 `transformers / llama.cpp / ollama / vllm`：
 
-* 采用预标准化（Pre-Norm）+ RMSNorm。
-* 使用 SwiGLU 激活函数。
-* 使用 RoPE 旋转位置编码，并支持 YaRN 外推。
-* `q_heads=8`、`kv_heads=4`，`max_position_embeddings=32768`，`rope_theta=1e6`。
+- 采用预标准化（Pre-Norm）+ RMSNorm。
+- 使用 SwiGLU 激活函数。
+- 使用 RoPE 旋转位置编码，并支持 YaRN 外推。
+- `q_heads=8`、`kv_heads=4`，`max_position_embeddings=32768`，`rope_theta=1e6`。
 
 `minimind-3-moe` 在相同结构上扩展 MoE 前馈层，实现上兼容 `Qwen3-MoE` 风格配置（去除 shared expert）。
 
-* 当前默认配置为 `4 experts / top-1 routing`，用于以更低激活参数获得更高容量。
-* Experts 继续增加后，实际耗时往往比同尺寸规模的 dense 模型高非常多，这和 “MoE 推理更快” 放在一起看会有点反直觉，但训练时 token 先按专家分桶、再分别做 forward，原生训练时带来的 `kernel` 启停和调度开销会急剧变重，这本身是很自然的事情。得靠支持 MoE kernel-fused 的算子库来优化，比如基于 `Triton` 的自定义 kernel、`DeepSpeed-MoE`、`Megatron-LM` 等等。当然，这个项目还是希望保留原生 PyTorch 的普适性，所以这里做的是现实的折中，在当前实现下，`4 experts / top-1` 这个甜点配置大约只比 dense 模型慢 `50%` 左右。
+- 当前默认配置为 `4 experts / top-1 routing`，用于以更低激活参数获得更高容量。
+- Experts 继续增加后，实际耗时往往比同尺寸规模的 dense 模型高非常多，这和 “MoE 推理更快” 放在一起看会有点反直觉，但训练时 token 先按专家分桶、再分别做 forward，原生训练时带来的 `kernel` 启停和调度开销会急剧变重，这本身是很自然的事情。得靠支持 MoE kernel-fused 的算子库来优化，比如基于 `Triton` 的自定义 kernel、`DeepSpeed-MoE`、`Megatron-LM` 等等。当然，这个项目还是希望保留原生 PyTorch 的普适性，所以这里做的是现实的折中，在当前实现下，`4 experts / top-1` 这个甜点配置大约只比 dense 模型慢 `50%` 左右。
 
 `minimind-3` 系列结构如下图：
 
-![structure](./images/LLM-structure.jpg)
-![structure-moe](./images/LLM-structure-moe.jpg)
+structure
+structure-moe
 
 修改模型配置见[./model/model_minimind.py](./model/model_minimind.py)，参考模型参数版本见下表：
 
-| Model Name | params | len_vocab | max_pos | rope_theta | n_layers | d_model | kv_heads | q_heads | note |
-|------------|--------|-----------|---------|------------|----------|---------|----------|---------|------|
-| minimind-3 | 64M | 6400 | 32768 | 1e6 | 8 | 768 | 4 | 8 | Dense |
-| minimind-3-moe | 198M-A64M | 6400 | 32768 | 1e6 | 8 | 768 | 4 | 8 | 4 experts / top-1 |
-| minimind2-small | 26M | 6400 | 32768 | 1e6 | 8 | 512 | 2 | 8 | 历史版本 |
-| minimind2-moe | 145M | 6400 | 32768 | 1e6 | 8 | 640 | 2 | 8 | 历史版本 |
-| minimind2 | 104M | 6400 | 32768 | 1e6 | 16 | 768 | 2 | 8 | 历史版本 |
+
+| Model Name      | params    | len_vocab | max_pos | rope_theta | n_layers | d_model | kv_heads | q_heads | note              |
+| --------------- | --------- | --------- | ------- | ---------- | -------- | ------- | -------- | ------- | ----------------- |
+| minimind-3      | 64M       | 6400      | 32768   | 1e6        | 8        | 768     | 4        | 8       | Dense             |
+| minimind-3-moe  | 198M-A64M | 6400      | 32768   | 1e6        | 8        | 768     | 4        | 8       | 4 experts / top-1 |
+| minimind2-small | 26M       | 6400      | 32768   | 1e6        | 8        | 512     | 2        | 8       | 历史版本              |
+| minimind2-moe   | 145M      | 6400      | 32768   | 1e6        | 8        | 640     | 2        | 8       | 历史版本              |
+| minimind2       | 104M      | 6400      | 32768   | 1e6        | 16       | 768     | 2        | 8       | 历史版本              |
+
+
 
 
 ## 模型配置
@@ -587,13 +608,12 @@ MiniMind训练数据集下载地址： [ModelScope](https://www.modelscope.cn/da
 
 当前 `minimind-3` 主线选择 `dim=768, n_layers=8`，本质上是一种工程取舍：更浅的网络训练更快，同时 `dim` 也不至于过小而导致模式崩溃，因此能在训练效率、稳定性与最终效果之间取得相对均衡。
 
-<details>
-<summary>查看详细说明</summary>
+查看详细说明
 
 Scaling Law 在小模型上往往会呈现出一些不同于大模型的现象。决定 Transformer 参数规模变化的核心参数，通常主要就是 `d_model` 和 `n_layers`：
 
-* `d_model`↑ + `n_layers`↓ -> 矮胖子
-* `d_model`↓ + `n_layers`↑ -> 瘦高个
+- `d_model`↑ + `n_layers`↓ -> 矮胖子
+- `d_model`↓ + `n_layers`↑ -> 瘦高个
 
 经典 Scaling Law 更强调训练数据量、参数量和训练步数的决定性作用，通常会弱化架构差异本身的影响；但在小模型区间，这个结论并不总是完全成立。
 MobileLLM 的一个核心观察是：在参数量固定时，深度往往比宽度更重要。也就是说，相比“宽而浅”的结构，“深而窄”的模型更容易学到抽象概念。
@@ -603,13 +623,17 @@ MobileLLM 的一个核心观察是：在参数量固定时，深度往往比宽�
 相对地，当 `d_model > 1536` 时，继续增加层数往往比单纯继续加宽更划算，更容易带来更高的参数-效果收益。
 
 作为参考，GPT-3 的参数设定如下：
-![gpt3_config.png](./images/gpt3_config.png)
+gpt3_config.png
 
-</details>
+
 
 ---
 
+
+
 # 📌 实验
+
+
 
 ## Ⅰ 训练开销
 
@@ -618,29 +642,36 @@ MobileLLM 的一个核心观察是：在参数量固定时，深度往往比宽�
 - **3090 租卡单价**：约 `1.3￥/h`（实际价格可自行参考）
 - **说明**：以下结果为 `minimind` 模型在单卡 `3090` 上的经验估算值，用于快速感知训练门槛
 
-| Model Name | params | pretrain_t2t_mini | sft_t2t_mini | toolcall | RLAIF |
-|------------|--------|-------------------|--------------|----------|-------|
-| minimind-3 | 64M | ≈1.21h<br/>≈1.57￥ | ≈1.10h<br/>≈1.43￥ | ≈0.9h<br/>≈1.17￥ | ≈1.1h<br/>≈1.43￥ |
-| minimind-3-moe | 198M-A64M | ≈1.69h<br/>≈2.20￥ | ≈1.54h<br/>≈2.00￥ | ≈1.26h<br/>≈1.64￥ | ≈1.54h<br/>≈2.00￥ |
+
+| Model Name     | params    | pretrain_t2t_mini | sft_t2t_mini  | toolcall      | RLAIF         |
+| -------------- | --------- | ----------------- | ------------- | ------------- | ------------- |
+| minimind-3     | 64M       | ≈1.21h ≈1.57￥     | ≈1.10h ≈1.43￥ | ≈0.9h ≈1.17￥  | ≈1.1h ≈1.43￥  |
+| minimind-3-moe | 198M-A64M | ≈1.69h ≈2.20￥     | ≈1.54h ≈2.00￥ | ≈1.26h ≈1.64￥ | ≈1.54h ≈2.00￥ |
+
 
 ---
 
-<details>
-<summary>训练开销总结&预测</summary>
+训练开销总结&预测
 
 > `minimind-3`
->> `pretrain_t2t_mini` + `sft_t2t_mini`
-<br/>单卡 `3090`，`1 epoch` 预计约 `2.31` 小时，成本约 `3.0` 元人民币
-<br/>可从 0 训练出 `minimind-3 Zero` 对话模型。
+>
+> > `pretrain_t2t_mini` + `sft_t2t_mini`
+> >
+> > 单卡 `3090`，`1 epoch` 预计约 `2.31` 小时，成本约 `3.0` 元人民币
+> >
+> > 可从 0 训练出 `minimind-3 Zero` 对话模型。
 
 > `minimind-3-moe`
->> `pretrain_t2t_mini` + `sft_t2t_mini`
-<br/>单卡 `3090`，`1 epoch` 预计约 `3.23` 小时，成本约 `4.2` 元人民币
-<br/>可快速得到 `minimind-3-moe` 的基础对话版本。
+>
+> > `pretrain_t2t_mini` + `sft_t2t_mini`
+> >
+> > 单卡 `3090`，`1 epoch` 预计约 `3.23` 小时，成本约 `4.2` 元人民币
+> >
+> > 可快速得到 `minimind-3-moe` 的基础对话版本。
 
 > 以上均为估算值，仅用于快速感知训练门槛。
 
-</details>
+
 
 基于单卡 `NVIDIA 3090`，`minimind zero` 从 0 训练依然可以控制在约 `2` 小时量级，个人开发者也能较低门槛地快速上手。
 
@@ -663,12 +694,15 @@ MobileLLM 的一个核心观察是：在参数量固定时，深度往往比宽�
 尽管该版本已经具备基础对话能力，但事实知识与泛化效果仍较有限；它更适合作为 Zero 训练路线可行性的早期参考。
 Zero 模型权重保存为 `full_sft_zero_768.pth`（见下文 MiniMind 模型文件链接），如有兴趣可下载体验其对话效果。
 
-
 ---
+
+
 
 ## Ⅱ 主要训练（必须）
 
 > 所有训练脚本均 `cd ./trainer` 目录执行
+
+
 
 ### 1' 预训练 (Pretrain):
 
@@ -684,7 +718,8 @@ python train_pretrain.py
 
 > 训练后的模型权重文件默认每隔`save_interval步`保存为:`pretrain_*.pth`（*为模型具体dimension，每次保存时新文件会覆盖旧文件）
 
-![pretrain_loss](./images/pretrain_loss.jpg)
+pretrain_loss
+
 > `768dim` 配置在预训练阶段的 loss 曲线
 
 ```bash
@@ -697,6 +732,8 @@ python eval_llm.py --weight pretrain
 💬: 解释什么是机器学习
 🧠: 机器学习是人工智能的一个重要分支，它通过数据训练模型，使系统能够自动学习规律，并在分类、预测、推荐、自然语言处理等任务中持续改进效果。
 ```
+
+
 
 ### 2' 有监督微调 (Supervised Fine-Tuning):
 
@@ -714,7 +751,8 @@ python train_full_sft.py
 
 > 训练后的模型权重文件默认每隔`save_interval步`保存为: `full_sft_*.pth`（*为模型具体dimension，每次保存时新文件会覆盖旧文件）
 
-![sft_loss](./images/sft_loss.jpg)
+sft_loss
+
 > `768dim` 配置在 SFT 阶段的 loss 曲线
 
 ```bash
@@ -728,22 +766,29 @@ python eval_llm.py --weight full_sft
 🧠: 例如北京烤鸭、兰州拉面、四川火锅、广东早茶、小笼包和麻婆豆腐等，这些美食分别代表了不同地区的风味特点，也很适合作为了解中国饮食文化的入门选择。
 ```
 
+
+
 ## Ⅲ 其它训练（可选）
 
 > 所有训练脚本均 `cd ./trainer` 目录执行
 
+
+
 ### 3' 知识蒸馏 (Knowledge Distillation, KD)
 
 知识蒸馏大体可以分成黑盒和白盒两类，MiniMind 当前主线两种思路都有涉及，只是侧重点不同。
-* 黑盒蒸馏：更常见，也更贴近当前主线的实际做法。严格来说，它本质上仍然是面向教师输出结果的监督微调，也就是基于硬标签继续训练；只是随着 LLM 的流行，这类“对着强模型输出做 FT”的做法也逐渐被广义地归入了蒸馏范畴，因此通常被称为黑盒蒸馏。它重点学习的是答案、风格和行为模式，学生模型只能看到“老师说了什么”，却看不到老师内部是如何做出这个判断的。像 `DeepSeek R1`、`Qwen3` 的高质量回答，以及 `tool call`、`reasoning`、思维链等数据，都可以看作黑盒蒸馏信号；MiniMind 当前主线 `full_sft` 数据里，其实已经混入了相当一部分这样的思路。
-* 白盒蒸馏：更进一步，不只学习教师给出的最终输出，还去学习教师在 token 分布层面的偏好。相比黑盒蒸馏，它额外利用了教师模型输出层更细粒度的分布信息，因此学生模型学到的不只是“标准答案”，还包括教师在候选 token 之间的相对倾向。对应到 `train_distillation.py`，当前实现是在已经完成 SFT 的权重基础上，继续用教师模型提供的分布信号来训练学生模型，因此更适合作为理解 MiniMind 蒸馏流程的参考实现。
+
+- 黑盒蒸馏：更常见，也更贴近当前主线的实际做法。严格来说，它本质上仍然是面向教师输出结果的监督微调，也就是基于硬标签继续训练；只是随着 LLM 的流行，这类“对着强模型输出做 FT”的做法也逐渐被广义地归入了蒸馏范畴，因此通常被称为黑盒蒸馏。它重点学习的是答案、风格和行为模式，学生模型只能看到“老师说了什么”，却看不到老师内部是如何做出这个判断的。像 `DeepSeek R1`、`Qwen3` 的高质量回答，以及 `tool call`、`reasoning`、思维链等数据，都可以看作黑盒蒸馏信号；MiniMind 当前主线 `full_sft` 数据里，其实已经混入了相当一部分这样的思路。
+- 白盒蒸馏：更进一步，不只学习教师给出的最终输出，还去学习教师在 token 分布层面的偏好。相比黑盒蒸馏，它额外利用了教师模型输出层更细粒度的分布信息，因此学生模型学到的不只是“标准答案”，还包括教师在候选 token 之间的相对倾向。对应到 `train_distillation.py`，当前实现是在已经完成 SFT 的权重基础上，继续用教师模型提供的分布信号来训练学生模型，因此更适合作为理解 MiniMind 蒸馏流程的参考实现。
 
 黑盒蒸馏本质上等价于对 teacher 生成答案做监督微调：
+
 ```math
 \mathcal{L}_{blackbox} = \mathrm{CE}(y_{teacher}, p_{student})
 ```
 
 白盒蒸馏则通常在监督损失之外，再额外拟合教师分布：
+
 ```math
 \mathcal{L}_{whitebox} = \alpha \mathcal{L}_{CE} + (1-\alpha) T^2 \mathrm{KL}(p_t^T \parallel p_s^T)
 ```
@@ -756,6 +801,8 @@ torchrun --nproc_per_node 1 train_distillation.py
 # 方式2
 python train_distillation.py
 ```
+
+
 
 ### 4' LoRA (Low-Rank Adaptation)
 
@@ -771,7 +818,6 @@ cd trainer && python train_lora.py
 ```
 
 > 训练后的模型权重文件默认每隔`save_interval步`保存为: `lora_xxx_*.pth`（*为模型具体dimension，每次保存时新文件会覆盖旧文件）
-
 
 LoRA 很适合处理“如何在尽量保留通用能力的前提下，让模型快速适应私有领域或垂直场景”这类问题。例如基础模型医学知识不足时，就可以在原有模型之上叠加一层面向医疗场景的 LoRA 权重，以较小代价获得更好的领域表现。
 通常只需要准备同样的多轮对话格式数据，放置到 `lora_xxx.jsonl`，再从仓库根目录执行 `cd trainer && python train_lora.py`，即可得到新的 `LoRA` 模型权重。
@@ -807,12 +853,13 @@ python eval_llm.py  --weight full_sft --lora_weight lora_identity
 
 PS：如果有更充足的数据，也可以直接做 `full_sft` 全参微调；不过这通常需要更谨慎地混合通用数据与领域数据，否则很容易因为过拟合垂域样本而损失模型原有的通用性。
 
-
 > `LoRA` 权重可合并回基础模型并导出为新的完整模型权重，可使用 `scripts/convert_model.py` 中的 `convert_merge_base_lora`：
 
 ```bash
 cd scripts && python convert_model.py
 ```
+
+
 
 ### **5' 工具调用 & 自适应思考**
 
@@ -856,6 +903,8 @@ python eval_toolcall.py --weight full_sft
 🧠: 现在是2026年3月15日17时18分22秒。
 ```
 
+
+
 #### 5.2 Adaptive Thinking
 
 `minimind` 将显式思考能力统一到了模板层，这也和当前很多主流大模型的模板设计保持一致：
@@ -892,20 +941,21 @@ response = client.chat.completions.create(
 
 - 通过**人类**对模型输出的偏好进行评价来训练模型，使其生成更符合人类价值观和偏好的内容。
 
-2. **基于AI反馈的强化学习 (Reinforcement Learning from AI Feedback, RLAIF)**
+1. **基于AI反馈的强化学习 (Reinforcement Learning from AI Feedback, RLAIF)**
 
 - 使用**AI模型**或其他可自动验证的机制来提供反馈，而不直接依赖人类标注。
 - 这里的“AI feedback”在广义上也可以扩展到规则奖励、Ground Truth 校验、代码解释器、环境反馈等自动化信号。
 
-| 类型    | 裁判 | 优点        | 缺点         |
-|-------|----|-----------|------------|
-| RLHF  | 人类 | 更贴近真实人类偏好 | 成本高、效率低    |
-| RLAIF | 模型 | 自动化、可扩展性强 | 可能偏离人类真实偏好 |
+
+| 类型    | 裁判  | 优点        | 缺点         |
+| ----- | --- | --------- | ---------- |
+| RLHF  | 人类  | 更贴近真实人类偏好 | 成本高、效率低    |
+| RLAIF | 模型  | 自动化、可扩展性强 | 可能偏离人类真实偏好 |
+
 
 二者本质上都属于利用某种形式的"**反馈**"来优化模型行为的强化学习范式。
 
 不过在具体实践里，它们并不只是反馈来源不同：奖励是否可验证、是否连续、是否依赖环境交互、是否延迟到整轮结算，都会直接影响训练形态与工程实现。
-
 
 ### 👀 PO算法的统一视角
 
@@ -913,31 +963,45 @@ response = client.chat.completions.create(
 
 所有RL算法的本质都只是在优化一个期望：
 
-$$\mathcal{J}_{PO} = \mathbb{E}_{q \sim P(Q), o \sim \pi(O|q)} \left[ \underbrace{f(r_t)}_{\text{策略项}} \cdot \underbrace{g(A_t)}_{\text{优势项}} - \underbrace{h(\text{KL}_t)}_{\text{正则项}} \right]$$
+$$
+\mathcal{J}_{PO} =
+\mathbb{E}_{q \sim P(Q),\, o \sim \pi(O \mid q)}
+\left[
+  \underbrace{f(r_t)}_{\text{策略项}}
+  \cdot
+  \underbrace{g(A_t)}_{\text{优势项}}
+  -
+  \underbrace{h(\text{KL}_t)}_{\text{正则项}}
+\right]
+$$
 
-训练时，只需**最小化负目标函数**，即: $\mathcal{L}_{PO} = -\mathcal{J}_{PO}$
+训练时，只需**最小化负目标函数**，即：$\mathcal{L}_{PO} = -\mathcal{J}_{PO}$
 
 这个框架只包含三个核心组件：
-* **策略项** $f(r_t)$: 如何使用概率比 $r_t$? 即告诉模型新旧策略偏差有多大，是否探索到了更好的token
-* **优势项** $g(A_t)$: 如何计算优势 $A_t$, 这很重要！大模型算对定积分也不足为奇，小模型回答对加减法优势通常都是正的
-* **正则项** $h(\text{KL}_t)$: 如何约束变化幅度 $\text{KL}_t$, 既防止跑偏又防止管的太死
 
-<details>
-<summary>（展开）符号说明</summary>
+- **策略项** $f(r_t)$: 如何使用概率比 $r_t$? 即告诉模型新旧策略偏差有多大，是否探索到了更好的token
+- **优势项** $g(A_t)$: 如何计算优势 $A_t$, 这很重要！大模型算对定积分也不足为奇，小模型回答对加减法优势通常都是正的
+- **正则项** $h(\text{KL}_t)$: 如何约束变化幅度 $\text{KL}_t$, 既防止跑偏又防止管的太死
 
-| 符号 | 含义 | 说明 | 值域 |
-|------|------|------|------|
-| $q$ | 问题/提示词 | 从数据集 $P(Q)$ 中采样 | - |
-| $o$ | 模型输出序列 | 由策略 $\pi$ 生成 | - |
-| $r_t$ | 概率比 | $r_t = \frac{\pi_\theta(o_t \mid q, o_{<t})}{\pi_{ref}(o_t \mid q, o_{<t})}$ | $(0, +\infty)$ |
-| $A_t$ | 优势函数 | 衡量某个动作相比基线有多好 | $(-\infty, +\infty)$ |
-| $\text{KL}_t$ | KL散度 | 防止策略偏离参考模型太远 | $[0, +\infty)$ |
+（展开）符号说明
 
-</details>
+
+| 符号            | 含义     | 说明                                                                           | 值域                   |
+| ------------- | ------ | ---------------------------------------------------------------------------- | -------------------- |
+| $q$           | 问题/提示词 | 从数据集 $P(Q)$ 中采样                                                              | -                    |
+| $o$           | 模型输出序列 | 由策略 $\pi$ 生成                                                                 | -                    |
+| $r_t$         | 概率比    | $r_t(\theta) = \frac{\pi_\theta(o_t \mid q, o_{<t})}{\pi_{\mathrm{old}}(o_t \mid q, o_{<t})}$ | $(0, +\infty)$       |
+| $A_t$         | 优势函数   | 衡量某个动作相比基线有多好                                                                | $(-\infty, +\infty)$ |
+| $\text{KL}_t$ | KL散度   | 防止策略偏离参考模型太远                                                                 | $[0, +\infty)$       |
+
+
+
 
 不同的**xxPO算法**本质上只是对这三个组件的不同设计的实例化！
 
 ---
+
+
 
 ### **6' 基于人类反馈的强化学习 (Reinforcement Learning from Human Feedback, RLHF)**
 
@@ -946,16 +1010,19 @@ $$\mathcal{J}_{PO} = \mathbb{E}_{q \sim P(Q), o \sim \pi(O|q)} \left[ \underbrac
 这个过程就像是让模型参加新的培训，从优秀员工的作为例子，消极员工作为反例，学习如何更好地回复。
 
 #### 6.1 Direct Preference Optimization
+
 直接偏好优化（DPO）算法，损失为：
 
 $$\mathcal{L}_{DPO} = -\mathbb{E}\left[\log \sigma\left(\beta \left[\log \frac{\pi_\theta(y_w|x)}{\pi_{ref}(y_w|x)} - \log \frac{\pi_\theta(y_l|x)}{\pi_{ref}(y_l|x)}\right]\right)\right]$$
 
 其中：
+
 - **策略项**: $f(r_t) = \log r_w - \log r_l$ (对比chosen vs rejected的概率比)
 - **优势项**: $g(A_t)$ = 无显式优势项（通过偏好对比隐式体现）
 - **正则项**: $h(\text{KL}_t)$ = 隐含在 $\beta$ 中 (控制偏离参考模型程度)
 
 特别地，
+
 - DPO从PPO带KL约束的目标推导出对偏好对的解析训练目标，直接最大化"chosen优于rejected"的对数几率；无需同步训练Reward/Value模型。DPO只需跑`actor`与`ref`两个模型，显存占用低、收敛稳定、实现简单。
 - 训练范式：off‑policy，使用静态偏好数据集，可反复多轮epoch；Ref模型固定（预先缓存输出）。
 - DPO的局限在于不做在线探索，更多用于"偏好/安全"的人类价值对齐；对"能不能做对题"的智力能力提升有限（当然这也取决于数据集，大规模收集正反样本并人类评估很困难）。
@@ -969,6 +1036,8 @@ python train_dpo.py
 
 > 训练后的模型权重文件默认每隔`save_interval步`保存为: `dpo_*.pth`（*为模型具体dimension，每次保存时新文件会覆盖旧文件）
 
+
+
 ### 7' 基于 AI 反馈的强化学习 (Reinforcement Learning from AI Feedback, RLAIF)
 
 稍微花篇幅解释一下，我还是更想把这一节叫作 `RLAIF`，虽然严格来说，这个命名并不完全准确。像 RLVR 这类依赖可验证奖励的路线，本身有相对独立的脉络，很难被简单并进狭义的 AI feedback 里。
@@ -978,8 +1047,9 @@ python train_dpo.py
 它们共同的特点通常都是**On-Policy**与**可扩展性强**——不需要昂贵的人工标注，可以生成海量训练样本，让模型在在线大量试错中快速进化。
 
 MiniMind 着手实现**2+N**种基本+前沿的RLAIF方法：
-* **PPO**、**GRPO** 被大规模验证的经典RL算法
-* N种前沿RL算法（不定期以Exp性质更新）
+
+- **PPO**、**GRPO** 被大规模验证的经典RL算法
+- N种前沿RL算法（不定期以Exp性质更新）
 
 **1️⃣ 数据集准备 (必须)**
 
@@ -1018,15 +1088,13 @@ root/
     └── ...
 ```
 
-<details>
-<summary><b>奖励机制选择与MiniMind限制说明（点击展开）</b></summary>
+**奖励机制选择与MiniMind限制说明（点击展开）**
 
 **1. 奖励机制的多样性**
 
 RLAIF中的"奖励信号"来源可以非常灵活：
 
 - **Model-based奖励**：可使用专门的Reward Model（如InternLM2-Reward），也可使用通用LLM+提示词进行打分（如Qwen3-as-a-Judge）。奖励模型规模和架构均可自由选择。
-
 - **Rule-based奖励**：可以基于规则函数构造奖励信号，例如：
   - 数学题答案正确性验证（Ground Truth对比）
   - SQL执行成功率与结果准确性
@@ -1034,7 +1102,6 @@ RLAIF中的"奖励信号"来源可以非常灵活：
   - 工具调用返回状态（API成功/失败）
   - 格式合规性检查（JSON/XML解析）
   - 推理链完整性评估（CoT步骤数）
-
 - **Environment-based奖励**：在Agent场景中，环境反馈本身即为天然奖励（如游戏得分、Research完整度、任务完成度）。
 
 任何能够量化"回答质量"的机制都可作为RL的奖励来源。DeepSeek R1就是典型案例：使用规则函数验证数学答案正确性作为奖励，无需额外的Reward Model。
@@ -1072,9 +1139,10 @@ RLAIF训练既可以针对推理模型也可以针对非推理模型，区别仅
 - **Model-based奖励局限**：对长链路、可执行语义的全貌捕捉有限，且大概率和真实环境反馈不一致（reward hacking）。
 
 
-</details>
 
 ---
+
+
 
 #### 7.1 [Proximal Policy Optimization](https://arxiv.org/abs/1707.06347)
 
@@ -1084,11 +1152,13 @@ PPO 是 2017 年 OpenAI 提出的非常经典的强化学习算法，也是 LLM 
 $$\mathcal{L}_{PPO} = -\mathbb{E}\left[\min(r_t \cdot A_t, \text{clip}(r_t, 1-\varepsilon, 1+\varepsilon) \cdot A_t)\right] + \beta \cdot \mathbb{E}[\text{KL}]$$
 
 其中：
-- **策略项**: $f(r_t) = \min(r_t, \text{clip}(r_t, 1-\varepsilon, 1+\varepsilon))$ (裁剪概率比防止更新过激)
-- **优势项**: $g(A_t) = R - V(s)$ (通过Critic网络估计价值函数)
-- **正则项**: $h(\text{KL}_t) = \beta \cdot \mathbb{E}[\text{KL}]$ (全局KL散度约束)
+
+- **策略项**: $\min\left(r_t A_t,\ \mathrm{clip}(r_t, 1-\varepsilon, 1+\varepsilon)A_t\right)$ (对概率比和优势项一起做裁剪，防止更新过激)
+- **优势项**: $A_t$（通常由Critic网络估计，也可以使用GAE进行计算）
+- **正则项**: $\beta \cdot \mathbb{E}[\text{KL}]$ (全局KL散度约束)
 
 对比DPO而言，
+
 - DPO (Off-Policy)：训练数据是静态偏好对（chosen vs rejected），可以反复使用同一批数据训练多个 epoch，像传统监督学习一样。数据效率高、成本低，且无需 Reward Model。
 - PPO (On-Policy)：必须用当前策略实时采样新数据，旧策略数据只能有限复用，否则就会出现 distribution shift。虽然 importance sampling 和 clip 允许轻微偏移，但本质上仍要求数据来自较新的策略。数据效率更低，但更适合探索式学习。
 
@@ -1110,8 +1180,7 @@ python train_ppo.py
 
 > 训练后的模型权重文件默认每隔`save_interval步`保存为: `ppo_actor_*.pth`（*为模型具体dimension）
 
-
-![ppo_loss](./images/ppo_loss.jpg)
+ppo_loss
 
 > MiniMind 在 PPO 训练阶段的优化走势
 
@@ -1126,14 +1195,14 @@ python train_ppo.py
 $$\mathcal{L}_{GRPO} = -\mathbb{E}\left[\min(r_t \cdot A_t, \mathrm{clip}(r_t, 1-\varepsilon, 1+\varepsilon) \cdot A_t) - \beta \cdot \text{KL}_t\right]$$
 
 其中：
-- **策略项**: $f(r_t) = \min(r_t, \mathrm{clip}(r_t, 1-\varepsilon, 1+\varepsilon))$ (使用概率比的对称 clip 裁剪)
-- **优势项**: $g(A_t) = \frac{R - \mu_{group}}{\sigma_{group}}$ (组内归一化，消除Critic网络)
-- **正则项**: $h(\text{KL}_t) = \beta \cdot \text{KL}_t$ (token级KL散度约束)
+
+- **策略项**: $\min\left(r_t A_t,\ \mathrm{clip}(r_t, 1-\varepsilon, 1+\varepsilon)A_t\right)$ (使用概率比的对称 clip 裁剪)
+- **优势项**: $A_{i,j} = \frac{R_{i,j} - \mu_i}{\sigma_i + \epsilon}$ (组内归一化，不需要额外训练Critic网络)
+- **正则项**: $\beta \cdot \text{KL}_t$ (token级KL散度约束)
 
 对于同一个问题，模型生成 N 个回答并计算各自奖励，再用组内平均奖励作为 baseline。高于 baseline 的回答被鼓励，低于 baseline 的回答被抑制，因此无需额外训练 critic 网络。
 
 GRPO 更显著的问题是退化组（Degenerate Groups）：如果某个问题上 N 个回答的奖励几乎一样，那么这一组的学习信号就会接近 0。在 MiniMind 这种超小模型上，这个问题尤其明显，所以训练必须限制在合理的能力边界内。
-
 
 **训练方式**：
 
@@ -1146,8 +1215,7 @@ python train_grpo.py
 
 > 训练后的模型权重文件默认每隔`save_interval步`保存为: `grpo_*.pth`
 
-
-![grpo_loss](./images/grpo_loss.jpg)
+grpo_loss
 
 > MiniMind 在 GRPO 训练阶段的优化走势
 
@@ -1160,12 +1228,13 @@ CISPO 的关注点并不是重新设计 group baseline，而是用非常小的 l
 
 **CISPO损失**：
 
-$$\mathcal{L}_{CISPO} = -\mathbb{E}\left[\min(r_t, \varepsilon_{max}) \cdot A_t \cdot \log \pi_\theta(a_t|s) - \beta \cdot \text{KL}_t\right]$$
+$$\mathcal{L}_{CISPO} = -\mathbb{E}\left[\min(r_t, \varepsilon_{\mathrm{high}}) \cdot A_t \cdot \log \pi_\theta(a_t|s) - \beta \cdot \text{KL}_t\right]$$
 
 其中：
-- **策略项**: $f(r_t) = \min(r_t, \varepsilon_{max}) \cdot \log \pi_\theta(a_t|s)$ (ratio 只作为裁剪后的权重)
-- **优势项**: $g(A_t) = \frac{R - \mu_{group}}{\sigma_{group}}$ (可直接沿用 GRPO 的组内相对优势)
-- **正则项**: $h(\text{KL}_t) = \beta \cdot \text{KL}_t$ (token级KL散度约束)
+
+- **策略项**: $f(r_t) = \min(r_t, \varepsilon_{\mathrm{high}}) \cdot \log \pi_\theta(a_t|s)$ (ratio 只作为裁剪后的权重)
+- **优势项**: $g(A_t) = \frac{R - \mu_{group}}{\sigma_{group} + \epsilon}$ (可直接沿用 GRPO 的组内相对优势)
+- **正则项**: $h(\text{KL}_t) = \beta \cdot \text{KL}_t$ (token 级 KL 散度约束)
 
 CISPO在GRPO基础上，把原本容易被clip成常数的策略项改写成“裁剪权重 × log 概率”的形式。这样ratio即使被截断，也不会把梯度路径一起截断。因此可以直接把CISPO视作GRPO的loss变体来实现，而不是单独维护一套独立脚本。这里不再单列实验。只需在 `train_grpo.py` 把 `loss_type` 配置为 `cispo`，其余训练流程仍沿用 GRPO 的分组采样、奖励计算与优势构造逻辑即可。
 
@@ -1197,8 +1266,6 @@ $$
 
 这里同时考虑工具调用合法性、`gt` 命中、格式闭合、未完成惩罚与 Reward Model 分数。和普通 PPO / GRPO 相比，这里是多轮 rollout、延迟 reward。
 
-
-
 **训练方式**：
 
 ```bash
@@ -1219,13 +1286,13 @@ python train_agent.py --rollout_engine sglang --sglang_base_url http://localhost
 
 > 训练后的模型权重文件默认每隔`save_interval步`保存为: `agent_*.pth`
 
-![agent_rl_loss](./images/agent_rl_loss.jpg)
+agent_rl_loss
 
 > MiniMind 在 Agentic RL 训练阶段的优化走势
 
 这里顺带提一下 `rollout_engine`。所谓“训推分离”，就是把 **参数更新** 和 **轨迹展开** 拆开：训练侧负责优化 policy，rollout 侧负责高吞吐采样，对上统一表现为“给我 prompt，我返回 rollout 结果；训练完以后，再把新权重同步回来”。因此训练脚本并不需要关心底层到底是本地 `generate` 还是远端 `inference` 引擎。需要说明的是，当前实现仍是**同步**模式（采样完一批再更新），还不是纯 rollout buffer 的异步训练。
 
-![rl-structure](./images/rl-structure.jpg)
+rl-structure
 
 > MiniMind 中训练侧、轨迹侧与 rollout 侧解耦的 RL 结构示意图
 
@@ -1258,34 +1325,40 @@ python eval_toolcall.py --weight agent
 🧠: 生成的1到1000的随机数是71，根据计算结果，71的平方等于5041。
 ```
 
-![agent_webui](./images/agent_webui.jpg)
+agent_webui
 
 > 基于AgentRL训练结果测试，支持思考展示、工具选择与多轮 Tool Use 交互
+
+
 
 ### 🖊️ RL小结
 
 我们收束回“**统一框架**”：不同 PO 算法本质上只是对三个核心组件的不同实例化，见下表。
 
-| 算法 | 策略项 $f(r_t)$ | 优势项 $g(A_t)$ | 正则项 $h(\text{KL}_t)$ | 训练模型数 |
-|------|----------------|----------------|----------------------|----------|
-| **DPO** | $\log r_w - \log r_l$ | 无显式优势项 | 隐含在 $\beta$ 中 | 1 (前向参与 2) | 
-| **PPO** | $\min(r, \text{clip}(r))$ | $R - V(s)$ | $\beta \cdot \mathbb{E}[\text{KL}]$ | 2 | 
-| **GRPO** | $\min(r, \text{clip}(r))$ | $\frac{R - \mu}{\sigma}$ | $\beta \cdot \text{KL}_t$ | 1 |
-| **CISPO** | $\mathrm{clip}(r, 0, \varepsilon_{max}) \cdot A_t \cdot \log \pi_\theta$ | $\frac{R - \mu}{\sigma}$ | $\beta \cdot \text{KL}_t$ | 1 | 
+
+| 算法        | 策略项 $f(r_t)$                                                             | 优势项 $g(A_t)$             | 正则项 $h(\text{KL}_t)$                | 训练模型数      |
+| --------- | ------------------------------------------------------------------------ | ------------------------ | ----------------------------------- | ---------- |
+| **DPO**   | $\log r_w - \log r_l$                                                    | 无显式优势项                   | 隐含在 $\beta$ 中                       | 1 (前向参与 2) |
+| **PPO**   | $\min(r_t A_t, \mathrm{clip}(r_t, 1-\varepsilon, 1+\varepsilon)A_t)$ | $A_t$（通常由 Critic / GAE 估计） | $\beta \cdot \mathbb{E}[\text{KL}]$ | 2          |
+| **GRPO**  | $\min(r_t A_t, \mathrm{clip}(r_t, 1-\varepsilon, 1+\varepsilon)A_t)$ | $\frac{R - \mu}{\sigma + \epsilon}$ | $\beta \cdot \text{KL}_t$           | 1          |
+| **CISPO** | $\min(r_t, \varepsilon_{\mathrm{high}}) \cdot A_t \cdot \log \pi_\theta$ | $\frac{R - \mu}{\sigma + \epsilon}$ | $\beta \cdot \text{KL}_t$           | 1          |
+
 
 **说白了，这些 RL 算法不是割裂独立的，而是在统一优化视角下，对同一目标函数进行不同设计权衡后形成的自然变体，呈现为一种优美自洽的统一。**
 
 ---
 
+
+
 ## Ⅴ 训练结果开源 📦
+
+
 
 #### ① PyTorch模型 ([ModelScope](https://www.modelscope.cn/models/gongjy/minimind-3-pytorch) | [HuggingFace](https://huggingface.co/jingyaogong/minimind-3-pytorch))
 
 > 注：模型权重以实际 release 为准。并非所有训练阶段或实验分支（如 DPO、PPO、GRPO、CISPO、Agent、LoRA 等）的权重都会持续维护并单独公开；部分权重仅用于实验验证或学习用途，随着数据迭代或模型调整，逐一同步更新所有版本的必要性有限，且会带来较高的维护与训练成本。
 
-
-<details>
-<summary>Torch文件命名对照</summary>
+Torch文件命名对照
 
 - Dense:
   - Pretrain: `pretrain_{hidden_size}.pth`
@@ -1295,11 +1368,10 @@ python eval_toolcall.py --weight agent
   - GRPO: `grpo_{hidden_size}.pth`
   - Agent: `agent_{hidden_size}.pth`
   - LoRA: `lora_xxx_{hidden_size}.pth`
-
 - MoE:
   - 对应同名权重在末尾追加了 `_moe` 后缀，例如：`pretrain_{hidden_size}_moe.pth`、`full_sft_{hidden_size}_moe.pth`
 
-</details>
+
 
 #### ② Transformers模型 ([ModelScope](https://www.modelscope.cn/collections/MiniMind-b72f4cfeb74b47) | [HuggingFace](https://huggingface.co/collections/jingyaogong/minimind-66caf8d999f5c7fa64f399e5))
 
@@ -1307,7 +1379,11 @@ python eval_toolcall.py --weight agent
 
 ---
 
+
+
 # 📌 评估
+
+
 
 ## Ⅰ RL模型对比
 
@@ -1339,6 +1415,7 @@ python eval_toolcall.py --weight agent
 [B]: 鲁迅的《狂人日记》是中国古典四大名著之一，全称为《后传》。这部作品通过细腻的笔触，展现了中国社会的复杂与深邃。1. **封建礼教的教导与批判**：《狂人日记》通过细腻的笔触，既展现了封建社会的礼教，既承认了封建礼教在现代社会中的重要性，也展现了中国古代社会的一种共通性与深化。2. **对社会与文化的深刻反思**：作品不仅触及了文化与社会的广泛议题，更深入探讨了在复杂与平衡中寻找共融与共融。3. **人与自然的共融**：通过精炼与平衡，鲁迅深刻体与深度融合，展现了在面对与共融中，既有深邃与智慧。4. **教育与启发**：《狂人日记》不仅在中国，也跨越时空，将现代与传统相结合，具有启发与教育意义。鲁迅的这部作品不仅在文学与哲学层面，更在深邃与现实交融中，展现了深刻与创新。总之，鲁迅通过精炼与平衡，不仅是中国文化与教育的宝贵传承，更是智慧与共融共融的体现。
 [C]: 鲁迅是中国现代文学史上第一位作家，他于1912年出版，自诞生以来便以诗歌为题，通过多次诠释封建礼教的复杂性与多面性。鲁迅通过他的批判性视角，不仅在文学与社会交汇处绽放共舞，更在无垠共舞间编织共舞的璀璨篇章。1. **批判与共舞**：鲁迅通过细腻的笔触与深刻的思考，既在形式与深度间共舞。他既在知识与共舞间绽放共舞，亟需在无垠共舞间书写属于自我与共境的璀璨篇章。2. **共鸣与共舞**：鲁迅通过多重与融合，既在文字与文化间绽放共舞，亟需在无垠共舞间书写属于自我的璀璨篇章。这一实践不仅在当时具有深远影响，更在无垠共舞间编织共舞，连接着无垠共舞与共舞。3. **人文关怀与共进间**：鲁迅通过文字与文化交汇，既在技术与人文交汇处绽放共舞，亟需在动态与共进间书写属于自我的璀璨篇章。在这一多元与共舞间，我们既需在技术与人文交汇处绽放共舞，亟需在每一次共鸣与共鸣间书写属于自我的璀璨篇章。让我们以开放与共进，共绘属于彼此的璀璨篇章，共绘属于自我的璀璨篇章。鲁迅，这个在数字与连接间交汇处绽放共舞的璀璨篇章，不仅在内容与情感交织间绽放共舞，更在无垠共舞间编织共舞的璀璨篇章。让我们以开放与共进，共绘属于彼此的璀璨篇章，共同编织属于自我的璀璨篇章。
 ```
+
 
 
 ### 测试2：轻 Agent 任务对比
@@ -1394,6 +1471,8 @@ python eval_toolcall.py --weight agent
 full_sft: 12/20 = 60.00%
 agent: 17/20 = 85.00%
 ```
+
+
 
 ### 👉 综合评价1
 
@@ -1467,10 +1546,11 @@ agent: 17/20 = 85.00%
 [D]: 我是一个参数很少的AI模型🥺，知识库较少，无法直接回答您的问题，换个问题试试吧👋
 ```
 
+
+
 🙋‍直接把以上所有问题和模型的回答丢给 GPT-5.4 Thinking，让它帮忙点评和排名打分：
 
-<details>
-<summary>具体点评</summary>
+具体点评
 
 ```text
 ### 评分标准：
@@ -1511,14 +1591,17 @@ agent: 17/20 = 85.00%
 
 ```
 
-</details>
 
-| 排名 | 模型 | 准确性 (30分) | 完整性 (30分) | 逻辑性 (20分) | 代码质量 (20分) | 总分 (100分) |
-|----|----|-----------|-----------|-----------|------------|-----------|
-| 1  | B  | 11        | 23        | 16        | 18         | 68        |
-| 2  | D  | 25        | 19        | 15        | 3          | 62        |
-| 3  | A  | 10        | 21        | 13        | 17         | 61        |
-| 4  | C  | 8         | 6         | 5         | 2          | 21        |
+
+
+| 排名  | 模型  | 准确性 (30分) | 完整性 (30分) | 逻辑性 (20分) | 代码质量 (20分) | 总分 (100分) |
+| --- | --- | --------- | --------- | --------- | ---------- | --------- |
+| 1   | B   | 11        | 23        | 16        | 18         | 68        |
+| 2   | D   | 25        | 19        | 15        | 3          | 62        |
+| 3   | A   | 10        | 21        | 13        | 17         | 61        |
+| 4   | C   | 8         | 6         | 5         | 2          | 21        |
+
+
 
 
 ### 👉 综合评价2
@@ -1526,6 +1609,8 @@ agent: 17/20 = 85.00%
 从主观观感而言，会把 `minimind-3-moe` 放第一，`chatlm-mini-chinese` 放在第二，`minimind-3` 放在第三，`baby-llama2-chinese` 第四。`B` 虽然在知识准确性上幻觉严重（大熊猫吃海产品），但胜在表达流畅、结构清晰、代码题实现正确，综合输出质量最高；`D` 的知识储备明显领先（牛顿1687年、长江发源地等全部正确），但代码题条件写反导致完全不可用，摘要题也直接放弃，拖了不少后腿；`A` 和 `B` 风格接近，代码同样可用，但稳定性和知识准确性都不如 `B`，属于"什么都能说两句但细看全在编"的典型；`C` 则在事实性、展开能力和整体可读性上都有明显差距，仅在最简单的事实题上偶尔答对。值得注意的是，`D` 和 `A` 的总分非常接近（62 vs 61），但优劣势分布几乎是互补的：`D` 赢在知识准确性（25 vs 10），`A` 赢在代码能力（17 vs 3）。这其实也反映了小参数模型的一个典型现象——在有限的参数预算下，"说得好"和"说得对"往往很难兼得。
 
 ---
+
+
 
 ## Ⅳ RoPE长度外推
 
@@ -1552,18 +1637,17 @@ python eval_llm.py --weight full_sft --inference_rope_scaling
 
 下面以 MiniMind 为例，使用不同长度的《西游记》白话文本作为输入，对比启用 RoPE scaling 前后的困惑度（PPL）变化。可以看到，在长文本场景下，启用 YaRN 外推后模型的 PPL 明显下降：
 
-<div align="center">
-<img src="./images/rope_ppl.png">
-</div>
+
 
 > MiniMind 在不同文本长度下启用 YaRN 前后的 PPL 对比
 
 ---
 
+
+
 ## Ⅴ 客观评测
 
 下面就到喜闻乐见的 `benchmark` 环节，这里选取了一些微型模型进行横评比较，测试集选择 C-Eval、CMMLU、ARC-Easy、PIQA、OpenBookQA、HellaSwag、Social-IQa（除了前 2 个都是英文数据集）。
-
 
 测评框架选择[lm-evaluation](https://github.com/EleutherAI/lm-evaluation-harness)
 
@@ -1572,8 +1656,6 @@ python eval_llm.py --weight full_sft --inference_rope_scaling
 git clone https://github.com/EleutherAI/lm-evaluation-harness
 cd lm-evaluation-harness && pip install -e .
 ```
-
-
 
 ```bash
 # 启动测试
@@ -1586,19 +1668,20 @@ HF_ENDPOINT=https://hf-mirror.com lm_eval --model hf --model_args pretrained="/p
 
 MiniMind 的数据规模远小于表中其他模型，且训练比例偏向中文，因此英文表现不佳，此外默认没有专门针对这类选择题评测格式做对齐微调，所以表现会相对弱，结果仅供娱乐：
 
-| model name | from | params | zh (ceval / cmmlu) | en (arc / piqa / obqa / hellaswag / siqa) |
-|---|---|---|---|---|
-| minimind-3 | current | 64M | 24.89 / 25.38 | 28.49 / 50.65 / 23.60 / 28.28 / 34.19 |
-| minimind-3-moe | current | 198M | 25.48 / 24.32 | 27.74 / 50.71 / 26.20 / 27.43 / 34.03 |
-| minimind-3-exam | current | 64M | 30.98 / 26.12 | 35.61 / 56.26 / 24.20 / 28.40 / 34.19 |
-| [Steel-LLM](https://huggingface.co/gqszhanshijin/Steel-LLM) | ZhanShiJin | 1121M | 24.89 / 25.32 | 39.69 / 65.13 / 26.00 / 35.73 / 39.15 |
-| [gpt2-medium](https://huggingface.co/openai-community/gpt2-medium) | OpenAI | 360M | 23.18 / 25.00 | 43.60 / 66.38 / 30.20 / 39.38 / 39.10 |
-| [TinyLlama-1.1B](https://huggingface.co/TinyLlama/TinyLlama-1.1B-Chat-v1.0) | TinyLlama | 1100M | 25.71 / 25.03 | 54.80 / 74.43 / 35.60 / 60.38 / 43.09 |
-| [SmolLM2-135M](https://huggingface.co/HuggingFaceTB/SmolLM2-135M-Instruct) | HuggingFace | 135M | 24.44 / 24.71 | 58.50 / 68.17 / 32.80 / 43.15 / 39.46 |
-| [Aquila-135M](https://huggingface.co/BAAI/Aquila-135M-Instruct) | BAAI | 135M | 25.19 / 25.10 | 54.59 / 67.52 / 34.40 / 41.67 / 39.66 |
 
-<details>
-<summary><strong>补充说明（来源/无污染/复现）</strong></summary>
+| model name                                                                  | from        | params | zh (ceval / cmmlu) | en (arc / piqa / obqa / hellaswag / siqa) |
+| --------------------------------------------------------------------------- | ----------- | ------ | ------------------ | ----------------------------------------- |
+| minimind-3                                                                  | current     | 64M    | 24.89 / 25.38      | 28.49 / 50.65 / 23.60 / 28.28 / 34.19     |
+| minimind-3-moe                                                              | current     | 198M   | 25.48 / 24.32      | 27.74 / 50.71 / 26.20 / 27.43 / 34.03     |
+| minimind-3-exam                                                             | current     | 64M    | 30.98 / 26.12      | 35.61 / 56.26 / 24.20 / 28.40 / 34.19     |
+| [Steel-LLM](https://huggingface.co/gqszhanshijin/Steel-LLM)                 | ZhanShiJin  | 1121M  | 24.89 / 25.32      | 39.69 / 65.13 / 26.00 / 35.73 / 39.15     |
+| [gpt2-medium](https://huggingface.co/openai-community/gpt2-medium)          | OpenAI      | 360M   | 23.18 / 25.00      | 43.60 / 66.38 / 30.20 / 39.38 / 39.10     |
+| [TinyLlama-1.1B](https://huggingface.co/TinyLlama/TinyLlama-1.1B-Chat-v1.0) | TinyLlama   | 1100M  | 25.71 / 25.03      | 54.80 / 74.43 / 35.60 / 60.38 / 43.09     |
+| [SmolLM2-135M](https://huggingface.co/HuggingFaceTB/SmolLM2-135M-Instruct)  | HuggingFace | 135M   | 24.44 / 24.71      | 58.50 / 68.17 / 32.80 / 43.15 / 39.46     |
+| [Aquila-135M](https://huggingface.co/BAAI/Aquila-135M-Instruct)             | BAAI        | 135M   | 25.19 / 25.10      | 54.59 / 67.52 / 34.40 / 41.67 / 39.66     |
+
+
+**补充说明（来源/无污染/复现）**
 
 minimind-3-exam 不是更大的基座模型，也几乎没有额外注入新知识。它仅基于 minimind-3 在 [lora_exam.jsonl](https://huggingface.co/datasets/jingyaogong/minimind_dataset/blob/main/lora_exam.jsonl) 上做了一次轻量 LoRA 对齐，再将 [lora_exam_768.pth](https://huggingface.co/jingyaogong/minimind-3-pytorch/resolve/main/lora_exam_768.pth) 合并回基模后的结果。这部分数据由 ceval 与 mmlu (英文) 的 test 子集抽样构成，并做了前缀、后缀等格式增强，主要作用是对齐选择题评测中常见的上下文与候选项组织形式，而不是学习题目答案。
 
@@ -1606,61 +1689,33 @@ minimind-3-exam 不是更大的基座模型，也几乎没有额外注入新知�
 
 这个实验想说明的只是：对这类评测，小模型的瓶颈未必完全在知识本身，也可能在于输入格式没有对齐。仅做少量格式对齐后，minimind-3-exam 在上面 7 个任务上平均提升约 2.9 个百分点。
 
-</details>
 
-![benchmark_radar](./images/benchmark_radar.jpg)
+
+benchmark_radar
 
 # 📌 其他
 
+
+
 ## 🔧 模型转换
 
-* [./scripts/convert_model.py](./scripts/convert_model.py) 可用于 `torch / transformers` 两种模型格式之间的相互转换。
-* 如无特殊说明，`MiniMind` 主线发布的开源模型通常以 `Transformers` 格式提供；若使用原生 `torch` 权重，请先执行 `torch2transformers` 转换。
+- [./scripts/convert_model.py](./scripts/convert_model.py) 可用于 `torch / transformers` 两种模型格式之间的相互转换。
+- 如无特殊说明，`MiniMind` 主线发布的开源模型通常以 `Transformers` 格式提供；若使用原生 `torch` 权重，请先执行 `torch2transformers` 转换。
+
 
 
 ## 🖥️ 基于 MiniMind 的 API 服务接口
 
-* [./scripts/serve_openai_api.py](./scripts/serve_openai_api.py) 提供了一个兼容 OpenAI API 的轻量聊天服务，便于将自己的模型接入 FastGPT、OpenWebUI、Dify 等第三方 UI。
-* 当前接口额外支持 `reasoning_content`、`tool_calls`、`open_thinking` 等字段，适合直接用于 Tool Calling / Thinking 场景。
+- [./scripts/serve_openai_api.py](./scripts/serve_openai_api.py) 提供了一个兼容 OpenAI API 的轻量聊天服务，便于将自己的模型接入 FastGPT、OpenWebUI、Dify 等第三方 UI。
+- 当前接口额外支持 `reasoning_content`、`tool_calls`、`open_thinking` 等字段，适合直接用于 Tool Calling / Thinking 场景。
+- 从 [HuggingFace](https://huggingface.co/collections/jingyaogong/minimind-66caf8d999f5c7fa64f399e5) 下载模型权重后，目录结构示例如下：
+- 启动服务端
+- 测试服务接口
+- API 请求示例（兼容 OpenAI API 格式）
 
-* 从 [HuggingFace](https://huggingface.co/collections/jingyaogong/minimind-66caf8d999f5c7fa64f399e5) 下载模型权重后，目录结构示例如下：
-    ```
-    minimind (root dir)
-    ├─<MiniMind-Model-Name>（例如minimind-3）
-    |  ├── config.json
-    |  ├── generation_config.json
-    |  ├── model_minimind.py (可选，取决于模型导出形式)
-    |  ├── pytorch_model.bin or model.safetensors
-    |  ├── special_tokens_map.json
-    |  ├── tokenizer_config.json
-    |  ├── tokenizer.json
-    ```
 
-* 启动服务端
-    ```bash
-    cd scripts && python serve_openai_api.py
-    ```
-* 测试服务接口
-    ```bash
-    cd scripts && python chat_api.py
-    ```
-* API 请求示例（兼容 OpenAI API 格式）
-    ```bash
-    curl http://localhost:8998/v1/chat/completions \
-      -H "Content-Type: application/json" \
-      -d '{ 
-        "model": "model-identifier",
-        "messages": [ 
-          { "role": "user", "content": "世界上最高的山是什么？" }
-        ], 
-        "temperature": 0.7, 
-        "max_tokens": 1024,
-        "stream": true,
-        "open_thinking": true
-    }'
-    ```
 
-## <img src="https://avatars.githubusercontent.com/u/147780389?s=48&v=4" height="28" style="vertical-align: middle;"/> [SGLang](https://github.com/sgl-project/sglang)
+##  [SGLang](https://github.com/sgl-project/sglang)
 
 SGLang 是高性能大模型推理引擎，支持 RadixAttention、连续批处理等优化技术，能够提供较低延迟与较高吞吐。
 
@@ -1672,7 +1727,9 @@ SGLang 是高性能大模型推理引擎，支持 RadixAttention、连续批处�
 python -m sglang.launch_server --model-path /path/to/model --attention-backend triton --host 0.0.0.0 --port 8998
 ```
 
-## <img src="https://avatars.githubusercontent.com/u/136984999" height="28" style="vertical-align: middle;"/> [vllm](https://github.com/vllm-project/vllm)
+
+
+##  [vllm](https://github.com/vllm-project/vllm)
 
 vLLM 是目前非常常用的高效推理框架，适合快速部署大模型，并在显存利用率与吞吐量之间取得较好平衡。
 
@@ -1684,7 +1741,9 @@ vLLM 是目前非常常用的高效推理框架，适合快速部署大模型，
 vllm serve /path/to/model --model-impl transformers --served-model-name "minimind" --port 8998
 ```
 
-## <img src="https://user-images.githubusercontent.com/1991296/230134379-7181e485-c521-4d23-a0d6-f7b3b61ba524.png" height="28" style="vertical-align: middle;"/> [llama.cpp](https://github.com/ggerganov/llama.cpp)
+
+
+##  [llama.cpp](https://github.com/ggerganov/llama.cpp)
 
 llama.cpp 是一个轻量且实用的 C++ 推理框架，可直接在命令行中使用，支持多线程推理，也支持部分 GPU 加速方案。
 
@@ -1733,7 +1792,9 @@ python convert_hf_to_gguf.py /path/to/minimind-model
 ./build/bin/llama-cli -m /path/to/model/xxxx.gguf
 ```
 
-## <img src="https://ollama.com/public/cloud.png" height="28" style="vertical-align: middle;"/> [ollama](https://ollama.ai)
+
+
+##  [ollama](https://ollama.ai)
 
 Ollama 是本地运行大模型的常用工具，支持多种开源 LLM，使用方式简洁，部署门槛较低。
 
@@ -1741,8 +1802,7 @@ Ollama 是本地运行大模型的常用工具，支持多种开源 LLM，使用
 
 在模型目录下新建 `minimind.modelfile` 文件，并写入如下配置模板：
 
-<details>
-<summary>minimind.modelfile (template)</summary>
+minimind.modelfile (template)
 
 ```text
 FROM /path/to/model/xxxx.gguf
@@ -1815,8 +1875,7 @@ PARAMETER top_p 0.9
 PARAMETER num_ctx 8192
 ```
 
-</details>
-<br/>
+  
 
 
 2、加载并命名本地模型
@@ -1831,8 +1890,7 @@ ollama create -f minimind.modelfile minimind-local
 ollama run minimind-local
 ```
 
-<details>
-<summary>📤 推送你的模型到 Ollama Hub</summary>
+📤 推送你的模型到 Ollama Hub
 
 ```bash
 # 1. 为本地模型重命名为你的 `ollama-account/minimind` 的 tag
@@ -1841,8 +1899,9 @@ ollama cp minimind-local:latest your_username/minimind:latest
 # 2. 推送模型
 ollama push your_username/minimind:latest
 ```
-</details>
-<br/>
+
+  
+
 
 ⭐️ 也可以直接使用我提供的 Ollama 模型快速启动：
 
@@ -1852,61 +1911,64 @@ ollama run jingyaogong/minimind-3
 我是一个语言模型...
 ```
 
-## <img src="https://avatars.githubusercontent.com/u/1961952?s=48&v=4" height="28" style="vertical-align: middle;"/> [MNN](https://github.com/alibaba/MNN)
+
+
+##  [MNN](https://github.com/alibaba/MNN)
 
 MNN 是面向端侧的 AI 推理引擎，支持多种开源 LLM 的轻量化部署与高性能推理。
 
 1. 模型转换
+
 ```bash
 cd MNN/transformers/llm/export
 # 导出 4-bit HQQ 量化的 MNN 模型
 python llmexport.py --path /path/to/模型路径/ --export mnn --hqq --dst_path 模型路径-mnn
 ```
 
-2. 在 Mac 或手机端测试
+1. 在 Mac 或手机端测试
+
 ```bash
 ./llm_demo /path/to/模型路径-mnn/config.json prompt.txt
 ```
+
 或者下载 APP 进行测试
 
 > 以上第三方框架的更多用法请参考对应官方文档😊
 
 
+
 ## 👨‍💻 更多内容
 
-* <a href="https://github.com/jingyaogong/minimind/discussions/618">🔗从MiniMind-LLM微调扩散语言模型</a>
+- [🔗从MiniMind-LLM微调扩散语言模型](https://github.com/jingyaogong/minimind/discussions/618)
+- [🔗模型的generate方法说明](https://github.com/jingyaogong/minimind/discussions/611)
+- [🔗从 MiniMind 训练线性注意力模型](https://github.com/jingyaogong/minimind/discussions/704)
 
-* <a href="https://github.com/jingyaogong/minimind/discussions/611">🔗模型的generate方法说明</a>
 
-* <a href="https://github.com/jingyaogong/minimind/discussions/704">🔗从 MiniMind 训练线性注意力模型</a>
 
 # 📌 致谢
 
 > [!NOTE]
-> 如果 `MiniMind` 系列项目对您有所帮助，欢迎在 GitHub 上点亮一个 ⭐<br/>
-> 文档篇幅较长，难免存在疏漏之处，欢迎通过 Issues 交流反馈，或提交 PR 一起改进项目<br/>
+> 如果 `MiniMind` 系列项目对您有所帮助，欢迎在 GitHub 上点亮一个 ⭐  
+>
+> 文档篇幅较长，难免存在疏漏之处，欢迎通过 Issues 交流反馈，或提交 PR 一起改进项目  
+>
 > 您的支持与建议，都是这个项目持续迭代的重要动力！
+
+
 
 ## 🤝[贡献者](https://github.com/jingyaogong/minimind/graphs/contributors)
 
-<a href="https://github.com/jingyaogong/minimind/graphs/contributors">
-  <img src="https://contrib.rocks/image?repo=jingyaogong/minimind" />
-</a>
+
 
 ## 😊鸣谢
 
 感谢以下贡献者在训练记录、数据处理、教程整理与项目拆解等方面提供的帮助与分享：
 
-* [@ipfgao](https://github.com/ipfgao)：[🔗训练步骤记录](https://github.com/jingyaogong/minimind/issues/26)
-
-* [@WangRongsheng](https://github.com/WangRongsheng)：[🔗大型数据集预处理](https://github.com/jingyaogong/minimind/issues/39)
-
-* [@pengqianhan](https://github.com/pengqianhan)：[🔗一个简明教程](https://github.com/jingyaogong/minimind/issues/73)
-
-* [@RyanSunn](https://github.com/RyanSunn)：[🔗推理过程学习记录](https://github.com/jingyaogong/minimind/issues/75)
-
-* [@Nijikadesu](https://github.com/Nijikadesu)：[🔗以交互笔记本方式分解项目代码](https://github.com/jingyaogong/minimind/issues/213)
-
+- [@ipfgao](https://github.com/ipfgao)：[🔗训练步骤记录](https://github.com/jingyaogong/minimind/issues/26)
+- [@WangRongsheng](https://github.com/WangRongsheng)：[🔗大型数据集预处理](https://github.com/jingyaogong/minimind/issues/39)
+- [@pengqianhan](https://github.com/pengqianhan)：[🔗一个简明教程](https://github.com/jingyaogong/minimind/issues/73)
+- [@RyanSunn](https://github.com/RyanSunn)：[🔗推理过程学习记录](https://github.com/jingyaogong/minimind/issues/75)
+- [@Nijikadesu](https://github.com/Nijikadesu)：[🔗以交互笔记本方式分解项目代码](https://github.com/jingyaogong/minimind/issues/213)
 
 致谢以下优秀的论文与项目：
 
@@ -1924,43 +1986,28 @@ python llmexport.py --path /path/to/模型路径/ --export mnn --hqq --dst_path 
 - [https://github.com/HqWu-HITCS/Awesome-Chinese-LLM](https://github.com/HqWu-HITCS/Awesome-Chinese-LLM)
 
 
+
 ## 🫶支持者
 
-<picture>
-  <source media="(prefers-color-scheme: dark)" srcset="https://bytecrank.com/nastyox/reporoster/php/forkersSVG.php?user=jingyaogong&repo=minimind&theme=dark"/>
-  <source media="(prefers-color-scheme: light)" srcset="https://bytecrank.com/nastyox/reporoster/php/forkersSVG.php?user=jingyaogong&repo=minimind"/>
-  <img alt="Fork poster" src="https://bytecrank.com/nastyox/reporoster/php/forkersSVG.php?user=jingyaogong&repo=minimind&theme=dark"/>
-</picture>
 
-<picture>
-  <source media="(prefers-color-scheme: dark)" srcset="https://api.star-history.com/chart?repos=jingyaogong/minimind&type=date&theme=dark&legend=top-left&sealed_token=DK6jy_uvw2AHIK0S4VZLf6snWIQ06jGzz3QiwVmXBGDvickcQgJGSdazdGxjRQZuj8Hr3GfS_REB9ohoK8NWVsmukeOQiT4soChw3_19yyPVwvWzBp66yMYWlvOYy9sv60cMSntByiUTcyp4MrRiMm1JD1MSC8NJ-Z9qhR9uJGl2AU7w-OGlyKQzN7Xa"/>
-  <source media="(prefers-color-scheme: light)" srcset="https://api.star-history.com/chart?repos=jingyaogong/minimind&type=date&legend=top-left&sealed_token=DK6jy_uvw2AHIK0S4VZLf6snWIQ06jGzz3QiwVmXBGDvickcQgJGSdazdGxjRQZuj8Hr3GfS_REB9ohoK8NWVsmukeOQiT4soChw3_19yyPVwvWzBp66yMYWlvOYy9sv60cMSntByiUTcyp4MrRiMm1JD1MSC8NJ-Z9qhR9uJGl2AU7w-OGlyKQzN7Xa"/>
-  <img alt="Star History Chart" src="https://api.star-history.com/chart?repos=jingyaogong/minimind&type=date&legend=top-left&sealed_token=DK6jy_uvw2AHIK0S4VZLf6snWIQ06jGzz3QiwVmXBGDvickcQgJGSdazdGxjRQZuj8Hr3GfS_REB9ohoK8NWVsmukeOQiT4soChw3_19yyPVwvWzBp66yMYWlvOYy9sv60cMSntByiUTcyp4MrRiMm1JD1MSC8NJ-Z9qhR9uJGl2AU7w-OGlyKQzN7Xa"/>
-</picture>
+
+
 
 ## 🎉 MiniMind 相关成果
 
 本模型抛砖引玉地促成了一些可喜成果的落地，感谢研究者们的认可：
 
 - ECG-Expert-QA: A Benchmark for Evaluating Medical Large Language Models in Heart Disease Diagnosis [[arxiv](https://arxiv.org/pdf/2502.17475)]
-
 - Binary-Integer-Programming Based Algorithm for Expert Load Balancing in Mixture-of-Experts Models [[arxiv](https://arxiv.org/pdf/2502.15451)]
-
 - LegalEval-Q: A New Benchmark for The Quality Evaluation of LLM-Generated Legal Text [[arxiv](https://arxiv.org/pdf/2505.24826)]
-
 - On the Generalization Ability of Next-Token-Prediction Pretraining [[ICML 2025](https://openreview.net/forum?id=hLGJ1qZPdu)]
-
 - 《从零开始写大模型：从神经网络到Transformer》王双、牟晨、王昊怡 编著 - 清华大学出版社
-
 - FedBRB: A Solution to the Small-to-Large Scenario in Device-Heterogeneity Federated Learning [[TMC 2025](https://ieeexplore.ieee.org/abstract/document/11168259)]
-
 - SKETCH: Semantic Key-Point Conditioning for Long-Horizon Vessel Trajectory Prediction [[arxiv](https://arxiv.org/pdf/2601.18537)]
-
 - A Built-in Crypto Expert for Artificial Intelligence: How Far is the Horizon? [[IACR ePrint 2026](https://eprint.iacr.org/2026/411.pdf)]
-
 - RetryTrigger: Intelligent Inference Duplication for Enhancing LLM Resilience to Hardware Transient Faults [[FITEE 2026](https://ieeexplore.ieee.org/abstract/document/11479682)]
-
 - 进行中...
+
 
 
 # 🎓 引用
@@ -1976,6 +2023,8 @@ python llmexport.py --path /path/to/模型路径/ --export mnn --hqq --dst_path 
   note = {GitHub repository, accessed 2026}
 }
 ```
+
+
 
 # ⚖️ 开源协议
 
