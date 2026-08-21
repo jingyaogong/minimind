@@ -911,15 +911,17 @@ response = client.chat.completions.create(
 
 在介绍实现具体算法之前，我先以个人理解的极简视角，阐述所有Policy Optimization (PO)算法的统一共性。
 
-所有RL算法的本质都只是在优化一个期望：
+说到底，这里讨论的 PO 算法都只是在优化一个期望：
 
-$$\mathcal{J}_{PO} = \mathbb{E}_{q \sim P(Q), o \sim \pi(O|q)} \left[ \underbrace{f(r_t)}_{\text{策略项}} \cdot \underbrace{g(A_t)}_{\text{优势项}} - \underbrace{h(\text{KL}_t)}_{\text{正则项}} \right]$$
+$$\mathcal{J}_{PO} = \mathbb{E}_{q \sim P(Q),\, o \sim \pi_\theta(\cdot \mid q)} \left[ \underbrace{\Phi(r_t, A_t)}_{\text{策略目标}} - \underbrace{h(\text{KL}_t)}_{\text{正则项}} \right]$$
 
-训练时，只需**最小化负目标函数**，即: $\mathcal{L}_{PO} = -\mathcal{J}_{PO}$
+训练时，只需**最小化负目标函数**，即：
+
+$$\mathcal{L}_{PO} = -\mathcal{J}_{PO}$$
 
 这个框架只包含三个核心组件：
-* **策略项** $f(r_t)$: 如何使用概率比 $r_t$? 即告诉模型新旧策略偏差有多大，是否探索到了更好的token
-* **优势项** $g(A_t)$: 如何计算优势 $A_t$, 这很重要！大模型算对定积分也不足为奇，小模型回答对加减法优势通常都是正的
+* **策略项** $\Phi(r_t, A_t)$: 如何结合概率比 $r_t$ 和优势 $A_t$ 更新策略
+* **优势项** $A_t$: 如何计算优势，这很重要！大模型算对定积分也不足为奇，小模型回答对加减法优势通常都是正的
 * **正则项** $h(\text{KL}_t)$: 如何约束变化幅度 $\text{KL}_t$, 既防止跑偏又防止管的太死
 
 <details>
@@ -929,7 +931,7 @@ $$\mathcal{J}_{PO} = \mathbb{E}_{q \sim P(Q), o \sim \pi(O|q)} \left[ \underbrac
 |------|------|------|------|
 | $q$ | 问题/提示词 | 从数据集 $P(Q)$ 中采样 | - |
 | $o$ | 模型输出序列 | 由策略 $\pi$ 生成 | - |
-| $r_t$ | 概率比 | $r_t = \frac{\pi_\theta(o_t \mid q, o_{<t})}{\pi_{ref}(o_t \mid q, o_{<t})}$ | $(0, +\infty)$ |
+| $r_t$ | 概率比 | $r_t = \frac{\pi_\theta(o_t \mid q, o_{<t})}{\pi_{\mathrm{old}}(o_t \mid q, o_{<t})}$ | $(0, +\infty)$ |
 | $A_t$ | 优势函数 | 衡量某个动作相比基线有多好 | $(-\infty, +\infty)$ |
 | $\text{KL}_t$ | KL散度 | 防止策略偏离参考模型太远 | $[0, +\infty)$ |
 
@@ -1085,7 +1087,7 @@ $$\mathcal{L}_{PPO} = -\mathbb{E}\left[\min(r_t \cdot A_t, \text{clip}(r_t, 1-\v
 
 其中：
 - **策略项**: $f(r_t) = \min(r_t, \text{clip}(r_t, 1-\varepsilon, 1+\varepsilon))$ (裁剪概率比防止更新过激)
-- **优势项**: $g(A_t) = R - V(s)$ (通过Critic网络估计价值函数)
+- **优势项**: $A_t$ 通常由Critic网络估计，也可以使用GAE进行计算
 - **正则项**: $h(\text{KL}_t) = \beta \cdot \mathbb{E}[\text{KL}]$ (全局KL散度约束)
 
 对比DPO而言，
@@ -1126,8 +1128,8 @@ python train_ppo.py
 $$\mathcal{L}_{GRPO} = -\mathbb{E}\left[\min(r_t \cdot A_t, \mathrm{clip}(r_t, 1-\varepsilon, 1+\varepsilon) \cdot A_t) - \beta \cdot \text{KL}_t\right]$$
 
 其中：
-- **策略项**: $f(r_t) = \min(r_t, \mathrm{clip}(r_t, 1-\varepsilon, 1+\varepsilon))$ (使用概率比的对称 clip 裁剪)
-- **优势项**: $g(A_t) = \frac{R - \mu_{group}}{\sigma_{group}}$ (组内归一化，消除Critic网络)
+- **策略项**: $f(r_t, A_t) = \min(r_t \cdot A_t, \mathrm{clip}(r_t, 1-\varepsilon, 1+\varepsilon) \cdot A_t)$ (对概率比和优势项一起做裁剪，防止更新过激)
+- **优势项**: $g(A_{i,j}) = \frac{R_{i,j} - \mu_i}{\sigma_i + \epsilon}$ (组内归一化，消除Critic网络)
 - **正则项**: $h(\text{KL}_t) = \beta \cdot \text{KL}_t$ (token级KL散度约束)
 
 对于同一个问题，模型生成 N 个回答并计算各自奖励，再用组内平均奖励作为 baseline。高于 baseline 的回答被鼓励，低于 baseline 的回答被抑制，因此无需额外训练 critic 网络。
@@ -1160,11 +1162,11 @@ CISPO 的关注点并不是重新设计 group baseline，而是用非常小的 l
 
 **CISPO损失**：
 
-$$\mathcal{L}_{CISPO} = -\mathbb{E}\left[\min(r_t, \varepsilon_{max}) \cdot A_t \cdot \log \pi_\theta(a_t|s) - \beta \cdot \text{KL}_t\right]$$
+$$\mathcal{L}_{CISPO} = -\mathbb{E}\left[\min(r_t, \varepsilon_{\mathrm{high}}) \cdot A_t \cdot \log \pi_\theta(a_t|s) - \beta \cdot \text{KL}_t\right]$$
 
 其中：
-- **策略项**: $f(r_t) = \min(r_t, \varepsilon_{max}) \cdot \log \pi_\theta(a_t|s)$ (ratio 只作为裁剪后的权重)
-- **优势项**: $g(A_t) = \frac{R - \mu_{group}}{\sigma_{group}}$ (可直接沿用 GRPO 的组内相对优势)
+- **策略项**: $f(r_t) = \min(r_t, \varepsilon_{\mathrm{high}}) \cdot \log \pi_\theta(a_t|s)$ (ratio 只作为裁剪后的权重)
+- **优势项**: $g(A_{i,j}) = \frac{R_{i,j} - \mu_i}{\sigma_i + \epsilon}$ (可直接沿用 GRPO 的组内相对优势)
 - **正则项**: $h(\text{KL}_t) = \beta \cdot \text{KL}_t$ (token级KL散度约束)
 
 CISPO在GRPO基础上，把原本容易被clip成常数的策略项改写成“裁剪权重 × log 概率”的形式。这样ratio即使被截断，也不会把梯度路径一起截断。因此可以直接把CISPO视作GRPO的loss变体来实现，而不是单独维护一套独立脚本。这里不再单列实验。只需在 `train_grpo.py` 把 `loss_type` 配置为 `cispo`，其余训练流程仍沿用 GRPO 的分组采样、奖励计算与优势构造逻辑即可。
@@ -1269,9 +1271,9 @@ python eval_toolcall.py --weight agent
 | 算法 | 策略项 $f(r_t)$ | 优势项 $g(A_t)$ | 正则项 $h(\text{KL}_t)$ | 训练模型数 |
 |------|----------------|----------------|----------------------|----------|
 | **DPO** | $\log r_w - \log r_l$ | 无显式优势项 | 隐含在 $\beta$ 中 | 1 (前向参与 2) | 
-| **PPO** | $\min(r, \text{clip}(r))$ | $R - V(s)$ | $\beta \cdot \mathbb{E}[\text{KL}]$ | 2 | 
-| **GRPO** | $\min(r, \text{clip}(r))$ | $\frac{R - \mu}{\sigma}$ | $\beta \cdot \text{KL}_t$ | 1 |
-| **CISPO** | $\mathrm{clip}(r, 0, \varepsilon_{max}) \cdot A_t \cdot \log \pi_\theta$ | $\frac{R - \mu}{\sigma}$ | $\beta \cdot \text{KL}_t$ | 1 | 
+| **PPO** | $\min(r_t \cdot A_t, \mathrm{clip}(r_t, 1-\varepsilon, 1+\varepsilon) \cdot A_t)$ | $A_t$（通常由 Critic 估计，也可以使用 GAE） | $\beta \cdot \mathbb{E}[\text{KL}]$ | 2 |
+| **GRPO** | $\min(r_t \cdot A_t, \mathrm{clip}(r_t, 1-\varepsilon, 1+\varepsilon) \cdot A_t)$ | $A_{i,j}=\frac{R_{i,j}-\mu_i}{\sigma_i+\epsilon}$ | $\beta \cdot \text{KL}_t$ | 1 |
+| **CISPO** | $\mathrm{clip}(r, 0, \varepsilon_{\mathrm{high}}) \cdot A_t \cdot \log \pi_\theta$ | $\frac{R - \mu}{\sigma}$ | $\beta \cdot \text{KL}_t$ | 1 | 
 
 **说白了，这些 RL 算法不是割裂独立的，而是在统一优化视角下，对同一目标函数进行不同设计权衡后形成的自然变体，呈现为一种优美自洽的统一。**
 
