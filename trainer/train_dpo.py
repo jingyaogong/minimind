@@ -50,6 +50,19 @@ def dpo_loss(ref_log_probs, policy_log_probs, mask, beta):
     return loss.mean()
 
 
+def sft_ce_loss(logits, labels, mask):
+    """SFT正则项：对chosen回答部分计算标准语言建模交叉熵（按掩码位置取平均），
+    与SFT阶段的损失口径一致，用于防止偏好优化中遗忘语言能力。"""
+    vocab_size = logits.size(-1)
+    ce = F.cross_entropy(
+        logits.reshape(-1, vocab_size),
+        labels.reshape(-1),
+        reduction='none'
+    )
+    mask_flat = mask.reshape(-1).float()
+    return (ce * mask_flat).sum() / mask_flat.sum().clamp(min=1.0)
+
+
 def train_epoch(epoch, loader, iters, ref_model, lm_config, start_step=0, wandb=None, beta=0.1):
     start_time = time.time()
     last_step = start_step
@@ -81,7 +94,13 @@ def train_epoch(epoch, loader, iters, ref_model, lm_config, start_step=0, wandb=
             policy_log_probs = logits_to_log_probs(logits, y)
             
             dpo_loss_val = dpo_loss(ref_log_probs, policy_log_probs, mask, beta=beta)
-            loss = dpo_loss_val + outputs.aux_loss
+            # SFT/CE正则项：只对chosen回答部分计算交叉熵，权重由 --ce_alpha 控制
+            chosen_num = x.size(0) // 2
+            if args.ce_alpha > 0:
+                ce_loss_val = sft_ce_loss(logits[:chosen_num], y[:chosen_num], mask[:chosen_num])
+            else:
+                ce_loss_val = logits.new_zeros(())
+            loss = dpo_loss_val + args.ce_alpha * ce_loss_val + outputs.aux_loss
             loss = loss / args.accumulation_steps
 
         scaler.scale(loss).backward()
@@ -97,13 +116,14 @@ def train_epoch(epoch, loader, iters, ref_model, lm_config, start_step=0, wandb=
             spend_time = time.time() - start_time
             current_loss = loss.item() * args.accumulation_steps
             current_dpo_loss = dpo_loss_val.item()
+            current_ce_loss = ce_loss_val.item()
             current_aux_loss = outputs.aux_loss.item()
             current_lr = optimizer.param_groups[-1]['lr']
             eta_min = spend_time / max(step - start_step, 1) * (iters - step) // 60
             
-            Logger(f'Epoch:[{epoch + 1}/{args.epochs}]({step}/{iters}), loss: {current_loss:.4f}, dpo_loss: {current_dpo_loss:.4f}, aux_loss: {current_aux_loss:.4f}, learning_rate: {current_lr:.8f}, epoch_time: {eta_min:.3f}min')
+            Logger(f'Epoch:[{epoch + 1}/{args.epochs}]({step}/{iters}), loss: {current_loss:.4f}, dpo_loss: {current_dpo_loss:.4f}, ce_loss: {current_ce_loss:.4f}, aux_loss: {current_aux_loss:.4f}, learning_rate: {current_lr:.8f}, epoch_time: {eta_min:.3f}min')
             
-            if wandb: wandb.log({"loss": current_loss, "dpo_loss": current_dpo_loss, "aux_loss": current_aux_loss, "learning_rate": current_lr, "epoch_time": eta_min})
+            if wandb: wandb.log({"loss": current_loss, "dpo_loss": current_dpo_loss, "ce_loss": current_ce_loss, "aux_loss": current_aux_loss, "learning_rate": current_lr, "epoch_time": eta_min})
 
         if (step % args.save_interval == 0 or step == iters) and is_main_process():
             model.eval()
@@ -118,7 +138,7 @@ def train_epoch(epoch, loader, iters, ref_model, lm_config, start_step=0, wandb=
             del state_dict
 
         del x_chosen, x_rejected, y_chosen, y_rejected, mask_chosen, mask_rejected, x, y, mask
-        del ref_outputs, ref_logits, ref_log_probs, outputs, logits, policy_log_probs, loss
+        del ref_outputs, ref_logits, ref_log_probs, outputs, logits, policy_log_probs, ce_loss_val, loss
 
     if last_step > start_step and last_step % args.accumulation_steps != 0:
         scaler.unscale_(optimizer)
@@ -150,6 +170,7 @@ if __name__ == "__main__":
     parser.add_argument('--from_weight', default='full_sft', type=str, help="基于哪个权重训练")
     parser.add_argument('--from_resume', default=0, type=int, choices=[0, 1], help="是否自动检测&续训（0=否，1=是）")
     parser.add_argument('--beta', default=0.15, type=float, help="DPO中的beta参数")
+    parser.add_argument('--ce_alpha', default=0.1, type=float, help="SFT/CE正则项权重（0表示关闭，建议0.05~0.5；防止DPO训练中遗忘语言能力）")
     parser.add_argument("--use_wandb", action="store_true", help="是否使用wandb")
     parser.add_argument("--wandb_project", type=str, default="MiniMind-DPO", help="wandb项目名")
     parser.add_argument("--use_compile", default=0, type=int, choices=[0, 1], help="是否使用torch.compile加速（0=否，1=是）")
