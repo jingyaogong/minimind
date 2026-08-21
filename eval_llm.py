@@ -3,6 +3,10 @@ import argparse
 import random
 import warnings
 import torch
+try:
+    import torch_npu
+except:
+    torch_npu = None
 from transformers import AutoTokenizer, AutoModelForCausalLM, TextStreamer
 from model.model_minimind import MiniMindConfig, MiniMindForCausalLM
 from model.model_lora import *
@@ -45,7 +49,10 @@ def main():
     parser.add_argument('--open_thinking', default=0, type=int, help="是否开启自适应思考（0=否，1=是）")
     parser.add_argument('--historys', default=0, type=int, help="携带历史对话轮数（需为偶数，0表示不携带历史）")
     parser.add_argument('--show_speed', default=1, type=int, help="显示decode速度（tokens/s）")
-    parser.add_argument('--device', default='cuda' if torch.cuda.is_available() else 'cpu', type=str, help="运行设备")
+    parser.add_argument('--device',
+                        default='cuda' if torch.cuda.is_available() else ('npu' if torch_npu and torch_npu.npu.is_available() else 'cpu'),
+                        type=str,
+                        help="运行设备")
     args = parser.parse_args()
     
     prompts = [
