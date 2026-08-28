@@ -4,3 +4,7 @@ __pycache__/
 out
 website/
 docs-minimind/
+
+# PyCharm
+.idea/
+*.iml
