@@ -26,15 +26,11 @@ from model.model_minimind import MiniMindConfig, MiniMindForCausalLM
 from dataset.lm_dataset import AgentRLDataset
 from trainer.trainer_utils import Logger, is_main_process, lm_checkpoint, init_distributed_mode, setup_seed, SkipBatchSampler, init_model, LMForRewardModel
 from trainer.rollout_engine import create_rollout_engine, compute_per_token_logps
+from trainer.reward_utils import rep_penalty
 
 warnings.filterwarnings('ignore')
 
 # ================================ 工具与 Reward = Start ================================
-
-def rep_penalty(text, n=3, cap=0.5):
-    toks = re.findall(r"\w+|[^\w\s]", text.lower())
-    grams = [tuple(toks[i:i + n]) for i in range(len(toks) - n + 1)]
-    return min(cap, (len(grams) - len(set(grams))) * cap * 2 / len(grams)) if grams else 0.0
 
 # ======== 工具定义 ========
 TOOLS = [
@@ -214,7 +210,7 @@ def calculate_rewards(prompts, completions, gt_batch, tools_batch, num_gen, rewa
                 messages = [{"role": role, "content": content.strip()} for role, content in matches]
                 score = reward_model.get_score(messages, answer)
                 reward += score  # RM分
-            reward -= rep_penalty(answer)
+            reward -= rep_penalty(answer, tokenizer)
             rewards[idx] = max(min(reward, 3.0), -3.0)  # 总分Clip
         # -------- 有工具调用：执行结果奖励 --------
         else:
@@ -234,7 +230,7 @@ def calculate_rewards(prompts, completions, gt_batch, tools_batch, num_gen, rewa
             verified = validate_gt_in_text(final_text, gt) if gt else set()
             if gt: reward += 2.5 * len(verified) / len(gt)  # GT分
             if unfinished: reward -= 0.5  # 未完成扣分
-            reward -= rep_penalty(final_text if final_text else answer)
+            reward -= rep_penalty(final_text if final_text else answer, tokenizer)
             rewards[idx] = max(min(reward, 3.0), -3.0)  # 总分Clip
     return rewards
 
