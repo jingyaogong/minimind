@@ -63,6 +63,28 @@ st.markdown("""
             transition: all 0.2s ease !important;
             margin: 0 2px !important;  /* 调整这里的 margin 值 */
         }
+        
+        /* 单独恢复侧边栏按钮（新建对话）的正常横向长方形外观，避免文字被挤成竖排 */
+        [data-testid="stSidebar"] .stButton > button {
+            border-radius: 8px !important;      /* 恢复稍微圆角的矩形 */
+            width: 100% !important;             /* 撑满侧边栏宽度 */
+            height: auto !important;
+            min-width: 100% !important;         /* 覆盖掉 18px 的限制 */
+            min-height: 40px !important;
+            max-width: 100% !important;
+            max-height: none !important;
+            padding: 8px !important;            /* 恢复内边距 */
+            background-color: #f4f6f8 !important; /* 增加一点按钮底色以免透明看不清 */
+            border: 1px solid #e0e0e0 !important;
+            font-size: 15px !important;
+            color: #333 !important;
+            margin: 10px 0 !important;
+        }
+        [data-testid="stSidebar"] .stButton > button:hover {
+            border-color: #999 !important;
+            background-color: #e4e8f0 !important;
+            color: #000 !important;
+        }
 
     </style>
 """, unsafe_allow_html=True)
@@ -83,6 +105,7 @@ LANG_TEXTS = {
         'disclaimer': 'AI 生成内容可能存在错误，请仔细核实',
         'think_tip': '自适应思考，目前多轮对话或Tool Call共存时思考不稳定',
         'tool_select': '工具选择（最多4个）',
+        'new_chat': '新建对话',  # 新增
     },
     'en': {
         'settings': 'Model Settings',
@@ -96,6 +119,7 @@ LANG_TEXTS = {
         'disclaimer': 'AI-generated content may be inaccurate, please verify',
         'think_tip': 'Adaptive thinking; may be unstable with multi-turn or Tool Call',
         'tool_select': 'Tool Selection (max 4)',
+        'new_chat': 'New Chat',  # 新增
     }
 }
 
@@ -237,15 +261,20 @@ def regenerate_answer(index):
 
 
 # 动态扫描模型目录
-script_dir = os.path.dirname(os.path.abspath(__file__))
-MODEL_PATHS = {}
-for d in sorted(os.listdir(script_dir), reverse=True):
-    full_path = os.path.join(script_dir, d)
-    if os.path.isdir(full_path) and not d.startswith('.') and not d.startswith('_'):
-        if any(f.endswith(('.bin', '.safetensors', '.pt')) or os.path.exists(os.path.join(full_path, 'model.safetensors.index.json')) for f in os.listdir(full_path) if os.path.isfile(os.path.join(full_path, f))):
-            MODEL_PATHS[d] = [d, d]
-if not MODEL_PATHS:
-    MODEL_PATHS = {"No models found": ["", "No models"]}
+@st.cache_data(ttl=3600)  # 增加缓存(有效期1小时)，避免每次刷新页面都去高频读取硬盘文件树
+def get_model_paths():
+    script_dir = os.path.dirname(os.path.abspath(__file__))
+    paths = {}
+    for d in sorted(os.listdir(script_dir), reverse=True):
+        full_path = os.path.join(script_dir, d)
+        if os.path.isdir(full_path) and not d.startswith('.') and not d.startswith('_'):
+            if any(f.endswith(('.bin', '.safetensors', '.pt')) or os.path.exists(os.path.join(full_path, 'model.safetensors.index.json')) for f in os.listdir(full_path) if os.path.isfile(os.path.join(full_path, f))):
+                paths[d] =[d, d]
+    if not paths:
+        paths = {"No models found": ["", "No models"]}
+    return paths
+
+MODEL_PATHS = get_model_paths()
 
 # 模型选择
 selected_model = st.sidebar.selectbox('Model', list(MODEL_PATHS.keys()), index=0)
@@ -285,7 +314,27 @@ with st.sidebar.expander(get_text('tools')):
         if checked and len(st.session_state.selected_tools) < 4:
             st.session_state.selected_tools.append(name)
 
-image_url = "https://www.modelscope.cn/api/v1/studio/gongjy/MiniMind/repo?Revision=master&FilePath=images%2Flogo2.png&View=true"
+# 新建对话
+st.sidebar.markdown('<hr style="margin: 12px 0 16px 0;">', unsafe_allow_html=True)
+
+# 新建对话
+if st.sidebar.button(get_text('new_chat'), key="new_chat", use_container_width=True):
+    clear_chat_messages()
+    st.rerun()
+
+# 将外部网络图片改为读取本地图片转 base64 渲染
+import base64
+@st.cache_data
+def get_image_base64(image_path):
+    try:
+        with open(image_path, "rb") as img_file:
+            return f"data:image/png;base64,{base64.b64encode(img_file.read()).decode()}"
+    except:
+        # 如果本地图片不存在，再退回使用网络URL
+        return "https://www.modelscope.cn/api/v1/studio/gongjy/MiniMind/repo?Revision=master&FilePath=images%2Flogo2.png&View=true"
+
+local_logo_path = os.path.join(os.path.dirname(os.path.abspath(__file__)), "images", "logo2.png")
+image_url = get_image_base64(local_logo_path)
 
 st.markdown(
     f'<div style="display: flex; flex-direction: column; align-items: center; text-align: center; margin: 0; padding: 0;">'
