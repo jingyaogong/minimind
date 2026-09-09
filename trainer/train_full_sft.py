@@ -119,9 +119,9 @@ if __name__ == "__main__":
     ckp_data = lm_checkpoint(lm_config, weight=args.save_weight, save_dir='../checkpoints') if args.from_resume==1 else None
     
     # ========== 3. 设置混合精度 ==========
-    device_type = "cuda" if "cuda" in args.device else "cpu"
+    device_type = "cuda" if "cuda" in args.device else ("mps" if "mps" in args.device else "cpu")
     dtype = torch.bfloat16 if args.dtype == "bfloat16" else torch.float16
-    autocast_ctx = nullcontext() if device_type == "cpu" else torch.cuda.amp.autocast(dtype=dtype)
+    autocast_ctx = nullcontext() if device_type == "cpu" else torch.amp.autocast(device_type, dtype=dtype)
     
     # ========== 4. 配wandb ==========
     wandb = None
@@ -136,7 +136,7 @@ if __name__ == "__main__":
     model, tokenizer = init_model(lm_config, args.from_weight, device=args.device)
     train_ds = SFTDataset(args.data_path, tokenizer, max_length=args.max_seq_len)
     train_sampler = DistributedSampler(train_ds) if dist.is_initialized() else None
-    scaler = torch.cuda.amp.GradScaler(enabled=(args.dtype == 'float16'))
+    scaler = torch.amp.GradScaler(device_type, enabled=(args.dtype == 'float16' and device_type == 'cuda'))
     optimizer = optim.AdamW(model.parameters(), lr=args.learning_rate)
     
     # ========== 6. 从ckp恢复状态 ==========
