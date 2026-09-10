@@ -1,6 +1,9 @@
+.venv*/
 __pycache__/
-*.pyc
+*.py[cod]
 .DS_Store
-out
+out/
+checkpoints/
+.smoke-out/
 website/
 docs-minimind/

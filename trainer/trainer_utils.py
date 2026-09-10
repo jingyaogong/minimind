@@ -7,6 +7,7 @@ __package__ = "trainer"
 sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), '..')))
 import random
 import math
+from contextlib import nullcontext
 import numpy as np
 import torch
 import torch.distributed as dist
@@ -14,6 +15,91 @@ from torch.nn.parallel import DistributedDataParallel
 from torch.utils.data import Sampler
 from transformers import AutoTokenizer, AutoModel, AutoModelForSequenceClassification
 from model.model_minimind import MiniMindForCausalLM
+
+
+SUPPORTED_DTYPES = {
+    'float32': torch.float32,
+    'float16': torch.float16,
+    'bfloat16': torch.bfloat16,
+}
+
+
+def get_device_type(device):
+    """Return the accelerator type for strings such as cuda:0, mps, and cpu."""
+    return torch.device(device).type
+
+
+def get_default_device():
+    """Prefer CUDA, then Apple Silicon MPS, and finally CPU."""
+    if torch.cuda.is_available():
+        return 'cuda:0'
+    if torch.backends.mps.is_available():
+        return 'mps'
+    return 'cpu'
+
+
+def validate_device(device):
+    device_type = get_device_type(device)
+    if device_type == 'cuda' and not torch.cuda.is_available():
+        raise RuntimeError('CUDA was requested but is not available.')
+    if device_type == 'mps' and not torch.backends.mps.is_available():
+        reason = ('this PyTorch build has no MPS support'
+                  if not torch.backends.mps.is_built()
+                  else 'the current macOS device does not expose MPS')
+        raise RuntimeError(f'MPS was requested but is not available: {reason}.')
+    if device_type not in {'cuda', 'mps', 'cpu'}:
+        raise ValueError(f'Unsupported training device: {device}')
+    return device_type
+
+
+def get_torch_dtype(dtype):
+    try:
+        return SUPPORTED_DTYPES[dtype]
+    except KeyError as exc:
+        choices = ', '.join(SUPPORTED_DTYPES)
+        raise ValueError(f'Unsupported dtype {dtype!r}; choose one of: {choices}') from exc
+
+
+def get_autocast_context(device, dtype):
+    """Create the appropriate AMP context for CUDA or Apple MPS."""
+    device_type = validate_device(device)
+    torch_dtype = get_torch_dtype(dtype)
+    if device_type == 'cpu' or torch_dtype == torch.float32:
+        return nullcontext()
+    return torch.autocast(device_type=device_type, dtype=torch_dtype)
+
+
+def get_grad_scaler(device, dtype):
+    """Enable gradient scaling for fp16 CUDA/MPS and use a no-op otherwise."""
+    device_type = validate_device(device)
+    enabled = dtype == 'float16' and device_type in {'cuda', 'mps'}
+    try:
+        return torch.amp.GradScaler(device_type, enabled=enabled)
+    except (TypeError, RuntimeError):
+        # Older PyTorch releases only expose a CUDA GradScaler. Keep CUDA
+        # compatibility and fail clearly for MPS instead of silently training
+        # fp16 without scaling.
+        if device_type == 'cuda':
+            return torch.cuda.amp.GradScaler(enabled=enabled)
+        if enabled:
+            raise RuntimeError(
+                'This PyTorch version cannot scale MPS float16 gradients. '
+                'Upgrade PyTorch or use --dtype bfloat16/float32.'
+            )
+        return torch.cuda.amp.GradScaler(enabled=False)
+
+
+def should_pin_memory(device):
+    """Pinned host memory accelerates CUDA copies but does not benefit MPS."""
+    return get_device_type(device) == 'cuda'
+
+
+def empty_device_cache(device):
+    device_type = get_device_type(device)
+    if device_type == 'cuda' and torch.cuda.is_available():
+        torch.cuda.empty_cache()
+    elif device_type == 'mps' and torch.backends.mps.is_available():
+        torch.mps.empty_cache()
 
 def get_model_params(model, config):
     total = sum(p.numel() for p in model.parameters()) / 1e6
@@ -41,9 +127,16 @@ def get_lr(current_step, total_steps, lr):
     return lr*(0.1 + 0.45*(1 + math.cos(math.pi * current_step / total_steps)))
 
 
-def init_distributed_mode():
+def init_distributed_mode(device=None):
     if int(os.environ.get("RANK", -1)) == -1:
         return 0  # 非DDP模式
+
+    device = device or get_default_device()
+    if get_device_type(device) != 'cuda':
+        raise RuntimeError(
+            'Distributed training in MiniMind currently requires CUDA/NCCL. '
+            'Run MPS training as a single process with `python train_xxx.py --device mps`.'
+        )
 
     dist.init_process_group(backend="nccl")
     local_rank = int(os.environ["LOCAL_RANK"])
@@ -55,10 +148,13 @@ def setup_seed(seed: int):
     random.seed(seed)
     np.random.seed(seed)
     torch.manual_seed(seed)
-    torch.cuda.manual_seed(seed)
-    torch.cuda.manual_seed_all(seed)
-    torch.backends.cudnn.deterministic = True
-    torch.backends.cudnn.benchmark = False
+    if torch.cuda.is_available():
+        torch.cuda.manual_seed(seed)
+        torch.cuda.manual_seed_all(seed)
+        torch.backends.cudnn.deterministic = True
+        torch.backends.cudnn.benchmark = False
+    if torch.backends.mps.is_available():
+        torch.mps.manual_seed(seed)
 
 def lm_checkpoint(lm_config, weight='full_sft', model=None, optimizer=None, epoch=0, step=0, wandb=None, save_dir='../checkpoints', **kwargs):
     os.makedirs(save_dir, exist_ok=True)
@@ -69,6 +165,7 @@ def lm_checkpoint(lm_config, weight='full_sft', model=None, optimizer=None, epoc
     if model is not None:
         raw_model = model.module if isinstance(model, DistributedDataParallel) else model
         raw_model = getattr(raw_model, '_orig_mod', raw_model)
+        model_device = next(raw_model.parameters()).device
         state_dict = raw_model.state_dict()
         state_dict = {k: v.half().cpu() for k, v in state_dict.items()}
         ckp_tmp = ckp_path + '.tmp'
@@ -103,7 +200,7 @@ def lm_checkpoint(lm_config, weight='full_sft', model=None, optimizer=None, epoc
         torch.save(resume_data, resume_tmp)
         os.replace(resume_tmp, resume_path)
         del state_dict, resume_data
-        torch.cuda.empty_cache()
+        empty_device_cache(model_device)
     else:  # 加载模式
         if os.path.exists(resume_path):
             ckp_data = torch.load(resume_path, map_location='cpu')
@@ -116,7 +213,8 @@ def lm_checkpoint(lm_config, weight='full_sft', model=None, optimizer=None, epoc
         return None
 
 
-def init_model(lm_config, from_weight='pretrain', tokenizer_path='../model', save_dir='../out', device='cuda'):
+def init_model(lm_config, from_weight='pretrain', tokenizer_path='../model', save_dir='../out', device=None):
+    device = device or get_default_device()
     tokenizer = AutoTokenizer.from_pretrained(tokenizer_path)
     model = MiniMindForCausalLM(lm_config)
 
@@ -158,7 +256,8 @@ class SkipBatchSampler(Sampler):
 
 
 class LMForRewardModel:
-    def __init__(self, model_path, device="cuda", dtype=torch.float16):
+    def __init__(self, model_path, device=None, dtype=torch.float16):
+        device = device or get_default_device()
         self.tokenizer = AutoTokenizer.from_pretrained(model_path, trust_remote_code=True)
         self.model = AutoModel.from_pretrained(model_path, torch_dtype=dtype, trust_remote_code=True)
         self.model = self.model.to(device).eval()

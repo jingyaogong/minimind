@@ -284,6 +284,19 @@ print(torch.cuda.is_available())
 若 `cuda` 不可用，也仍可根据自身设备选择 `CPU` 或 `MPS` 运行，但训练速度与兼容性会有非常大的差异。  
 如需安装或更换 PyTorch 版本，可参考 [torch_stable](https://download.pytorch.org/whl/torch_stable.html) 与[链接](https://blog.csdn.net/weixin_45456738/article/details/141029610?ops_request_misc=&request_id=&biz_id=102&utm_term=%E5%AE%89%E8%A3%85torch&utm_medium=distribute.pc_search_result.none-task-blog-2~all~sobaiduweb~default-2-141029610.nonecase&spm=1018.2226.3001.4187)
 
+#### Apple Silicon / MPS
+
+在支持 Metal 的 Apple Silicon Mac 上，训练脚本会按 `CUDA → MPS → CPU` 的顺序自动选择设备，也可显式传入 `--device mps`。MPS 支持 `float32`、`float16` 和 `bfloat16`；建议较新的 Apple Silicon 优先尝试默认的 `bfloat16`，遇到算子兼容问题时改用 `float32`。
+
+```bash
+cd trainer
+PYTORCH_ENABLE_MPS_FALLBACK=1 python train_pretrain.py \
+  --device mps --dtype bfloat16 --num_workers 0 \
+  --batch_size 8 --accumulation_steps 32
+```
+
+`PYTORCH_ENABLE_MPS_FALLBACK=1` 会让尚未支持的 MPS 算子回退到 CPU，兼容性更好但可能降低速度。确认训练全程没有回退后可移除此环境变量。Mac 只有一个 MPS 设备，请直接使用 `python train_xxx.py`，不要使用面向 CUDA/NCCL 多卡训练的 `torchrun`。MPS 不使用 CUDA 的 pinned memory，保存检查点后也会自动释放 MPS 缓存。
+
 </details>
 
 ### 1' 下载数据
