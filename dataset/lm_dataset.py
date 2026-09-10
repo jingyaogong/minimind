@@ -28,10 +28,13 @@ def pre_processing_chat(conversations, add_system_ratio=0.2):
             return [{'role': 'system', 'content': random.choice(SYSTEM_PROMPTS)}] + conversations
     return conversations
 
-def post_processing_chat(prompt_content, empty_think_ratio=0.2):
+def post_processing_chat(prompt_content, empty_think_ratio=0.2, remove_empty_think=None):
     # 以80%概率移除空思考标签
-    if '<think>\n\n</think>\n\n' in prompt_content and random.random() > empty_think_ratio:
-        prompt_content = prompt_content.replace('<think>\n\n</think>\n\n', '')
+    if '<think>\n\n</think>\n\n' in prompt_content:
+        if remove_empty_think is None:
+            remove_empty_think = random.random() > empty_think_ratio
+        if remove_empty_think:
+            prompt_content = prompt_content.replace('<think>\n\n</think>\n\n', '')
     return prompt_content
 
 class PretrainDataset(Dataset):
@@ -139,12 +142,13 @@ class DPODataset(Dataset):
         chosen_prompt = self.tokenizer.apply_chat_template(
             chosen, tokenize=False, add_generation_prompt=False
         )
-        chosen_prompt = post_processing_chat(chosen_prompt)
 
         rejected_prompt = self.tokenizer.apply_chat_template(
             rejected, tokenize=False, add_generation_prompt=False
         )
-        rejected_prompt = post_processing_chat(rejected_prompt)
+        remove_empty_think = random.random() > 0.2
+        chosen_prompt = post_processing_chat(chosen_prompt, remove_empty_think=remove_empty_think)
+        rejected_prompt = post_processing_chat(rejected_prompt, remove_empty_think=remove_empty_think)
         chosen_encoding = self.tokenizer(
             chosen_prompt, truncation=True, max_length=self.max_length, padding='max_length'
         )
