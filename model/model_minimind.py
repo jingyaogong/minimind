@@ -159,15 +159,30 @@ class MOEFeedForward(nn.Module):
         scores = F.softmax(self.gate(x_flat), dim=-1)
         topk_weight, topk_idx = torch.topk(scores, k=self.config.num_experts_per_tok, dim=-1, sorted=False)
         if self.config.norm_topk_prob: topk_weight = topk_weight / (topk_weight.sum(dim=-1, keepdim=True) + 1e-20)
-        y = torch.zeros_like(x_flat)
+        # 先把 token 按专家排成连续段，每个专家取一段连续切片。
+        # 直觉上更自然的写法是每个专家做一次 mask：`if mask.any(): x_flat[mask.any(-1).nonzero()]`，
+        # 但 mask.any() 的取值、nonzero() 的输出长度、布尔索引的结果长度都必须先回到主机才知道，
+        # 于是每个专家都要 3 次 device→host 同步（每层 3E 次，默认配置下每次前向 96 次）。
+        # 同步会清空 CUDA 流：GPU 停下来等 CPU 读值再重新下发，而这些开销全花在路由的簿记上。
+        # 排序之后每段的边界一次就能算完，整层只剩 ends.tolist() 一次同步，且与专家数无关。
+        # stable=True 保证段内 token 仍按原顺序，因此结果与逐专家 mask 的写法逐位相同
+        #（掩码版本作为参考实现保留在 scripts/test_moe_sorted.py，每次跑测试都会断言两者一致）。
+        e, k = self.config.num_experts, self.config.num_experts_per_tok
+        flat = topk_idx.reshape(-1)
+        idx_sorted, order = torch.sort(flat, stable=True)
+        ends = torch.searchsorted(idx_sorted, torch.arange(e, device=x_flat.device, dtype=flat.dtype), right=True)
+        token_idx = order.div(k, rounding_mode='floor')  # 每个槽位对应的原 token
+        x_sorted = x_flat.index_select(0, token_idx)
+        weight = topk_weight.reshape(-1).index_select(0, order).unsqueeze(1)
+        bounds = [0] + ends.tolist()  # 整层唯一一次 device→host 同步
+        y, outs = torch.zeros_like(x_flat), []
         for i, expert in enumerate(self.experts):
-            mask = (topk_idx == i)
-            if mask.any():
-                token_idx = mask.any(dim=-1).nonzero().flatten()
-                weight = topk_weight[mask].view(-1, 1)
-                y.index_add_(0, token_idx, (expert(x_flat[token_idx]) * weight).to(y.dtype))
+            lo, hi = bounds[i], bounds[i + 1]
+            if hi > lo:
+                outs.append(expert(x_sorted[lo:hi]))  # 主机侧的 python int 比较，不会触发同步
             elif self.training:
                 y[0, 0] += 0 * sum(p.sum() for p in expert.parameters())
+        if outs: y.index_add_(0, token_idx, (torch.cat(outs) * weight).to(y.dtype))
         if self.training and self.config.router_aux_loss_coef > 0:
             load = F.one_hot(topk_idx, self.config.num_experts).float().mean(0)
             self.aux_loss = (load * scores.mean(0)).sum() * self.config.num_experts * self.config.router_aux_loss_coef
