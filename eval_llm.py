@@ -6,7 +6,7 @@ import torch
 from transformers import AutoTokenizer, AutoModelForCausalLM, TextStreamer
 from model.model_minimind import MiniMindConfig, MiniMindForCausalLM
 from model.model_lora import *
-from trainer.trainer_utils import setup_seed, get_model_params
+from trainer.trainer_utils import setup_seed, get_model_params, get_default_device
 warnings.filterwarnings('ignore')
 
 def init_model(args):
@@ -27,7 +27,9 @@ def init_model(args):
     else:
         model = AutoModelForCausalLM.from_pretrained(args.load_from, trust_remote_code=True)
     get_model_params(model, model.config)
-    return model.half().eval().to(args.device), tokenizer
+    if 'cuda' in args.device:
+        model = model.half()
+    return model.eval().to(args.device), tokenizer
 
 def main():
     parser = argparse.ArgumentParser(description="MiniMind模型推理与对话")
@@ -45,7 +47,7 @@ def main():
     parser.add_argument('--open_thinking', default=0, type=int, help="是否开启自适应思考（0=否，1=是）")
     parser.add_argument('--historys', default=0, type=int, help="携带历史对话轮数（需为偶数，0表示不携带历史）")
     parser.add_argument('--show_speed', default=1, type=int, help="显示decode速度（tokens/s）")
-    parser.add_argument('--device', default='cuda' if torch.cuda.is_available() else 'cpu', type=str, help="运行设备")
+    parser.add_argument('--device', default=get_default_device(), type=str, help="运行设备")
     args = parser.parse_args()
     
     prompts = [
