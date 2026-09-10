@@ -84,7 +84,7 @@ class TorchRolloutEngine(RolloutEngine):
             ).clone()  # [B*num_gen, P+R]
             prompt_len = prompt_ids.size(1)
             completion_ids = output_ids[:, prompt_len:]  # [B*num_gen, R]
-            full_mask = (output_ids != self.tokenizer.pad_token_id).long()
+            full_mask = torch.cat([attention_mask.repeat_interleave(num_generations, dim=0), attention_mask.new_ones(output_ids.size(0), completion_ids.size(1))], dim=1)
             per_token_logps = compute_per_token_logps(self.policy_model, output_ids, completion_ids.size(1), attention_mask=full_mask)
         completions = self.tokenizer.batch_decode(completion_ids, skip_special_tokens=True)
         return RolloutResult(output_ids, completion_ids, per_token_logps, completions,

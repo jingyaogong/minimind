@@ -120,6 +120,7 @@ def ppo_train_epoch(epoch, loader, iters, rollout_engine, ref_model, actor_sched
         resp_idx = torch.arange(resp_labels.size(1), device=gen_out.device).unsqueeze(0)
         logp_pos = prompt_lens.unsqueeze(1) - 1 + resp_idx
         resp_pad_mask = rollout_result.completion_mask.to(args.device).bool()
+        full_mask.scatter_(1, logp_pos + 1, resp_pad_mask.to(full_mask.dtype))
         resp_lengths = resp_pad_mask.sum(dim=1); valid_resp = resp_lengths > 0; eos_mask = resp_labels.eq(tokenizer.eos_token_id) & resp_pad_mask
         has_eos = eos_mask.any(dim=1); eos_pos = torch.argmax(eos_mask.int(), dim=1)
         resp_lengths = torch.where(has_eos, eos_pos + 1, resp_lengths).long().clamp(min=1)

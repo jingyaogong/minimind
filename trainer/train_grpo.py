@@ -91,6 +91,7 @@ def grpo_train_epoch(epoch, loader, iters, rollout_engine, ref_model, reward_mod
         prompt_lens = rollout_result.prompt_lens.to(args.device)
         full_mask = (outputs != tokenizer.pad_token_id).long()
         logp_pos = prompt_lens.unsqueeze(1) - 1 + torch.arange(completion_ids.size(1), device=args.device).unsqueeze(0)
+        full_mask.scatter_(1, logp_pos + 1, rollout_result.completion_mask.to(args.device, dtype=full_mask.dtype))
 
         rewards = calculate_rewards(prompts, completions, reward_model).to(args.device)  # [B*num_gen]
 

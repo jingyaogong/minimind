@@ -106,34 +106,33 @@ def rollout_single(rollout_engine, tokenizer, messages, tools, max_turns=3, max_
     open_thinking = random.random() < thinking_ratio
     for turn in range(max_turns):
         context = tokenizer.apply_chat_template(messages, tokenize=False, add_generation_prompt=True, tools=tools, open_thinking=open_thinking)
-        inputs = tokenizer(context, return_tensors="pt", add_special_tokens=False).to(device)
-        context_ids = inputs["input_ids"][0].tolist()
         if prompt_ids is None:
-            prompt_ids = context_ids
+            prompt_ids = tokenizer(context, add_special_tokens=False)["input_ids"]
+        input_ids = torch.tensor([prompt_ids + response_ids], device=device)
         rollout_result = rollout_engine.rollout(
-            prompt_ids=inputs["input_ids"],
-            attention_mask=inputs["attention_mask"],
+            prompt_ids=input_ids,
+            attention_mask=torch.ones_like(input_ids),
             num_generations=1,
             max_new_tokens=max_new_tokens,
             temperature=0.8,
         )
-        new_ids = rollout_result.completion_ids[0].tolist()
-        new_logps = rollout_result.per_token_logps[0].tolist()
-        if len(new_ids) != len(new_logps): Logger(f"rollout token/logprob length mismatch: {len(new_ids)} vs {len(new_logps)}")
-        pairs = [(t, lp) for t, lp in zip(new_ids, new_logps) if t != tokenizer.pad_token_id and t != tokenizer.eos_token_id]
-        new_ids = [t for t, _ in pairs]
-        new_logps = [lp for _, lp in pairs]
+        valid_len = int(rollout_result.completion_mask[0].sum().item())
+        new_ids = rollout_result.completion_ids[0, :valid_len].tolist()
+        new_logps = rollout_result.per_token_logps[0, :valid_len].tolist()
+        if len(new_ids) != len(new_logps):
+            raise RuntimeError(f"rollout token/logprob length mismatch: {len(new_ids)} vs {len(new_logps)}")
         new_text = rollout_result.completions[0]
         all_outputs.append(new_text)
         response_ids.extend(new_ids)
-        response_mask.extend([1] * len(new_ids))
+        response_mask.extend([int(t != tokenizer.eos_token_id) for t in new_ids])
         response_old_logps.extend(new_logps)
         final_context = context + new_text
         calls = parse_tool_calls(new_text)
         if not calls:
             break
         unfinished = turn == max_turns - 1
-        messages.append({"role": "assistant", "content": new_text})
+        assistant_message = {"role": "assistant", "content": new_text}
+        messages.append(assistant_message)
         for call in calls:
             name, raw = call.get("name", ""), call.get("arguments", {})
             if isinstance(raw, str):
@@ -143,10 +142,17 @@ def rollout_single(rollout_engine, tokenizer, messages, tools, max_turns=3, max_
             result_str = (json.dumps(result, ensure_ascii=False) if result else '{"error": "tool not found"}')[:2048]  # 防止天文数字撑爆tokenizer
             messages.append({"role": "tool", "content": result_str})
 
+        marker = f"<|agent_observation_{id(messages)}_{len(response_ids)}|>"
+        assistant_message["content"] += marker
+        marked_context = tokenizer.apply_chat_template(messages, tokenize=False, add_generation_prompt=not unfinished, tools=tools, open_thinking=open_thinking)
+        assistant_message["content"] = new_text
+        _, found, observation = marked_context.partition(marker)
+        if not found:
+            raise RuntimeError("chat template did not preserve the assistant content boundary")
+        obs_delta = tokenizer(observation, add_special_tokens=False)["input_ids"]
+        if new_ids and new_ids[-1] == tokenizer.eos_token_id and obs_delta[:1] == [tokenizer.eos_token_id]:
+            obs_delta = obs_delta[1:]
         observe_context = tokenizer.apply_chat_template(messages, tokenize=False, add_generation_prompt=not unfinished, tools=tools, open_thinking=open_thinking)
-        observe_ids = tokenizer(observe_context, return_tensors="pt", add_special_tokens=False)["input_ids"][0].tolist()
-        current_len = len(prompt_ids) + len(response_ids)
-        obs_delta = observe_ids[current_len:]
         response_ids.extend(obs_delta)
         response_mask.extend([0] * len(obs_delta))
         response_old_logps.extend([0.0] * len(obs_delta))
@@ -268,7 +274,7 @@ def rl_train_epoch(epoch, loader, iters, rollout_engine, ref_model, reward_model
         prompt_lens = torch.tensor([prompt_len for _, _, prompt_len, _ in packed_samples], device=args.device)
         full_response_masks = torch.tensor([mask + [0] * (max_len - len(mask)) for _, mask, _, _ in packed_samples], device=args.device, dtype=torch.float32)
         old_per_token_logps = torch.tensor([old_logps + [0.0] * ((max_len - 1) - len(old_logps)) for _, _, _, old_logps in packed_samples], device=args.device, dtype=torch.float32)
-        full_mask = (input_ids != tokenizer.pad_token_id).long()
+        full_mask = (torch.arange(max_len, device=args.device).unsqueeze(0) < seq_lens.unsqueeze(1)).long()
 
         rewards = calculate_rewards(prompts, completions, gt_batch, tools_batch, args.num_generations, reward_model, device=args.device, turn_outputs_batch=turn_outputs_batch, unfinished_batch=unfinished_batch)
 
