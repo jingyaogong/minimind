@@ -12,7 +12,7 @@ from datetime import datetime
 from transformers import AutoTokenizer, AutoModelForCausalLM, TextStreamer
 from openai import OpenAI
 from model.model_minimind import MiniMindConfig, MiniMindForCausalLM
-from trainer.trainer_utils import setup_seed, get_model_params
+from trainer.trainer_utils import setup_seed, get_model_params, safe_math_eval
 warnings.filterwarnings('ignore')
 
 TOOLS = [
@@ -27,7 +27,7 @@ TOOLS = [
 ]
 
 MOCK_RESULTS = {
-    "calculate_math": lambda args: {"result": str(eval(str(args.get("expression", "0")).replace("^", "**").replace("×", "*").replace("÷", "/").replace("−", "-").replace("²", "**2").replace("³", "**3").replace("（", "(").replace("）", ")")))},
+    "calculate_math": lambda args: {"result": str(safe_math_eval(args.get("expression", "0")))},
     "get_current_time": lambda args: {"datetime": datetime.now().strftime("%Y-%m-%d %H:%M:%S"), "timezone": args.get("timezone", "Asia/Shanghai")},
     "random_number": lambda args: {"result": random.randint(int(args.get("min", 0)), int(args.get("max", 100)))},
     "text_length": lambda args: {"characters": len(args.get("text", "")), "words": len(args.get("text", "").split())},
