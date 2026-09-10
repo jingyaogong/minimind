@@ -476,7 +476,6 @@ if __name__ == "__main__":
     if args.use_compile == 1:
         model = torch.compile(model)
         Logger('torch.compile enabled')
-        rollout_engine.update_policy(model)
     if dist.is_initialized():
         model = DistributedDataParallel(model, device_ids=[local_rank])
     rollout_engine.update_policy(model)
