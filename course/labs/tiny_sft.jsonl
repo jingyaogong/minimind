@@ -1,0 +1,3 @@
+{"conversations":[{"role":"user","content":"MiniMind 是什么？"},{"role":"assistant","content":"MiniMind 是一个小型语言模型教学项目，用来学习从预训练到后训练的完整流程。"}]}
+{"conversations":[{"role":"user","content":"SFT 和预训练有什么区别？"},{"role":"assistant","content":"预训练通常学习普通文本的下一个 token，SFT 使用对话数据，并主要让模型学习 assistant 的回复。"}]}
+{"conversations":[{"role":"system","content":"你是一个简洁的 AI 助手。"},{"role":"user","content":"用一句话解释 tokenizer。"},{"role":"assistant","content":"tokenizer 负责把文本切分并映射成模型可以处理的 token id。"}]}
