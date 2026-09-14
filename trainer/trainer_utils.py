@@ -179,50 +179,31 @@ class LMForRewardModel:
         return max(min(score, 3.0), -3.0)
 
 
-# ===== 数学表达式安全求值（替代 eval，避免执行模型生成的任意代码） =====
-_MATH_FUNCS = {name: getattr(math, name) for name in (
-    'sqrt', 'pow', 'exp', 'log', 'log2', 'log10', 'sin', 'cos', 'tan', 'asin', 'acos', 'atan', 'atan2',
-    'sinh', 'cosh', 'tanh', 'floor', 'ceil', 'trunc', 'fabs', 'fmod', 'hypot', 'gcd', 'degrees', 'radians'
-)}
-_MATH_CONSTS = {'pi': math.pi, 'e': math.e, 'tau': math.tau}
-_BIN_OPS = {ast.Add: operator.add, ast.Sub: operator.sub, ast.Mult: operator.mul, ast.Div: operator.truediv,
-            ast.FloorDiv: operator.floordiv, ast.Mod: operator.mod, ast.Pow: operator.pow}
-_UNARY_OPS = {ast.UAdd: operator.pos, ast.USub: operator.neg}
-_MAX_EXPR_LEN, _MAX_EXP, _MAX_DIGITS = 512, 1e4, 100  # 表达式长度 / 指数 / 结果位数上限
-
-
-def _check_pow(base, exp):  # 防止 9**9**9 这类表达式把进程算死
-    if abs(exp) > _MAX_EXP or (abs(base) > 1 and abs(exp) * math.log10(abs(base)) > _MAX_DIGITS):
-        raise ValueError('幂运算结果过大')
-
-
-def _resolve_name(node):  # 同时兼容 sqrt(4) 与 math.sqrt(4) 两种写法
-    if isinstance(node, ast.Name): return node.id
-    if isinstance(node, ast.Attribute) and isinstance(node.value, ast.Name) and node.value.id == 'math': return node.attr
-    return None
-
-
-def _eval_ast(node):
-    if isinstance(node, ast.Constant) and isinstance(node.value, (int, float)) and not isinstance(node.value, bool):
-        return node.value
-    if isinstance(node, (ast.Name, ast.Attribute)) and _resolve_name(node) in _MATH_CONSTS:
-        return _MATH_CONSTS[_resolve_name(node)]
-    if isinstance(node, ast.UnaryOp) and type(node.op) in _UNARY_OPS:
-        return _UNARY_OPS[type(node.op)](_eval_ast(node.operand))
-    if isinstance(node, ast.BinOp) and type(node.op) in _BIN_OPS:
-        left, right = _eval_ast(node.left), _eval_ast(node.right)
-        if isinstance(node.op, ast.Pow): _check_pow(left, right)
-        return _BIN_OPS[type(node.op)](left, right)
-    if isinstance(node, ast.Call) and _resolve_name(node.func) in _MATH_FUNCS and not node.keywords:
-        name, args = _resolve_name(node.func), [_eval_ast(arg) for arg in node.args]
-        if name == 'pow' and len(args) == 2: _check_pow(*args)
-        return _MATH_FUNCS[name](*args)
-    raise ValueError(f'不支持的表达式语法: {type(node).__name__}')
-
-
+# ===== 数学表达式安全求值：替代 eval，只放行算术运算与 math 白名单（长度上限 512） =====
 def safe_math_eval(expression):
-    """对模型生成的数学表达式求值：只放行算术运算与 math 白名单函数，不执行任意代码。"""
-    expr = str(expression).replace('^', '**').replace('×', '*').replace('÷', '/').replace('−', '-')
-    expr = expr.replace('²', '**2').replace('³', '**3').replace('（', '(').replace('）', ')').strip()
-    if not expr or len(expr) > _MAX_EXPR_LEN: raise ValueError('表达式为空或过长')
-    return _eval_ast(ast.parse(expr, mode='eval').body)
+    """对模型生成的数学表达式求值：支持 + - * / // % **、math 白名单函数与 pi/e/tau 常量。"""
+    def pow_guard(base, exp):  # 幂运算统一走这里，拦截 9**9**9 / 10**99999 这类把进程算死的输入
+        if abs(exp) > 1e4 or (abs(base) > 1 and abs(exp) * math.log10(abs(base)) > 100): raise ValueError('幂运算结果过大')
+        return base ** exp
+    def resolve(node):  # 同时兼容 sqrt(4) 与 math.sqrt(4) 两种写法
+        if isinstance(node, ast.Name): return node.id
+        if isinstance(node, ast.Attribute) and getattr(node.value, 'id', '') == 'math': return node.attr
+    def walk(node):
+        if isinstance(node, ast.Constant) and type(node.value) in (int, float): return node.value
+        name = resolve(node)
+        if name in consts: return consts[name]
+        if isinstance(node, ast.UnaryOp): return unary_ops[type(node.op)](walk(node.operand))
+        if isinstance(node, ast.BinOp): return bin_ops[type(node.op)](walk(node.left), walk(node.right))
+        if isinstance(node, ast.Call) and not node.keywords: return funcs[resolve(node.func)](*map(walk, node.args))
+        raise ValueError(f'不支持的表达式语法: {type(node).__name__}')
+    consts = {'pi': math.pi, 'e': math.e, 'tau': math.tau}
+    funcs = {'pow': pow_guard, **{n: getattr(math, n) for n in 'sqrt exp log log2 log10 sin cos tan asin acos atan atan2 sinh cosh tanh floor ceil trunc fabs fmod hypot gcd degrees radians'.split()}}
+    bin_ops = {ast.Add: operator.add, ast.Sub: operator.sub, ast.Mult: operator.mul, ast.Div: operator.truediv, ast.FloorDiv: operator.floordiv, ast.Mod: operator.mod, ast.Pow: pow_guard}
+    unary_ops = {ast.UAdd: operator.pos, ast.USub: operator.neg}
+    chars = str.maketrans({'^': '**', '×': '*', '÷': '/', '−': '-', '²': '**2', '³': '**3', '（': '(', '）': ')'})
+    expr = str(expression).translate(chars).strip()
+    if not expr or len(expr) > 512: raise ValueError('表达式为空或过长')
+    try:
+        return walk(ast.parse(expr, mode='eval').body)
+    except (KeyError, SyntaxError, TypeError):
+        raise ValueError('不支持的表达式语法') from None
