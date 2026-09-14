@@ -159,8 +159,6 @@ def ppo_train_epoch(epoch, loader, iters, rollout_engine, ref_model, actor_sched
         clipfrac_sum = 0.0
         aux_loss_sum = 0.0
         log_count = 0
-        actor_unwrapped = actor_model.module if isinstance(actor_model, DistributedDataParallel) else actor_model
-        critic_unwrapped = critic_model.module if isinstance(critic_model, DistributedDataParallel) else critic_model
         for ppo_epoch in range(args.ppo_update_iters):
             if stop_ppo:
                 break
@@ -168,11 +166,13 @@ def ppo_train_epoch(epoch, loader, iters, rollout_engine, ref_model, actor_sched
             for i in range(0, B, mb_size):
                 inds = b_inds[i:i + mb_size]
                 
-                mb_values_seq = critic_unwrapped(input_ids=gen_out[inds], attention_mask=full_mask[inds])
+                # 反向传播必须经过 DDP 包装后的模块：直接调用 .module 会跳过
+                # DDP 的 prepare_for_backward，梯度不会 all-reduce，各卡静默发散。
+                mb_values_seq = critic_model(input_ids=gen_out[inds], attention_mask=full_mask[inds])
                 mb_resp_values = mb_values_seq.gather(1, logp_pos[inds])
 
                 with autocast_ctx:
-                    res = actor_unwrapped(input_ids=gen_out[inds], attention_mask=full_mask[inds])
+                    res = actor_model(input_ids=gen_out[inds], attention_mask=full_mask[inds])
                     aux_loss = res.aux_loss if lm_config.use_moe else torch.tensor(0.0, device=args.device)
                     # 在 autocast 内计算 log_softmax，避免直接对 fp16/bf16 logits
                     # 计算造成额外数值偏差。
@@ -191,7 +191,7 @@ def ppo_train_epoch(epoch, loader, iters, rollout_engine, ref_model, actor_sched
                                f"ratio_max={torch.exp(_lrv).max().item():.6f} "
                                f"ratio_min={torch.exp(_lrv).min().item():.6f} "
                                f"dropout={getattr(lm_config, 'dropout', None)} "
-                               f"training={actor_unwrapped.training}")
+                               f"training={actor_model.training}")
                 approx_kl = (0.5 * (log_ratio ** 2) * resp_policy_mask[inds]).sum() / resp_policy_mask[inds].sum().clamp(min=1)
                 
                 # 同步各卡的 approx_kl，防止某卡 break 而其它卡继续导致 DDP 死锁
