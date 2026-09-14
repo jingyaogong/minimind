@@ -278,9 +278,10 @@ def rl_train_epoch(epoch, loader, iters, rollout_engine, ref_model, reward_model
 
         rewards = calculate_rewards(prompts, completions, gt_batch, tools_batch, args.num_generations, reward_model, device=args.device, turn_outputs_batch=turn_outputs_batch, unfinished_batch=unfinished_batch)
 
-        model_unwrapped = model.module if isinstance(model, DistributedDataParallel) else model
         with autocast_ctx:
-            res = model_unwrapped(input_ids, attention_mask=full_mask)
+            # 反向传播必须经过 DDP 包装后的模块：直接调用 .module 会跳过
+            # DDP 的 prepare_for_backward，梯度不会 all-reduce，各卡静默发散。
+            res = model(input_ids, attention_mask=full_mask)
             aux_loss = res.aux_loss if lm_config.use_moe else torch.tensor(0.0, device=args.device)
             logits = res.logits[:, :-1, :]
             per_token_logps = F.log_softmax(logits, dim=-1).gather(2, input_ids[:, 1:].unsqueeze(-1)).squeeze(-1)
