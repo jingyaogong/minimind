@@ -34,6 +34,19 @@ def rep_penalty(text, n=3, cap=0.5):
 
 # 自定义的Critic模型，继承自MiniMindLM
 class CriticModel(MiniMindForCausalLM):
+    """Value head over the base model. `forward` never calls `lm_head`.
+
+    This relies on `tie_word_embeddings` (default True), which makes
+    `lm_head.weight` the *same* Parameter as `model.embed_tokens.weight`. The
+    embedding is used on every forward, so the tied parameter still receives a
+    gradient and DDP sees no unused parameters.
+
+    Untie it and `lm_head.weight` becomes a real parameter that this forward
+    never touches, so DDP raises "Expected to have finished reduction in the
+    prior iteration" unless the critic is wrapped with
+    `find_unused_parameters=True` (or `lm_head` is deleted from the critic).
+    """
+
     def __init__(self, params):
         super().__init__(params)
         # 替换lm_head为输出单一价值的线性层
@@ -429,8 +442,12 @@ if __name__ == "__main__":
         Logger('torch.compile enabled')
         rollout_engine.update_policy(actor_model)
     if dist.is_initialized():
-        actor_model = DistributedDataParallel(actor_model, device_ids=[local_rank])
-        critic_model = DistributedDataParallel(critic_model, device_ids=[local_rank])
+        # broadcast_buffers=False: the only registered buffers are the RoPE
+        # tables (freqs_cos / freqs_sin), which every rank recomputes
+        # deterministically from config and never mutates from data. The
+        # default re-broadcasts them from rank 0 on every forward for nothing.
+        actor_model = DistributedDataParallel(actor_model, device_ids=[local_rank], broadcast_buffers=False)
+        critic_model = DistributedDataParallel(critic_model, device_ids=[local_rank], broadcast_buffers=False)
     rollout_engine.update_policy(actor_model)
     
     # ========== 8. 开始训练 ==========
