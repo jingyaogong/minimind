@@ -5,6 +5,8 @@ import os
 import sys
 __package__ = "trainer"
 sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), '..')))
+import ast
+import operator
 import random
 import math
 import numpy as np
@@ -175,3 +177,52 @@ class LMForRewardModel:
         ]
         score = self.model.get_score(self.tokenizer, eval_messages)
         return max(min(score, 3.0), -3.0)
+
+
+# ===== 数学表达式安全求值（替代 eval，避免执行模型生成的任意代码） =====
+_MATH_FUNCS = {name: getattr(math, name) for name in (
+    'sqrt', 'pow', 'exp', 'log', 'log2', 'log10', 'sin', 'cos', 'tan', 'asin', 'acos', 'atan', 'atan2',
+    'sinh', 'cosh', 'tanh', 'floor', 'ceil', 'trunc', 'fabs', 'fmod', 'hypot', 'gcd', 'degrees', 'radians'
+)}
+_MATH_CONSTS = {'pi': math.pi, 'e': math.e, 'tau': math.tau}
+_BIN_OPS = {ast.Add: operator.add, ast.Sub: operator.sub, ast.Mult: operator.mul, ast.Div: operator.truediv,
+            ast.FloorDiv: operator.floordiv, ast.Mod: operator.mod, ast.Pow: operator.pow}
+_UNARY_OPS = {ast.UAdd: operator.pos, ast.USub: operator.neg}
+_MAX_EXPR_LEN, _MAX_EXP, _MAX_DIGITS = 512, 1e4, 100  # 表达式长度 / 指数 / 结果位数上限
+
+
+def _check_pow(base, exp):  # 防止 9**9**9 这类表达式把进程算死
+    if abs(exp) > _MAX_EXP or (abs(base) > 1 and abs(exp) * math.log10(abs(base)) > _MAX_DIGITS):
+        raise ValueError('幂运算结果过大')
+
+
+def _resolve_name(node):  # 同时兼容 sqrt(4) 与 math.sqrt(4) 两种写法
+    if isinstance(node, ast.Name): return node.id
+    if isinstance(node, ast.Attribute) and isinstance(node.value, ast.Name) and node.value.id == 'math': return node.attr
+    return None
+
+
+def _eval_ast(node):
+    if isinstance(node, ast.Constant) and isinstance(node.value, (int, float)) and not isinstance(node.value, bool):
+        return node.value
+    if isinstance(node, (ast.Name, ast.Attribute)) and _resolve_name(node) in _MATH_CONSTS:
+        return _MATH_CONSTS[_resolve_name(node)]
+    if isinstance(node, ast.UnaryOp) and type(node.op) in _UNARY_OPS:
+        return _UNARY_OPS[type(node.op)](_eval_ast(node.operand))
+    if isinstance(node, ast.BinOp) and type(node.op) in _BIN_OPS:
+        left, right = _eval_ast(node.left), _eval_ast(node.right)
+        if isinstance(node.op, ast.Pow): _check_pow(left, right)
+        return _BIN_OPS[type(node.op)](left, right)
+    if isinstance(node, ast.Call) and _resolve_name(node.func) in _MATH_FUNCS and not node.keywords:
+        name, args = _resolve_name(node.func), [_eval_ast(arg) for arg in node.args]
+        if name == 'pow' and len(args) == 2: _check_pow(*args)
+        return _MATH_FUNCS[name](*args)
+    raise ValueError(f'不支持的表达式语法: {type(node).__name__}')
+
+
+def safe_math_eval(expression):
+    """对模型生成的数学表达式求值：只放行算术运算与 math 白名单函数，不执行任意代码。"""
+    expr = str(expression).replace('^', '**').replace('×', '*').replace('÷', '/').replace('−', '-')
+    expr = expr.replace('²', '**2').replace('³', '**3').replace('（', '(').replace('）', ')').strip()
+    if not expr or len(expr) > _MAX_EXPR_LEN: raise ValueError('表达式为空或过长')
+    return _eval_ast(ast.parse(expr, mode='eval').body)

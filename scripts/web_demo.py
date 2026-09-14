@@ -2,12 +2,16 @@ import random
 import re
 import json
 import os
+import sys
 from threading import Thread
 
 import torch
 import numpy as np
 import streamlit as st
 from transformers import AutoModelForCausalLM, AutoTokenizer, TextIteratorStreamer
+
+sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), '..')))
+from trainer.trainer_utils import safe_math_eval
 
 st.set_page_config(page_title="MiniMind", initial_sidebar_state="collapsed")
 
@@ -125,7 +129,7 @@ def execute_tool(tool_name, args):
     import datetime
     try:
         if tool_name == 'calculate_math':
-            return {"result": eval(args.get('expression', '0'))}
+            return {"result": safe_math_eval(args.get('expression', '0'))}
         elif tool_name == 'get_current_time':
             tz = args.get('timezone', 'Asia/Shanghai')
             return {"result": datetime.datetime.now().strftime('%Y-%m-%d %H:%M:%S')}
