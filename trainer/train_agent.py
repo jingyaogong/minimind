@@ -473,8 +473,7 @@ if __name__ == "__main__":
         Logger('torch.compile enabled')
         rollout_engine.update_policy(model)
     if dist.is_initialized():
-        # See train_ppo.py: the RoPE buffers are identical on every rank, so
-        # the per-forward buffer broadcast is pure overhead.
+        # 同 train_ppo：RoPE buffer 各 rank 一致，每步广播纯属浪费
         model = DistributedDataParallel(model, device_ids=[local_rank], broadcast_buffers=False)
     rollout_engine.update_policy(model)
 
