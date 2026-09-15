@@ -473,7 +473,9 @@ if __name__ == "__main__":
         Logger('torch.compile enabled')
         rollout_engine.update_policy(model)
     if dist.is_initialized():
-        model = DistributedDataParallel(model, device_ids=[local_rank])
+        # See train_ppo.py: the RoPE buffers are identical on every rank, so
+        # the per-forward buffer broadcast is pure overhead.
+        model = DistributedDataParallel(model, device_ids=[local_rank], broadcast_buffers=False)
     rollout_engine.update_policy(model)
 
     for epoch in range(start_epoch, args.epochs):
