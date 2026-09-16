@@ -1,0 +1,4 @@
+{"conversations":[{"role":"user","content":"MPS 是什么？","reasoning_content":"","tools":"","tool_calls":""},{"role":"assistant","content":"MPS 是 Apple 平台上的 GPU 加速框架。","reasoning_content":"","tools":"","tool_calls":""}]}
+{"conversations":[{"role":"user","content":"MiniMind 有什么用途？","reasoning_content":"","tools":"","tool_calls":""},{"role":"assistant","content":"它用于学习和实验小型语言模型训练流程。","reasoning_content":"","tools":"","tool_calls":""}]}
+{"conversations":[{"role":"user","content":"什么是梯度？","reasoning_content":"","tools":"","tool_calls":""},{"role":"assistant","content":"梯度描述损失函数相对模型参数的变化方向。","reasoning_content":"","tools":"","tool_calls":""}]}
+{"conversations":[{"role":"user","content":"为什么使用混合精度？","reasoning_content":"","tools":"","tool_calls":""},{"role":"assistant","content":"它通常能减少内存占用并提高训练速度。","reasoning_content":"","tools":"","tool_calls":""}]}
