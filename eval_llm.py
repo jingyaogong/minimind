@@ -64,7 +64,14 @@ def main():
     input_mode = int(input('[0] 自动测试\n[1] 手动输入\n'))
     streamer = TextStreamer(tokenizer, skip_prompt=True, skip_special_tokens=True)
     
-    prompt_iter = prompts if input_mode == 0 else iter(lambda: input('💬: '), '')
+    def _next_prompt():
+        try:
+            return input('💬: ')
+        except (EOFError, KeyboardInterrupt):
+            print()
+            return ''
+
+    prompt_iter = prompts if input_mode == 0 else iter(_next_prompt, '')
     for prompt in prompt_iter:
         setup_seed(random.randint(0, 31415926))
         if input_mode == 0: print(f'💬: {prompt}')
