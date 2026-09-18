@@ -64,14 +64,7 @@ def main():
     input_mode = int(input('[0] 自动测试\n[1] 手动输入\n'))
     streamer = TextStreamer(tokenizer, skip_prompt=True, skip_special_tokens=True)
     
-    def _next_prompt():
-        try:
-            return input('💬: ')
-        except (EOFError, KeyboardInterrupt):
-            print()
-            return ''
-
-    prompt_iter = prompts if input_mode == 0 else iter(_next_prompt, '')
+    prompt_iter = prompts if input_mode == 0 else iter(lambda: input('💬: '), '')
     for prompt in prompt_iter:
         setup_seed(random.randint(0, 31415926))
         if input_mode == 0: print(f'💬: {prompt}')
@@ -98,4 +91,7 @@ def main():
         print(f'\n[Speed]: {gen_tokens / (time.time() - st):.2f} tokens/s\n\n') if args.show_speed else print('\n\n')
 
 if __name__ == "__main__":
-    main()
+    try:
+        main()
+    except (EOFError, KeyboardInterrupt):
+        print()

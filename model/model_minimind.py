@@ -163,7 +163,7 @@ class MOEFeedForward(nn.Module):
                 topk_weight = topk_weight / (topk_weight.sum(dim=-1, keepdim=True) + 1e-20)
             else:
                 top1 = torch.topk(F.softmax(self.gate(x_flat.detach()), dim=-1), k=1, dim=-1, sorted=False)[0]
-                topk_weight = top1 - top1.detach() + 1.0
+                topk_weight = top1 - top1.detach() + 1.0 # k=1: 1.0 forward on purpose, gradient via straight-through
         y = torch.zeros_like(x_flat)
         for i, expert in enumerate(self.experts):
             mask = (topk_idx == i)
