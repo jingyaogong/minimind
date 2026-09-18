@@ -486,6 +486,8 @@ torchrun --nproc_per_node N train_xxx.py
 
 MiniMind训练数据集下载地址： [ModelScope](https://www.modelscope.cn/datasets/gongjy/minimind_dataset/files) | [HuggingFace](https://huggingface.co/datasets/jingyaogong/minimind_dataset/tree/main)
 
+下载、文件用途、最终格式与自定义数据检查清单可参考[数据集双语速查指南](./dataset/dataset.md)。
+
 > 无需全部clone，可单独下载所需的文件
 
 将下载的数据集文件放到`./dataset/`目录下（✨为推荐的必须项）
