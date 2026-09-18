@@ -22,14 +22,9 @@ from model.model_minimind import MiniMindConfig, MiniMindForCausalLM
 from dataset.lm_dataset import RLAIFDataset
 from trainer.trainer_utils import Logger, is_main_process, lm_checkpoint, init_distributed_mode, setup_seed, SkipBatchSampler, init_model, LMForRewardModel
 from trainer.rollout_engine import create_rollout_engine
+from trainer.reward_utils import rep_penalty
 
 warnings.filterwarnings('ignore')
-
-
-def rep_penalty(text, n=3, cap=0.5):
-    toks = re.findall(r"\w+|[^\w\s]", text.lower())
-    grams = [tuple(toks[i:i + n]) for i in range(len(toks) - n + 1)]
-    return min(cap, (len(grams) - len(set(grams))) * cap * 2 / len(grams)) if grams else 0.0
 
 
 # 自定义的Critic模型，继承自MiniMindLM
@@ -64,7 +59,7 @@ def calculate_rewards(prompts, responses, reward_model):
                 rewards[i] += 1.0 if 20 <= len(thinking_content.strip()) <= 300 else -0.5
                 rewards[i] += 0.25 if response.count('</think>') == 1 else -0.25
                 answer = answer_content.strip()
-            rewards[i] -= rep_penalty(answer)
+            rewards[i] -= rep_penalty(answer, tokenizer)
 
             score = reward_model.get_score(messages, answer)
             reward_model_scores.append(score)
