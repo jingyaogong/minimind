@@ -158,14 +158,12 @@ class MOEFeedForward(nn.Module):
         x_flat = x.view(-1, hidden_dim)
         scores = F.softmax(self.gate(x_flat), dim=-1)
         topk_weight, topk_idx = torch.topk(scores, k=self.config.num_experts_per_tok, dim=-1, sorted=False)
-        # Normalising a single top-k weight by its own sum yields 1.0 for every
-        # token, so the gate drops out of the graph: topk_idx is discrete and the
-        # weight is now a constant, leaving the LM loss no path to the router. It
-        # then trains on aux_loss alone, whose optimum is a uniform distribution,
-        # and the experts never specialise. Only normalise when there is more than
-        # one weight to normalise.
-        if self.config.norm_topk_prob and self.config.num_experts_per_tok > 1:
-            topk_weight = topk_weight / (topk_weight.sum(dim=-1, keepdim=True) + 1e-20)
+        if self.config.norm_topk_prob:
+            if self.config.num_experts_per_tok > 1: 
+                topk_weight = topk_weight / (topk_weight.sum(dim=-1, keepdim=True) + 1e-20)
+            else:
+                top1 = torch.topk(F.softmax(self.gate(x_flat.detach()), dim=-1), k=1, dim=-1, sorted=False)[0]
+                topk_weight = top1 - top1.detach() + 1.0
         y = torch.zeros_like(x_flat)
         for i, expert in enumerate(self.experts):
             mask = (topk_idx == i)
