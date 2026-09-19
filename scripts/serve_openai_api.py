@@ -53,7 +53,7 @@ class ChatRequest(BaseModel):
     temperature: float = 0.7
     top_p: float = 0.92
     max_tokens: int = 8192
-    stream: bool = True
+    stream: bool = False  # 对齐 OpenAI 规范：默认非流式，避免标准客户端不传 stream 时误收 SSE
     tools: list = Field(default_factory=list)
     open_thinking: bool = False
     chat_template_kwargs: dict = None
