@@ -471,7 +471,6 @@ if __name__ == "__main__":
     if args.use_compile == 1:
         model = torch.compile(model)
         Logger('torch.compile enabled')
-        rollout_engine.update_policy(model)
     if dist.is_initialized():
         # 同 train_ppo：RoPE buffer 各 rank 一致，每步广播纯属浪费
         model = DistributedDataParallel(model, device_ids=[local_rank], broadcast_buffers=False)
