@@ -2,5 +2,9 @@ __pycache__/
 *.pyc
 .DS_Store
 out
+checkpoints/
+minimind-3/
+*.safetensors
+*.pth
 website/
 docs-minimind/
