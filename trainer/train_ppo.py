@@ -166,16 +166,12 @@ def ppo_train_epoch(epoch, loader, iters, rollout_engine, ref_model, actor_sched
             for i in range(0, B, mb_size):
                 inds = b_inds[i:i + mb_size]
                 
-                # 反向传播必须经过 DDP 包装后的模块：直接调用 .module 会跳过
-                # DDP 的 prepare_for_backward，梯度不会 all-reduce，各卡静默发散。
                 mb_values_seq = critic_model(input_ids=gen_out[inds], attention_mask=full_mask[inds])
                 mb_resp_values = mb_values_seq.gather(1, logp_pos[inds])
 
                 with autocast_ctx:
                     res = actor_model(input_ids=gen_out[inds], attention_mask=full_mask[inds])
                     aux_loss = res.aux_loss if lm_config.use_moe else torch.tensor(0.0, device=args.device)
-                    # 在 autocast 内计算 log_softmax，避免直接对 fp16/bf16 logits
-                    # 计算造成额外数值偏差。
                     mb_resp_logp = F.log_softmax(res.logits[:, :-1], dim=-1).gather(2, labels[inds].unsqueeze(-1)).squeeze(-1).gather(1, logp_pos[inds])
 
                 log_ratio = mb_resp_logp - old_resp_logp[inds]

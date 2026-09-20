@@ -96,8 +96,6 @@ def grpo_train_epoch(epoch, loader, iters, rollout_engine, ref_model, reward_mod
         rewards = calculate_rewards(prompts, completions, reward_model).to(args.device)  # [B*num_gen]
 
         with autocast_ctx:
-            # 反向传播必须经过 DDP 包装后的模块：直接调用 .module 会跳过
-            # DDP 的 prepare_for_backward，梯度不会 all-reduce，各卡静默发散。
             res = model(outputs, attention_mask=full_mask)
             aux_loss = res.aux_loss if lm_config.use_moe else torch.tensor(0.0, device=args.device)
             per_token_logps = F.log_softmax(res.logits[:, :-1, :], dim=-1).gather(2, outputs[:, 1:].unsqueeze(-1)).squeeze(-1).gather(1, logp_pos)
