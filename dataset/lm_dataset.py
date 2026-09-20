@@ -48,10 +48,15 @@ class PretrainDataset(Dataset):
         sample = self.samples[index]
         tokens = self.tokenizer(str(sample['text']), add_special_tokens=False, max_length=self.max_length - 2, truncation=True).input_ids
         tokens = [self.tokenizer.bos_token_id] + tokens + [self.tokenizer.eos_token_id]
-        input_ids = tokens + [self.tokenizer.pad_token_id] * (self.max_length - len(tokens))
+        n_real = len(tokens)  # bos + 正文 + eos，后面才是 padding
+        input_ids = tokens + [self.tokenizer.pad_token_id] * (self.max_length - n_real)
         input_ids = torch.tensor(input_ids, dtype=torch.long)
         labels = input_ids.clone()
-        labels[input_ids == self.tokenizer.pad_token_id] = -100
+        # 按位置屏蔽，而不是按 token id。pad_token 是 <|endoftext|>(id 0)，
+        # 正文里字面出现这个串时会被编成同一个 id
+        # （tokenizer('前面<|endoftext|>后面') -> [938, 605, 0, 701, 605]），
+        # 用 `input_ids == pad_token_id` 会把这个真实的正文 token 一起屏蔽掉。
+        labels[n_real:] = -100
         return input_ids, labels
 
 
