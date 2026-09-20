@@ -8,18 +8,39 @@ DATA_PATH = '../dataset/sft_t2t_mini.jsonl'
 TOKENIZER_DIR = '../model_learn_tokenizer/'
 VOCAB_SIZE = 6400
 SPECIAL_TOKENS_NUM = 36
+MAX_LINES = 0  # 0 表示读取全部；设为正数则只取前 N 条（快速试跑）
 
-def get_texts(data_path):
+def get_texts(data_path, max_lines=MAX_LINES):
+    """逐行产出用于训练 BPE 的文本，兼容两种主线数据格式。
+
+    pretrain_t2t(_mini).jsonl 是 {"text": ...}，
+    sft_t2t(_mini).jsonl 是 {"conversations": [{"role":..., "content":...}, ...]}。
+    原先只解析 conversations，所以把 DATA_PATH 指向预训练语料时一条文本都取不到，
+    BPE 仅基于 initial_alphabet 训练，产出一个没有任何 merge 的词表，且全程不报错。
+    """
+    used = 0
     with open(data_path, 'r', encoding='utf-8', errors='ignore') as f:
-        for i, line in enumerate(f):
-            if i >= 10000: break # 选10000行测试
+        for line in f:
+            if max_lines and used >= max_lines:
+                break
             try:
                 data = json.loads(line)
-                contents = [item.get('content') for item in data.get('conversations', []) if item.get('content')]
-                if contents:
-                    yield "\n".join(contents)
             except json.JSONDecodeError:
                 continue
+            if 'text' in data:
+                text = str(data['text'])
+            else:
+                contents = [item.get('content') for item in data.get('conversations', []) if item.get('content')]
+                text = "\n".join(contents) if contents else ''
+            if text.strip():
+                used += 1
+                yield text
+    if used == 0:
+        raise ValueError(
+            f'{data_path} 中没有可用文本：每行应为 {{"text": ...}} 或 '
+            f'{{"conversations": [{{"role":..., "content":...}}, ...]}}。'
+            f'继续训练只会得到一个空词表。'
+        )
 
 def train_tokenizer(data_path, tokenizer_dir, vocab_size, special_tokens_num=SPECIAL_TOKENS_NUM):
     tokenizer = Tokenizer(models.BPE())
