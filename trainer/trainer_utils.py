@@ -39,7 +39,22 @@ def Logger(content):
         print(content)
 
 
-def get_lr(current_step, total_steps, lr):
+def get_lr(current_step, total_steps, lr, warmup_frac=0.0):
+    """余弦学习率，可选线性 warmup。
+
+    warmup_frac=0（默认）时与原实现逐值相同，不改变任何已有脚本的行为。
+
+    warmup_frac>0 时，前 warmup_frac*total_steps 步把 lr 从 lr/warmup_steps
+    线性升到满值，之后在剩余步数上走原来的余弦衰减（1.0x -> 0.1x）。
+    从随机初始化开始时 step 0 就给满 lr，前几十步的梯度范数通常是稳态的
+    若干倍，容易把刚初始化的权重推坏；warmup 是标准做法。
+    """
+    if warmup_frac > 0:
+        warmup_steps = max(1, int(warmup_frac * total_steps))
+        if current_step < warmup_steps:
+            return lr * (current_step + 1) / warmup_steps
+        current_step -= warmup_steps
+        total_steps = max(1, total_steps - warmup_steps)
     return lr*(0.1 + 0.45*(1 + math.cos(math.pi * current_step / total_steps)))
 
 
