@@ -427,7 +427,6 @@ if __name__ == "__main__":
     if args.use_compile == 1:
         actor_model = torch.compile(actor_model)
         Logger('torch.compile enabled')
-        rollout_engine.update_policy(actor_model)
     if dist.is_initialized():
         # freqs_cos/freqs_sin 各 rank 由 config 确定性算出，默认每步广播一次纯属浪费
         actor_model = DistributedDataParallel(actor_model, device_ids=[local_rank], broadcast_buffers=False)
