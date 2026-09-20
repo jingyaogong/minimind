@@ -202,7 +202,7 @@ async def chat_completions(request: ChatRequest):
             with torch.no_grad():
                 generated_ids = model.generate(
                     inputs["input_ids"],
-                    max_length=inputs["input_ids"].shape[1] + request.max_tokens,
+                    max_new_tokens=request.max_tokens,
                     do_sample=True,
                     attention_mask=inputs["attention_mask"],
                     pad_token_id=tokenizer.pad_token_id,
