@@ -40,7 +40,7 @@ def init_model(args):
         model.load_state_dict(torch.load(ckp, map_location=device), strict=True)
         if args.lora_weight != 'None':
             apply_lora(model)
-            load_lora(model, f'../{args.save_dir}/lora/{args.lora_weight}_{args.hidden_size}.pth')
+            load_lora(model, f'../{args.save_dir}/{args.lora_weight}_{args.hidden_size}{moe_suffix}.pth')
     else:
         model = AutoModelForCausalLM.from_pretrained(args.load_from, trust_remote_code=True)
     print(f'MiniMind模型参数量: {sum(p.numel() for p in model.parameters()) / 1e6:.2f} M(illion)')
