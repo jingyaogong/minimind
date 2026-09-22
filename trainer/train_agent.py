@@ -240,12 +240,10 @@ def calculate_rewards(prompts, completions, gt_batch, tools_batch, num_gen, rewa
 
 # ================================ 工具与 Reward = End ================================
 def rl_train_epoch(epoch, loader, iters, rollout_engine, ref_model, reward_model=None, start_step=0, wandb=None, use_sglang=False):
-    last_step = start_step
     for step, batch in enumerate(loader, start=start_step + 1):
         messages_batch = batch['messages']
         tools_batch = batch['tools']
         gt_batch = batch['gt']
-        last_step = step
 
         with torch.no_grad():
             completions, contexts, prompt_ids_batch, response_ids_batch, response_masks_batch, response_old_logps_batch, turn_outputs_batch, unfinished_batch = rollout_batch(rollout_engine, tokenizer, messages_batch, tools_batch, args.num_generations, max_turns=3, max_new_tokens=args.max_gen_len, thinking_ratio=args.thinking_ratio, device=args.device)
@@ -331,7 +329,7 @@ def rl_train_epoch(epoch, loader, iters, rollout_engine, ref_model, reward_model
         loss = (policy_loss + aux_loss) / args.accumulation_steps
         loss.backward()
 
-        if step % args.accumulation_steps == 0:
+        if step % args.accumulation_steps == 0 or step == iters:
             if args.grad_clip > 0: torch.nn.utils.clip_grad_norm_(model.parameters(), args.grad_clip)
             optimizer.step(); scheduler.step(); optimizer.zero_grad()
 
@@ -364,10 +362,6 @@ def rl_train_epoch(epoch, loader, iters, rollout_engine, ref_model, reward_model
 
         del per_token_logps, ref_per_token_logps
         del completions, rewards, grouped_rewards, mean_r, std_r, advantages, completion_mask
-
-    if last_step > start_step and last_step % args.accumulation_steps != 0:
-        if args.grad_clip > 0: torch.nn.utils.clip_grad_norm_(model.parameters(), args.grad_clip)
-        optimizer.step(); scheduler.step(); optimizer.zero_grad()
 
 
 if __name__ == "__main__":
