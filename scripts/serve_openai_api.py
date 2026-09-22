@@ -7,6 +7,7 @@ import sys
 __package__ = "scripts"
 sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), '..')))
 import time
+import uuid
 import torch
 import warnings
 import uvicorn
@@ -103,6 +104,18 @@ def parse_response(text):
 
 
 def generate_stream_response(messages, temperature, top_p, max_tokens, tools=None, open_thinking=False):
+    response_id = f"chatcmpl-{uuid.uuid4().hex}"
+    created = int(time.time())
+
+    def make_chunk(delta, finish_reason=None):
+        return json.dumps({
+            "id": response_id,
+            "object": "chat.completion.chunk",
+            "created": created,
+            "model": "minimind",
+            "choices": [{"index": 0, "delta": delta, "finish_reason": finish_reason}]
+        }, ensure_ascii=False)
+
     try:
         new_prompt = tokenizer.apply_chat_template(messages, tokenize=False, add_generation_prompt=True, tools=tools or None, open_thinking=open_thinking)
         inputs = tokenizer(new_prompt, return_tensors="pt", truncation=True).to(device)
@@ -128,6 +141,7 @@ def generate_stream_response(messages, temperature, top_p, max_tokens, tools=Non
                 queue.put(None)
 
         Thread(target=_generate).start()
+        yield make_chunk({"role": "assistant"})
 
         full_text = ""
         emitted = 0
@@ -139,7 +153,7 @@ def generate_stream_response(messages, temperature, top_p, max_tokens, tools=Non
                 break
             if isinstance(text, dict):
                 yield json.dumps(text, ensure_ascii=False)
-                continue
+                return
             full_text += text
 
             if not thinking_ended:
@@ -148,28 +162,28 @@ def generate_stream_response(messages, temperature, top_p, max_tokens, tools=Non
                     thinking_ended = True
                     new_r = full_text[emitted:pos]
                     if new_r:
-                        yield json.dumps({"choices": [{"delta": {"reasoning_content": new_r}}]}, ensure_ascii=False)
+                        yield make_chunk({"reasoning_content": new_r})
                     emitted = pos + len('</think>')
                     after = full_text[emitted:].lstrip('\n')
                     emitted = len(full_text) - len(after)
                     if after:
-                        yield json.dumps({"choices": [{"delta": {"content": after}}]}, ensure_ascii=False)
+                        yield make_chunk({"content": after})
                         emitted = len(full_text)
                 else:
                     new_r = full_text[emitted:]
                     if new_r:
-                        yield json.dumps({"choices": [{"delta": {"reasoning_content": new_r}}]}, ensure_ascii=False)
+                        yield make_chunk({"reasoning_content": new_r})
                         emitted = len(full_text)
             else:
                 new_c = full_text[emitted:]
                 if new_c:
-                    yield json.dumps({"choices": [{"delta": {"content": new_c}}]}, ensure_ascii=False)
+                    yield make_chunk({"content": new_c})
                     emitted = len(full_text)
 
         _, _, tool_calls = parse_response(full_text)
         if tool_calls:
-            yield json.dumps({"choices": [{"delta": {"tool_calls": tool_calls}}]}, ensure_ascii=False)
-        yield json.dumps({"choices": [{"delta": {}, "finish_reason": "tool_calls" if tool_calls else "stop"}]}, ensure_ascii=False)
+            yield make_chunk({"tool_calls": [{"index": i, **call} for i, call in enumerate(tool_calls)]})
+        yield make_chunk({}, "tool_calls" if tool_calls else "stop")
 
     except Exception as e:
         yield json.dumps({"error": str(e)})
