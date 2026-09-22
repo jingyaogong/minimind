@@ -38,14 +38,12 @@ def distillation_loss(student_logits, teacher_logits, temperature=1.0, reduction
 
 def train_epoch(epoch, loader, iters, teacher_model, lm_config_student, start_step=0, wandb=None, alpha=0.0, temperature=1.0):
     start_time = time.time()
-    last_step = start_step
     
     if teacher_model is not None:
         teacher_model.eval()
         teacher_model.requires_grad_(False)
 
     for step, (input_ids, labels) in enumerate(loader, start=start_step + 1):
-        last_step = step
         input_ids = input_ids.to(args.device)
         labels = labels.to(args.device)
         loss_mask = (labels[..., 1:] != -100).float()
@@ -94,7 +92,7 @@ def train_epoch(epoch, loader, iters, teacher_model, lm_config_student, start_st
 
         scaler.scale(loss).backward()
 
-        if step % args.accumulation_steps == 0:
+        if step % args.accumulation_steps == 0 or step == iters:
             scaler.unscale_(optimizer)
             torch.nn.utils.clip_grad_norm_(model.parameters(), args.grad_clip)
             scaler.step(optimizer)
@@ -134,13 +132,6 @@ def train_epoch(epoch, loader, iters, teacher_model, lm_config_student, start_st
             del state_dict
 
         del input_ids, labels, loss_mask, res, student_logits, ce_loss, distill_loss, loss
-
-    if last_step > start_step and last_step % args.accumulation_steps != 0:
-        scaler.unscale_(optimizer)
-        torch.nn.utils.clip_grad_norm_(model.parameters(), args.grad_clip)
-        scaler.step(optimizer)
-        scaler.update()
-        optimizer.zero_grad(set_to_none=True)
 
 
 if __name__ == "__main__":

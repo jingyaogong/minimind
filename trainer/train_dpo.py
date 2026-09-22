@@ -52,10 +52,8 @@ def dpo_loss(ref_log_probs, policy_log_probs, mask, beta):
 
 def train_epoch(epoch, loader, iters, ref_model, lm_config, start_step=0, wandb=None, beta=0.1):
     start_time = time.time()
-    last_step = start_step
 
     for step, batch in enumerate(loader, start=start_step + 1):
-        last_step = step
         x_chosen = batch['x_chosen'].to(args.device)
         x_rejected = batch['x_rejected'].to(args.device)
         y_chosen = batch['y_chosen'].to(args.device)
@@ -86,7 +84,7 @@ def train_epoch(epoch, loader, iters, ref_model, lm_config, start_step=0, wandb=
 
         scaler.scale(loss).backward()
 
-        if step % args.accumulation_steps == 0:
+        if step % args.accumulation_steps == 0 or step == iters:
             scaler.unscale_(optimizer)
             torch.nn.utils.clip_grad_norm_(model.parameters(), args.grad_clip)
             scaler.step(optimizer)
@@ -119,13 +117,6 @@ def train_epoch(epoch, loader, iters, ref_model, lm_config, start_step=0, wandb=
 
         del x_chosen, x_rejected, y_chosen, y_rejected, mask_chosen, mask_rejected, x, y, mask
         del ref_outputs, ref_logits, ref_log_probs, outputs, logits, policy_log_probs, loss
-
-    if last_step > start_step and last_step % args.accumulation_steps != 0:
-        scaler.unscale_(optimizer)
-        torch.nn.utils.clip_grad_norm_(model.parameters(), args.grad_clip)
-        scaler.step(optimizer)
-        scaler.update()
-        optimizer.zero_grad(set_to_none=True)
 
 
 if __name__ == "__main__":
