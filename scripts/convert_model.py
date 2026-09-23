@@ -98,7 +98,21 @@ def convert_torch2transformers(torch_path, transformers_path, dtype=torch.float1
 
 def convert_transformers2torch(transformers_path, torch_path):
     model = AutoModelForCausalLM.from_pretrained(transformers_path, trust_remote_code=True)
-    torch.save({k: v.cpu().half() for k, v in model.state_dict().items()}, torch_path)
+    state_dict = model.state_dict()
+    if model.config.model_type == 'qwen3_moe':
+        for l in range(model.config.num_hidden_layers):
+            p = f'model.layers.{l}.mlp.experts'
+            if f'{p}.gate_up_proj' not in state_dict:
+                continue
+            # 将 Transformers 5 的打包权重还原为 MiniMind 的逐专家格式。
+            gate_up_proj = state_dict.pop(f'{p}.gate_up_proj')
+            down_proj = state_dict.pop(f'{p}.down_proj')
+            for e in range(model.config.num_experts):
+                gate_proj, up_proj = gate_up_proj[e].chunk(2, dim=0)
+                state_dict[f'{p}.{e}.gate_proj.weight'] = gate_proj
+                state_dict[f'{p}.{e}.up_proj.weight'] = up_proj
+                state_dict[f'{p}.{e}.down_proj.weight'] = down_proj[e]
+    torch.save({k: v.cpu().half() for k, v in state_dict.items()}, torch_path)
     print(f"模型已保存为 PyTorch 格式: {torch_path}")
 
 
