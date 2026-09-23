@@ -229,6 +229,10 @@ After this update, maintenance for the entire `minimind-v1` series will be disco
 # Clone repository and install dependencies
 git clone --depth 1 https://github.com/jingyaogong/minimind
 cd minimind && pip install -r requirements.txt -i https://mirrors.aliyun.com/pypi/simple
+#Tip:Some older versions of Windows PowerShell (v5.1 and below) do not recognize the && operator. 
+git clone --depth 1 https://github.com/jingyaogong/minimind
+cd minimind 
+pip install -r requirements.txt -i https://mirrors.aliyun.com/pypi/simple
 ```
 
 ## Ⅰ 🚀 Model Inference
