@@ -219,7 +219,7 @@ minimind2系列旧模型均经过权重映射+（微调训练）QKVO线性层校
 * GPU: NVIDIA GeForce RTX 3090 (24GB) * 8
 * Ubuntu==20.04
 * CUDA==12.2
-* Python==3.10.16
+* Python==3.10.16（实测 3.10 ~ 3.12 均可正常使用）
 * [requirements.txt](./requirements.txt)
 
 </details>
@@ -230,6 +230,7 @@ minimind2系列旧模型均经过权重映射+（微调训练）QKVO线性层校
 # 克隆仓库、安装依赖
 git clone --depth 1 https://github.com/jingyaogong/minimind
 cd minimind && pip install -r requirements.txt -i https://mirrors.aliyun.com/pypi/simple
+# 或使用 uv：uv sync（会自动创建 .venv 并安装 pyproject.toml 中的依赖）
 ```
 
 ## Ⅰ 🚀 模型推理

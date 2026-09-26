@@ -22,7 +22,6 @@ transformers==4.57.6
 jinja2==3.1.2
 jsonlines==4.0.0
 trl==0.13.0
-ujson==5.1.0
 wandb==0.22.3
 streamlit==1.50.0
 einops==0.8.1
