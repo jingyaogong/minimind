@@ -1,0 +1,7 @@
+run_tag,model,reward_mode,loss_type,seed,G,max_gen_len,beta,dynamic_sampling,len_penalty_coef,alpha,beta_mix,hypothesis
+mini_rule_seed42,MiniMind-64M,rule,grpo,42,6,512,0.1,0,0,0.5,0.5,rule signal baseline - the GT verifier alone raises held-out accuracy above the SFT cold start
+mini_rule_dynamic_seed42,MiniMind-64M,rule,grpo,42,6,512,0.1,1,0,0.5,0.5,remove degenerate groups - filtering all-correct and all-wrong groups raises accuracy per optimizer step
+mini_rule_len_seed42,MiniMind-64M,rule,grpo,42,6,512,0.1,0,0.05,0.5,0.5,reduce overlong outputs - penalising tokens above the cap cuts mean completion length without cutting accuracy
+mini_rm_seed42,MiniMind-64M,rm,grpo,42,6,512,0.1,0,0,0.5,0.5,RM-only control - the original heuristic plus RM reward raises reward without raising held-out accuracy
+mini_mix_seed42,MiniMind-64M,mix,grpo,42,6,512,0.1,0,0,0.5,0.5,calibrated mix - standardised rule plus pure-RM beats RM-only on accuracy while keeping the RM reward shape
+mini_rule_seed7,MiniMind-64M,rule,grpo,7,6,512,0.1,0,0,0.5,0.5,seed replication - the rule-baseline direction reproduces under a second seed

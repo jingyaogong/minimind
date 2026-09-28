@@ -1,0 +1,107 @@
+{
+  "created_at": "2026-09-28T00:34:03+00:00",
+  "runs_dir": "runs",
+  "log_dir": "logs",
+  "registry": "/Users/qi/实习/项目/minimind/configs/experiment_registry.csv",
+  "runs": [
+    {
+      "run_tag": "mini_rule_seed42",
+      "evidence": "archived",
+      "archive_status": "complete",
+      "has_eval": true,
+      "metrics_rows": 200,
+      "warnings": ""
+    },
+    {
+      "run_tag": "mini_rule_dynamic_seed42",
+      "evidence": "archived",
+      "archive_status": "complete",
+      "has_eval": true,
+      "metrics_rows": 200,
+      "warnings": ""
+    },
+    {
+      "run_tag": "mini_rule_len_seed42",
+      "evidence": "archived",
+      "archive_status": "complete",
+      "has_eval": true,
+      "metrics_rows": 200,
+      "warnings": ""
+    },
+    {
+      "run_tag": "mini_rm_seed42",
+      "evidence": "archived",
+      "archive_status": "complete",
+      "has_eval": true,
+      "metrics_rows": 200,
+      "warnings": ""
+    },
+    {
+      "run_tag": "mini_mix_seed42",
+      "evidence": "archived",
+      "archive_status": "complete",
+      "has_eval": true,
+      "metrics_rows": 200,
+      "warnings": ""
+    },
+    {
+      "run_tag": "mini_rule_seed7",
+      "evidence": "archived",
+      "archive_status": "complete",
+      "has_eval": true,
+      "metrics_rows": 200,
+      "warnings": ""
+    },
+    {
+      "run_tag": "math_cold_cot_seed42",
+      "evidence": "archived",
+      "archive_status": "partial",
+      "has_eval": true,
+      "metrics_rows": 0,
+      "warnings": "only 0 logged step(s); no trend can be read"
+    },
+    {
+      "run_tag": "math_cold_seed42",
+      "evidence": "missing",
+      "archive_status": "n/a",
+      "has_eval": true,
+      "metrics_rows": 0,
+      "warnings": "not archived yet: run `python scripts/archive_run.py --run-tag math_cold_seed42`; only 0 logged step(s); no trend can be read"
+    }
+  ],
+  "figures": [
+    {
+      "path": "reports/figures/fig1_training_dynamics.png",
+      "caption": "models: MiniMind-64M | train data: dataset/math_rlvr_train.jsonl | eval data: dataset/math_heldout.jsonl (400 problems, no train overlap) | seeds: 42, 7 | held-out sampling: 16 completions per problem at temperature 0.8 | length convention: tokens up to the first EOS, prompt excluded | source: runs/<tag>/metrics.csv, one point per log_interval"
+    },
+    {
+      "path": "reports/figures/fig2_acr.png",
+      "caption": "models: MiniMind-64M | train data: dataset/math_rlvr_train.jsonl | eval data: dataset/math_heldout.jsonl (400 problems, no train overlap) | seeds: 42, 7 | held-out sampling: 16 completions per problem at temperature 0.8 | length convention: tokens up to the first EOS, prompt excluded | source: runs/<tag>/metrics.csv group counters; ACR = share of groups that step"
+    },
+    {
+      "path": "reports/figures/fig3_heldout_arms.png",
+      "caption": "models: MiniMind-64M | train data: dataset/math_rlvr_train.jsonl | eval data: dataset/math_heldout.jsonl (400 problems, no train overlap) | seeds: 42, 7 | held-out sampling: 16 completions per problem at temperature 0.8 | length convention: tokens up to the first EOS, prompt excluded | source: runs/<tag>/eval.json; a bar is absent when that run has no evaluation"
+    },
+    {
+      "path": "reports/figures/fig4_difficulty.png",
+      "caption": "models: MiniMind-64M | train data: dataset/math_rlvr_train.jsonl | eval data: dataset/math_heldout.jsonl (400 problems, no train overlap) | seeds: 42, 7 | held-out sampling: 16 completions per problem at temperature 0.8 | length convention: tokens up to the first EOS, prompt excluded | source: runs/<tag>/eval.json by_difficulty; the 400 held-out problems are split evenly"
+    },
+    {
+      "path": "reports/figures/fig5_length_histogram.png",
+      "caption": "models: MiniMind-64M | train data: dataset/math_rlvr_train.jsonl | eval data: dataset/math_heldout.jsonl (400 problems, no train overlap) | seeds: 42, 7 | held-out sampling: 16 completions per problem at temperature 0.8 | length convention: tokens up to the first EOS, prompt excluded | source: runs/<tag>/eval.jsonl per-completion token counts"
+    },
+    {
+      "path": "reports/figures/fig6_reward_eval_gap.png",
+      "caption": "models: MiniMind-64M | train data: dataset/math_rlvr_train.jsonl | eval data: dataset/math_heldout.jsonl (400 problems, no train overlap) | seeds: 42, 7 | held-out sampling: 16 completions per problem at temperature 0.8 | length convention: tokens up to the first EOS, prompt excluded | reference arm is the first baseline-signature row of the registry"
+    }
+  ],
+  "missing_eval": [],
+  "notes": [
+    "reference arm: mini_rule_seed42",
+    "not plotted (missing train gain or eval): math_cold_cot_seed42, math_cold_seed42"
+  ],
+  "files": {
+    "summary.md": "8fd6c7afe35c76e33d2466622018518318c6082807eedbe21dad7734234fcc55",
+    "summary.csv": "1e96835c42721959007e0953028528b20e015db7c3539bb5f9ee41d5a6924c15"
+  }
+}

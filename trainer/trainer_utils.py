@@ -5,8 +5,6 @@ import os
 import sys
 __package__ = "trainer"
 sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), '..')))
-import ast
-import operator
 import random
 import math
 import numpy as np
@@ -177,33 +175,3 @@ class LMForRewardModel:
         ]
         score = self.model.get_score(self.tokenizer, eval_messages)
         return max(min(score, 3.0), -3.0)
-
-
-# ===== 数学表达式安全求值：替代 eval，只放行算术运算与 math 白名单（长度上限 512） =====
-def safe_math_eval(expression):
-    """对模型生成的数学表达式求值：支持 + - * / // % **、math 白名单函数与 pi/e/tau 常量。"""
-    def pow_guard(base, exp):  # 幂运算统一走这里，拦截 9**9**9 / 10**99999 这类把进程算死的输入
-        if abs(exp) > 1e4 or (abs(base) > 1 and abs(exp) * math.log10(abs(base)) > 100): raise ValueError('幂运算结果过大')
-        return base ** exp
-    def resolve(node):  # 同时兼容 sqrt(4) 与 math.sqrt(4) 两种写法
-        if isinstance(node, ast.Name): return node.id
-        if isinstance(node, ast.Attribute) and getattr(node.value, 'id', '') == 'math': return node.attr
-    def walk(node):
-        if isinstance(node, ast.Constant) and type(node.value) in (int, float): return node.value
-        name = resolve(node)
-        if name in consts: return consts[name]
-        if isinstance(node, ast.UnaryOp): return unary_ops[type(node.op)](walk(node.operand))
-        if isinstance(node, ast.BinOp): return bin_ops[type(node.op)](walk(node.left), walk(node.right))
-        if isinstance(node, ast.Call) and not node.keywords: return funcs[resolve(node.func)](*map(walk, node.args))
-        raise ValueError(f'不支持的表达式语法: {type(node).__name__}')
-    consts = {'pi': math.pi, 'e': math.e, 'tau': math.tau}
-    funcs = {'pow': pow_guard, **{n: getattr(math, n) for n in 'sqrt exp log log2 log10 sin cos tan asin acos atan atan2 sinh cosh tanh floor ceil trunc fabs fmod hypot gcd degrees radians'.split()}}
-    bin_ops = {ast.Add: operator.add, ast.Sub: operator.sub, ast.Mult: operator.mul, ast.Div: operator.truediv, ast.FloorDiv: operator.floordiv, ast.Mod: operator.mod, ast.Pow: pow_guard}
-    unary_ops = {ast.UAdd: operator.pos, ast.USub: operator.neg}
-    chars = str.maketrans({'^': '**', '×': '*', '÷': '/', '−': '-', '²': '**2', '³': '**3', '（': '(', '）': ')'})
-    expr = str(expression).translate(chars).strip()
-    if not expr or len(expr) > 512: raise ValueError('表达式为空或过长')
-    try:
-        return walk(ast.parse(expr, mode='eval').body)
-    except (KeyError, SyntaxError, TypeError):
-        raise ValueError('不支持的表达式语法') from None

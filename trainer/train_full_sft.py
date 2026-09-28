@@ -23,9 +23,11 @@ warnings.filterwarnings('ignore')
 
 def train_epoch(epoch, loader, iters, start_step=0, wandb=None):
     start_time = time.time()
+    last_step = start_step
     for step, (input_ids, labels) in enumerate(loader, start=start_step + 1):
         input_ids = input_ids.to(args.device)
         labels = labels.to(args.device)
+        last_step = step
         lr = get_lr(epoch * iters + step, args.epochs * iters, args.learning_rate)
         for param_group in optimizer.param_groups:
             param_group['lr'] = lr
@@ -37,7 +39,7 @@ def train_epoch(epoch, loader, iters, start_step=0, wandb=None):
 
         scaler.scale(loss).backward()
 
-        if step % args.accumulation_steps == 0 or step == iters:
+        if step % args.accumulation_steps == 0:
             scaler.unscale_(optimizer)
             torch.nn.utils.clip_grad_norm_(model.parameters(), args.grad_clip)
 
@@ -71,6 +73,13 @@ def train_epoch(epoch, loader, iters, start_step=0, wandb=None):
 
         del input_ids, labels, res, loss
 
+    if last_step > start_step and last_step % args.accumulation_steps != 0:
+        scaler.unscale_(optimizer)
+        torch.nn.utils.clip_grad_norm_(model.parameters(), args.grad_clip)
+        scaler.step(optimizer)
+        scaler.update()
+        optimizer.zero_grad(set_to_none=True)
+
 
 if __name__ == "__main__":
     parser = argparse.ArgumentParser(description="MiniMind Full SFT")
@@ -90,7 +99,6 @@ if __name__ == "__main__":
     parser.add_argument('--num_hidden_layers', default=8, type=int, help="隐藏层数量")
     parser.add_argument('--max_seq_len', default=768, type=int, help="训练的最大截断长度（中文1token≈1.5~1.7字符）")
     parser.add_argument('--use_moe', default=0, type=int, choices=[0, 1], help="是否使用MoE架构（0=否，1=是）")
-    parser.add_argument('--seed', default=42, type=int, help="随机种子（DDP下每个rank为seed+rank，每轮为seed+epoch）")
     parser.add_argument("--data_path", type=str, default="../dataset/sft_t2t_mini.jsonl", help="训练数据路径")
     parser.add_argument('--from_weight', default='pretrain', type=str, help="基于哪个权重训练，为none则不基于任何权重训练")
     parser.add_argument('--from_resume', default=0, type=int, choices=[0, 1], help="是否自动检测&续训（0=否，1=是）")
@@ -102,7 +110,7 @@ if __name__ == "__main__":
     # ========== 1. 初始化环境和随机种子 ==========
     local_rank = init_distributed_mode()
     if dist.is_initialized(): args.device = f"cuda:{local_rank}"
-    setup_seed(args.seed + (dist.get_rank() if dist.is_initialized() else 0))
+    setup_seed(42 + (dist.get_rank() if dist.is_initialized() else 0))
     
     # ========== 2. 配置目录、模型参数、检查ckp ==========
     os.makedirs(args.save_dir, exist_ok=True)
@@ -149,7 +157,7 @@ if __name__ == "__main__":
     # ========== 8. 开始训练 ==========
     for epoch in range(start_epoch, args.epochs):
         train_sampler and train_sampler.set_epoch(epoch)
-        setup_seed(args.seed + epoch); indices = torch.randperm(len(train_ds)).tolist()
+        setup_seed(42 + epoch); indices = torch.randperm(len(train_ds)).tolist()
         skip = start_step if (epoch == start_epoch and start_step > 0) else 0
         batch_sampler = SkipBatchSampler(train_sampler or indices, args.batch_size, skip)
         loader = DataLoader(train_ds, batch_sampler=batch_sampler, num_workers=args.num_workers, pin_memory=True)

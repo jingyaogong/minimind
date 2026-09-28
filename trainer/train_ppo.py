@@ -36,7 +36,7 @@ def rep_penalty(text, n=3, cap=0.5):
 class CriticModel(MiniMindForCausalLM):
     def __init__(self, params):
         super().__init__(params)
-        # lm_head 不参与 forward，仅靠 tie_word_embeddings 与 embed_tokens 共享权重，解绑后 DDP 会报未使用参数
+        # 替换lm_head为输出单一价值的线性层
         self.value_head = nn.Linear(params.hidden_size, 1)
 
     def forward(self, input_ids=None, attention_mask=None, **kwargs):
@@ -120,7 +120,6 @@ def ppo_train_epoch(epoch, loader, iters, rollout_engine, ref_model, actor_sched
         resp_idx = torch.arange(resp_labels.size(1), device=gen_out.device).unsqueeze(0)
         logp_pos = prompt_lens.unsqueeze(1) - 1 + resp_idx
         resp_pad_mask = rollout_result.completion_mask.to(args.device).bool()
-        full_mask.scatter_(1, logp_pos + 1, resp_pad_mask.to(full_mask.dtype))
         resp_lengths = resp_pad_mask.sum(dim=1); valid_resp = resp_lengths > 0; eos_mask = resp_labels.eq(tokenizer.eos_token_id) & resp_pad_mask
         has_eos = eos_mask.any(dim=1); eos_pos = torch.argmax(eos_mask.int(), dim=1)
         resp_lengths = torch.where(has_eos, eos_pos + 1, resp_lengths).long().clamp(min=1)
@@ -159,6 +158,8 @@ def ppo_train_epoch(epoch, loader, iters, rollout_engine, ref_model, actor_sched
         clipfrac_sum = 0.0
         aux_loss_sum = 0.0
         log_count = 0
+        actor_unwrapped = actor_model.module if isinstance(actor_model, DistributedDataParallel) else actor_model
+        critic_unwrapped = critic_model.module if isinstance(critic_model, DistributedDataParallel) else critic_model
         for ppo_epoch in range(args.ppo_update_iters):
             if stop_ppo:
                 break
@@ -166,12 +167,14 @@ def ppo_train_epoch(epoch, loader, iters, rollout_engine, ref_model, actor_sched
             for i in range(0, B, mb_size):
                 inds = b_inds[i:i + mb_size]
                 
-                mb_values_seq = critic_model(input_ids=gen_out[inds], attention_mask=full_mask[inds])
+                mb_values_seq = critic_unwrapped(input_ids=gen_out[inds], attention_mask=full_mask[inds])
                 mb_resp_values = mb_values_seq.gather(1, logp_pos[inds])
 
                 with autocast_ctx:
-                    res = actor_model(input_ids=gen_out[inds], attention_mask=full_mask[inds])
+                    res = actor_unwrapped(input_ids=gen_out[inds], attention_mask=full_mask[inds])
                     aux_loss = res.aux_loss if lm_config.use_moe else torch.tensor(0.0, device=args.device)
+                    # 在 autocast 内计算 log_softmax，避免直接对 fp16/bf16 logits
+                    # 计算造成额外数值偏差。
                     mb_resp_logp = F.log_softmax(res.logits[:, :-1], dim=-1).gather(2, labels[inds].unsqueeze(-1)).squeeze(-1).gather(1, logp_pos[inds])
 
                 log_ratio = mb_resp_logp - old_resp_logp[inds]
@@ -187,7 +190,7 @@ def ppo_train_epoch(epoch, loader, iters, rollout_engine, ref_model, actor_sched
                                f"ratio_max={torch.exp(_lrv).max().item():.6f} "
                                f"ratio_min={torch.exp(_lrv).min().item():.6f} "
                                f"dropout={getattr(lm_config, 'dropout', None)} "
-                               f"training={actor_model.training}")
+                               f"training={actor_unwrapped.training}")
                 approx_kl = (0.5 * (log_ratio ** 2) * resp_policy_mask[inds]).sum() / resp_policy_mask[inds].sum().clamp(min=1)
                 
                 # 同步各卡的 approx_kl，防止某卡 break 而其它卡继续导致 DDP 死锁
@@ -423,10 +426,10 @@ if __name__ == "__main__":
     if args.use_compile == 1:
         actor_model = torch.compile(actor_model)
         Logger('torch.compile enabled')
+        rollout_engine.update_policy(actor_model)
     if dist.is_initialized():
-        # freqs_cos/freqs_sin 各 rank 由 config 确定性算出，默认每步广播一次纯属浪费
-        actor_model = DistributedDataParallel(actor_model, device_ids=[local_rank], broadcast_buffers=False)
-        critic_model = DistributedDataParallel(critic_model, device_ids=[local_rank], broadcast_buffers=False)
+        actor_model = DistributedDataParallel(actor_model, device_ids=[local_rank])
+        critic_model = DistributedDataParallel(critic_model, device_ids=[local_rank])
     rollout_engine.update_policy(actor_model)
     
     # ========== 8. 开始训练 ==========

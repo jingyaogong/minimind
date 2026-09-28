@@ -40,7 +40,7 @@ def init_model(args):
         model.load_state_dict(torch.load(ckp, map_location=device), strict=True)
         if args.lora_weight != 'None':
             apply_lora(model)
-            load_lora(model, f'../{args.save_dir}/{args.lora_weight}_{args.hidden_size}{moe_suffix}.pth')
+            load_lora(model, f'../{args.save_dir}/lora/{args.lora_weight}_{args.hidden_size}.pth')
     else:
         model = AutoModelForCausalLM.from_pretrained(args.load_from, trust_remote_code=True)
     print(f'MiniMind模型参数量: {sum(p.numel() for p in model.parameters()) / 1e6:.2f} M(illion)')
@@ -202,7 +202,7 @@ async def chat_completions(request: ChatRequest):
             with torch.no_grad():
                 generated_ids = model.generate(
                     inputs["input_ids"],
-                    max_new_tokens=request.max_tokens,
+                    max_length=inputs["input_ids"].shape[1] + request.max_tokens,
                     do_sample=True,
                     attention_mask=inputs["attention_mask"],
                     pad_token_id=tokenizer.pad_token_id,
