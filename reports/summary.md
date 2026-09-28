@@ -1,7 +1,7 @@
 # RLVR 审计汇总（自动生成，勿手改）
 
-- 生成时间：2026-09-28T00:34:03+00:00
-- 预注册表：`/Users/qi/实习/项目/minimind/configs/experiment_registry.csv`
+- 生成时间：2026-09-27T15:43:01+00:00
+- 预注册表：`/root/autodl-tmp/minimind/configs/experiment_registry.csv`
 - 训练日志：`runs`（归档）/ `logs`（未归档）
 - 评估数据：`dataset/math_heldout.jsonl`（400 题，与训练集无重叠）
 - 本文件与 `summary.csv` 只是**视图**；每个数字的原始来源是 `runs/<run_tag>/metrics.csv` 与 `runs/<run_tag>/eval.json`。
@@ -12,10 +12,10 @@
 | run_tag | evidence | steps | reward (首/末10点均值) | correct (首/末10点均值) | format last | tokens last | filtered last | ACR wrong last | 决策树提示 |
 |---|---|---:|---|---|---:|---:|---:|---:|---|
 | `mini_rule_seed42` | archived | 200 | 0.317 → 0.542 (+0.225) | 0.317 → 0.542 (+0.225) | 1.000 | 118.1 | 1.000 | 0.500 | 否：训练侧正确率上升但 held-out 未涨（reward-eval gap）：先查 held-out 难度/样本量/verifier 口径 |
-| `mini_rule_dynamic_seed42` | archived | 200 | 0.383 → 0.433 (+0.050) | 0.383 → 0.433 (+0.050) | 1.000 | 116.7 | 1.000 | 0.500 | 否：held-out 下降（负结果）：先对照 paired_compare 的 p 值与本项目实测的噪声地板（report §4.7）再定性，别只看点估计方向 |
-| `mini_rule_len_seed42` | archived | 200 | 0.317 → 0.417 (+0.100) | 0.317 → 0.417 (+0.100) | 1.000 | 117.2 | 1.000 | 0.500 | 否：held-out 下降（负结果）：先对照 paired_compare 的 p 值与本项目实测的噪声地板（report §4.7）再定性，别只看点估计方向 |
-| `mini_rm_seed42` | archived | 200 | 1.684 → 2.011 (+0.327) | 0.233 → 0.025 (-0.208) | 1.000 | 110.3 | 1.000 | 1.000 | 否：held-out 下降 —— RM 奖励 hack：奖励与任务正确性背离（先拆 reward 组成 + 看 ACR；显著性见 paired_compare） |
-| `mini_mix_seed42` | archived | 200 | n/a（mix 臂为组内标准分量，均值恒 0） | 0.208 → 0.350 (+0.142) | 1.000 | 113.1 | 1.000 | 0.500 | 否：held-out 下降 —— RM 分量污染了 rule 信号（负结果：先看 component 退化组；显著性见 paired_compare） |
+| `mini_rule_dynamic_seed42` | archived | 200 | 0.383 → 0.433 (+0.050) | 0.383 → 0.433 (+0.050) | 1.000 | 116.7 | 1.000 | 0.500 | 否：训练侧正确率上升但 held-out 未涨（reward-eval gap）：先查 held-out 难度/样本量/verifier 口径 |
+| `mini_rule_len_seed42` | archived | 200 | 0.317 → 0.417 (+0.100) | 0.317 → 0.417 (+0.100) | 1.000 | 117.2 | 1.000 | 0.500 | 否：训练侧正确率上升但 held-out 未涨（reward-eval gap）：先查 held-out 难度/样本量/verifier 口径 |
+| `mini_rm_seed42` | archived | 200 | 1.684 → 2.011 (+0.327) | 0.233 → 0.025 (-0.208) | 1.000 | 110.3 | 1.000 | 1.000 | 否：长度偏置 / 过长 hack |
+| `mini_mix_seed42` | archived | 200 | -0.000 → 0.000 (+0.000) | 0.208 → 0.350 (+0.142) | 1.000 | 113.1 | 1.000 | 0.500 | 否：训练侧正确率上升但 held-out 未涨（reward-eval gap）：先查 held-out 难度/样本量/verifier 口径 |
 | `mini_rule_seed7` | archived | 200 | 0.508 → 0.317 (-0.192) | 0.508 → 0.317 (-0.192) | 1.000 | 120.6 | 0.500 | 0.500 | 否：查 reward 范围、verifier、学习率、rollout、NaN |
 | `math_cold_cot_seed42` | archived | 0 | — → — (—) | — → — (—) | — | — | — | — | 数据不足：需要至少两个 log_interval 的记录才能判断 |
 | `math_cold_seed42` | missing | 0 | — → — (—) | — → — (—) | — | — | — | — | 数据不足：需要至少两个 log_interval 的记录才能判断 |
@@ -44,7 +44,7 @@
 | `mini_rule_dynamic_seed42` | +0.050 | +0.050 | -0.005 | +0.055 | true | false |
 | `mini_rule_len_seed42` | +0.100 | +0.100 | -0.003 | +0.103 | false | false |
 | `mini_rm_seed42` | +0.327 | -0.208 | -0.263 | +0.589 | false | true |
-| `mini_mix_seed42` | n/a（标准化） | +0.142 | -0.080 | +0.080 | false | false |
+| `mini_mix_seed42` | +0.000 | +0.142 | -0.080 | +0.080 | false | false |
 | `mini_rule_seed7` | -0.192 | -0.192 | -0.008 | -0.184 | false | false |
 | `math_cold_cot_seed42` | — | — | -0.023 | — | false | false |
 | `math_cold_seed42` | — | — | -0.395 | — | false | false |

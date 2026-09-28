@@ -1,6 +1,10 @@
 __pycache__/
 *.pyc
 .DS_Store
-out
+.ipynb_checkpoints/
+out/
+checkpoints/
+logs/
 website/
 docs-minimind/
+*.pth

@@ -1,0 +1,669 @@
+{
+  "model": "out/math_cold_seed42_768.pth",
+  "created_at": "2026-09-27T09:21:53+00:00",
+  "device": "cuda:0",
+  "seed": 42,
+  "temperature": 0.8,
+  "top_p": 0.85,
+  "top_k": 50,
+  "repetition_penalty": 1.0,
+  "num_samples": 1,
+  "max_new_tokens": 512,
+  "marker": "答案是",
+  "hidden_size": 768,
+  "num_hidden_layers": 8,
+  "use_moe": 0,
+  "rows_evaluated": 20,
+  "rows_available": 400,
+  "metric_scope": "sampled (greedy_* keys are computed on the greedy pass)",
+  "data_path": "dataset/math_heldout.jsonl",
+  "data_file_sha256": "f829eb084a3e428dd157e7ec20c7ed4160de183990e2cc83d0688a4c558ce4fa",
+  "verifier_sha256": "bdb84fe35eb20e6169347e00a5ce66b3c2befa3969956aa0242b7a71362f023c",
+  "data_manifest_sha256": "9e55b7d3e3e45fb38c6834af79b3e0bfc0ea9de255659a1ec19a3d7baa3b7a06",
+  "data_manifest_recorded_sha256": "f829eb084a3e428dd157e7ec20c7ed4160de183990e2cc83d0688a4c558ce4fa",
+  "data_matches_manifest": true,
+  "greedy_accuracy": 0.0,
+  "sampled_pass_at_1": 0.05,
+  "format_rate": 1.0,
+  "no_answer_rate": 0.0,
+  "mean_completion_tokens": 43.75,
+  "median_completion_tokens": 43.5,
+  "pass_at_1": 0.05,
+  "pass_at_4": null,
+  "pass_at_8": null,
+  "pass_at_16": null,
+  "by_difficulty": {
+    "easy": {
+      "rows": 20,
+      "sample_budget": 1,
+      "greedy_accuracy": 0.0,
+      "sampled_pass_at_1": 0.05,
+      "format_rate": 1.0,
+      "no_answer_rate": 0.0,
+      "mean_completion_tokens": 43.75,
+      "median_completion_tokens": 43.5,
+      "greedy_format_rate": 1.0,
+      "greedy_no_answer_rate": 0.0,
+      "greedy_mean_completion_tokens": 44.25,
+      "status_counts": {
+        "correct": 1,
+        "incorrect": 19,
+        "no_answer": 0,
+        "invalid_gt": 0
+      },
+      "marker_hit_rate": 1.0,
+      "pass_at_1": 0.05,
+      "pass_at_4": null,
+      "pass_at_8": null,
+      "pass_at_16": null
+    }
+  },
+  "status_counts": {
+    "correct": 1,
+    "incorrect": 19,
+    "no_answer": 0,
+    "invalid_gt": 0
+  },
+  "samples": [
+    {
+      "sample_id": "easy-7856194cdb122d8d",
+      "difficulty": "easy",
+      "source": "synthetic",
+      "gt": "5",
+      "prompt": "<|im_start|>user\n请计算 32-27，并在最后一行以‘答案是 数字’输出。<|im_end|>\n<|im_start|>assistant\n<think>\n",
+      "greedy": {
+        "text": "我需要计算 32-27。按运算顺序先处理括号和乘方，再做乘除，最后做加减，结果是 1。\n</think>\n\n答案是 1",
+        "status": "incorrect",
+        "extracted": "1",
+        "correct": false,
+        "think_closed": true,
+        "marker_hit": true,
+        "format_ok": true,
+        "tokens": 42
+      },
+      "sampled": [
+        {
+          "text": "我需要计算 32-27。按运算顺序先处理括号和乘方，再做乘除，最后做加减，结果是 1。\n</think>\n\n答案是 1",
+          "status": "incorrect",
+          "extracted": "1",
+          "correct": false,
+          "think_closed": true,
+          "marker_hit": true,
+          "format_ok": true,
+          "tokens": 42
+        }
+      ],
+      "sampled_n_correct": 0
+    },
+    {
+      "sample_id": "easy-f5a7f87ce1336db6",
+      "difficulty": "easy",
+      "source": "synthetic",
+      "gt": "23",
+      "prompt": "<|im_start|>user\n请计算 66-43，并在最后一行以‘答案是 数字’输出。<|im_end|>\n<|im_start|>assistant\n<think>\n",
+      "greedy": {
+        "text": "我需要计算 66-43。按运算顺序先处理括号和乘方，再做乘除，最后做加减，结果是 3。\n</think>\n\n答案是 3",
+        "status": "incorrect",
+        "extracted": "3",
+        "correct": false,
+        "think_closed": true,
+        "marker_hit": true,
+        "format_ok": true,
+        "tokens": 42
+      },
+      "sampled": [
+        {
+          "text": "我需要计算 66-43。按运算顺序先处理括号和乘方，再做乘除，最后做加减，结果是 31。\n</think>\n\n答案是 31",
+          "status": "incorrect",
+          "extracted": "31",
+          "correct": false,
+          "think_closed": true,
+          "marker_hit": true,
+          "format_ok": true,
+          "tokens": 44
+        }
+      ],
+      "sampled_n_correct": 0
+    },
+    {
+      "sample_id": "easy-f5773748409ec8a4",
+      "difficulty": "easy",
+      "source": "synthetic",
+      "gt": "1518",
+      "prompt": "<|im_start|>user\n请计算 66*23，并在最后一行以‘答案是 数字’输出。<|im_end|>\n<|im_start|>assistant\n<think>\n",
+      "greedy": {
+        "text": "我需要计算 66*23。按运算顺序先处理括号和乘方，再做乘除，最后做加减，结果是 2888。\n</think>\n\n答案是 2888",
+        "status": "incorrect",
+        "extracted": "2888",
+        "correct": false,
+        "think_closed": true,
+        "marker_hit": true,
+        "format_ok": true,
+        "tokens": 47
+      },
+      "sampled": [
+        {
+          "text": "我需要计算 66*23。按运算顺序先处理括号和乘方，再做乘除，最后做加减，结果是 588。\n</think>\n\n答案是 588",
+          "status": "incorrect",
+          "extracted": "588",
+          "correct": false,
+          "think_closed": true,
+          "marker_hit": true,
+          "format_ok": true,
+          "tokens": 45
+        }
+      ],
+      "sampled_n_correct": 0
+    },
+    {
+      "sample_id": "easy-938802f2343db95d",
+      "difficulty": "easy",
+      "source": "synthetic",
+      "gt": "5917",
+      "prompt": "<|im_start|>user\n请计算 97*61，并在最后一行以‘答案是 数字’输出。<|im_end|>\n<|im_start|>assistant\n<think>\n",
+      "greedy": {
+        "text": "我需要计算 97*61。按运算顺序先处理括号和乘方，再做乘除，最后做加减，结果是 4378。\n</think>\n\n答案是 4378",
+        "status": "incorrect",
+        "extracted": "4378",
+        "correct": false,
+        "think_closed": true,
+        "marker_hit": true,
+        "format_ok": true,
+        "tokens": 48
+      },
+      "sampled": [
+        {
+          "text": "我需要计算 97*61。按运算顺序先处理括号和乘方，再做乘除，最后做加减，结果是 4534。\n</think>\n\n答案是 4534",
+          "status": "incorrect",
+          "extracted": "4534",
+          "correct": false,
+          "think_closed": true,
+          "marker_hit": true,
+          "format_ok": true,
+          "tokens": 48
+        }
+      ],
+      "sampled_n_correct": 0
+    },
+    {
+      "sample_id": "easy-6eedd46899952885",
+      "difficulty": "easy",
+      "source": "synthetic",
+      "gt": "74",
+      "prompt": "<|im_start|>user\n请计算 51+23，并在最后一行以‘答案是 数字’输出。<|im_end|>\n<|im_start|>assistant\n<think>\n",
+      "greedy": {
+        "text": "我需要计算 51+23。按运算顺序先处理括号和乘方，再做乘除，最后做加减，结果是 88。\n</think>\n\n答案是 88",
+        "status": "incorrect",
+        "extracted": "88",
+        "correct": false,
+        "think_closed": true,
+        "marker_hit": true,
+        "format_ok": true,
+        "tokens": 43
+      },
+      "sampled": [
+        {
+          "text": "我需要计算 51+23。按运算顺序先处理括号和乘方，再做乘除，最后做加减，结果是 87。\n</think>\n\n答案是 87",
+          "status": "incorrect",
+          "extracted": "87",
+          "correct": false,
+          "think_closed": true,
+          "marker_hit": true,
+          "format_ok": true,
+          "tokens": 43
+        }
+      ],
+      "sampled_n_correct": 0
+    },
+    {
+      "sample_id": "easy-10073072e7846e0c",
+      "difficulty": "easy",
+      "source": "synthetic",
+      "gt": "2350",
+      "prompt": "<|im_start|>user\n请计算 25*94，并在最后一行以‘答案是 数字’输出。<|im_end|>\n<|im_start|>assistant\n<think>\n",
+      "greedy": {
+        "text": "我需要计算 25*94。按运算顺序先处理括号和乘方，再做乘除，最后做加减，结果是 1644。\n</think>\n\n答案是 1644",
+        "status": "incorrect",
+        "extracted": "1644",
+        "correct": false,
+        "think_closed": true,
+        "marker_hit": true,
+        "format_ok": true,
+        "tokens": 45
+      },
+      "sampled": [
+        {
+          "text": "我需要计算 25*94。按运算顺序先处理括号和乘方，再做乘除，最后做加减，结果是 1716。\n</think>\n\n答案是 1716",
+          "status": "incorrect",
+          "extracted": "1716",
+          "correct": false,
+          "think_closed": true,
+          "marker_hit": true,
+          "format_ok": true,
+          "tokens": 43
+        }
+      ],
+      "sampled_n_correct": 0
+    },
+    {
+      "sample_id": "easy-93768934fc2667ba",
+      "difficulty": "easy",
+      "source": "synthetic",
+      "gt": "2300",
+      "prompt": "<|im_start|>user\n请计算 92*25，并在最后一行以‘答案是 数字’输出。<|im_end|>\n<|im_start|>assistant\n<think>\n",
+      "greedy": {
+        "text": "我需要计算 92*25。按运算顺序先处理括号和乘方，再做乘除，最后做加减，结果是 2885。\n</think>\n\n答案是 2885",
+        "status": "incorrect",
+        "extracted": "2885",
+        "correct": false,
+        "think_closed": true,
+        "marker_hit": true,
+        "format_ok": true,
+        "tokens": 47
+      },
+      "sampled": [
+        {
+          "text": "我需要计算 92*25。按运算顺序先处理括号和乘方，再做乘除，最后做加减，结果是 2600。\n</think>\n\n答案是 2600",
+          "status": "incorrect",
+          "extracted": "2600",
+          "correct": false,
+          "think_closed": true,
+          "marker_hit": true,
+          "format_ok": true,
+          "tokens": 45
+        }
+      ],
+      "sampled_n_correct": 0
+    },
+    {
+      "sample_id": "easy-855899e7423e13a2",
+      "difficulty": "easy",
+      "source": "synthetic",
+      "gt": "145",
+      "prompt": "<|im_start|>user\n请计算 50+95，并在最后一行以‘答案是 数字’输出。<|im_end|>\n<|im_start|>assistant\n<think>\n",
+      "greedy": {
+        "text": "我需要计算 50+95。按运算顺序先处理括号和乘方，再做乘除，最后做加减，结果是 111。\n</think>\n\n答案是 111",
+        "status": "incorrect",
+        "extracted": "111",
+        "correct": false,
+        "think_closed": true,
+        "marker_hit": true,
+        "format_ok": true,
+        "tokens": 43
+      },
+      "sampled": [
+        {
+          "text": "我需要计算 50+95。按运算顺序先处理括号和乘方，再做乘除，最后做加减，结果是 112。\n</think>\n\n答案是 112",
+          "status": "incorrect",
+          "extracted": "112",
+          "correct": false,
+          "think_closed": true,
+          "marker_hit": true,
+          "format_ok": true,
+          "tokens": 43
+        }
+      ],
+      "sampled_n_correct": 0
+    },
+    {
+      "sample_id": "easy-1441e958810409f5",
+      "difficulty": "easy",
+      "source": "synthetic",
+      "gt": "92",
+      "prompt": "<|im_start|>user\n请计算 38+54，并在最后一行以‘答案是 数字’输出。<|im_end|>\n<|im_start|>assistant\n<think>\n",
+      "greedy": {
+        "text": "我需要计算 38+54。按运算顺序先处理括号和乘方，再做乘除，最后做加减，结果是 98。\n</think>\n\n答案是 98",
+        "status": "incorrect",
+        "extracted": "98",
+        "correct": false,
+        "think_closed": true,
+        "marker_hit": true,
+        "format_ok": true,
+        "tokens": 44
+      },
+      "sampled": [
+        {
+          "text": "我需要计算 38+54。按运算顺序先处理括号和乘方，再做乘除，最后做加减，结果是 92。\n</think>\n\n答案是 92",
+          "status": "correct",
+          "extracted": "92",
+          "correct": true,
+          "think_closed": true,
+          "marker_hit": true,
+          "format_ok": true,
+          "tokens": 44
+        }
+      ],
+      "sampled_n_correct": 1
+    },
+    {
+      "sample_id": "easy-b659188790eeb84d",
+      "difficulty": "easy",
+      "source": "synthetic",
+      "gt": "27",
+      "prompt": "<|im_start|>user\n请计算 52-25，并在最后一行以‘答案是 数字’输出。<|im_end|>\n<|im_start|>assistant\n<think>\n",
+      "greedy": {
+        "text": "我需要计算 52-25。按运算顺序先处理括号和乘方，再做乘除，最后做加减，结果是 3。\n</think>\n\n答案是 3",
+        "status": "incorrect",
+        "extracted": "3",
+        "correct": false,
+        "think_closed": true,
+        "marker_hit": true,
+        "format_ok": true,
+        "tokens": 41
+      },
+      "sampled": [
+        {
+          "text": "我需要计算 52-25。按运算顺序先处理括号和乘方，再做乘除，最后做加减，结果是 1。\n</think>\n\n答案是 1",
+          "status": "incorrect",
+          "extracted": "1",
+          "correct": false,
+          "think_closed": true,
+          "marker_hit": true,
+          "format_ok": true,
+          "tokens": 41
+        }
+      ],
+      "sampled_n_correct": 0
+    },
+    {
+      "sample_id": "easy-50f6979dc799b38a",
+      "difficulty": "easy",
+      "source": "synthetic",
+      "gt": "4",
+      "prompt": "<|im_start|>user\n请计算 47-43，并在最后一行以‘答案是 数字’输出。<|im_end|>\n<|im_start|>assistant\n<think>\n",
+      "greedy": {
+        "text": "我需要计算 47-43。按运算顺序先处理括号和乘方，再做乘除，最后做加减，结果是 1。\n</think>\n\n答案是 1",
+        "status": "incorrect",
+        "extracted": "1",
+        "correct": false,
+        "think_closed": true,
+        "marker_hit": true,
+        "format_ok": true,
+        "tokens": 42
+      },
+      "sampled": [
+        {
+          "text": "我需要计算 47-43。按运算顺序先处理括号和乘方，再做乘除，最后做加减，结果是 3。\n</think>\n\n答案是 3",
+          "status": "incorrect",
+          "extracted": "3",
+          "correct": false,
+          "think_closed": true,
+          "marker_hit": true,
+          "format_ok": true,
+          "tokens": 42
+        }
+      ],
+      "sampled_n_correct": 0
+    },
+    {
+      "sample_id": "easy-7b5526f136f59921",
+      "difficulty": "easy",
+      "source": "synthetic",
+      "gt": "172",
+      "prompt": "<|im_start|>user\n请计算 85+87，并在最后一行以‘答案是 数字’输出。<|im_end|>\n<|im_start|>assistant\n<think>\n",
+      "greedy": {
+        "text": "我需要计算 85+87。按运算顺序先处理括号和乘方，再做乘除，最后做加减，结果是 111。\n</think>\n\n答案是 111",
+        "status": "incorrect",
+        "extracted": "111",
+        "correct": false,
+        "think_closed": true,
+        "marker_hit": true,
+        "format_ok": true,
+        "tokens": 44
+      },
+      "sampled": [
+        {
+          "text": "我需要计算 85+87。按运算顺序先处理括号和乘方，再做乘除，最后做加减，结果是 123。\n</think>\n\n答案是 123",
+          "status": "incorrect",
+          "extracted": "123",
+          "correct": false,
+          "think_closed": true,
+          "marker_hit": true,
+          "format_ok": true,
+          "tokens": 44
+        }
+      ],
+      "sampled_n_correct": 0
+    },
+    {
+      "sample_id": "easy-5f1d37ea137f5ac6",
+      "difficulty": "easy",
+      "source": "synthetic",
+      "gt": "97",
+      "prompt": "<|im_start|>user\n请计算 69+28，并在最后一行以‘答案是 数字’输出。<|im_end|>\n<|im_start|>assistant\n<think>\n",
+      "greedy": {
+        "text": "我需要计算 69+28。按运算顺序先处理括号和乘方，再做乘除，最后做加减，结果是 88。\n</think>\n\n答案是 88",
+        "status": "incorrect",
+        "extracted": "88",
+        "correct": false,
+        "think_closed": true,
+        "marker_hit": true,
+        "format_ok": true,
+        "tokens": 43
+      },
+      "sampled": [
+        {
+          "text": "我需要计算 69+28。按运算顺序先处理括号和乘方，再做乘除，最后做加减，结果是 94。\n</think>\n\n答案是 94",
+          "status": "incorrect",
+          "extracted": "94",
+          "correct": false,
+          "think_closed": true,
+          "marker_hit": true,
+          "format_ok": true,
+          "tokens": 43
+        }
+      ],
+      "sampled_n_correct": 0
+    },
+    {
+      "sample_id": "easy-44397feca1018fec",
+      "difficulty": "easy",
+      "source": "synthetic",
+      "gt": "6853",
+      "prompt": "<|im_start|>user\n请计算 77*89，并在最后一行以‘答案是 数字’输出。<|im_end|>\n<|im_start|>assistant\n<think>\n",
+      "greedy": {
+        "text": "我需要计算 77*89。按运算顺序先处理括号和乘方，再做乘除，最后做加减，结果是 5832。\n</think>\n\n答案是 5832",
+        "status": "incorrect",
+        "extracted": "5832",
+        "correct": false,
+        "think_closed": true,
+        "marker_hit": true,
+        "format_ok": true,
+        "tokens": 48
+      },
+      "sampled": [
+        {
+          "text": "我需要计算 77*89。按运算顺序先处理括号和乘方，再做乘除，最后做加减，结果是 531。\n</think>\n\n答案是 531",
+          "status": "incorrect",
+          "extracted": "531",
+          "correct": false,
+          "think_closed": true,
+          "marker_hit": true,
+          "format_ok": true,
+          "tokens": 46
+        }
+      ],
+      "sampled_n_correct": 0
+    },
+    {
+      "sample_id": "easy-0047544e34efb6d2",
+      "difficulty": "easy",
+      "source": "synthetic",
+      "gt": "33",
+      "prompt": "<|im_start|>user\n请计算 67-34，并在最后一行以‘答案是 数字’输出。<|im_end|>\n<|im_start|>assistant\n<think>\n",
+      "greedy": {
+        "text": "我需要计算 67-34。按运算顺序先处理括号和乘方，再做乘除，最后做加减，结果是 34。\n</think>\n\n答案是 34",
+        "status": "incorrect",
+        "extracted": "34",
+        "correct": false,
+        "think_closed": true,
+        "marker_hit": true,
+        "format_ok": true,
+        "tokens": 44
+      },
+      "sampled": [
+        {
+          "text": "我需要计算 67-34。按运算顺序先处理括号和乘方，再做乘除，最后做加减，结果是 1。\n</think>\n\n答案是 1",
+          "status": "incorrect",
+          "extracted": "1",
+          "correct": false,
+          "think_closed": true,
+          "marker_hit": true,
+          "format_ok": true,
+          "tokens": 42
+        }
+      ],
+      "sampled_n_correct": 0
+    },
+    {
+      "sample_id": "easy-b7bab6c13c3bbd8e",
+      "difficulty": "easy",
+      "source": "synthetic",
+      "gt": "2304",
+      "prompt": "<|im_start|>user\n请计算 48*48，并在最后一行以‘答案是 数字’输出。<|im_end|>\n<|im_start|>assistant\n<think>\n",
+      "greedy": {
+        "text": "我需要计算 48*48。按运算顺序先处理括号和乘方，再做乘除，最后做加减，结果是 2888。\n</think>\n\n答案是 2888",
+        "status": "incorrect",
+        "extracted": "2888",
+        "correct": false,
+        "think_closed": true,
+        "marker_hit": true,
+        "format_ok": true,
+        "tokens": 47
+      },
+      "sampled": [
+        {
+          "text": "我需要计算 48*48。按运算顺序先处理括号和乘方，再做乘除，最后做加减，结果是 3488。\n</think>\n\n答案是 3488",
+          "status": "incorrect",
+          "extracted": "3488",
+          "correct": false,
+          "think_closed": true,
+          "marker_hit": true,
+          "format_ok": true,
+          "tokens": 45
+        }
+      ],
+      "sampled_n_correct": 0
+    },
+    {
+      "sample_id": "easy-f44b7b17da91a4e8",
+      "difficulty": "easy",
+      "source": "synthetic",
+      "gt": "1254",
+      "prompt": "<|im_start|>user\n请计算 57*22，并在最后一行以‘答案是 数字’输出。<|im_end|>\n<|im_start|>assistant\n<think>\n",
+      "greedy": {
+        "text": "我需要计算 57*22。按运算顺序先处理括号和乘方，再做乘除，最后做加减，结果是 688。\n</think>\n\n答案是 688",
+        "status": "incorrect",
+        "extracted": "688",
+        "correct": false,
+        "think_closed": true,
+        "marker_hit": true,
+        "format_ok": true,
+        "tokens": 45
+      },
+      "sampled": [
+        {
+          "text": "我需要计算 57*22。按运算顺序先处理括号和乘方，再做乘除，最后做加减，结果是 488。\n</think>\n\n答案是 488",
+          "status": "incorrect",
+          "extracted": "488",
+          "correct": false,
+          "think_closed": true,
+          "marker_hit": true,
+          "format_ok": true,
+          "tokens": 45
+        }
+      ],
+      "sampled_n_correct": 0
+    },
+    {
+      "sample_id": "easy-978891b837a8739e",
+      "difficulty": "easy",
+      "source": "synthetic",
+      "gt": "7",
+      "prompt": "<|im_start|>user\n请计算 56-49，并在最后一行以‘答案是 数字’输出。<|im_end|>\n<|im_start|>assistant\n<think>\n",
+      "greedy": {
+        "text": "我需要计算 56-49。按运算顺序先处理括号和乘方，再做乘除，最后做加减，结果是 1。\n</think>\n\n答案是 1",
+        "status": "incorrect",
+        "extracted": "1",
+        "correct": false,
+        "think_closed": true,
+        "marker_hit": true,
+        "format_ok": true,
+        "tokens": 42
+      },
+      "sampled": [
+        {
+          "text": "我需要计算 56-49。按运算顺序先处理括号和乘方，再做乘除，最后做加减，结果是 14。\n</think>\n\n答案是 14",
+          "status": "incorrect",
+          "extracted": "14",
+          "correct": false,
+          "think_closed": true,
+          "marker_hit": true,
+          "format_ok": true,
+          "tokens": 42
+        }
+      ],
+      "sampled_n_correct": 0
+    },
+    {
+      "sample_id": "easy-cf3b68353191d6cd",
+      "difficulty": "easy",
+      "source": "synthetic",
+      "gt": "540",
+      "prompt": "<|im_start|>user\n请计算 30*18，并在最后一行以‘答案是 数字’输出。<|im_end|>\n<|im_start|>assistant\n<think>\n",
+      "greedy": {
+        "text": "我需要计算 30*18。按运算顺序先处理括号和乘方，再做乘除，最后做加减，结果是 280。\n</think>\n\n答案是 280",
+        "status": "incorrect",
+        "extracted": "280",
+        "correct": false,
+        "think_closed": true,
+        "marker_hit": true,
+        "format_ok": true,
+        "tokens": 42
+      },
+      "sampled": [
+        {
+          "text": "我需要计算 30*18。按运算顺序先处理括号和乘方，再做乘除，最后做加减，结果是 252。\n</think>\n\n答案是 252",
+          "status": "incorrect",
+          "extracted": "252",
+          "correct": false,
+          "think_closed": true,
+          "marker_hit": true,
+          "format_ok": true,
+          "tokens": 42
+        }
+      ],
+      "sampled_n_correct": 0
+    },
+    {
+      "sample_id": "easy-1a8dad5b83c37188",
+      "difficulty": "easy",
+      "source": "synthetic",
+      "gt": "5720",
+      "prompt": "<|im_start|>user\n请计算 88*65，并在最后一行以‘答案是 数字’输出。<|im_end|>\n<|im_start|>assistant\n<think>\n",
+      "greedy": {
+        "text": "我需要计算 88*65。按运算顺序先处理括号和乘方，再做乘除，最后做加减，结果是 4320。\n</think>\n\n答案是 4320",
+        "status": "incorrect",
+        "extracted": "4320",
+        "correct": false,
+        "think_closed": true,
+        "marker_hit": true,
+        "format_ok": true,
+        "tokens": 46
+      },
+      "sampled": [
+        {
+          "text": "我需要计算 88*65。按运算顺序先处理括号和乘方，再做乘除，最后做加减，结果是 3320。\n</think>\n\n答案是 3320",
+          "status": "incorrect",
+          "extracted": "3320",
+          "correct": false,
+          "think_closed": true,
+          "marker_hit": true,
+          "format_ok": true,
+          "tokens": 46
+        }
+      ],
+      "sampled_n_correct": 0
+    }
+  ]
+}

@@ -1,0 +1,58 @@
+{
+  "created_at": "2026-09-27T11:50:20+00:00",
+  "run_tag": "math_cold_cot_seed42",
+  "registry_row": null,
+  "prerequisite": true,
+  "status": "partial",
+  "required_files": [
+    "command.txt",
+    "environment.txt",
+    "data_manifest.json",
+    "eval.json",
+    "analysis.md",
+    "checkpoints.txt"
+  ],
+  "missing": [
+    "config.yaml",
+    "metrics.csv",
+    "samples.jsonl"
+  ],
+  "raw_evidence": [
+    "eval.json",
+    "eval.jsonl"
+  ],
+  "written_files": {
+    "command.txt": {
+      "sha256": "0ce811571b415f2c878811f326d44a1d315179be7e04579bad3dcf7459d46d81",
+      "kind": "derived"
+    },
+    "eval.json": {
+      "sha256": "f1fb7012aa79c03daa8a2c7d90216da746a6df3f3efce15ec9c65591d386d43d",
+      "kind": "raw"
+    },
+    "environment.txt": {
+      "sha256": "0ed676f2094f32b83a4160112c9f24defec1eac0b8ab7297ebdb0fb1494207fd",
+      "kind": "derived"
+    },
+    "data_manifest.json": {
+      "sha256": "3e38cd30c3bb67f222fd033400af7f819beb57d17a5d500990457afee1fdbc5f",
+      "kind": "derived"
+    },
+    "checkpoints.txt": {
+      "sha256": "d82057e9f6690f8483225b1835644c0a4733c7185fc1217624c893740af658ce",
+      "kind": "derived"
+    },
+    "analysis.md": {
+      "sha256": "225b7172e201bc7323350d162c42c10185b883a75405ff92d22a6f8a63a0a3f9",
+      "kind": "derived"
+    }
+  },
+  "notes": [
+    "math_cold_cot_seed42 is not present in /root/autodl-tmp/minimind/configs/experiment_registry.csv; command.txt holds no command, only a warning",
+    "metrics missing: logs/math_cold_cot_seed42_metrics.csv not found",
+    "samples missing: logs/math_cold_cot_seed42_samples.jsonl not found",
+    "config missing: logs/math_cold_cot_seed42_config.json not found"
+  ],
+  "metrics_rows": 0,
+  "train_log": true
+}

@@ -1,0 +1,3 @@
+# math_cold_cot_seed42 is not registered in /root/autodl-tmp/minimind/configs/experiment_registry.csv
+# an unregistered run cannot be reproduced from the registry;
+# paste the executed command here before treating this run as evidence

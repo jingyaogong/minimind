@@ -1,8 +1,8 @@
 {
-  "created_at": "2026-09-28T00:34:03+00:00",
+  "created_at": "2026-09-27T15:43:01+00:00",
   "runs_dir": "runs",
   "log_dir": "logs",
-  "registry": "/Users/qi/实习/项目/minimind/configs/experiment_registry.csv",
+  "registry": "/root/autodl-tmp/minimind/configs/experiment_registry.csv",
   "runs": [
     {
       "run_tag": "mini_rule_seed42",
@@ -101,7 +101,7 @@
     "not plotted (missing train gain or eval): math_cold_cot_seed42, math_cold_seed42"
   ],
   "files": {
-    "summary.md": "8fd6c7afe35c76e33d2466622018518318c6082807eedbe21dad7734234fcc55",
-    "summary.csv": "1e96835c42721959007e0953028528b20e015db7c3539bb5f9ee41d5a6924c15"
+    "summary.md": "de4ceda82ad036a57b785c28d54b6260c7e722d1517f220e5067207dc75cf878",
+    "summary.csv": "4c62a3683af1e50580a7a548bbb5ba2e44b55ed75e8ac9aac4991502adcdc026"
   }
 }

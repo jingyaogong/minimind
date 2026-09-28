@@ -1,0 +1,84 @@
+{
+  "captured_at": "2026-09-27T13:54:12+00:00",
+  "run_tag": "mini_rule_len_seed42",
+  "registry_row": {
+    "run_tag": "mini_rule_len_seed42",
+    "model": "MiniMind-64M",
+    "reward_mode": "rule",
+    "loss_type": "grpo",
+    "seed": "42",
+    "G": "6",
+    "max_gen_len": "512",
+    "beta": "0.1",
+    "dynamic_sampling": "0",
+    "len_penalty_coef": "0.05",
+    "alpha": "0.5",
+    "beta_mix": "0.5",
+    "hypothesis": "reduce overlong outputs - penalising tokens above the cap cuts mean completion length without cutting accuracy"
+  },
+  "dataset_manifest_path": "dataset/manifests/math_manifest.json",
+  "files": {
+    "dataset/math_rlvr_train.jsonl": {
+      "exists": true,
+      "bytes": 453747,
+      "sha256": "f55c0b6954ea5e57abd844e88309bf8a8b1e7d0e7f2b82bfb60fcae5b2286478",
+      "recorded_sha256": "f55c0b6954ea5e57abd844e88309bf8a8b1e7d0e7f2b82bfb60fcae5b2286478",
+      "matches_manifest": true
+    },
+    "dataset/math_heldout.jsonl": {
+      "exists": true,
+      "bytes": 90756,
+      "sha256": "f829eb084a3e428dd157e7ec20c7ed4160de183990e2cc83d0688a4c558ce4fa",
+      "recorded_sha256": "f829eb084a3e428dd157e7ec20c7ed4160de183990e2cc83d0688a4c558ce4fa",
+      "matches_manifest": true
+    }
+  },
+  "dataset_manifest_sha256": "85cc1dee808267a75cd0c4b51f6a6882cfe31e0ac1c589de75e00d1fb382904b",
+  "dataset_manifest": {
+    "mode": "synthetic-only",
+    "seed": 42,
+    "created_at": "2026-09-27T09:42:33+00:00",
+    "marker": "答案是",
+    "answer_instruction": "最后一行以‘答案是 数字’输出。",
+    "source_files": [
+      "synthetic://whitelist-ast-generator"
+    ],
+    "source_sha256": {
+      "generator": "3f9e942e281885c12d015195bd9e6372ba7036f6bc3881a9a64aa5125b29fde9"
+    },
+    "source_line_stats": {
+      "generated_duplicate": 36
+    },
+    "bad_line_numbers": [],
+    "train_count": 2000,
+    "heldout_count": 400,
+    "sft_count": 2000,
+    "heldout_target": 400,
+    "duplicate_count": 36,
+    "discard_reasons": {
+      "generated_duplicate": 36
+    },
+    "difficulty_counts": {
+      "train": {
+        "easy": 666,
+        "hard": 667,
+        "medium": 667
+      },
+      "heldout": {
+        "easy": 134,
+        "hard": 133,
+        "medium": 133
+      }
+    },
+    "answer_types": {
+      "integer": 2400
+    },
+    "overlap_count": 0,
+    "split_rule": "difficulty bucket -> keys ordered by sha256(seed:key) -> largest-remainder quota fill for held-out",
+    "outputs": {
+      "math_sft_train.jsonl": "1740c0d038f4adbc8c339371ddb1ac9c198ad038a5e3b21898a83f93e7b79f6a",
+      "math_rlvr_train.jsonl": "f55c0b6954ea5e57abd844e88309bf8a8b1e7d0e7f2b82bfb60fcae5b2286478",
+      "math_heldout.jsonl": "f829eb084a3e428dd157e7ec20c7ed4160de183990e2cc83d0688a4c558ce4fa"
+    }
+  }
+}

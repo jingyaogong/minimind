@@ -1,0 +1,40 @@
+# environment for mini_rule_seed42
+captured_at: 2026-09-27T11:46:00+00:00
+host: autodl-container-154d408a77-cd6ad9dc
+platform: Linux-5.15.0-94-generic-x86_64-with-glibc2.35
+machine: x86_64
+python: 3.12.3 (CPython)
+executable: /root/miniconda3/bin/python
+cwd: /root/autodl-tmp/minimind
+cuda_available: True
+gpu: NVIDIA GeForce RTX 4090
+cpu_count: 128
+git_commit: n/a (no git repository in this checkout)
+git_status:
+n/a
+packages:
+  datasets==3.6.0
+  numpy==2.3.2
+  torch==2.8.0+cu128
+  transformers==4.57.6
+nvidia-smi:
+  Sun Sep 27 19:46:00 2026       
+  +-----------------------------------------------------------------------------------------+
+  | NVIDIA-SMI 580.76.05              Driver Version: 580.76.05      CUDA Version: 13.0     |
+  +-----------------------------------------+------------------------+----------------------+
+  | GPU  Name                 Persistence-M | Bus-Id          Disp.A | Volatile Uncorr. ECC |
+  | Fan  Temp   Perf          Pwr:Usage/Cap |           Memory-Usage | GPU-Util  Compute M. |
+  |                                         |                        |               MIG M. |
+  |=========================================+========================+======================|
+  |   0  NVIDIA GeForce RTX 4090        On  |   00000000:A8:00.0 Off |                  Off |
+  | 30%   32C    P8             22W /  450W |       3MiB /  24564MiB |      0%      Default |
+  |                                         |                        |                  N/A |
+  +-----------------------------------------+------------------------+----------------------+
+  
+  +-----------------------------------------------------------------------------------------+
+  | Processes:                                                                              |
+  |  GPU   GI   CI              PID   Type   Process name                        GPU Memory |
+  |        ID   ID                                                               Usage      |
+  |=========================================================================================|
+  |  No running processes found                                                             |
+  +-----------------------------------------------------------------------------------------+

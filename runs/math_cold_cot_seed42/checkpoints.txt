@@ -1,0 +1,5 @@
+# checkpoints matching prefix 'math_cold_cot_seed42' (binaries are deliberately not archived)
+d0e9fc32445f29e5b94cef6db3752a5d6ca829d7f2766f2e40dc5b102b0e2f2c     137685635  2026-09-27T10:08:01+00:00  out/math_cold_cot_seed42_768.pth
+3c10f39b20faec7bb184e8b0c7c59fbcabe8067f177a0f40a13cd3057e78b05e            99  2026-09-27T10:26:55+00:00  out/math_cold_cot_seed42_768.pth.sha256
+ef2bc66fe11b103c8961e60f76b3058687b3ed4b806a7d56f9f99bd1e5a5079d     137686023  2026-09-27T10:08:01+00:00  checkpoints/math_cold_cot_seed42_768.pth
+ae90128fa2d0a50748831bd5204ad680d8fe762e1b549493ccd40269e6983e1f     649068753  2026-09-27T10:08:02+00:00  checkpoints/math_cold_cot_seed42_768_resume.pth

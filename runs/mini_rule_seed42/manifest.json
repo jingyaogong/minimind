@@ -1,0 +1,80 @@
+{
+  "created_at": "2026-09-27T11:46:01+00:00",
+  "run_tag": "mini_rule_seed42",
+  "registry_row": {
+    "run_tag": "mini_rule_seed42",
+    "model": "MiniMind-64M",
+    "reward_mode": "rule",
+    "loss_type": "grpo",
+    "seed": "42",
+    "G": "6",
+    "max_gen_len": "512",
+    "beta": "0.1",
+    "dynamic_sampling": "0",
+    "len_penalty_coef": "0",
+    "alpha": "0.5",
+    "beta_mix": "0.5",
+    "hypothesis": "rule signal baseline - the GT verifier alone raises held-out accuracy above the SFT cold start"
+  },
+  "status": "complete",
+  "required_files": [
+    "command.txt",
+    "config.yaml",
+    "environment.txt",
+    "data_manifest.json",
+    "metrics.csv",
+    "eval.json",
+    "samples.jsonl",
+    "analysis.md",
+    "checkpoints.txt"
+  ],
+  "missing": [],
+  "raw_evidence": [
+    "metrics.csv",
+    "samples.jsonl",
+    "eval.json",
+    "eval.jsonl"
+  ],
+  "written_files": {
+    "command.txt": {
+      "sha256": "8ccb072355d24117fab790affccd0b0ed306f29ae0925a1b08554aaa9fa3f43c",
+      "kind": "derived"
+    },
+    "metrics.csv": {
+      "sha256": "0adc7714a8501efe3592e2a166ff5d3f4e7509ae4e079a89c423d5bb8d407eb6",
+      "kind": "raw"
+    },
+    "samples.jsonl": {
+      "sha256": "b6ebe609025ce04a6e0321b766f0485dfdaf0400a5fb694739fc26f89a3cac61",
+      "kind": "raw"
+    },
+    "eval.json": {
+      "sha256": "f4b9b69bee0c3751171f199816756dada9e816af9fbd793c53e6b77bd08d44f5",
+      "kind": "raw"
+    },
+    "config.yaml": {
+      "sha256": "46141de073d25b58a1a0f4ad17cf83dd388613ec2a692d05e52d3f1f3370d004",
+      "kind": "derived",
+      "source": "logs/mini_rule_seed42_config.json"
+    },
+    "environment.txt": {
+      "sha256": "c92aeee2928d9933f8b8bbb503bf46aeb97e56b9bf1f0545b855974c9b93215d",
+      "kind": "derived"
+    },
+    "data_manifest.json": {
+      "sha256": "a0a2ef94899fa7bb9a637a05b3621be8e48bd9c70d34136d2b7accc62a4e4d49",
+      "kind": "derived"
+    },
+    "checkpoints.txt": {
+      "sha256": "dab8d97195632feabf74a7c145ce050eb6b83a9a35200405086119497850073f",
+      "kind": "derived"
+    },
+    "analysis.md": {
+      "sha256": "90b8b8e4d9479196fdd6d680c30bf421e83b46dbfd702eeaa20b991c4eb9db44",
+      "kind": "derived"
+    }
+  },
+  "notes": [],
+  "metrics_rows": 200,
+  "train_log": true
+}

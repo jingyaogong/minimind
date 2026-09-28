@@ -2,7 +2,7 @@
 
 **Auditing RLVR Training Dynamics: Reward, Length Bias, and Capability Decoupling**
 
-模型：MiniMind-64M（白盒层） · 单卡 RTX 4090 · 状态：**v1.0**（六臂 + 重跑 + 噪声地板 + 错误类别 + 抽查 + 反向同步与本地复算 + README 全部完成）
+模型：MiniMind-64M（白盒层） · 单卡 RTX 4090 · 状态：**v0.9-draft**（六臂 + 重跑已完成；缺 3 项证据，见 §9）
 
 > **本文的写作约定**：每个数字都必须能指回仓库里的原始文件（`runs/<tag>/eval.json`、
 > `logs/<tag>_metrics.csv`、`reports/summary.md`、`reports/paired_compare.md`）。
@@ -20,10 +20,8 @@
 | 3 | **RL 主要锐化已有分布，未见能力上界扩展**：四个臂 greedy 净变 +6~+9，能力指标（pass@16 逐题）净变 +2/+10/−2/+2 全部不显著 | §4.4 | 中 |
 | 4 | **长度惩罚臂是 no-op**：预注册 cap=300 落在观测分布之外（训练采样 max 228、评估 max 280），惩罚从未触发 | §4.6 | 强（直接测量） |
 | 5 | **难度分层用的是"人类难度"**：held-out 的 medium 档（0.128）反而低于 hard 档（0.436） | §4.5 | 强（事实描述），原因未定 |
-| 6 | **训练不可复现 + 噪声地板已实测**：同命令同种子重跑，200 个记录点只有 **35 个一致**（step 180 起分岔）；评估侧噪声下限 = greedy 净变 **+2**（p=0.75）、能力净变 **−6**（p=0.31），四个臂的全部效应都没越过它 | §4.7 | 强（直接实验） |
+| 6 | **训练不可复现**：同一条命令、同一个种子重跑，200 个记录点只有 **35 个一致**（step 180 起分岔）；因此单次运行的曲线与效应量都不能单独作为证据 | §4.7 | 强（直接实验） |
 | 7 | **RM 奖励把能力换掉了（本项目最强的负结果）**：RM-only 的 reward 涨 +0.327，而 held-out greedy 从 0.373 掉到 **0.133**（配对 6 变对 / 102 变错，净 −96，p<0.0001）；mix 臂也退化到 0.315（净 −23，p=0.0011） | §4.8；`reports/paired_compare.md` | 强（预注册假设成立） |
-| 8 | **RM 臂崩的是算术、不是生成**：400 条 greedy 里 100% 闭合 `</think>`、0 循环 / 0 截断 / 0 无答案，失败全部落在算术类（86.8%，冷启动 62.7%）——外壳被完整保留，只丢了正确性 | §4.9；`reports/error_analysis_mini_rm_seed42.md` | 强（全量分类） |
-| 9 | **失败是"续写数字"而非"算错"**：抽查 20 条失败样本，17/17（冷启动）与 12/13（RM）的乘法断言为假，16/17 与 13/15 的"写出的和 ≠ 自己写的加数之和" | §4.9；`reports/audit_*.md` | 中（前 20 条，非随机抽样） |
 
 一句话版本：**在这套设置里，reward 上升不能当作正确率上升的证据**——RM-only 臂在同一批数据上 reward +0.327、verifier 正确率 −0.208，是这条论断最直接的实证。本项目给出的是"如何把两者拆开"的可复现流程，以及一份诚实的负结果清单。
 
@@ -220,18 +218,9 @@ greedy 分档（冷启动）：easy 0.552 > hard 0.436 > **medium 0.128**。四�
    而 held-out greedy 却几乎相同（0.395 vs 0.388）——即训练期曲线的差异远大于最终评估的差异。
 5. 记录点之外的更早步骤可能已经存在**低于日志精度**的微小差异，因此"35/200 一致"是复现性的**上界**。
 
-**噪声下限（已测，2026-09-28）**：重跑模型同样做 400×16 held-out 评估，与"同命令、同种子"的原运行配对：
-
-| 口径 | 点估计（原运行 → 重跑） | 逐题变对 / 变错 | 净变 | McNemar p |
-|---|---:|---:|---:|---:|
-| greedy 正确率 | 0.3950 → 0.4000 | 6 / 4 | **+2** | 0.7539 |
-| 能力（pass@16 逐题） | 0.5575 → 0.5425 | 9 / 15 | **−6** | 0.3075 |
-
-**含义**：只换随机数（模型权重、评估采样都变，命令与种子不变）就能产生 ±6 的逐题翻转、
-±2 的 greedy 净变、甚至 −6 的能力净变。对照 §4.4，四个臂的**全部**效应是：
-greedy 净变 +6 ~ +9、能力净变 +2 / +10 / −2 / +2——**没有一个越过这个地板**。
-因此 §4.4 的"净 +9 题"只能作为方向性证据，不能作为效应量；这也解释了为什么四个臂的
-p 值全部停在 0.06–0.18：分母里同时有 400 题的抽样误差和重跑的非确定性，两者都比效应本身大。
+**TODO(noise-floor)**：把重跑的模型也做一次 400×16 held-out 评估，得到"同一条命令、同一个种子"两次运行的
+held-out 差值——那就是本项目所有 arm 对比的**噪声下限**。若它与 rule 臂的 +0.022 同量级，
+则 §4.4 的"净 +9 题"只能作为方向性证据，不能作为效应量。
 
 ### 4.8 RM 两臂：奖励与正确性的正面背离（本项目的核心负结果）
 
@@ -264,65 +253,10 @@ p 值全部停在 0.06–0.18：分母里同时有 400 题的抽样误差和重�
 **与 SOP §0.2 的对应**：这条结果落在"reward/格式率上升、正确率不变或下降"那一行，
 即**发现了 reward hacking**，而不是"RLVR 在数学上无效"。
 
-### 4.9 错误类别分析：RM 臂崩的是算术，不是模型
+### 4.9 人工审计样本（TODO，DoD 要求 ≥20 条）
 
-`scripts/error_analysis.py` 把 `runs/<tag>/eval.jsonl` 的**全部 400 条 greedy 输出**逐条分类
-（互斥主类别 + 非互斥标记；重复检测为"任意周期 ≤64 字符、连续 ≥3 次、跨度 ≥12 字符"）：
-
-| 主类别 | `math_cold_cot_seed42`（RL 起点） | `mini_rm_seed42`（RM-only） |
-|---|---:|---:|
-| `correct` | 149（37.2%） | 53（13.2%） |
-| `arithmetic_error` | 251（62.7%） | **347（86.8%）** |
-| 其余 6 类：`repetition` / `unclosed_think` / `redundant_answer` / `length_burn` / `no_answer` / `other` | **全部 0** | **全部 0** |
-| 标记 `marker_unparsed`（verifier 待复核） | 0 | 0 |
-
-分档正确率（同一份 400 题）：
-
-| 档位 | 冷启动 | RM-only | 比值 |
-|---|---:|---:|---:|
-| easy | 74/134 = 0.552 | 28/134 = 0.209 | 0.38 |
-| medium | 17/133 = 0.128 | 1/133 = 0.008 | 0.06 |
-| hard | 58/133 = 0.436 | 24/133 = 0.180 | 0.41 |
-
-**读法**：RM 臂的退化**不在格式层**——400 条补全 100% 闭合了 `</think>`、100% 能被 verifier 抽出数字、
-没有一条循环、没有一条被长度上限截断、没有一条"无答案"。它把 SFT 给的外壳（分步拆解 + `答案是 N`）
-**完整保留**，只把内容层的算术正确率压掉了约三分之二——这是 §4.8"奖励对内容不敏感、策略只需保住外壳"
-的行为层证据。
-
-同一道题的 A/B（`66×23`，GT=1518，两条都错）：
-
-```text
-冷启动 : 66*23：23 拆成 20 和 3；66*20=1440；66*3=184；1440+184=1728。  → 1728
-RM-only: 66*23：23 拆成 20 和 3；66*20=1280；66*3=184；1280+184=1334。  → 1334
-```
-
-**错误形态学**（`reports/audit_*.md`：每个臂按 held-out 文件顺序取**前 20 条失败样本**，非随机抽样）：
-
-| 观测 | `math_cold_cot_seed42` | `mini_rm_seed42` |
-|---|---:|---:|
-| 含乘法断言的样本 | 17/20 | 13/20 |
-| └ 其中至少有一条乘法断言为假 | **17/17** | **12/13** |
-| 含加法断言的样本 | 17/20 | 15/20 |
-| └ 其中"写出的和 ≠ 自己写出的两个加数之和" | **16/17** | **13/15** |
-| 错答的相对误差 ≤100%（同量级） | 20/20 | 17/20 |
-
-两条用了**同一个分解模板**，错的层次也一样：不只是乘法事实错（66×20 应为 1320、66×3 应为 198），
-而且**写出来的和与自己写的加数也对不上**（`1440+184=1728`、`1280+184=1334`——实际分别是 1624 和 1464）。
-减法档同理："逐位相减、忘记借位"（`56-49` → 个位写 0、十位写 1，得 10；`72-31` 借位写成 `12-1-1=9` 得 39）。
-**模型是在"照着模板续写数字"，而不是在算**——真正的算术执行只在极少数样本里是对的。
-
-这解释了一个反直觉的现象：RM 臂的**格式率仍是 1.0000**、`no_answer` 仍是 0——在"续写"这个层次上，
-它输出的依旧是结构完美、可被 verifier 抽取的答案，崩掉的只有数值本身。
-
-> **口径修正（2026-09-28）**：类别 `no_think_block` 已删除。本 pipeline 的 prompt 末尾自带
-> `<|im_start|>assistant\n<think>\n`（`open_thinking=True`，见 `scripts/eval_heldout.py:build_prompt`），
-> 补全里只可能出现 `</think>`，"没有开标签"是**正常**状态；旧版本把它误判成"模板没被遵循"，
-> 一度在同一批数据上给出 400/400 的假阳性。现行判定与 `trainer/math_verifier.py:split_think`
-> 的 `think_closed` 字段对齐（`tests/test_error_analysis.py`，18 passed）。
-
-**人工抽查（DoD §10.4 要求 ≥20 条/权重）**：`reports/audit_mini_rm_seed42.md`、
-`reports/audit_math_cold_cot_seed42.md`（每个失败类别 20 条原文；上面这张表的所有数字都能从这两份
-文件逐条复算）。原始 400×16 条 rollout 在 `runs/<tag>/eval.jsonl` 与 `logs/<tag>_samples.jsonl`。
+原始 rollout 已存档（`runs/<tag>/eval.jsonl` + `logs/<tag>_samples.jsonl`）。待补的错误类别统计：
+无答案 / 格式错误 / 算术错误 / 冗余候选 / 长度烧满 / 重复循环 / verifier 误判。
 
 ---
 
@@ -332,9 +266,7 @@ RM-only: 66*23：23 拆成 20 和 3；66*20=1280；66*3=184；1280+184=1334。  
 
 1. **奖励源决定学到什么**：只有 GT verifier 参与奖励时方向为正；一旦把 RM 放进奖励
    （`rm` 或 `mix`），held-out 就显著下降（净 −96 / −23，p ≤ 0.0011）——奖励里有没有正确性，比 optimizer 和超参更决定性。
-2. rule verifier 提供的是**真实但小**的信号（greedy 净 +9/400 题，方向四臂一致）；
-   但按 §4.7 实测的噪声地板（同配置重跑即可净变 ±2、能力净变 −6），这个量级只能算**方向性证据**，
-   不能当效应量引用。
+2. rule verifier 提供的是**真实但小**的信号（greedy 净 +9/400 题，方向四臂一致）。
 3. 长度惩罚在本设置下**无效**，原因是 cap 设置错误（分布外）。
 4. 难度分层必须用**模型侧**标定，不能直接信人工标签。
 5. 该规模的 GRPO **单次运行不可复现**（同命令同种子重跑仅 35/200 记录点一致），叠加种子效应后，**单臂单次运行的曲线与效应量都不足以支撑结论**。
@@ -375,11 +307,6 @@ RM-only: 66*23：23 拆成 20 和 3；66*20=1280；66*3=184；1280+184=1334。  
 - **仪器缺陷（已修）**：`summarize_runs.py` 的决策树原先会把 `mini_rm_seed42` 误诊为"长度偏置/过长 hack"
   （该臂 held-out 长度 105 < 基线 114，实际是内容层面的 reward hacking），并把 `mix` 臂
   "均值为 0"的标准化奖励读成"reward 没动"。现已按奖励来源分派诊断、把标准化臂渲染为 `n/a`，并补了回归测试。
-- **仪器缺陷第二轮（2026-09-28，已修）**：决策树把"held-out 点估计下降"直接写成"**显著**下降"，
-  而该脚本并不做配对检验；`mini_rule_dynamic_seed42` 的 −0.005 恰好落在 §4.7 实测的噪声地板内，
-  写成"显著"就是过度解读。现已去掉"显著"字样、统一指向 `paired_compare` 的 p 值与噪声地板，
-  并补回归测试（`tests/test_summarize_runs.py`，58 passed）。**这条是本地复算时发现的**：
-  同步回本机后重跑 `summarize_runs.py`，服务器上的 `summary.md` 仍是修复前的旧版，重算才暴露。
 - **未持久化的指标**：`mix` 的 `component_degenerate_groups`（任一分量无方差的组数）在训练时被计算但没写进
   metrics CSV，事后无法复算——属于下一版要补的埋点。
 - **困难档覆盖窄**：hard 只有三位数×两位数这一种形态；`pass@32` 未做。
@@ -399,24 +326,13 @@ scripts/eval_heldout.py                        # held-out 评估
 scripts/archive_run.py --run-tag <tag> --force # 归档 + 哈希
 scripts/summarize_runs.py                      # 跨臂汇总 + 6 张图
 scripts/paired_compare.py --baseline <tag> --arms ...  # 配对 McNemar
-scripts/compare_runs.py --a <tag> --b <tag> --expect-identical  # 逐 step 复现性对照
-scripts/error_analysis.py --run-tag <tag> --mode greedy         # SOP §10.4 错误类别统计
 scripts/rm_load_check.py                       # RM 加载自检（RM 臂前置）
-README-rlvr-audit.md                           # 项目说明与最小复现路径（SOP §18）
 ```
 
 环境：Python 3.12.3 · torch 2.8.0+cu128 · transformers 4.57.6 · datasets 3.6.0 · numpy 2.3.2 ·
 modelscope 1.37.0 · sentencepiece 0.2.0 · RTX 4090 24GB（单卡）· bf16。
 
-**已完成（2026-09-28）：反向同步 + 本地复算验证。** `runs/`（61 MB）、`logs/`、`reports/` 已拉回本机
-（`reports/report.md` 由本机维护，同步时显式排除，避免被服务器上的旧版覆盖；同步前后哈希不变可证）。
-
-| 本地复算命令 | 结果 |
-|---|---|
-| `scripts/error_analysis.py --run-tag mini_rm_seed42 / math_cold_cot_seed42 --mode greedy` | 与服务器产物 **逐字节一致**（`diff` 无输出） |
-| `scripts/paired_compare.py --baseline math_cold_cot_seed42 --arms <4 个 rule 臂>` | 四臂数值与服务器版一致；服务器版是**六臂**版（多 `rm`/`mix` 两行） |
-| `scripts/summarize_runs.py` | 重算成功，并暴露出服务器 `summary.md` 是修复前的旧版（见 §6 第二轮仪器缺陷） |
-| `python -m pytest -q` | **313 passed** |
+**TODO(server)**：反向同步（`runs/`、`reports/`、`logs/`）到本地，确保报告里的每个数字都能在本地复算。
 
 ---
 
@@ -432,37 +348,21 @@ modelscope 1.37.0 · sentencepiece 0.2.0 · RTX 4090 24GB（单卡）· bf16。
 | 难度探针 | `runs/probe/calibration.json`（v1）、`runs/probe/calibration_cot_v2.json`（v2） |
 | ACR / 有效组 | §4 的组内直方图复算（`runs/<tag>/eval.jsonl`） |
 | 归档完整性 | `python scripts/archive_run.py --check --strict --run-tag <tag>` |
-| 错误类别（全量） | `reports/error_analysis_<tag>.md`、`scripts/error_analysis.py`、`tests/test_error_analysis.py` |
-| 人工抽查（≥20 条/权重） | `reports/audit_<tag>.md`（原始文本，形态学表可逐条复算） |
-| 噪声地板 | `runs/mini_rule_rerun_seed42/eval.json`、`reports/paired_compare_rerun.md` |
-| 训练可复现性 | `scripts/compare_runs.py --a mini_rule_seed42 --b mini_rule_rerun_seed42 --expect-identical` |
 
 ---
 
 ## 9. 待办与缺口（按优先级）
 
-1. ~~noise-floor~~ **已完成**（§4.7）：`mini_rule_rerun_seed42` 做了 400×16 评估与配对，
-   greedy 净变 +2（p=0.75）、能力净变 −6（p=0.31）。
-2. ~~error-analysis~~ **已完成**（§4.9）：全量 400 条 greedy 逐条分类，两类之外全为 0 条。
-   ~~audit~~ **已完成**：`reports/audit_<tag>.md` 两个文件（每类 20 条原文），§4.9 的形态学表即由它们复算。
-   **TODO(err-shape)**：目前只做了每臂**前 20 条**失败样本（非随机抽样）。全量 251/347 条的形态学
-   需要把该统计并进 `scripts/error_analysis.py` 的输出（下一版），本轮不影响结论方向。
-3. ~~power~~ **已评估、决定不做**（2026-09-28）：held-out 扩到 500 题只能把置信区间收窄
-   （按实测效应量估算双边 p 从 0.064 → 约 0.023），但 §4.7 已实测出**同配置重跑就有 ±2 的 greedy 净变
-   与 −6 的能力净变**，四个臂的效应量本身落在噪声地板内——增加样本不会改变"无法区分于噪声"这个结论。
-   记录于此以避免重复讨论。
+1. **TODO(noise-floor)**：评估同种子重跑模型（400×16），量化 held-out 的噪声下限（约 20 分钟）。
+2. **TODO(error-analysis)**：20 条以上 rollout 的错误类别统计（DoD 硬性要求）。RM 臂尤其值得做：
+   看它把"算对的题"变成了什么样的输出。
+3. **TODO(power)**：held-out 扩到 500 题（post-hoc，需新登记行 + 新 tag，并明确标注）。
+   按实测效应量估算双边 p 可从 0.064 压到约 0.023。
 4. **TODO(instrumentation)**：把 `component_degenerate_groups` 等 mix 专属统计写进 metrics CSV（下一版埋点）。
 5. **TODO(scope)**：SOP §0.3 的"工业近似层"（Qwen2.5-1.5B + TRL/verl）**未做**，属范围边界；
    若要做，按 SOP §9 先锁 commit + 10–20 step smoke。
-6. ~~readme~~ **已完成**：`README-rlvr-audit.md`（项目说明 + 数据来源与哈希 + 环境 + 最小复现路径 +
-   失败结果与局限 + 已知坑），并在上游 `README.md` 顶部加了 3 行指引（不改动上游正文）。
-7. ~~sync~~ **已完成**（§7）：反向同步 + 本地复算（`error_analysis` 逐字节一致、`paired_compare` 一致、
-   `summarize_runs` 重算成功）。反向同步还顺带查出两个仪器问题（§6），已在本地修复。
-8. **已知缺口（刻意不补）**：`mini_rule_rerun_seed42`（重跑对照）与 `math_cold_seed42`（CoT v1 pilot）
-   不在预注册表 `configs/experiment_registry.csv` 内，因此没有 `manifest.json`，也不会出现在
-   `reports/summary.md` 的臂清单里。二者的原始证据（`train.log` / `eval.json` / `eval.jsonl` / `metrics.csv`）
-   都在 `runs/<tag>/` 与 `logs/` 下，§4.7、§2.2 的数字可直接复算——**不为 post-hoc 运行补登记行**，
-   以免污染"预注册"的语义。
+6. **TODO(readme)**：把限制、失败结果与数据来源写进 README（SOP §18 求职检查表）。
+7. **TODO(sync)**：反向同步服务器的 `runs/`、`reports/`、`logs/` 到本地。
 
 ---
 

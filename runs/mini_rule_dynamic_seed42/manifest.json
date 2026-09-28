@@ -1,0 +1,81 @@
+{
+  "created_at": "2026-09-27T13:54:09+00:00",
+  "run_tag": "mini_rule_dynamic_seed42",
+  "registry_row": {
+    "run_tag": "mini_rule_dynamic_seed42",
+    "model": "MiniMind-64M",
+    "reward_mode": "rule",
+    "loss_type": "grpo",
+    "seed": "42",
+    "G": "6",
+    "max_gen_len": "512",
+    "beta": "0.1",
+    "dynamic_sampling": "1",
+    "len_penalty_coef": "0",
+    "alpha": "0.5",
+    "beta_mix": "0.5",
+    "hypothesis": "remove degenerate groups - filtering all-correct and all-wrong groups raises accuracy per optimizer step"
+  },
+  "prerequisite": false,
+  "status": "complete",
+  "required_files": [
+    "command.txt",
+    "config.yaml",
+    "environment.txt",
+    "data_manifest.json",
+    "metrics.csv",
+    "eval.json",
+    "samples.jsonl",
+    "analysis.md",
+    "checkpoints.txt"
+  ],
+  "missing": [],
+  "raw_evidence": [
+    "metrics.csv",
+    "samples.jsonl",
+    "eval.json",
+    "eval.jsonl"
+  ],
+  "written_files": {
+    "command.txt": {
+      "sha256": "3a73a8d9e4efc23de1117d73588cb7e00ea5dcde727df8a1ff91dc19f05dd250",
+      "kind": "derived"
+    },
+    "metrics.csv": {
+      "sha256": "fbc7265316101067db7ec1d7167c462cb49c4ec354cdbd61cd4d3c4aedc76766",
+      "kind": "raw"
+    },
+    "samples.jsonl": {
+      "sha256": "b2789bf443834233640c71c0020a7e2c4f09d56f5dde206fa6d4c25da3634652",
+      "kind": "raw"
+    },
+    "eval.json": {
+      "sha256": "e09704bf0bd252cfc73dfa634859ef8ac9180e4b86a16209540901c6d5caa761",
+      "kind": "raw"
+    },
+    "config.yaml": {
+      "sha256": "d2f17c9c33112d8c7e6ac9deb8116f5e45e2516c38b7bd56ef611d7d47d52536",
+      "kind": "derived",
+      "source": "logs/mini_rule_dynamic_seed42_config.json"
+    },
+    "environment.txt": {
+      "sha256": "be0997224ca5a7de10313c1ec00f544e7530b66d70b814e7bc2aec12c821ad67",
+      "kind": "derived"
+    },
+    "data_manifest.json": {
+      "sha256": "565c8327736c33f8eb293755f8858b324ca2eeab739d7dee832e4eafef7fb45b",
+      "kind": "derived"
+    },
+    "checkpoints.txt": {
+      "sha256": "562f838b66424c986d39aee6995536aabde9502d5980f2fedd9115a61dd4165e",
+      "kind": "derived"
+    },
+    "analysis.md": {
+      "sha256": "07d46a8c606fa795bf7d171d358552ba4b3eaa69912e8caca81178eff6f1b88a",
+      "kind": "derived"
+    }
+  },
+  "notes": [],
+  "metrics_rows": 200,
+  "train_log": true
+}

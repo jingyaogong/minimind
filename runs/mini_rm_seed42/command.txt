@@ -1,0 +1,32 @@
+set -o pipefail
+mkdir -p runs/mini_rm_seed42
+cd trainer
+python -u train_grpo.py \
+  --reward_mode rm \
+  --rlvr_data_path ../dataset/math_rlvr_train.jsonl \
+  --from_weight math_cold_cot_seed42 \
+  --save_weight mini_rm_seed42 \
+  --run_tag mini_rm_seed42 \
+  --reward_model_path ../../internlm2-1_8b-reward \
+  --loss_type grpo \
+  --seed 42 \
+  --temperature 0.8 \
+  --batch_size 2 \
+  --num_generations 6 \
+  --learning_rate 3e-07 \
+  --beta 0.1 \
+  --max_seq_len 512 \
+  --max_gen_len 512 \
+  --epochs 1 \
+  --num_workers 0 \
+  --log_interval 5 \
+  --save_interval 50 \
+  --thinking_ratio 1.0 \
+  --verdict_tier binary \
+  --reward_marker '答案是' \
+  --dynamic_sampling 0 \
+  --len_penalty_coef 0 \
+  --mix_alpha 0.5 \
+  --mix_beta 0.5 \
+  --device cuda:0 \
+  2>&1 | tee ../runs/mini_rm_seed42/train.log

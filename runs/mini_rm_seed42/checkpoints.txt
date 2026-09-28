@@ -1,0 +1,4 @@
+# checkpoints matching prefix 'mini_rm_seed42' (binaries are deliberately not archived)
+09f9915ba2114e03e5fc791261a9b5342cf1a4d23395e910e26d819e2336bb8d     137684989  2026-09-27T14:55:26+00:00  out/mini_rm_seed42_768.pth
+a686b3a2e1e39def2a5ac633d399681e55f9315688d5288dd7b0f79c7406e802     137685441  2026-09-27T14:55:26+00:00  checkpoints/mini_rm_seed42_768.pth
+d2fb2ae339f16351c13dc6199df0fb88ee0aeb45e4fc87005185092841e2a89b     649066807  2026-09-27T14:55:27+00:00  checkpoints/mini_rm_seed42_768_resume.pth

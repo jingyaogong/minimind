@@ -1,0 +1,81 @@
+{
+  "created_at": "2026-09-27T15:42:57+00:00",
+  "run_tag": "mini_mix_seed42",
+  "registry_row": {
+    "run_tag": "mini_mix_seed42",
+    "model": "MiniMind-64M",
+    "reward_mode": "mix",
+    "loss_type": "grpo",
+    "seed": "42",
+    "G": "6",
+    "max_gen_len": "512",
+    "beta": "0.1",
+    "dynamic_sampling": "0",
+    "len_penalty_coef": "0",
+    "alpha": "0.5",
+    "beta_mix": "0.5",
+    "hypothesis": "calibrated mix - standardised rule plus pure-RM beats RM-only on accuracy while keeping the RM reward shape"
+  },
+  "prerequisite": false,
+  "status": "complete",
+  "required_files": [
+    "command.txt",
+    "config.yaml",
+    "environment.txt",
+    "data_manifest.json",
+    "metrics.csv",
+    "eval.json",
+    "samples.jsonl",
+    "analysis.md",
+    "checkpoints.txt"
+  ],
+  "missing": [],
+  "raw_evidence": [
+    "metrics.csv",
+    "samples.jsonl",
+    "eval.json",
+    "eval.jsonl"
+  ],
+  "written_files": {
+    "command.txt": {
+      "sha256": "4004be12286b032402ef0468fd5f2f7063677229797263864aebb0531cfc2086",
+      "kind": "derived"
+    },
+    "metrics.csv": {
+      "sha256": "ca7cc556febc2c146b6fc8762f434c477d25c586417b1da6c8f3807b2d5f6b44",
+      "kind": "raw"
+    },
+    "samples.jsonl": {
+      "sha256": "9903a737f743ac8a9d5a43fcf312922d71866cf9fcd0ba907ea7c1630eb71cf4",
+      "kind": "raw"
+    },
+    "eval.json": {
+      "sha256": "2b3c31ccd7d54d44bf682a9ff53ae781ce14ee66f1b1a0952cd3c7ebbdd424ba",
+      "kind": "raw"
+    },
+    "config.yaml": {
+      "sha256": "91d65610706f77dd9de82751a85ce3227b95c7691a9f6d01dffac5e73e49ab17",
+      "kind": "derived",
+      "source": "logs/mini_mix_seed42_config.json"
+    },
+    "environment.txt": {
+      "sha256": "5f3e676e54aa93d30cb6b41cf8e1ec9fe0c71530e03527ab0c1ce2364a653e06",
+      "kind": "derived"
+    },
+    "data_manifest.json": {
+      "sha256": "f63f1f603b1c6215bc03f5d2417be154534454a66337304bf6edbc51bff43c9b",
+      "kind": "derived"
+    },
+    "checkpoints.txt": {
+      "sha256": "8af25135e18c5cee9770c0afad9bc7c82db3ba15f6185ee6d1e1399f611fb245",
+      "kind": "derived"
+    },
+    "analysis.md": {
+      "sha256": "6d41c4f32ee8dc92ee1a1ca29bda07b9726a7281670bbe84b6406f9adac1c7ae",
+      "kind": "derived"
+    }
+  },
+  "notes": [],
+  "metrics_rows": 200,
+  "train_log": true
+}

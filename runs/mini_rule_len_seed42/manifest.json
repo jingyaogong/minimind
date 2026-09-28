@@ -1,0 +1,81 @@
+{
+  "created_at": "2026-09-27T13:54:13+00:00",
+  "run_tag": "mini_rule_len_seed42",
+  "registry_row": {
+    "run_tag": "mini_rule_len_seed42",
+    "model": "MiniMind-64M",
+    "reward_mode": "rule",
+    "loss_type": "grpo",
+    "seed": "42",
+    "G": "6",
+    "max_gen_len": "512",
+    "beta": "0.1",
+    "dynamic_sampling": "0",
+    "len_penalty_coef": "0.05",
+    "alpha": "0.5",
+    "beta_mix": "0.5",
+    "hypothesis": "reduce overlong outputs - penalising tokens above the cap cuts mean completion length without cutting accuracy"
+  },
+  "prerequisite": false,
+  "status": "complete",
+  "required_files": [
+    "command.txt",
+    "config.yaml",
+    "environment.txt",
+    "data_manifest.json",
+    "metrics.csv",
+    "eval.json",
+    "samples.jsonl",
+    "analysis.md",
+    "checkpoints.txt"
+  ],
+  "missing": [],
+  "raw_evidence": [
+    "metrics.csv",
+    "samples.jsonl",
+    "eval.json",
+    "eval.jsonl"
+  ],
+  "written_files": {
+    "command.txt": {
+      "sha256": "8de724d371bd08862cce6a20815f8337aa45d9d4cadc9f540c7326cfd6418f81",
+      "kind": "derived"
+    },
+    "metrics.csv": {
+      "sha256": "eba26521e70cfa33b7368e709eefe56c0e7282cd29c92d7e90721b8a103ba430",
+      "kind": "raw"
+    },
+    "samples.jsonl": {
+      "sha256": "802371234111269e9ceade50a864cca48c5656461f52e72b7f4178df771ccecc",
+      "kind": "raw"
+    },
+    "eval.json": {
+      "sha256": "f980a23edf78426d4f698c186bbbfc42a3eed098a2756e9af49fe1e3bd45e931",
+      "kind": "raw"
+    },
+    "config.yaml": {
+      "sha256": "b95bc1a8e146db51bfac306926c49e727cf44df439ff5decfa16b8f46b778d5c",
+      "kind": "derived",
+      "source": "logs/mini_rule_len_seed42_config.json"
+    },
+    "environment.txt": {
+      "sha256": "cc8dcb10e90963d250e6553275d13f94754621461e7ff04b916340d854693d40",
+      "kind": "derived"
+    },
+    "data_manifest.json": {
+      "sha256": "18ec56f85bf3385342c64023173c8ea5f12755aed4463c021d5325631445439d",
+      "kind": "derived"
+    },
+    "checkpoints.txt": {
+      "sha256": "789a441a34fa72a05df76c336f6df1be3e04dfb6ca90d4b582f6cd970113e54d",
+      "kind": "derived"
+    },
+    "analysis.md": {
+      "sha256": "0f703e4ae33e4bb0e81548274ff79f50701b4ae2667fbd26f19f404e36edabdf",
+      "kind": "derived"
+    }
+  },
+  "notes": [],
+  "metrics_rows": 200,
+  "train_log": true
+}

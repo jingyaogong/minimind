@@ -1,0 +1,4 @@
+# checkpoints matching prefix 'mini_rule_dynamic_seed42' (binaries are deliberately not archived)
+38c043487b31530e686fda6b60d7426f9e45c4c6bfe048d9f9828d994b3ea889     137686023  2026-09-27T12:41:19+00:00  out/mini_rule_dynamic_seed42_768.pth
+3e4ccab5b37a4c10ab1aea29c1f0407034df13d346927fe86484c3f4a897898e     137686411  2026-09-27T12:41:20+00:00  checkpoints/mini_rule_dynamic_seed42_768.pth
+5e82b3fd8e6f0d0625a3b0d23b45d3f3e0e4e58f41e40d2cc76c7c28f21dfcfd     649070477  2026-09-27T12:41:20+00:00  checkpoints/mini_rule_dynamic_seed42_768_resume.pth

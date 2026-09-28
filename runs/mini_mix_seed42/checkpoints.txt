@@ -1,0 +1,4 @@
+# checkpoints matching prefix 'mini_mix_seed42' (binaries are deliberately not archived)
+91802bb86a64060a71da9a78b656aefb361f93957f85f0ca83e2c70edf7bb15b     137685086  2026-09-27T15:26:48+00:00  out/mini_mix_seed42_768.pth
+3ecc11b4a76d518d0cc19c261c8de93447b510edbf32d5b9d0f02066bc2350f0     137685538  2026-09-27T15:26:48+00:00  checkpoints/mini_mix_seed42_768.pth
+071381f1a17c18d172b37b51bd6d63386a34ed03918d7636afa8b1e700a0e34d     649067174  2026-09-27T15:26:48+00:00  checkpoints/mini_mix_seed42_768_resume.pth

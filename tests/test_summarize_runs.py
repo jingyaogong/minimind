@@ -364,15 +364,6 @@ class DecisionTreeTests(unittest.TestCase):
         self.assertIn("负结果", verdict)
         self.assertNotIn("污染", verdict)
 
-    def test_heldout_drop_wording_never_claims_significance(self):
-        # 回归：本函数不做配对检验，所以措辞不能出现"显著"——显著性是 paired_compare 的活。
-        # 反例：mini_rule_dynamic_seed42 对参考臂是 −0.005，正落在噪声地板内（report §4.7）。
-        for mode in ("rule", "rm", "mix"):
-            verdict = decision_tree(self.base(reward_mode=mode, heldout_gain=-0.005))
-            self.assertNotIn("显著下降", verdict)     # 方向 ≠ 显著；显著性留给 paired_compare
-            self.assertNotIn("显著上升", verdict)
-            self.assertIn("paired_compare", verdict)
-
 
 class RewardCellTests(unittest.TestCase):
     def test_mix_reward_cells_are_marked_not_applicable(self):

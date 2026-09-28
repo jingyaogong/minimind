@@ -1,0 +1,81 @@
+{
+  "created_at": "2026-09-27T13:54:05+00:00",
+  "run_tag": "mini_rule_seed7",
+  "registry_row": {
+    "run_tag": "mini_rule_seed7",
+    "model": "MiniMind-64M",
+    "reward_mode": "rule",
+    "loss_type": "grpo",
+    "seed": "7",
+    "G": "6",
+    "max_gen_len": "512",
+    "beta": "0.1",
+    "dynamic_sampling": "0",
+    "len_penalty_coef": "0",
+    "alpha": "0.5",
+    "beta_mix": "0.5",
+    "hypothesis": "seed replication - the rule-baseline direction reproduces under a second seed"
+  },
+  "prerequisite": false,
+  "status": "complete",
+  "required_files": [
+    "command.txt",
+    "config.yaml",
+    "environment.txt",
+    "data_manifest.json",
+    "metrics.csv",
+    "eval.json",
+    "samples.jsonl",
+    "analysis.md",
+    "checkpoints.txt"
+  ],
+  "missing": [],
+  "raw_evidence": [
+    "metrics.csv",
+    "samples.jsonl",
+    "eval.json",
+    "eval.jsonl"
+  ],
+  "written_files": {
+    "command.txt": {
+      "sha256": "f0a05424f217f8f6c63a7ee7274d577fe3b10d79ead063712b3927eafb973b73",
+      "kind": "derived"
+    },
+    "metrics.csv": {
+      "sha256": "8a03cc0ef55cf133f246e22db7b10e9f7f118c84fb60d6747ca09e310eb40e54",
+      "kind": "raw"
+    },
+    "samples.jsonl": {
+      "sha256": "a6442c0c9c26b96bd270e6520f10d5b38df803da9799cb617732c0afcd385ef5",
+      "kind": "raw"
+    },
+    "eval.json": {
+      "sha256": "6ddacbf14895a2822f64b1f3cb8cfefb281a0555168ed46c8771240ca0e230c5",
+      "kind": "raw"
+    },
+    "config.yaml": {
+      "sha256": "4968215239238e78bea9c11e6565011cebfa765d181078f1336151c59d036213",
+      "kind": "derived",
+      "source": "logs/mini_rule_seed7_config.json"
+    },
+    "environment.txt": {
+      "sha256": "599c45a41c26ce3bcfce7345cb93534709030d5457ece68b840a6fc9abba4211",
+      "kind": "derived"
+    },
+    "data_manifest.json": {
+      "sha256": "736b05392332e4bb25594e568114741168f8a4ce1082c6fad77cd36857ece9a2",
+      "kind": "derived"
+    },
+    "checkpoints.txt": {
+      "sha256": "0d3117afb6338e3385bff562cc9fa02a86d8cbfc3b23c51b2796c6611aadb071",
+      "kind": "derived"
+    },
+    "analysis.md": {
+      "sha256": "cb885b6df6cfb34e7f015649f94c80a8cc091ad438d7e2486c2a91ce0759b1b6",
+      "kind": "derived"
+    }
+  },
+  "notes": [],
+  "metrics_rows": 200,
+  "train_log": true
+}

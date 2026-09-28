@@ -1,0 +1,2489 @@
+Model Params: 63.91M
+Trainable Params: 63.912M
+Model Params: 63.91M
+Trainable Params: 63.912M
+reward_mode=rule: skipped reward model loading
+RLVR data: /root/autodl-tmp/minimind/dataset/math_rlvr_train.jsonl rows=2000 difficulty={'easy': 666, 'hard': 667, 'medium': 667}
+Prompt length audit (budget=512): thinking_on p50=42 max=45 overlong=0 | thinking_off p50=46 max=49 overlong=0
+Run config written to ../logs/mini_rule_seed7_config.json
+Metrics: /root/autodl-tmp/minimind/logs/mini_rule_seed7_metrics.csv, samples: /root/autodl-tmp/minimind/logs/mini_rule_seed7_samples.jsonl
+Epoch:[1/1](5/1000), Reward: 0.3333, KL_ref: -0.0018, Adv Std: 0.7384, Adv Mean: -0.0000, Actor Loss: 0.0002, Avg Response Len: 128.00, Learning Rate: 0.00000030
+    correct_rate: 0.3333, format_rate: 1.0000, no_answer_rate: 0.0000, valid_groups: 1/2, all_correct: 0, all_wrong: 1
+Epoch:[1/1](10/1000), Reward: 0.7500, KL_ref: 0.0021, Adv Std: 0.7384, Adv Mean: 0.0000, Actor Loss: 0.0001, Avg Response Len: 134.75, Learning Rate: 0.00000030
+    correct_rate: 0.7500, format_rate: 1.0000, no_answer_rate: 0.0000, valid_groups: 1/2, all_correct: 1, all_wrong: 0
+Epoch:[1/1](15/1000), Reward: 0.5000, KL_ref: -0.0052, Adv Std: 0.0000, Adv Mean: 0.0000, Actor Loss: 0.0001, Avg Response Len: 57.00, Learning Rate: 0.00000030
+    correct_rate: 0.5000, format_rate: 1.0000, no_answer_rate: 0.0000, valid_groups: 0/2, all_correct: 1, all_wrong: 1
+Epoch:[1/1](20/1000), Reward: 0.0000, KL_ref: -0.0532, Adv Std: 0.0000, Adv Mean: 0.0000, Actor Loss: 0.0037, Avg Response Len: 90.75, Learning Rate: 0.00000030
+    correct_rate: 0.0000, format_rate: 1.0000, no_answer_rate: 0.0000, valid_groups: 0/2, all_correct: 0, all_wrong: 2
+Epoch:[1/1](25/1000), Reward: 0.6667, KL_ref: -0.0009, Adv Std: 1.0442, Adv Mean: -0.0000, Actor Loss: 0.0001, Avg Response Len: 151.75, Learning Rate: 0.00000030
+    correct_rate: 0.6667, format_rate: 1.0000, no_answer_rate: 0.0000, valid_groups: 2/2, all_correct: 0, all_wrong: 0
+Epoch:[1/1](30/1000), Reward: 0.1667, KL_ref: -0.0007, Adv Std: 0.7384, Adv Mean: -0.0000, Actor Loss: 0.0003, Avg Response Len: 143.00, Learning Rate: 0.00000030
+    correct_rate: 0.1667, format_rate: 1.0000, no_answer_rate: 0.0000, valid_groups: 1/2, all_correct: 0, all_wrong: 1
+Epoch:[1/1](35/1000), Reward: 0.4167, KL_ref: -0.0038, Adv Std: 0.7384, Adv Mean: -0.0000, Actor Loss: 0.0004, Avg Response Len: 104.58, Learning Rate: 0.00000030
+    correct_rate: 0.4167, format_rate: 1.0000, no_answer_rate: 0.0000, valid_groups: 1/2, all_correct: 0, all_wrong: 1
+Epoch:[1/1](40/1000), Reward: 0.3333, KL_ref: -0.0042, Adv Std: 0.7384, Adv Mean: -0.0000, Actor Loss: 0.0003, Avg Response Len: 94.08, Learning Rate: 0.00000030
+    correct_rate: 0.3333, format_rate: 1.0000, no_answer_rate: 0.0000, valid_groups: 1/2, all_correct: 0, all_wrong: 1
+Epoch:[1/1](45/1000), Reward: 0.9167, KL_ref: -0.0043, Adv Std: 0.7384, Adv Mean: -0.0000, Actor Loss: 0.0002, Avg Response Len: 169.50, Learning Rate: 0.00000030
+    correct_rate: 0.9167, format_rate: 1.0000, no_answer_rate: 0.0000, valid_groups: 1/2, all_correct: 1, all_wrong: 0
+[DEBUG] step=50, sample[0], gt=756, difficulty=hard
+----------------------------------------------------------------------------------------------------
+============================== [DEBUG] sample[0] CONTEXT_BEGIN ==============================
+<|im_start|>user
+请计算 (8**3)+(16**2)-12，并在最后一行以‘答案是 数字’输出。<|im_end|>
+<|im_start|>assistant
+<think>
+
+=============================== [DEBUG] sample[0] CONTEXT_END ===============================
+============================ [DEBUG] gen[0] RESPONSE_BEGIN ============================
+(8**3)+(16**2)-12：8*8=64；64 拆成 60 和 4；60*8=480；4*8=32；480+32=512；16 拆成 10 和 6；16*10=160；16*6=96；160+96=256；个位 2+6=8；十位 1+5=6；百位 5+2=7；个位 8-2=6；十位 6-1=5；百位 落 7。所以结果是 756。
+</think>
+
+答案是 756
+============================= [DEBUG] gen[0] RESPONSE_END =============================
+[DEBUG] gen[0] reward=1.0000, status=correct, tokens=147
+============================ [DEBUG] gen[1] RESPONSE_BEGIN ============================
+(8**3)+(16**2)-12：8*8=64；64 拆成 60 和 4；60*8=480；4*8=32；480+32=512；16 拆成 10 和 6；16*10=160；16*6=96；160+96=256；个位 2+6=8；十位 1+5=6；百位 5+2=7；个位 8-2=6；十位 6-1=5；百位 落 7。所以结果是 756。
+</think>
+
+答案是 756
+============================= [DEBUG] gen[1] RESPONSE_END =============================
+[DEBUG] gen[1] reward=1.0000, status=correct, tokens=147
+============================ [DEBUG] gen[2] RESPONSE_BEGIN ============================
+(8**3)+(16**2)-12：8*8=64；64 拆成 60 和 4；60*8=480；4*8=32；480+32=512；16 拆成 10 和 6；16*10=160；16*6=96；160+96=256；个位 2+6=8；十位 1+5=6；百位 5+2=7；个位 8-2=6；十位 6-1=5；百位 落 7。所以结果是 756。
+</think>
+
+答案是 756
+============================= [DEBUG] gen[2] RESPONSE_END =============================
+[DEBUG] gen[2] reward=1.0000, status=correct, tokens=147
+============================ [DEBUG] gen[3] RESPONSE_BEGIN ============================
+(8**3)+(16**2)-12：8*8=64；64 拆成 60 和 4；60*8=480；4*8=32；480+32=512；16 拆成 10 和 6；16*10=160；16*6=96；160+96=256；个位 2+6=8；十位 1+5=6；百位 5+2=7；个位 8-2=6；十位 6-1=5；百位 落 7。所以结果是 756。
+</think>
+
+答案是 756
+============================= [DEBUG] gen[3] RESPONSE_END =============================
+[DEBUG] gen[3] reward=1.0000, status=correct, tokens=147
+============================ [DEBUG] gen[4] RESPONSE_BEGIN ============================
+(8**3)+(16**2)-12：8*8=64；64 拆成 60 和 4；60*8=480；4*8=32；480+32=512；16 拆成 10 和 6；16*10=160；16*6=96；160+96=256；个位 2+6=8；十位 1+5=6；百位 5+2=7；个位 8-2=6；十位 6-1=5；百位 落 7。所以结果是 756。
+</think>
+
+答案是 756
+============================= [DEBUG] gen[4] RESPONSE_END =============================
+[DEBUG] gen[4] reward=1.0000, status=correct, tokens=147
+============================ [DEBUG] gen[5] RESPONSE_BEGIN ============================
+(8**3)+(16**2)-12：8*8=64；64 拆成 60 和 4；60*8=480；4*8=32；480+32=512；16 拆成 10 和 6；16*10=160；16*6=96；160+96=256；个位 2+6=8；十位 1+5=6；百位 5+2=7；个位 8-2=6；十位 6-1=5；百位 落 7。所以结果是 756。
+</think>
+
+答案是 756
+============================= [DEBUG] gen[5] RESPONSE_END =============================
+[DEBUG] gen[5] reward=1.0000, status=correct, tokens=147
+====================================================================================================
+[DEBUG] step=50, sample[1], gt=22, difficulty=easy
+----------------------------------------------------------------------------------------------------
+============================== [DEBUG] sample[1] CONTEXT_BEGIN ==============================
+<|im_start|>user
+请计算 39-17，并在最后一行以‘答案是 数字’输出。<|im_end|>
+<|im_start|>assistant
+<think>
+
+=============================== [DEBUG] sample[1] CONTEXT_END ===============================
+============================ [DEBUG] gen[0] RESPONSE_BEGIN ============================
+39-17：个位 9-7=2；十位 3-1=2。所以结果是 22。
+</think>
+
+答案是 22
+============================= [DEBUG] gen[0] RESPONSE_END =============================
+[DEBUG] gen[0] reward=1.0000, status=correct, tokens=36
+============================ [DEBUG] gen[1] RESPONSE_BEGIN ============================
+39-17：个位 9-7=2；十位 3-1=2。所以结果是 22。
+</think>
+
+答案是 22
+============================= [DEBUG] gen[1] RESPONSE_END =============================
+[DEBUG] gen[1] reward=1.0000, status=correct, tokens=36
+============================ [DEBUG] gen[2] RESPONSE_BEGIN ============================
+39-17：个位 9-7=2；十位 3-1=2。所以结果是 22。
+</think>
+
+答案是 22
+============================= [DEBUG] gen[2] RESPONSE_END =============================
+[DEBUG] gen[2] reward=1.0000, status=correct, tokens=36
+============================ [DEBUG] gen[3] RESPONSE_BEGIN ============================
+39-17：个位 9-7=2；十位 3-1=2。所以结果是 22。
+</think>
+
+答案是 22
+============================= [DEBUG] gen[3] RESPONSE_END =============================
+[DEBUG] gen[3] reward=1.0000, status=correct, tokens=36
+============================ [DEBUG] gen[4] RESPONSE_BEGIN ============================
+39-17：个位 9-7=2；十位 3-1=2。所以结果是 22。
+</think>
+
+答案是 22
+============================= [DEBUG] gen[4] RESPONSE_END =============================
+[DEBUG] gen[4] reward=1.0000, status=correct, tokens=36
+============================ [DEBUG] gen[5] RESPONSE_BEGIN ============================
+39-17：个位 9-7=2；十位 3-1=2。所以结果是 22。
+</think>
+
+答案是 22
+============================= [DEBUG] gen[5] RESPONSE_END =============================
+[DEBUG] gen[5] reward=1.0000, status=correct, tokens=36
+====================================================================================================
+Epoch:[1/1](50/1000), Reward: 1.0000, KL_ref: -0.0026, Adv Std: 0.0000, Adv Mean: 0.0000, Actor Loss: 0.0001, Avg Response Len: 91.50, Learning Rate: 0.00000030
+    correct_rate: 1.0000, format_rate: 1.0000, no_answer_rate: 0.0000, valid_groups: 0/2, all_correct: 2, all_wrong: 0
+Epoch:[1/1](55/1000), Reward: 0.6667, KL_ref: -0.0031, Adv Std: 1.0442, Adv Mean: -0.0000, Actor Loss: 0.0002, Avg Response Len: 98.00, Learning Rate: 0.00000030
+    correct_rate: 0.6667, format_rate: 1.0000, no_answer_rate: 0.0000, valid_groups: 2/2, all_correct: 0, all_wrong: 0
+Epoch:[1/1](60/1000), Reward: 0.4167, KL_ref: -0.0010, Adv Std: 0.7384, Adv Mean: -0.0000, Actor Loss: 0.0001, Avg Response Len: 54.25, Learning Rate: 0.00000030
+    correct_rate: 0.4167, format_rate: 1.0000, no_answer_rate: 0.0000, valid_groups: 1/2, all_correct: 0, all_wrong: 1
+Epoch:[1/1](65/1000), Reward: 0.0000, KL_ref: -0.0040, Adv Std: 0.0000, Adv Mean: 0.0000, Actor Loss: 0.0002, Avg Response Len: 143.50, Learning Rate: 0.00000030
+    correct_rate: 0.0000, format_rate: 1.0000, no_answer_rate: 0.0000, valid_groups: 0/2, all_correct: 0, all_wrong: 2
+Epoch:[1/1](70/1000), Reward: 0.8333, KL_ref: -0.0050, Adv Std: 0.7384, Adv Mean: -0.0000, Actor Loss: 0.0005, Avg Response Len: 181.17, Learning Rate: 0.00000030
+    correct_rate: 0.8333, format_rate: 1.0000, no_answer_rate: 0.0000, valid_groups: 1/2, all_correct: 1, all_wrong: 0
+Epoch:[1/1](75/1000), Reward: 0.7500, KL_ref: -0.0056, Adv Std: 0.7384, Adv Mean: 0.0000, Actor Loss: 0.0002, Avg Response Len: 132.08, Learning Rate: 0.00000030
+    correct_rate: 0.7500, format_rate: 1.0000, no_answer_rate: 0.0000, valid_groups: 1/2, all_correct: 1, all_wrong: 0
+Epoch:[1/1](80/1000), Reward: 0.0000, KL_ref: -0.0095, Adv Std: 0.0000, Adv Mean: 0.0000, Actor Loss: 0.0004, Avg Response Len: 95.25, Learning Rate: 0.00000030
+    correct_rate: 0.0000, format_rate: 1.0000, no_answer_rate: 0.0000, valid_groups: 0/2, all_correct: 0, all_wrong: 2
+Epoch:[1/1](85/1000), Reward: 0.0000, KL_ref: -0.0233, Adv Std: 0.0000, Adv Mean: 0.0000, Actor Loss: 0.0016, Avg Response Len: 104.25, Learning Rate: 0.00000030
+    correct_rate: 0.0000, format_rate: 1.0000, no_answer_rate: 0.0000, valid_groups: 0/2, all_correct: 0, all_wrong: 2
+Epoch:[1/1](90/1000), Reward: 0.0000, KL_ref: -0.0126, Adv Std: 0.0000, Adv Mean: 0.0000, Actor Loss: 0.0006, Avg Response Len: 118.00, Learning Rate: 0.00000029
+    correct_rate: 0.0000, format_rate: 1.0000, no_answer_rate: 0.0000, valid_groups: 0/2, all_correct: 0, all_wrong: 2
+Epoch:[1/1](95/1000), Reward: 0.5000, KL_ref: -0.0009, Adv Std: 0.0000, Adv Mean: 0.0000, Actor Loss: 0.0001, Avg Response Len: 130.42, Learning Rate: 0.00000029
+    correct_rate: 0.5000, format_rate: 1.0000, no_answer_rate: 0.0000, valid_groups: 0/2, all_correct: 1, all_wrong: 1
+[DEBUG] step=100, sample[0], gt=160, difficulty=easy
+----------------------------------------------------------------------------------------------------
+============================== [DEBUG] sample[0] CONTEXT_BEGIN ==============================
+<|im_start|>user
+请计算 98+62，并在最后一行以‘答案是 数字’输出。<|im_end|>
+<|im_start|>assistant
+<think>
+
+=============================== [DEBUG] sample[0] CONTEXT_END ===============================
+============================ [DEBUG] gen[0] RESPONSE_BEGIN ============================
+98+62：个位 8+2=10，写 0、向高位进 1；十位 9+6+1=16，写 6、向高位进 1；最高位再加上进位的 1。所以结果是 160。
+</think>
+
+答案是 160
+============================= [DEBUG] gen[0] RESPONSE_END =============================
+[DEBUG] gen[0] reward=1.0000, status=correct, tokens=68
+============================ [DEBUG] gen[1] RESPONSE_BEGIN ============================
+98+62：个位 8+2=10，写 0、向高位进 1；十位 9+6+1=14，写 4、向高位进 1；最高位再加上进位的 1。所以结果是 140。
+</think>
+
+答案是 140
+============================= [DEBUG] gen[1] RESPONSE_END =============================
+[DEBUG] gen[1] reward=0.0000, status=incorrect, tokens=68
+============================ [DEBUG] gen[2] RESPONSE_BEGIN ============================
+98+62：个位 8+2=10，写 0、向高位进 1；十位 9+6+1=16，写 6、向高位进 1；最高位再加上进位的 1。所以结果是 160。
+</think>
+
+答案是 160
+============================= [DEBUG] gen[2] RESPONSE_END =============================
+[DEBUG] gen[2] reward=1.0000, status=correct, tokens=68
+============================ [DEBUG] gen[3] RESPONSE_BEGIN ============================
+98+62：个位 8+2=10，写 0、向高位进 1；十位 9+6+1=16，写 6、向高位进 1；最高位再加上进位的 1。所以结果是 160。
+</think>
+
+答案是 160
+============================= [DEBUG] gen[3] RESPONSE_END =============================
+[DEBUG] gen[3] reward=1.0000, status=correct, tokens=68
+============================ [DEBUG] gen[4] RESPONSE_BEGIN ============================
+98+62：个位 8+2=10，写 0、向高位进 1；十位 9+6+1=16，写 6、向高位进 1；最高位再加上进位的 1。所以结果是 120。
+</think>
+
+答案是 120
+============================= [DEBUG] gen[4] RESPONSE_END =============================
+[DEBUG] gen[4] reward=0.0000, status=incorrect, tokens=68
+============================ [DEBUG] gen[5] RESPONSE_BEGIN ============================
+98+62：个位 8+2=10，写 0、向高位进 1；十位 9+6+1=16，写 6、向高位进 1；最高位再加上进位的 1。所以结果是 116。
+</think>
+
+答案是 116
+============================= [DEBUG] gen[5] RESPONSE_END =============================
+[DEBUG] gen[5] reward=0.0000, status=incorrect, tokens=68
+====================================================================================================
+[DEBUG] step=100, sample[1], gt=73, difficulty=easy
+----------------------------------------------------------------------------------------------------
+============================== [DEBUG] sample[1] CONTEXT_BEGIN ==============================
+<|im_start|>user
+请计算 21+52，并在最后一行以‘答案是 数字’输出。<|im_end|>
+<|im_start|>assistant
+<think>
+
+=============================== [DEBUG] sample[1] CONTEXT_END ===============================
+============================ [DEBUG] gen[0] RESPONSE_BEGIN ============================
+21+52：个位 1+2=3；十位 2+5=7。所以结果是 73。
+</think>
+
+答案是 73
+============================= [DEBUG] gen[0] RESPONSE_END =============================
+[DEBUG] gen[0] reward=1.0000, status=correct, tokens=36
+============================ [DEBUG] gen[1] RESPONSE_BEGIN ============================
+21+52：个位 1+2=3；十位 2+5=7。所以结果是 73。
+</think>
+
+答案是 73
+============================= [DEBUG] gen[1] RESPONSE_END =============================
+[DEBUG] gen[1] reward=1.0000, status=correct, tokens=36
+============================ [DEBUG] gen[2] RESPONSE_BEGIN ============================
+21+52：个位 1+2=3；十位 2+5=7。所以结果是 73。
+</think>
+
+答案是 73
+============================= [DEBUG] gen[2] RESPONSE_END =============================
+[DEBUG] gen[2] reward=1.0000, status=correct, tokens=36
+============================ [DEBUG] gen[3] RESPONSE_BEGIN ============================
+21+52：个位 1+2=3；十位 2+5=7。所以结果是 73。
+</think>
+
+答案是 73
+============================= [DEBUG] gen[3] RESPONSE_END =============================
+[DEBUG] gen[3] reward=1.0000, status=correct, tokens=36
+============================ [DEBUG] gen[4] RESPONSE_BEGIN ============================
+21+52：个位 1+2=3；十位 2+5=7。所以结果是 73。
+</think>
+
+答案是 73
+============================= [DEBUG] gen[4] RESPONSE_END =============================
+[DEBUG] gen[4] reward=1.0000, status=correct, tokens=36
+============================ [DEBUG] gen[5] RESPONSE_BEGIN ============================
+21+52：个位 1+2=3；十位 2+5=7。所以结果是 73。
+</think>
+
+答案是 73
+============================= [DEBUG] gen[5] RESPONSE_END =============================
+[DEBUG] gen[5] reward=1.0000, status=correct, tokens=36
+====================================================================================================
+Epoch:[1/1](100/1000), Reward: 0.7500, KL_ref: -0.0071, Adv Std: 0.7384, Adv Mean: 0.0000, Actor Loss: 0.0012, Avg Response Len: 52.00, Learning Rate: 0.00000029
+    correct_rate: 0.7500, format_rate: 1.0000, no_answer_rate: 0.0000, valid_groups: 1/2, all_correct: 1, all_wrong: 0
+Epoch:[1/1](105/1000), Reward: 0.0000, KL_ref: -0.0077, Adv Std: 0.0000, Adv Mean: 0.0000, Actor Loss: 0.0001, Avg Response Len: 60.75, Learning Rate: 0.00000029
+    correct_rate: 0.0000, format_rate: 1.0000, no_answer_rate: 0.0000, valid_groups: 0/2, all_correct: 0, all_wrong: 2
+Epoch:[1/1](110/1000), Reward: 0.6667, KL_ref: -0.0024, Adv Std: 0.7384, Adv Mean: -0.0000, Actor Loss: 0.0001, Avg Response Len: 126.50, Learning Rate: 0.00000029
+    correct_rate: 0.6667, format_rate: 1.0000, no_answer_rate: 0.0000, valid_groups: 1/2, all_correct: 1, all_wrong: 0
+Epoch:[1/1](115/1000), Reward: 0.6667, KL_ref: -0.0048, Adv Std: 0.7384, Adv Mean: -0.0000, Actor Loss: 0.0001, Avg Response Len: 103.67, Learning Rate: 0.00000029
+    correct_rate: 0.6667, format_rate: 1.0000, no_answer_rate: 0.0000, valid_groups: 1/2, all_correct: 1, all_wrong: 0
+Epoch:[1/1](120/1000), Reward: 0.3333, KL_ref: -0.0101, Adv Std: 1.0442, Adv Mean: -0.0000, Actor Loss: 0.0011, Avg Response Len: 138.92, Learning Rate: 0.00000029
+    correct_rate: 0.3333, format_rate: 1.0000, no_answer_rate: 0.0000, valid_groups: 2/2, all_correct: 0, all_wrong: 0
+Epoch:[1/1](125/1000), Reward: 0.5000, KL_ref: 0.0027, Adv Std: 0.0000, Adv Mean: 0.0000, Actor Loss: 0.0001, Avg Response Len: 82.00, Learning Rate: 0.00000029
+    correct_rate: 0.5000, format_rate: 1.0000, no_answer_rate: 0.0000, valid_groups: 0/2, all_correct: 1, all_wrong: 1
+Epoch:[1/1](130/1000), Reward: 0.0000, KL_ref: -0.0080, Adv Std: 0.0000, Adv Mean: 0.0000, Actor Loss: 0.0004, Avg Response Len: 84.08, Learning Rate: 0.00000029
+    correct_rate: 0.0000, format_rate: 1.0000, no_answer_rate: 0.0000, valid_groups: 0/2, all_correct: 0, all_wrong: 2
+Epoch:[1/1](135/1000), Reward: 1.0000, KL_ref: -0.0030, Adv Std: 0.0000, Adv Mean: 0.0000, Actor Loss: 0.0000, Avg Response Len: 52.50, Learning Rate: 0.00000029
+    correct_rate: 1.0000, format_rate: 1.0000, no_answer_rate: 0.0000, valid_groups: 0/2, all_correct: 2, all_wrong: 0
+Epoch:[1/1](140/1000), Reward: 0.3333, KL_ref: -0.0041, Adv Std: 0.7384, Adv Mean: -0.0000, Actor Loss: 0.0005, Avg Response Len: 56.00, Learning Rate: 0.00000029
+    correct_rate: 0.3333, format_rate: 1.0000, no_answer_rate: 0.0000, valid_groups: 1/2, all_correct: 0, all_wrong: 1
+Epoch:[1/1](145/1000), Reward: 0.5000, KL_ref: -0.0015, Adv Std: 0.0000, Adv Mean: 0.0000, Actor Loss: 0.0001, Avg Response Len: 86.42, Learning Rate: 0.00000029
+    correct_rate: 0.5000, format_rate: 1.0000, no_answer_rate: 0.0000, valid_groups: 0/2, all_correct: 1, all_wrong: 1
+[DEBUG] step=150, sample[0], gt=32, difficulty=easy
+----------------------------------------------------------------------------------------------------
+============================== [DEBUG] sample[0] CONTEXT_BEGIN ==============================
+<|im_start|>user
+请计算 64-32，并在最后一行以‘答案是 数字’输出。<|im_end|>
+<|im_start|>assistant
+<think>
+
+=============================== [DEBUG] sample[0] CONTEXT_END ===============================
+============================ [DEBUG] gen[0] RESPONSE_BEGIN ============================
+64-32：个位 4-2=2；十位 6-3=3。所以结果是 32。
+</think>
+
+答案是 32
+============================= [DEBUG] gen[0] RESPONSE_END =============================
+[DEBUG] gen[0] reward=1.0000, status=correct, tokens=36
+============================ [DEBUG] gen[1] RESPONSE_BEGIN ============================
+64-32：个位 不够减，4+10=14，14-2=9，向高位借 1；十位 6-1=5，5-3=2。所以结果是 29。
+</think>
+
+答案是 29
+============================= [DEBUG] gen[1] RESPONSE_END =============================
+[DEBUG] gen[1] reward=0.0000, status=incorrect, tokens=59
+============================ [DEBUG] gen[2] RESPONSE_BEGIN ============================
+64-32：个位 4-2=2；十位 6-3=3。所以结果是 32。
+</think>
+
+答案是 32
+============================= [DEBUG] gen[2] RESPONSE_END =============================
+[DEBUG] gen[2] reward=1.0000, status=correct, tokens=36
+============================ [DEBUG] gen[3] RESPONSE_BEGIN ============================
+64-32：个位 4-2=2；十位 6-3=3。所以结果是 32。
+</think>
+
+答案是 32
+============================= [DEBUG] gen[3] RESPONSE_END =============================
+[DEBUG] gen[3] reward=1.0000, status=correct, tokens=36
+============================ [DEBUG] gen[4] RESPONSE_BEGIN ============================
+64-32：个位 4-2=2；十位 6-3=3。所以结果是 32。
+</think>
+
+答案是 32
+============================= [DEBUG] gen[4] RESPONSE_END =============================
+[DEBUG] gen[4] reward=1.0000, status=correct, tokens=36
+============================ [DEBUG] gen[5] RESPONSE_BEGIN ============================
+64-32：个位 4-2=2；十位 6-3=3。所以结果是 32。
+</think>
+
+答案是 32
+============================= [DEBUG] gen[5] RESPONSE_END =============================
+[DEBUG] gen[5] reward=1.0000, status=correct, tokens=36
+====================================================================================================
+[DEBUG] step=150, sample[1], gt=40, difficulty=easy
+----------------------------------------------------------------------------------------------------
+============================== [DEBUG] sample[1] CONTEXT_BEGIN ==============================
+<|im_start|>user
+请计算 52-12，并在最后一行以‘答案是 数字’输出。<|im_end|>
+<|im_start|>assistant
+<think>
+
+=============================== [DEBUG] sample[1] CONTEXT_END ===============================
+============================ [DEBUG] gen[0] RESPONSE_BEGIN ============================
+52-12：个位 不够减，2+10=12，12-2=9，向高位借 1；十位 5-1=4，4-1=3。所以结果是 39。
+</think>
+
+答案是 39
+============================= [DEBUG] gen[0] RESPONSE_END =============================
+[DEBUG] gen[0] reward=0.0000, status=incorrect, tokens=59
+============================ [DEBUG] gen[1] RESPONSE_BEGIN ============================
+52-12：个位 不够减，2+10=12，12-2=12，向高位借 1；十位 5-1=4，4-1=3。所以结果是 312。
+</think>
+
+答案是 312
+============================= [DEBUG] gen[1] RESPONSE_END =============================
+[DEBUG] gen[1] reward=0.0000, status=incorrect, tokens=59
+============================ [DEBUG] gen[2] RESPONSE_BEGIN ============================
+52-12：个位 不够减，2+10=12，12-2=9，向高位借 1；十位 5-1=4，4-1=3。所以结果是 39。
+</think>
+
+答案是 39
+============================= [DEBUG] gen[2] RESPONSE_END =============================
+[DEBUG] gen[2] reward=0.0000, status=incorrect, tokens=59
+============================ [DEBUG] gen[3] RESPONSE_BEGIN ============================
+52-12：个位 不够减，2+10=12，12-2=12，向高位借 1；十位 5-1=4，4-1=3。所以结果是 312。
+</think>
+
+答案是 312
+============================= [DEBUG] gen[3] RESPONSE_END =============================
+[DEBUG] gen[3] reward=0.0000, status=incorrect, tokens=59
+============================ [DEBUG] gen[4] RESPONSE_BEGIN ============================
+52-12：个位 2-2=0；十位 5-1=4。所以结果是 40。
+</think>
+
+答案是 40
+============================= [DEBUG] gen[4] RESPONSE_END =============================
+[DEBUG] gen[4] reward=1.0000, status=correct, tokens=34
+============================ [DEBUG] gen[5] RESPONSE_BEGIN ============================
+52-12：个位 不够减，2+10=12，12-2=14，14-1-1=9。所以结果是 99。
+</think>
+
+答案是 99
+============================= [DEBUG] gen[5] RESPONSE_END =============================
+[DEBUG] gen[5] reward=0.0000, status=incorrect, tokens=47
+====================================================================================================
+Epoch:[1/1](150/1000), Reward: 0.5000, KL_ref: -0.0046, Adv Std: 1.0442, Adv Mean: -0.0000, Actor Loss: 0.0005, Avg Response Len: 46.33, Learning Rate: 0.00000029
+    correct_rate: 0.5000, format_rate: 1.0000, no_answer_rate: 0.0000, valid_groups: 2/2, all_correct: 0, all_wrong: 0
+Epoch:[1/1](155/1000), Reward: 0.0000, KL_ref: -0.0139, Adv Std: 0.0000, Adv Mean: 0.0000, Actor Loss: 0.0009, Avg Response Len: 95.67, Learning Rate: 0.00000028
+    correct_rate: 0.0000, format_rate: 1.0000, no_answer_rate: 0.0000, valid_groups: 0/2, all_correct: 0, all_wrong: 2
+Epoch:[1/1](160/1000), Reward: 0.0833, KL_ref: -0.0038, Adv Std: 0.7384, Adv Mean: -0.0000, Actor Loss: 0.0004, Avg Response Len: 151.08, Learning Rate: 0.00000028
+    correct_rate: 0.0833, format_rate: 1.0000, no_answer_rate: 0.0000, valid_groups: 1/2, all_correct: 0, all_wrong: 1
+Epoch:[1/1](165/1000), Reward: 0.2500, KL_ref: -0.0031, Adv Std: 0.7384, Adv Mean: 0.0000, Actor Loss: 0.0003, Avg Response Len: 136.08, Learning Rate: 0.00000028
+    correct_rate: 0.2500, format_rate: 1.0000, no_answer_rate: 0.0000, valid_groups: 1/2, all_correct: 0, all_wrong: 1
+Epoch:[1/1](170/1000), Reward: 0.4167, KL_ref: 0.0002, Adv Std: 0.7384, Adv Mean: -0.0000, Actor Loss: 0.0001, Avg Response Len: 91.83, Learning Rate: 0.00000028
+    correct_rate: 0.4167, format_rate: 1.0000, no_answer_rate: 0.0000, valid_groups: 1/2, all_correct: 0, all_wrong: 1
+Epoch:[1/1](175/1000), Reward: 0.3333, KL_ref: -0.0001, Adv Std: 0.7384, Adv Mean: -0.0000, Actor Loss: 0.0003, Avg Response Len: 86.00, Learning Rate: 0.00000028
+    correct_rate: 0.3333, format_rate: 1.0000, no_answer_rate: 0.0000, valid_groups: 1/2, all_correct: 0, all_wrong: 1
+Epoch:[1/1](180/1000), Reward: 0.5000, KL_ref: 0.0004, Adv Std: 0.0000, Adv Mean: 0.0000, Actor Loss: 0.0001, Avg Response Len: 83.92, Learning Rate: 0.00000028
+    correct_rate: 0.5000, format_rate: 1.0000, no_answer_rate: 0.0000, valid_groups: 0/2, all_correct: 1, all_wrong: 1
+Epoch:[1/1](185/1000), Reward: 0.3333, KL_ref: -0.0045, Adv Std: 0.7384, Adv Mean: -0.0000, Actor Loss: 0.0003, Avg Response Len: 188.50, Learning Rate: 0.00000028
+    correct_rate: 0.3333, format_rate: 1.0000, no_answer_rate: 0.0000, valid_groups: 1/2, all_correct: 0, all_wrong: 1
+Epoch:[1/1](190/1000), Reward: 0.5000, KL_ref: 0.0004, Adv Std: 0.0000, Adv Mean: 0.0000, Actor Loss: 0.0001, Avg Response Len: 144.67, Learning Rate: 0.00000028
+    correct_rate: 0.5000, format_rate: 1.0000, no_answer_rate: 0.0000, valid_groups: 0/2, all_correct: 1, all_wrong: 1
+Epoch:[1/1](195/1000), Reward: 0.5000, KL_ref: -0.0088, Adv Std: 0.0000, Adv Mean: 0.0000, Actor Loss: 0.0002, Avg Response Len: 86.75, Learning Rate: 0.00000028
+    correct_rate: 0.5000, format_rate: 1.0000, no_answer_rate: 0.0000, valid_groups: 0/2, all_correct: 1, all_wrong: 1
+[DEBUG] step=200, sample[0], gt=1679, difficulty=easy
+----------------------------------------------------------------------------------------------------
+============================== [DEBUG] sample[0] CONTEXT_BEGIN ==============================
+<|im_start|>user
+请计算 23*73，并在最后一行以‘答案是 数字’输出。<|im_end|>
+<|im_start|>assistant
+<think>
+
+=============================== [DEBUG] sample[0] CONTEXT_END ===============================
+============================ [DEBUG] gen[0] RESPONSE_BEGIN ============================
+23*73：73 拆成 70 和 3；23*70=1610；23*3=69；1610+69=1699。所以结果是 1699。
+</think>
+
+答案是 1699
+============================= [DEBUG] gen[0] RESPONSE_END =============================
+[DEBUG] gen[0] reward=0.0000, status=incorrect, tokens=57
+============================ [DEBUG] gen[1] RESPONSE_BEGIN ============================
+23*73：73 拆成 70 和 3；23*70=1690；23*3=69；1690+69=1699。所以结果是 1699。
+</think>
+
+答案是 1699
+============================= [DEBUG] gen[1] RESPONSE_END =============================
+[DEBUG] gen[1] reward=0.0000, status=incorrect, tokens=57
+============================ [DEBUG] gen[2] RESPONSE_BEGIN ============================
+23*73：73 拆成 70 和 3；23*70=1680；23*3=69；1680+69=1729。所以结果是 1729。
+</think>
+
+答案是 1729
+============================= [DEBUG] gen[2] RESPONSE_END =============================
+[DEBUG] gen[2] reward=0.0000, status=incorrect, tokens=54
+============================ [DEBUG] gen[3] RESPONSE_BEGIN ============================
+23*73：73 拆成 70 和 3；23*70=1710；23*3=69；1710+69=1879。所以结果是 1879。
+</think>
+
+答案是 1879
+============================= [DEBUG] gen[3] RESPONSE_END =============================
+[DEBUG] gen[3] reward=0.0000, status=incorrect, tokens=57
+============================ [DEBUG] gen[4] RESPONSE_BEGIN ============================
+23*73：73 拆成 70 和 3；23*70=1610；23*3=69；1610+69=1699。所以结果是 1699。
+</think>
+
+答案是 1699
+============================= [DEBUG] gen[4] RESPONSE_END =============================
+[DEBUG] gen[4] reward=0.0000, status=incorrect, tokens=57
+============================ [DEBUG] gen[5] RESPONSE_BEGIN ============================
+23*73：73 拆成 70 和 3；23*70=1610；23*3=69；1610+69=1699。所以结果是 1699。
+</think>
+
+答案是 1699
+============================= [DEBUG] gen[5] RESPONSE_END =============================
+[DEBUG] gen[5] reward=0.0000, status=incorrect, tokens=57
+====================================================================================================
+[DEBUG] step=200, sample[1], gt=19, difficulty=easy
+----------------------------------------------------------------------------------------------------
+============================== [DEBUG] sample[1] CONTEXT_BEGIN ==============================
+<|im_start|>user
+请计算 34-15，并在最后一行以‘答案是 数字’输出。<|im_end|>
+<|im_start|>assistant
+<think>
+
+=============================== [DEBUG] sample[1] CONTEXT_END ===============================
+============================ [DEBUG] gen[0] RESPONSE_BEGIN ============================
+34-15：个位 4-5=1；十位 3-1=2。所以结果是 21。
+</think>
+
+答案是 21
+============================= [DEBUG] gen[0] RESPONSE_END =============================
+[DEBUG] gen[0] reward=0.0000, status=incorrect, tokens=34
+============================ [DEBUG] gen[1] RESPONSE_BEGIN ============================
+34-15：个位 4-5=1；十位 3-1=2。所以结果是 21。
+</think>
+
+答案是 21
+============================= [DEBUG] gen[1] RESPONSE_END =============================
+[DEBUG] gen[1] reward=0.0000, status=incorrect, tokens=36
+============================ [DEBUG] gen[2] RESPONSE_BEGIN ============================
+34-15：个位 4-5=1；十位 3-1=2。所以结果是 21。
+</think>
+
+答案是 21
+============================= [DEBUG] gen[2] RESPONSE_END =============================
+[DEBUG] gen[2] reward=0.0000, status=incorrect, tokens=34
+============================ [DEBUG] gen[3] RESPONSE_BEGIN ============================
+34-15：个位 4-5=1；十位 3-1=2。所以结果是 21。
+</think>
+
+答案是 21
+============================= [DEBUG] gen[3] RESPONSE_END =============================
+[DEBUG] gen[3] reward=0.0000, status=incorrect, tokens=36
+============================ [DEBUG] gen[4] RESPONSE_BEGIN ============================
+34-15：个位 不够减，4+10=14，14-5=9，向高位借 1；十位 3-1=2，2-1=1。所以结果是 19。
+</think>
+
+答案是 19
+============================= [DEBUG] gen[4] RESPONSE_END =============================
+[DEBUG] gen[4] reward=1.0000, status=correct, tokens=57
+============================ [DEBUG] gen[5] RESPONSE_BEGIN ============================
+34-15：个位 4-5=1；十位 3-1=2。所以结果是 21。
+</think>
+
+答案是 21
+============================= [DEBUG] gen[5] RESPONSE_END =============================
+[DEBUG] gen[5] reward=0.0000, status=incorrect, tokens=34
+====================================================================================================
+Epoch:[1/1](200/1000), Reward: 0.0833, KL_ref: -0.0050, Adv Std: 0.7384, Adv Mean: -0.0000, Actor Loss: 0.0002, Avg Response Len: 47.50, Learning Rate: 0.00000027
+    correct_rate: 0.0833, format_rate: 1.0000, no_answer_rate: 0.0000, valid_groups: 1/2, all_correct: 0, all_wrong: 1
+Epoch:[1/1](205/1000), Reward: 0.3333, KL_ref: -0.0039, Adv Std: 1.0442, Adv Mean: -0.0000, Actor Loss: 0.0002, Avg Response Len: 151.92, Learning Rate: 0.00000027
+    correct_rate: 0.3333, format_rate: 1.0000, no_answer_rate: 0.0000, valid_groups: 2/2, all_correct: 0, all_wrong: 0
+Epoch:[1/1](210/1000), Reward: 0.0000, KL_ref: -0.0050, Adv Std: 0.0000, Adv Mean: 0.0000, Actor Loss: 0.0003, Avg Response Len: 87.67, Learning Rate: 0.00000027
+    correct_rate: 0.0000, format_rate: 1.0000, no_answer_rate: 0.0000, valid_groups: 0/2, all_correct: 0, all_wrong: 2
+Epoch:[1/1](215/1000), Reward: 0.5833, KL_ref: -0.0061, Adv Std: 0.7384, Adv Mean: -0.0000, Actor Loss: 0.0002, Avg Response Len: 87.00, Learning Rate: 0.00000027
+    correct_rate: 0.5833, format_rate: 1.0000, no_answer_rate: 0.0000, valid_groups: 1/2, all_correct: 1, all_wrong: 0
+Epoch:[1/1](220/1000), Reward: 0.0833, KL_ref: -0.0070, Adv Std: 0.7384, Adv Mean: -0.0000, Actor Loss: 0.0002, Avg Response Len: 62.92, Learning Rate: 0.00000027
+    correct_rate: 0.0833, format_rate: 1.0000, no_answer_rate: 0.0000, valid_groups: 1/2, all_correct: 0, all_wrong: 1
+Epoch:[1/1](225/1000), Reward: 0.8333, KL_ref: -0.0025, Adv Std: 0.7384, Adv Mean: -0.0000, Actor Loss: 0.0002, Avg Response Len: 148.50, Learning Rate: 0.00000027
+    correct_rate: 0.8333, format_rate: 1.0000, no_answer_rate: 0.0000, valid_groups: 1/2, all_correct: 1, all_wrong: 0
+Epoch:[1/1](230/1000), Reward: 0.0000, KL_ref: -0.0044, Adv Std: 0.0000, Adv Mean: 0.0000, Actor Loss: 0.0002, Avg Response Len: 85.33, Learning Rate: 0.00000027
+    correct_rate: 0.0000, format_rate: 1.0000, no_answer_rate: 0.0000, valid_groups: 0/2, all_correct: 0, all_wrong: 2
+Epoch:[1/1](235/1000), Reward: 0.0000, KL_ref: -0.0095, Adv Std: 0.0000, Adv Mean: 0.0000, Actor Loss: 0.0003, Avg Response Len: 96.08, Learning Rate: 0.00000026
+    correct_rate: 0.0000, format_rate: 1.0000, no_answer_rate: 0.0000, valid_groups: 0/2, all_correct: 0, all_wrong: 2
+Epoch:[1/1](240/1000), Reward: 0.5833, KL_ref: -0.0016, Adv Std: 0.7384, Adv Mean: -0.0000, Actor Loss: 0.0001, Avg Response Len: 85.42, Learning Rate: 0.00000026
+    correct_rate: 0.5833, format_rate: 1.0000, no_answer_rate: 0.0000, valid_groups: 1/2, all_correct: 1, all_wrong: 0
+Epoch:[1/1](245/1000), Reward: 0.4167, KL_ref: -0.0012, Adv Std: 0.7384, Adv Mean: -0.0000, Actor Loss: 0.0002, Avg Response Len: 141.42, Learning Rate: 0.00000026
+    correct_rate: 0.4167, format_rate: 1.0000, no_answer_rate: 0.0000, valid_groups: 1/2, all_correct: 0, all_wrong: 1
+[DEBUG] step=250, sample[0], gt=1514, difficulty=hard
+----------------------------------------------------------------------------------------------------
+============================== [DEBUG] sample[0] CONTEXT_BEGIN ==============================
+<|im_start|>user
+请计算 (11**3)+(16**2)-73，并在最后一行以‘答案是 数字’输出。<|im_end|>
+<|im_start|>assistant
+<think>
+
+=============================== [DEBUG] sample[0] CONTEXT_END ===============================
+============================ [DEBUG] gen[0] RESPONSE_BEGIN ============================
+(11**3)+(16**2)-73：11 拆成 10 和 1；11*10=110；11*1=11；110+11=121；11 拆成 10 和 1；121*10=1210；121*1=121；1210+121=1331；16 拆成 10 和 6；16*10=160；16*6=96；160+96=256；个位 1+6=7；十位 3+5=8；百位 3+2=5；千位 1+0=1；个位 7-3=4；十位 8-7=1；百位 落 5；千位 落 1。所以结果是 1512。
+</think>
+
+答案是 1512
+============================= [DEBUG] gen[0] RESPONSE_END =============================
+[DEBUG] gen[0] reward=0.0000, status=incorrect, tokens=187
+============================ [DEBUG] gen[1] RESPONSE_BEGIN ============================
+(11**3)+(16**2)-73：11 拆成 10 和 1；11*10=110；11*1=11；110+11=121；11 拆成 10 和 1；121*10=1210；121*1=121；1210+121=1331；16 拆成 10 和 6；16*10=160；16*6=96；160+96=256；个位 1+6=7；十位 3+5=8；百位 3+2=5；千位 1+0=1；个位 7-3=4；十位 8-7=1；百位 落 5；千位 落 1。所以结果是 1512。
+</think>
+
+答案是 1512
+============================= [DEBUG] gen[1] RESPONSE_END =============================
+[DEBUG] gen[1] reward=0.0000, status=incorrect, tokens=187
+============================ [DEBUG] gen[2] RESPONSE_BEGIN ============================
+(11**3)+(16**2)-73：11 拆成 10 和 1；11*10=110；11*1=11；110+11=121；11 拆成 10 和 1；121*10=1210；121*1=121；1210+121=1331；16 拆成 10 和 6；16*10=160；16*6=96；160+96=256；个位 1+6=7；十位 3+5=8；百位 3+2=5；千位 1+0=1；个位 7-3=4；十位 8-7=1；百位 落 5；千位 落 1。所以结果是 1512。
+</think>
+
+答案是 1512
+============================= [DEBUG] gen[2] RESPONSE_END =============================
+[DEBUG] gen[2] reward=0.0000, status=incorrect, tokens=187
+============================ [DEBUG] gen[3] RESPONSE_BEGIN ============================
+(11**3)+(16**2)-73：11 拆成 10 和 1；11*10=110；11*1=11；110+11=121；11 拆成 10 和 1；121*10=1210；121*1=121；1210+121=1331；16 拆成 10 和 6；16*10=160；16*6=96；160+96=256；个位 1+6=7；十位 3+5=8；百位 3+2=5；千位 1+0=1；个位 7-3=4；十位 8-7=1；百位 落 5；千位 落 1。所以结果是 1512。
+</think>
+
+答案是 1512
+============================= [DEBUG] gen[3] RESPONSE_END =============================
+[DEBUG] gen[3] reward=0.0000, status=incorrect, tokens=187
+============================ [DEBUG] gen[4] RESPONSE_BEGIN ============================
+(11**3)+(16**2)-73：11 拆成 10 和 1；11*10=110；11*1=11；110+11=121；11 拆成 10 和 1；121*10=1210；121*1=121；1210+121=1331；16 拆成 10 和 6；16*10=160；16*6=96；160+96=256；个位 1+6=7；十位 3+5=8；百位 3+2=5；千位 1+0=1；个位 7-3=4；十位 8-7=1；百位 落 5；千位 落 1。所以结果是 1512。
+</think>
+
+答案是 1512
+============================= [DEBUG] gen[4] RESPONSE_END =============================
+[DEBUG] gen[4] reward=0.0000, status=incorrect, tokens=187
+============================ [DEBUG] gen[5] RESPONSE_BEGIN ============================
+(11**3)+(16**2)-73：11 拆成 10 和 1；11*10=110；11*1=11；110+11=121；11 拆成 10 和 1；121*10=1210；121*1=121；1210+121=1331；16 拆成 10 和 6；16*10=160；16*6=96；160+96=256；个位 1+6=7；十位 3+5=8；百位 3+2=5；千位 1+0=1；个位 7-3=4；十位 8-7=1；百位 落 5；千位 落 1。所以结果是 1512。
+</think>
+
+答案是 1512
+============================= [DEBUG] gen[5] RESPONSE_END =============================
+[DEBUG] gen[5] reward=0.0000, status=incorrect, tokens=187
+====================================================================================================
+[DEBUG] step=250, sample[1], gt=123, difficulty=easy
+----------------------------------------------------------------------------------------------------
+============================== [DEBUG] sample[1] CONTEXT_BEGIN ==============================
+<|im_start|>user
+请计算 47+76，并在最后一行以‘答案是 数字’输出。<|im_end|>
+<|im_start|>assistant
+<think>
+
+=============================== [DEBUG] sample[1] CONTEXT_END ===============================
+============================ [DEBUG] gen[0] RESPONSE_BEGIN ============================
+47+76：个位 7+6=13，写 3、向高位进 1；十位 4+7+1=12，写 2、向高位进 1；最高位再加上进位的 1。所以结果是 123。
+</think>
+
+答案是 123
+============================= [DEBUG] gen[0] RESPONSE_END =============================
+[DEBUG] gen[0] reward=1.0000, status=correct, tokens=68
+============================ [DEBUG] gen[1] RESPONSE_BEGIN ============================
+47+76：个位 7+6=13，写 3、向高位进 1；十位 4+7+1=12，写 2、向高位进 1；最高位再加上进位的 1。所以结果是 123。
+</think>
+
+答案是 123
+============================= [DEBUG] gen[1] RESPONSE_END =============================
+[DEBUG] gen[1] reward=1.0000, status=correct, tokens=68
+============================ [DEBUG] gen[2] RESPONSE_BEGIN ============================
+47+76：个位 7+6=13，写 3、向高位进 1；十位 4+7+1=12，写 2、向高位进 1；最高位再加上进位的 1。所以结果是 123。
+</think>
+
+答案是 123
+============================= [DEBUG] gen[2] RESPONSE_END =============================
+[DEBUG] gen[2] reward=1.0000, status=correct, tokens=68
+============================ [DEBUG] gen[3] RESPONSE_BEGIN ============================
+47+76：个位 7+6=13，写 3、向高位进 1；十位 4+7+1=12，写 2、向高位进 1；最高位再加上进位的 1。所以结果是 123。
+</think>
+
+答案是 123
+============================= [DEBUG] gen[3] RESPONSE_END =============================
+[DEBUG] gen[3] reward=1.0000, status=correct, tokens=68
+============================ [DEBUG] gen[4] RESPONSE_BEGIN ============================
+47+76：个位 7+6=13，写 3、向高位进 1；十位 4+7+1=12，写 2、向高位进 1；最高位再加上进位的 1。所以结果是 123。
+</think>
+
+答案是 123
+============================= [DEBUG] gen[4] RESPONSE_END =============================
+[DEBUG] gen[4] reward=1.0000, status=correct, tokens=68
+============================ [DEBUG] gen[5] RESPONSE_BEGIN ============================
+47+76：个位 7+6=13，写 3、向高位进 1；十位 4+7+1=12，写 2、向高位进 1；最高位再加上进位的 1。所以结果是 123。
+</think>
+
+答案是 123
+============================= [DEBUG] gen[5] RESPONSE_END =============================
+[DEBUG] gen[5] reward=1.0000, status=correct, tokens=68
+====================================================================================================
+Epoch:[1/1](250/1000), Reward: 0.5000, KL_ref: -0.0057, Adv Std: 0.0000, Adv Mean: 0.0000, Actor Loss: 0.0001, Avg Response Len: 127.50, Learning Rate: 0.00000026
+    correct_rate: 0.5000, format_rate: 1.0000, no_answer_rate: 0.0000, valid_groups: 0/2, all_correct: 1, all_wrong: 1
+Epoch:[1/1](255/1000), Reward: 0.5000, KL_ref: -0.0068, Adv Std: 0.0000, Adv Mean: 0.0000, Actor Loss: 0.0005, Avg Response Len: 113.75, Learning Rate: 0.00000026
+    correct_rate: 0.5000, format_rate: 1.0000, no_answer_rate: 0.0000, valid_groups: 0/2, all_correct: 1, all_wrong: 1
+Epoch:[1/1](260/1000), Reward: 0.5000, KL_ref: -0.0008, Adv Std: 0.0000, Adv Mean: 0.0000, Actor Loss: 0.0001, Avg Response Len: 85.83, Learning Rate: 0.00000026
+    correct_rate: 0.5000, format_rate: 1.0000, no_answer_rate: 0.0000, valid_groups: 0/2, all_correct: 1, all_wrong: 1
+Epoch:[1/1](265/1000), Reward: 0.0000, KL_ref: -0.0075, Adv Std: 0.0000, Adv Mean: 0.0000, Actor Loss: 0.0003, Avg Response Len: 135.50, Learning Rate: 0.00000026
+    correct_rate: 0.0000, format_rate: 1.0000, no_answer_rate: 0.0000, valid_groups: 0/2, all_correct: 0, all_wrong: 2
+Epoch:[1/1](270/1000), Reward: 0.5000, KL_ref: -0.0028, Adv Std: 0.0000, Adv Mean: 0.0000, Actor Loss: 0.0001, Avg Response Len: 130.00, Learning Rate: 0.00000025
+    correct_rate: 0.5000, format_rate: 1.0000, no_answer_rate: 0.0000, valid_groups: 0/2, all_correct: 1, all_wrong: 1
+Epoch:[1/1](275/1000), Reward: 0.4167, KL_ref: -0.0067, Adv Std: 0.7384, Adv Mean: -0.0000, Actor Loss: 0.0002, Avg Response Len: 52.08, Learning Rate: 0.00000025
+    correct_rate: 0.4167, format_rate: 1.0000, no_answer_rate: 0.0000, valid_groups: 1/2, all_correct: 0, all_wrong: 1
+Epoch:[1/1](280/1000), Reward: 0.8333, KL_ref: -0.0002, Adv Std: 0.7384, Adv Mean: -0.0000, Actor Loss: 0.0000, Avg Response Len: 130.58, Learning Rate: 0.00000025
+    correct_rate: 0.8333, format_rate: 1.0000, no_answer_rate: 0.0000, valid_groups: 1/2, all_correct: 1, all_wrong: 0
+Epoch:[1/1](285/1000), Reward: 0.0833, KL_ref: -0.0045, Adv Std: 0.7384, Adv Mean: 0.0000, Actor Loss: 0.0002, Avg Response Len: 148.00, Learning Rate: 0.00000025
+    correct_rate: 0.0833, format_rate: 1.0000, no_answer_rate: 0.0000, valid_groups: 1/2, all_correct: 0, all_wrong: 1
+Epoch:[1/1](290/1000), Reward: 0.1667, KL_ref: -0.0000, Adv Std: 0.7384, Adv Mean: -0.0000, Actor Loss: 0.0005, Avg Response Len: 107.00, Learning Rate: 0.00000025
+    correct_rate: 0.1667, format_rate: 1.0000, no_answer_rate: 0.0000, valid_groups: 1/2, all_correct: 0, all_wrong: 1
+Epoch:[1/1](295/1000), Reward: 0.4167, KL_ref: -0.0015, Adv Std: 0.7384, Adv Mean: -0.0000, Actor Loss: 0.0005, Avg Response Len: 170.58, Learning Rate: 0.00000025
+    correct_rate: 0.4167, format_rate: 1.0000, no_answer_rate: 0.0000, valid_groups: 1/2, all_correct: 0, all_wrong: 1
+[DEBUG] step=300, sample[0], gt=250, difficulty=medium
+----------------------------------------------------------------------------------------------------
+============================== [DEBUG] sample[0] CONTEXT_BEGIN ==============================
+<|im_start|>user
+请计算 (45+50)*3-35，并在最后一行以‘答案是 数字’输出。<|im_end|>
+<|im_start|>assistant
+<think>
+
+=============================== [DEBUG] sample[0] CONTEXT_END ===============================
+============================ [DEBUG] gen[0] RESPONSE_BEGIN ============================
+(45+50)*3-35：个位 5+0=5；十位 4+5=9；95 拆成 90 和 5；90*3=270；5*3=15；270+15=265；个位 不够减，5+10=15，15-5=9，向高位借 1；十位 6-1=5，5-3=2；百位 2-3=0。所以结果是 29。
+</think>
+
+答案是 29
+============================= [DEBUG] gen[0] RESPONSE_END =============================
+[DEBUG] gen[0] reward=0.0000, status=incorrect, tokens=122
+============================ [DEBUG] gen[1] RESPONSE_BEGIN ============================
+(45+50)*3-35：个位 5+0=5；十位 4+5=9；95 拆成 90 和 5；90*3=270；5*3=15；270+15=295；个位 不够减，5+10=15，15-5=9，向高位借 1；十位 9-1=8，8-3=5；百位 2-3=0。所以结果是 59。
+</think>
+
+答案是 59
+============================= [DEBUG] gen[1] RESPONSE_END =============================
+[DEBUG] gen[1] reward=0.0000, status=incorrect, tokens=121
+============================ [DEBUG] gen[2] RESPONSE_BEGIN ============================
+(45+50)*3-35：个位 5+0=5；十位 4+5=9；95 拆成 90 和 5；90*3=270；5*3=15；270+15=295；个位 不够减，5+10=15，15-5=9，向高位借 1；十位 9-1=8，8-3=5；百位 2-3=0。所以结果是 59。
+</think>
+
+答案是 59
+============================= [DEBUG] gen[2] RESPONSE_END =============================
+[DEBUG] gen[2] reward=0.0000, status=incorrect, tokens=121
+============================ [DEBUG] gen[3] RESPONSE_BEGIN ============================
+(45+50)*3-35：个位 5+0=5；十位 4+5=9；95 拆成 90 和 5；90*3=270；5*3=15；270+15=265；个位 不够减，5+10=15，15-5=9，向高位借 1；十位 6-1=5，5-3=2；百位 2-3=0。所以结果是 29。
+</think>
+
+答案是 29
+============================= [DEBUG] gen[3] RESPONSE_END =============================
+[DEBUG] gen[3] reward=0.0000, status=incorrect, tokens=122
+============================ [DEBUG] gen[4] RESPONSE_BEGIN ============================
+(45+50)*3-35：个位 5+0=5；十位 4+5=9；95 拆成 90 和 5；90*3=270；5*3=15；270+15=285；个位 不够减，5+10=15，15-5=8，向高位借 1；十位 8-1=7，7-3=4。所以结果是 48。
+</think>
+
+答案是 48
+============================= [DEBUG] gen[4] RESPONSE_END =============================
+[DEBUG] gen[4] reward=0.0000, status=incorrect, tokens=113
+============================ [DEBUG] gen[5] RESPONSE_BEGIN ============================
+(45+50)*3-35：个位 5+0=5；十位 4+5=9；95 拆成 90 和 5；90*3=270；5*3=15；270+15=265；个位 不够减，5+10=15，15-5=9，向高位借 1；十位 6-1=5，5-3=2；百位 2-3=0。所以结果是 29。
+</think>
+
+答案是 29
+============================= [DEBUG] gen[5] RESPONSE_END =============================
+[DEBUG] gen[5] reward=0.0000, status=incorrect, tokens=122
+====================================================================================================
+[DEBUG] step=300, sample[1], gt=340, difficulty=medium
+----------------------------------------------------------------------------------------------------
+============================== [DEBUG] sample[1] CONTEXT_BEGIN ==============================
+<|im_start|>user
+请计算 (15+40)*9-155，并在最后一行以‘答案是 数字’输出。<|im_end|>
+<|im_start|>assistant
+<think>
+
+=============================== [DEBUG] sample[1] CONTEXT_END ===============================
+============================ [DEBUG] gen[0] RESPONSE_BEGIN ============================
+(15+40)*9-155：个位 5+0=5；十位 1+4=5；55 拆成 50 和 5；50*9=450；5*9=45；450+45=495；个位 不够减，5+10=15，15-5=9，向高位借 1；十位 9-1=8，8-5=3；百位 4-1=3。所以结果是 339。
+</think>
+
+答案是 339
+============================= [DEBUG] gen[0] RESPONSE_END =============================
+[DEBUG] gen[0] reward=0.0000, status=incorrect, tokens=123
+============================ [DEBUG] gen[1] RESPONSE_BEGIN ============================
+(15+40)*9-155：个位 5+0=5；十位 1+4=5；55 拆成 50 和 5；50*9=450；5*9=45；450+45=475；个位 5-5=0；十位 7-1=6；百位 4-5=1。所以结果是 160。
+</think>
+
+答案是 160
+============================= [DEBUG] gen[1] RESPONSE_END =============================
+[DEBUG] gen[1] reward=0.0000, status=incorrect, tokens=97
+============================ [DEBUG] gen[2] RESPONSE_BEGIN ============================
+(15+40)*9-155：个位 5+0=5；十位 1+4=5；55 拆成 50 和 5；50*9=450；5*9=45；450+45=495；个位 不够减，5+10=15，15-5=9，向高位借 1；十位 9-1=8，8-5=3；百位 4-1=3。所以结果是 339。
+</think>
+
+答案是 339
+============================= [DEBUG] gen[2] RESPONSE_END =============================
+[DEBUG] gen[2] reward=0.0000, status=incorrect, tokens=123
+============================ [DEBUG] gen[3] RESPONSE_BEGIN ============================
+(15+40)*9-155：个位 5+0=5；十位 1+4=5；55 拆成 50 和 5；50*9=450；5*9=45；450+45=495；个位 5-5=0；十位 9-1=8。所以结果是 80。
+</think>
+
+答案是 80
+============================= [DEBUG] gen[3] RESPONSE_END =============================
+[DEBUG] gen[3] reward=0.0000, status=incorrect, tokens=90
+============================ [DEBUG] gen[4] RESPONSE_BEGIN ============================
+(15+40)*9-155：个位 5+0=5；十位 1+4=5；55 拆成 50 和 5；50*9=450；5*9=45；450+45=495；个位 5-5=0；十位 9-1=8；百位 4-1=3。所以结果是 380。
+</think>
+
+答案是 380
+============================= [DEBUG] gen[4] RESPONSE_END =============================
+[DEBUG] gen[4] reward=0.0000, status=incorrect, tokens=98
+============================ [DEBUG] gen[5] RESPONSE_BEGIN ============================
+(15+40)*9-155：个位 5+0=5；十位 1+4=5；55 拆成 50 和 5；50*9=450；5*9=45；450+45=495；个位 不够减，5+10=15，15-5=9，向高位借 1；十位 9-1=8，8-5=3；百位 4-1=3。所以结果是 339。
+</think>
+
+答案是 339
+============================= [DEBUG] gen[5] RESPONSE_END =============================
+[DEBUG] gen[5] reward=0.0000, status=incorrect, tokens=123
+====================================================================================================
+Epoch:[1/1](300/1000), Reward: 0.0000, KL_ref: -0.0084, Adv Std: 0.0000, Adv Mean: 0.0000, Actor Loss: 0.0005, Avg Response Len: 114.58, Learning Rate: 0.00000024
+    correct_rate: 0.0000, format_rate: 1.0000, no_answer_rate: 0.0000, valid_groups: 0/2, all_correct: 0, all_wrong: 2
+Epoch:[1/1](305/1000), Reward: 0.1667, KL_ref: -0.0041, Adv Std: 0.7384, Adv Mean: -0.0000, Actor Loss: 0.0004, Avg Response Len: 131.00, Learning Rate: 0.00000024
+    correct_rate: 0.1667, format_rate: 1.0000, no_answer_rate: 0.0000, valid_groups: 1/2, all_correct: 0, all_wrong: 1
+Epoch:[1/1](310/1000), Reward: 1.0000, KL_ref: -0.0002, Adv Std: 0.0000, Adv Mean: 0.0000, Actor Loss: 0.0000, Avg Response Len: 131.00, Learning Rate: 0.00000024
+    correct_rate: 1.0000, format_rate: 1.0000, no_answer_rate: 0.0000, valid_groups: 0/2, all_correct: 2, all_wrong: 0
+Epoch:[1/1](315/1000), Reward: 0.0833, KL_ref: 0.0003, Adv Std: 0.7384, Adv Mean: -0.0000, Actor Loss: 0.0003, Avg Response Len: 140.17, Learning Rate: 0.00000024
+    correct_rate: 0.0833, format_rate: 1.0000, no_answer_rate: 0.0000, valid_groups: 1/2, all_correct: 0, all_wrong: 1
+Epoch:[1/1](320/1000), Reward: 0.0000, KL_ref: 0.0006, Adv Std: 0.0000, Adv Mean: 0.0000, Actor Loss: 0.0001, Avg Response Len: 135.58, Learning Rate: 0.00000024
+    correct_rate: 0.0000, format_rate: 1.0000, no_answer_rate: 0.0000, valid_groups: 0/2, all_correct: 0, all_wrong: 2
+Epoch:[1/1](325/1000), Reward: 0.7500, KL_ref: -0.0002, Adv Std: 0.7384, Adv Mean: 0.0000, Actor Loss: 0.0000, Avg Response Len: 167.75, Learning Rate: 0.00000024
+    correct_rate: 0.7500, format_rate: 1.0000, no_answer_rate: 0.0000, valid_groups: 1/2, all_correct: 1, all_wrong: 0
+Epoch:[1/1](330/1000), Reward: 0.5000, KL_ref: -0.0010, Adv Std: 0.0000, Adv Mean: 0.0000, Actor Loss: 0.0000, Avg Response Len: 128.00, Learning Rate: 0.00000023
+    correct_rate: 0.5000, format_rate: 1.0000, no_answer_rate: 0.0000, valid_groups: 0/2, all_correct: 1, all_wrong: 1
+Epoch:[1/1](335/1000), Reward: 0.3333, KL_ref: -0.0051, Adv Std: 1.0442, Adv Mean: -0.0000, Actor Loss: 0.0003, Avg Response Len: 180.83, Learning Rate: 0.00000023
+    correct_rate: 0.3333, format_rate: 1.0000, no_answer_rate: 0.0000, valid_groups: 2/2, all_correct: 0, all_wrong: 0
+Epoch:[1/1](340/1000), Reward: 0.0000, KL_ref: -0.0042, Adv Std: 0.0000, Adv Mean: 0.0000, Actor Loss: 0.0002, Avg Response Len: 142.67, Learning Rate: 0.00000023
+    correct_rate: 0.0000, format_rate: 1.0000, no_answer_rate: 0.0000, valid_groups: 0/2, all_correct: 0, all_wrong: 2
+Epoch:[1/1](345/1000), Reward: 0.5000, KL_ref: -0.0012, Adv Std: 0.0000, Adv Mean: 0.0000, Actor Loss: 0.0002, Avg Response Len: 73.00, Learning Rate: 0.00000023
+    correct_rate: 0.5000, format_rate: 1.0000, no_answer_rate: 0.0000, valid_groups: 0/2, all_correct: 1, all_wrong: 1
+[DEBUG] step=350, sample[0], gt=97, difficulty=hard
+----------------------------------------------------------------------------------------------------
+============================== [DEBUG] sample[0] CONTEXT_BEGIN ==============================
+<|im_start|>user
+请计算 (4**3)+(11**2)-88，并在最后一行以‘答案是 数字’输出。<|im_end|>
+<|im_start|>assistant
+<think>
+
+=============================== [DEBUG] sample[0] CONTEXT_END ===============================
+============================ [DEBUG] gen[0] RESPONSE_BEGIN ============================
+(4**3)+(11**2)-88：4*4=16；16 拆成 10 和 6；10*4=40；6*4=24；40+24=64；11 拆成 10 和 1；11*10=110；11*1=11；110+11=121；个位 4+1=5；十位 6+2=8；百位 0+1=1；个位 5-8=-2；十位 8-8=0；百位 落 1。所以结果是 1020。
+</think>
+
+答案是 1020
+============================= [DEBUG] gen[0] RESPONSE_END =============================
+[DEBUG] gen[0] reward=0.0000, status=incorrect, tokens=140
+============================ [DEBUG] gen[1] RESPONSE_BEGIN ============================
+(4**3)+(11**2)-88：4*4=16；16 拆成 10 和 6；10*4=40；6*4=24；40+24=64；11 拆成 10 和 1；11*10=110；11*1=11；110+11=121；个位 4+1=5；十位 6+2=8；百位 0+1=1；个位 5-8=-1；十位 8-8=0；百位 落 1。所以结果是 101。
+</think>
+
+答案是 101
+============================= [DEBUG] gen[1] RESPONSE_END =============================
+[DEBUG] gen[1] reward=0.0000, status=incorrect, tokens=140
+============================ [DEBUG] gen[2] RESPONSE_BEGIN ============================
+(4**3)+(11**2)-88：4*4=16；16 拆成 10 和 6；10*4=40；6*4=24；40+24=64；11 拆成 10 和 1；11*10=110；11*1=11；110+11=121；个位 4+1=5；十位 6+2=8；百位 0+1=1；个位 5-8=-1；十位 8-8=0；百位 落 1。所以结果是 101。
+</think>
+
+答案是 101
+============================= [DEBUG] gen[2] RESPONSE_END =============================
+[DEBUG] gen[2] reward=0.0000, status=incorrect, tokens=140
+============================ [DEBUG] gen[3] RESPONSE_BEGIN ============================
+(4**3)+(11**2)-88：4*4=16；16 拆成 10 和 6；10*4=40；6*4=24；40+24=64；11 拆成 10 和 1；11*10=110；11*1=11；110+11=121；个位 4+1=5；十位 6+2=8；百位 0+1=1；个位 5-8=-2；十位 8-8=0；百位 落 1。所以结果是 1010。
+</think>
+
+答案是 1010
+============================= [DEBUG] gen[3] RESPONSE_END =============================
+[DEBUG] gen[3] reward=0.0000, status=incorrect, tokens=140
+============================ [DEBUG] gen[4] RESPONSE_BEGIN ============================
+(4**3)+(11**2)-88：4*4=16；16 拆成 10 和 6；10*4=40；6*4=24；40+24=64；11 拆成 10 和 1；11*10=110；11*1=11；110+11=121；个位 4+1=5；十位 6+2=8；百位 0+1=1；个位 5-8=0；十位 不够减，8+10=18，18-8=9，向高位借 1；百位 1-1=0。所以结果是 90。
+</think>
+
+答案是 90
+============================= [DEBUG] gen[4] RESPONSE_END =============================
+[DEBUG] gen[4] reward=0.0000, status=incorrect, tokens=158
+============================ [DEBUG] gen[5] RESPONSE_BEGIN ============================
+(4**3)+(11**2)-88：4*4=16；16 拆成 10 和 6；10*4=40；6*4=24；40+24=64；11 拆成 10 和 1；11*10=110；11*1=11；110+11=121；个位 4+1=5；十位 6+2=8；百位 0+1=1；个位 不够减，5+10=15，15-8=7，向高位借 1；十位 8-1=7，7-8=0；百位 落 1。所以结果是 107。
+</think>
+
+答案是 107
+============================= [DEBUG] gen[5] RESPONSE_END =============================
+[DEBUG] gen[5] reward=0.0000, status=incorrect, tokens=162
+====================================================================================================
+[DEBUG] step=350, sample[1], gt=100, difficulty=easy
+----------------------------------------------------------------------------------------------------
+============================== [DEBUG] sample[1] CONTEXT_BEGIN ==============================
+<|im_start|>user
+请计算 39+61，并在最后一行以‘答案是 数字’输出。<|im_end|>
+<|im_start|>assistant
+<think>
+
+=============================== [DEBUG] sample[1] CONTEXT_END ===============================
+============================ [DEBUG] gen[0] RESPONSE_BEGIN ============================
+39+61：个位 9+1=10，写 0、向高位进 1；十位 3+6+1=11，写 1、向高位进 1；最高位再加上进位的 1。所以结果是 110。
+</think>
+
+答案是 110
+============================= [DEBUG] gen[0] RESPONSE_END =============================
+[DEBUG] gen[0] reward=0.0000, status=incorrect, tokens=68
+============================ [DEBUG] gen[1] RESPONSE_BEGIN ============================
+39+61：个位 9+1=10，写 0、向高位进 1；十位 3+6+1=11，写 1、向高位进 1；最高位再加上进位的 1。所以结果是 110。
+</think>
+
+答案是 110
+============================= [DEBUG] gen[1] RESPONSE_END =============================
+[DEBUG] gen[1] reward=0.0000, status=incorrect, tokens=68
+============================ [DEBUG] gen[2] RESPONSE_BEGIN ============================
+39+61：个位 9+1=10，写 0、向高位进 1；十位 3+6+1=11，写 1、向高位进 1；最高位再加上进位的 1。所以结果是 110。
+</think>
+
+答案是 110
+============================= [DEBUG] gen[2] RESPONSE_END =============================
+[DEBUG] gen[2] reward=0.0000, status=incorrect, tokens=68
+============================ [DEBUG] gen[3] RESPONSE_BEGIN ============================
+39+61：个位 9+1=10，写 0、向高位进 1；十位 3+6+1=11，写 1、向高位进 1；最高位再加上进位的 1。所以结果是 110。
+</think>
+
+答案是 110
+============================= [DEBUG] gen[3] RESPONSE_END =============================
+[DEBUG] gen[3] reward=0.0000, status=incorrect, tokens=68
+============================ [DEBUG] gen[4] RESPONSE_BEGIN ============================
+39+61：个位 9+1=10，写 0、向高位进 1；十位 3+6+1=11，写 1、向高位进 1；最高位再加上进位的 1。所以结果是 110。
+</think>
+
+答案是 110
+============================= [DEBUG] gen[4] RESPONSE_END =============================
+[DEBUG] gen[4] reward=0.0000, status=incorrect, tokens=68
+============================ [DEBUG] gen[5] RESPONSE_BEGIN ============================
+39+61：个位 9+1=10，写 0、向高位进 1；十位 3+6+1=12，写 2、向高位进 1；最高位再加上进位的 1。所以结果是 120。
+</think>
+
+答案是 120
+============================= [DEBUG] gen[5] RESPONSE_END =============================
+[DEBUG] gen[5] reward=0.0000, status=incorrect, tokens=68
+====================================================================================================
+Epoch:[1/1](350/1000), Reward: 0.0000, KL_ref: -0.0034, Adv Std: 0.0000, Adv Mean: 0.0000, Actor Loss: 0.0008, Avg Response Len: 107.33, Learning Rate: 0.00000023
+    correct_rate: 0.0000, format_rate: 1.0000, no_answer_rate: 0.0000, valid_groups: 0/2, all_correct: 0, all_wrong: 2
+Epoch:[1/1](355/1000), Reward: 0.0000, KL_ref: -0.0064, Adv Std: 0.0000, Adv Mean: 0.0000, Actor Loss: 0.0002, Avg Response Len: 96.50, Learning Rate: 0.00000022
+    correct_rate: 0.0000, format_rate: 1.0000, no_answer_rate: 0.0000, valid_groups: 0/2, all_correct: 0, all_wrong: 2
+Epoch:[1/1](360/1000), Reward: 0.0000, KL_ref: 0.0003, Adv Std: 0.0000, Adv Mean: 0.0000, Actor Loss: 0.0001, Avg Response Len: 102.58, Learning Rate: 0.00000022
+    correct_rate: 0.0000, format_rate: 1.0000, no_answer_rate: 0.0000, valid_groups: 0/2, all_correct: 0, all_wrong: 2
+Epoch:[1/1](365/1000), Reward: 0.5000, KL_ref: -0.0008, Adv Std: 0.0000, Adv Mean: 0.0000, Actor Loss: 0.0003, Avg Response Len: 88.50, Learning Rate: 0.00000022
+    correct_rate: 0.5000, format_rate: 1.0000, no_answer_rate: 0.0000, valid_groups: 0/2, all_correct: 1, all_wrong: 1
+Epoch:[1/1](370/1000), Reward: 0.5833, KL_ref: -0.0021, Adv Std: 0.7384, Adv Mean: -0.0000, Actor Loss: 0.0002, Avg Response Len: 98.67, Learning Rate: 0.00000022
+    correct_rate: 0.5833, format_rate: 1.0000, no_answer_rate: 0.0000, valid_groups: 1/2, all_correct: 1, all_wrong: 0
+Epoch:[1/1](375/1000), Reward: 0.5833, KL_ref: -0.0029, Adv Std: 0.7384, Adv Mean: -0.0000, Actor Loss: 0.0001, Avg Response Len: 95.58, Learning Rate: 0.00000022
+    correct_rate: 0.5833, format_rate: 1.0000, no_answer_rate: 0.0000, valid_groups: 1/2, all_correct: 1, all_wrong: 0
+Epoch:[1/1](380/1000), Reward: 0.5000, KL_ref: -0.0049, Adv Std: 0.0000, Adv Mean: 0.0000, Actor Loss: 0.0001, Avg Response Len: 57.00, Learning Rate: 0.00000021
+    correct_rate: 0.5000, format_rate: 1.0000, no_answer_rate: 0.0000, valid_groups: 0/2, all_correct: 1, all_wrong: 1
+Epoch:[1/1](385/1000), Reward: 0.5000, KL_ref: 0.0005, Adv Std: 0.0000, Adv Mean: 0.0000, Actor Loss: 0.0001, Avg Response Len: 58.25, Learning Rate: 0.00000021
+    correct_rate: 0.5000, format_rate: 1.0000, no_answer_rate: 0.0000, valid_groups: 0/2, all_correct: 1, all_wrong: 1
+Epoch:[1/1](390/1000), Reward: 0.7500, KL_ref: -0.0036, Adv Std: 1.0442, Adv Mean: -0.0000, Actor Loss: 0.0001, Avg Response Len: 81.58, Learning Rate: 0.00000021
+    correct_rate: 0.7500, format_rate: 1.0000, no_answer_rate: 0.0000, valid_groups: 2/2, all_correct: 0, all_wrong: 0
+Epoch:[1/1](395/1000), Reward: 0.0000, KL_ref: -0.0054, Adv Std: 0.0000, Adv Mean: 0.0000, Actor Loss: 0.0002, Avg Response Len: 135.75, Learning Rate: 0.00000021
+    correct_rate: 0.0000, format_rate: 1.0000, no_answer_rate: 0.0000, valid_groups: 0/2, all_correct: 0, all_wrong: 2
+[DEBUG] step=400, sample[0], gt=90, difficulty=easy
+----------------------------------------------------------------------------------------------------
+============================== [DEBUG] sample[0] CONTEXT_BEGIN ==============================
+<|im_start|>user
+请计算 70+20，并在最后一行以‘答案是 数字’输出。<|im_end|>
+<|im_start|>assistant
+<think>
+
+=============================== [DEBUG] sample[0] CONTEXT_END ===============================
+============================ [DEBUG] gen[0] RESPONSE_BEGIN ============================
+70+20：个位 0+0=0；十位 7+2=9。所以结果是 90。
+</think>
+
+答案是 90
+============================= [DEBUG] gen[0] RESPONSE_END =============================
+[DEBUG] gen[0] reward=1.0000, status=correct, tokens=35
+============================ [DEBUG] gen[1] RESPONSE_BEGIN ============================
+70+20：个位 0+0=0；十位 7+2=9。所以结果是 90。
+</think>
+
+答案是 90
+============================= [DEBUG] gen[1] RESPONSE_END =============================
+[DEBUG] gen[1] reward=1.0000, status=correct, tokens=35
+============================ [DEBUG] gen[2] RESPONSE_BEGIN ============================
+70+20：个位 0+0=0；十位 7+2=9。所以结果是 90。
+</think>
+
+答案是 90
+============================= [DEBUG] gen[2] RESPONSE_END =============================
+[DEBUG] gen[2] reward=1.0000, status=correct, tokens=35
+============================ [DEBUG] gen[3] RESPONSE_BEGIN ============================
+70+20：个位 0+0=0；十位 7+2=9。所以结果是 90。
+</think>
+
+答案是 90
+============================= [DEBUG] gen[3] RESPONSE_END =============================
+[DEBUG] gen[3] reward=1.0000, status=correct, tokens=35
+============================ [DEBUG] gen[4] RESPONSE_BEGIN ============================
+70+20：个位 0+0=0；十位 7+2=9。所以结果是 90。
+</think>
+
+答案是 90
+============================= [DEBUG] gen[4] RESPONSE_END =============================
+[DEBUG] gen[4] reward=1.0000, status=correct, tokens=35
+============================ [DEBUG] gen[5] RESPONSE_BEGIN ============================
+70+20：个位 0+0=0；十位 7+2=9。所以结果是 90。
+</think>
+
+答案是 90
+============================= [DEBUG] gen[5] RESPONSE_END =============================
+[DEBUG] gen[5] reward=1.0000, status=correct, tokens=35
+====================================================================================================
+[DEBUG] step=400, sample[1], gt=918, difficulty=easy
+----------------------------------------------------------------------------------------------------
+============================== [DEBUG] sample[1] CONTEXT_BEGIN ==============================
+<|im_start|>user
+请计算 51*18，并在最后一行以‘答案是 数字’输出。<|im_end|>
+<|im_start|>assistant
+<think>
+
+=============================== [DEBUG] sample[1] CONTEXT_END ===============================
+============================ [DEBUG] gen[0] RESPONSE_BEGIN ============================
+51*18：180 先看成 2*51=105；再补一个 0 得 1050。所以结果是 1050。
+</think>
+
+答案是 1050
+============================= [DEBUG] gen[0] RESPONSE_END =============================
+[DEBUG] gen[0] reward=0.0000, status=incorrect, tokens=43
+============================ [DEBUG] gen[1] RESPONSE_BEGIN ============================
+51*18：180 先看成 1*51=560；再补一个 0 得 560。所以结果是 560。
+</think>
+
+答案是 560
+============================= [DEBUG] gen[1] RESPONSE_END =============================
+[DEBUG] gen[1] reward=0.0000, status=incorrect, tokens=43
+============================ [DEBUG] gen[2] RESPONSE_BEGIN ============================
+51*18：18 拆成 10 和 8；51*10=510；51*8=408；510+408=719。所以结果是 719。
+</think>
+
+答案是 719
+============================= [DEBUG] gen[2] RESPONSE_END =============================
+[DEBUG] gen[2] reward=0.0000, status=incorrect, tokens=54
+============================ [DEBUG] gen[3] RESPONSE_BEGIN ============================
+51*18：180 先看成 2*51=105；再补一个 0 得 10000。所以结果是 10000。
+</think>
+
+答案是 10000
+============================= [DEBUG] gen[3] RESPONSE_END =============================
+[DEBUG] gen[3] reward=0.0000, status=incorrect, tokens=43
+============================ [DEBUG] gen[4] RESPONSE_BEGIN ============================
+51*18：180 拆成 10 和 8；51*10=510；51*8=408；510+408=6388。所以结果是 6388。
+</think>
+
+答案是 6388
+============================= [DEBUG] gen[4] RESPONSE_END =============================
+[DEBUG] gen[4] reward=0.0000, status=incorrect, tokens=61
+============================ [DEBUG] gen[5] RESPONSE_BEGIN ============================
+51*18：18 拆成 10 和 8；51*10=510；51*8=408；510+408=890。所以结果是 890。
+</think>
+
+答案是 890
+============================= [DEBUG] gen[5] RESPONSE_END =============================
+[DEBUG] gen[5] reward=0.0000, status=incorrect, tokens=54
+====================================================================================================
+Epoch:[1/1](400/1000), Reward: 0.5000, KL_ref: -0.0113, Adv Std: 0.0000, Adv Mean: 0.0000, Actor Loss: 0.0007, Avg Response Len: 42.33, Learning Rate: 0.00000021
+    correct_rate: 0.5000, format_rate: 1.0000, no_answer_rate: 0.0000, valid_groups: 0/2, all_correct: 1, all_wrong: 1
+Epoch:[1/1](405/1000), Reward: 0.0000, KL_ref: -0.0024, Adv Std: 0.0000, Adv Mean: 0.0000, Actor Loss: 0.0001, Avg Response Len: 159.58, Learning Rate: 0.00000020
+    correct_rate: 0.0000, format_rate: 1.0000, no_answer_rate: 0.0000, valid_groups: 0/2, all_correct: 0, all_wrong: 2
+Epoch:[1/1](410/1000), Reward: 0.2500, KL_ref: -0.0033, Adv Std: 0.7384, Adv Mean: 0.0000, Actor Loss: 0.0005, Avg Response Len: 35.92, Learning Rate: 0.00000020
+    correct_rate: 0.2500, format_rate: 1.0000, no_answer_rate: 0.0000, valid_groups: 1/2, all_correct: 0, all_wrong: 1
+Epoch:[1/1](415/1000), Reward: 0.9167, KL_ref: -0.0022, Adv Std: 0.7384, Adv Mean: -0.0000, Actor Loss: 0.0001, Avg Response Len: 46.17, Learning Rate: 0.00000020
+    correct_rate: 0.9167, format_rate: 1.0000, no_answer_rate: 0.0000, valid_groups: 1/2, all_correct: 1, all_wrong: 0
+Epoch:[1/1](420/1000), Reward: 0.1667, KL_ref: 0.0002, Adv Std: 0.7384, Adv Mean: -0.0000, Actor Loss: 0.0004, Avg Response Len: 130.08, Learning Rate: 0.00000020
+    correct_rate: 0.1667, format_rate: 1.0000, no_answer_rate: 0.0000, valid_groups: 1/2, all_correct: 0, all_wrong: 1
+Epoch:[1/1](425/1000), Reward: 0.5000, KL_ref: -0.0017, Adv Std: 0.0000, Adv Mean: 0.0000, Actor Loss: 0.0001, Avg Response Len: 153.50, Learning Rate: 0.00000020
+    correct_rate: 0.5000, format_rate: 1.0000, no_answer_rate: 0.0000, valid_groups: 0/2, all_correct: 1, all_wrong: 1
+Epoch:[1/1](430/1000), Reward: 0.5000, KL_ref: -0.0018, Adv Std: 0.0000, Adv Mean: 0.0000, Actor Loss: 0.0002, Avg Response Len: 154.67, Learning Rate: 0.00000019
+    correct_rate: 0.5000, format_rate: 1.0000, no_answer_rate: 0.0000, valid_groups: 0/2, all_correct: 1, all_wrong: 1
+Epoch:[1/1](435/1000), Reward: 0.0833, KL_ref: -0.0014, Adv Std: 0.7384, Adv Mean: -0.0000, Actor Loss: 0.0002, Avg Response Len: 120.92, Learning Rate: 0.00000019
+    correct_rate: 0.0833, format_rate: 1.0000, no_answer_rate: 0.0000, valid_groups: 1/2, all_correct: 0, all_wrong: 1
+Epoch:[1/1](440/1000), Reward: 0.0000, KL_ref: -0.0069, Adv Std: 0.0000, Adv Mean: 0.0000, Actor Loss: 0.0003, Avg Response Len: 133.17, Learning Rate: 0.00000019
+    correct_rate: 0.0000, format_rate: 1.0000, no_answer_rate: 0.0000, valid_groups: 0/2, all_correct: 0, all_wrong: 2
+Epoch:[1/1](445/1000), Reward: 0.0833, KL_ref: -0.0008, Adv Std: 0.7384, Adv Mean: -0.0000, Actor Loss: 0.0003, Avg Response Len: 151.33, Learning Rate: 0.00000019
+    correct_rate: 0.0833, format_rate: 1.0000, no_answer_rate: 0.0000, valid_groups: 1/2, all_correct: 0, all_wrong: 1
+[DEBUG] step=450, sample[0], gt=12, difficulty=medium
+----------------------------------------------------------------------------------------------------
+============================== [DEBUG] sample[0] CONTEXT_BEGIN ==============================
+<|im_start|>user
+请计算 (29+21)*3-138，并在最后一行以‘答案是 数字’输出。<|im_end|>
+<|im_start|>assistant
+<think>
+
+=============================== [DEBUG] sample[0] CONTEXT_END ===============================
+============================ [DEBUG] gen[0] RESPONSE_BEGIN ============================
+(29+21)*3-138：个位 9+1=10，写 0、向高位进 1；十位 2+2+1=5；50 先看成 5*3=15；再补一个 0 得 150；个位 不够减，0+10=10，10-8=2，向高位借 1；十位 5-1=4，4-3=1；百位 1-1=0。所以结果是 12。
+</think>
+
+答案是 12
+============================= [DEBUG] gen[0] RESPONSE_END =============================
+[DEBUG] gen[0] reward=1.0000, status=correct, tokens=118
+============================ [DEBUG] gen[1] RESPONSE_BEGIN ============================
+(29+21)*3-138：个位 9+1=10，写 0、向高位进 1；十位 2+2+1=5；50 先看成 5*3=15；再补一个 0 得 150；个位 不够减，0+10=10，10-8=2，向高位借 1；十位 5-1=4，4-3=1；百位 落 1。所以结果是 112。
+</think>
+
+答案是 112
+============================= [DEBUG] gen[1] RESPONSE_END =============================
+[DEBUG] gen[1] reward=0.0000, status=incorrect, tokens=118
+============================ [DEBUG] gen[2] RESPONSE_BEGIN ============================
+(29+21)*3-138：个位 9+1=10，写 0、向高位进 1；十位 2+2+1=5；50 先看成 5*3=15；再补一个 0 得 150；个位 不够减，0+10=10，10-8=2，向高位借 1；十位 不够减，5+10=15，15-1-3=9，向高位借 1；百位 1-1=0。所以结果是 92。
+</think>
+
+答案是 92
+============================= [DEBUG] gen[2] RESPONSE_END =============================
+[DEBUG] gen[2] reward=0.0000, status=incorrect, tokens=133
+============================ [DEBUG] gen[3] RESPONSE_BEGIN ============================
+(29+21)*3-138：个位 9+1=10，写 0、向高位进 1；十位 2+2+1=5；50 先看成 5*3=15；再补一个 0 得 150；个位 不够减，0+10=10，10-8=2，向高位借 1；十位 不够减，5+10=15，15-1-3=9，向高位借 1；百位 1-1=0。所以结果是 92。
+</think>
+
+答案是 92
+============================= [DEBUG] gen[3] RESPONSE_END =============================
+[DEBUG] gen[3] reward=0.0000, status=incorrect, tokens=133
+============================ [DEBUG] gen[4] RESPONSE_BEGIN ============================
+(29+21)*3-138：个位 9+1=10，写 0、向高位进 1；十位 2+2+1=5；50 先看成 5*3=15；再补一个 0 得 150；个位 不够减，0+10=10，10-8=2，向高位借 1；十位 5-1=4，4-3=1；百位 落 1。所以结果是 112。
+</think>
+
+答案是 112
+============================= [DEBUG] gen[4] RESPONSE_END =============================
+[DEBUG] gen[4] reward=0.0000, status=incorrect, tokens=118
+============================ [DEBUG] gen[5] RESPONSE_BEGIN ============================
+(29+21)*3-138：个位 9+1=10，写 0、向高位进 1；十位 2+2+1=5；50 先看成 5*3=15；再补一个 0 得 150；个位 不够减，0+10=10，10-8=2，向高位借 1；十位 不够减，5+10=15，15-1-3=8，向高位借 1；百位 1-1=0。所以结果是 82。
+</think>
+
+答案是 82
+============================= [DEBUG] gen[5] RESPONSE_END =============================
+[DEBUG] gen[5] reward=0.0000, status=incorrect, tokens=133
+====================================================================================================
+[DEBUG] step=450, sample[1], gt=277, difficulty=hard
+----------------------------------------------------------------------------------------------------
+============================== [DEBUG] sample[1] CONTEXT_BEGIN ==============================
+<|im_start|>user
+请计算 (3**3)+(17**2)-39，并在最后一行以‘答案是 数字’输出。<|im_end|>
+<|im_start|>assistant
+<think>
+
+=============================== [DEBUG] sample[1] CONTEXT_END ===============================
+============================ [DEBUG] gen[0] RESPONSE_BEGIN ============================
+(3**3)+(17**2)-39：3*3=9；9*3=27；17 拆成 10 和 7；17*10=170；17*7=119；170+119=289；个位 7+9=16，写 6、向高位进 1；十位 2+8+1=11，写 1、向高位进 1；百位 0+2+1=3；个位 6-9=1；十位 不够减，1+10=11，11-3=8，向高位借 1；百位 3-1=2。所以结果是 281。
+</think>
+
+答案是 281
+============================= [DEBUG] gen[0] RESPONSE_END =============================
+[DEBUG] gen[0] reward=0.0000, status=incorrect, tokens=164
+============================ [DEBUG] gen[1] RESPONSE_BEGIN ============================
+(3**3)+(17**2)-39：3*3=9；9*3=27；17 拆成 10 和 7；17*10=170；17*7=119；170+119=289；个位 7+9=16，写 6、向高位进 1；十位 2+8+1=11，写 1、向高位进 1；百位 0+2+1=3；个位 6-9=1；十位 不够减，1+10=11，11-3=8，向高位借 1；百位 3-1=2。所以结果是 281。
+</think>
+
+答案是 281
+============================= [DEBUG] gen[1] RESPONSE_END =============================
+[DEBUG] gen[1] reward=0.0000, status=incorrect, tokens=164
+============================ [DEBUG] gen[2] RESPONSE_BEGIN ============================
+(3**3)+(17**2)-39：3*3=9；9*3=27；17 拆成 10 和 7；17*10=170；17*7=119；170+119=289；个位 7+9=16，写 6、向高位进 1；十位 2+8+1=11，写 1、向高位进 1；百位 0+2+1=3；个位 6-9=0；十位 不够减，1+10=11，11-3=8，向高位借 1；百位 3-1=2。所以结果是 280。
+</think>
+
+答案是 280
+============================= [DEBUG] gen[2] RESPONSE_END =============================
+[DEBUG] gen[2] reward=0.0000, status=incorrect, tokens=162
+============================ [DEBUG] gen[3] RESPONSE_BEGIN ============================
+(3**3)+(17**2)-39：3*3=9；9*3=27；17 拆成 10 和 7；17*10=170；17*7=119；170+119=289；个位 7+9=16，写 6、向高位进 1；十位 2+8+1=11，写 1、向高位进 1；百位 0+2+1=3；个位 6-9=0；十位 不够减，1+10=11，11-3=8，向高位借 1；百位 3-1=2。所以结果是 280。
+</think>
+
+答案是 280
+============================= [DEBUG] gen[3] RESPONSE_END =============================
+[DEBUG] gen[3] reward=0.0000, status=incorrect, tokens=162
+============================ [DEBUG] gen[4] RESPONSE_BEGIN ============================
+(3**3)+(17**2)-39：3*3=9；9*3=27；17 拆成 10 和 7；17*10=170；17*7=119；170+119=289；个位 7+9=16，写 6、向高位进 1；十位 2+8+1=11，写 1、向高位进 1；百位 0+2+1=3；个位 6-9=1；十位 不够减，1+10=11，11-3=8，向高位借 1；百位 3-1=2。所以结果是 281。
+</think>
+
+答案是 281
+============================= [DEBUG] gen[4] RESPONSE_END =============================
+[DEBUG] gen[4] reward=0.0000, status=incorrect, tokens=164
+============================ [DEBUG] gen[5] RESPONSE_BEGIN ============================
+(3**3)+(17**2)-39：3*3=9；9*3=27；17 拆成 10 和 7；17*10=170；17*7=119；170+119=289；个位 7+9=16，写 6、向高位进 1；十位 2+8+1=11，写 1、向高位进 1；百位 0+2+1=3；个位 不够减，6+10=16，16-9=7，向高位借 1；十位 不够减，1+10=11，11-1-3=8，向高位借 1；百位 3-1=2。所以结果是 287。
+</think>
+
+答案是 287
+============================= [DEBUG] gen[5] RESPONSE_END =============================
+[DEBUG] gen[5] reward=0.0000, status=incorrect, tokens=183
+====================================================================================================
+Epoch:[1/1](450/1000), Reward: 0.0833, KL_ref: -0.0026, Adv Std: 0.7384, Adv Mean: -0.0000, Actor Loss: 0.0003, Avg Response Len: 146.00, Learning Rate: 0.00000019
+    correct_rate: 0.0833, format_rate: 1.0000, no_answer_rate: 0.0000, valid_groups: 1/2, all_correct: 0, all_wrong: 1
+Epoch:[1/1](455/1000), Reward: 0.5000, KL_ref: -0.0000, Adv Std: 0.0000, Adv Mean: 0.0000, Actor Loss: 0.0001, Avg Response Len: 61.08, Learning Rate: 0.00000018
+    correct_rate: 0.5000, format_rate: 1.0000, no_answer_rate: 0.0000, valid_groups: 0/2, all_correct: 1, all_wrong: 1
+Epoch:[1/1](460/1000), Reward: 0.0000, KL_ref: 0.0007, Adv Std: 0.0000, Adv Mean: 0.0000, Actor Loss: 0.0002, Avg Response Len: 116.33, Learning Rate: 0.00000018
+    correct_rate: 0.0000, format_rate: 1.0000, no_answer_rate: 0.0000, valid_groups: 0/2, all_correct: 0, all_wrong: 2
+Epoch:[1/1](465/1000), Reward: 0.3333, KL_ref: -0.0042, Adv Std: 0.7384, Adv Mean: -0.0000, Actor Loss: 0.0001, Avg Response Len: 57.42, Learning Rate: 0.00000018
+    correct_rate: 0.3333, format_rate: 1.0000, no_answer_rate: 0.0000, valid_groups: 1/2, all_correct: 0, all_wrong: 1
+Epoch:[1/1](470/1000), Reward: 0.5000, KL_ref: -0.0025, Adv Std: 0.0000, Adv Mean: 0.0000, Actor Loss: 0.0000, Avg Response Len: 170.42, Learning Rate: 0.00000018
+    correct_rate: 0.5000, format_rate: 1.0000, no_answer_rate: 0.0000, valid_groups: 0/2, all_correct: 1, all_wrong: 1
+Epoch:[1/1](475/1000), Reward: 0.4167, KL_ref: -0.0040, Adv Std: 0.7384, Adv Mean: -0.0000, Actor Loss: 0.0002, Avg Response Len: 101.58, Learning Rate: 0.00000018
+    correct_rate: 0.4167, format_rate: 1.0000, no_answer_rate: 0.0000, valid_groups: 1/2, all_correct: 0, all_wrong: 1
+Epoch:[1/1](480/1000), Reward: 0.5000, KL_ref: 0.0007, Adv Std: 0.0000, Adv Mean: 0.0000, Actor Loss: 0.0002, Avg Response Len: 90.42, Learning Rate: 0.00000017
+    correct_rate: 0.5000, format_rate: 1.0000, no_answer_rate: 0.0000, valid_groups: 0/2, all_correct: 1, all_wrong: 1
+Epoch:[1/1](485/1000), Reward: 0.2500, KL_ref: -0.0078, Adv Std: 0.7384, Adv Mean: 0.0000, Actor Loss: 0.0004, Avg Response Len: 51.00, Learning Rate: 0.00000017
+    correct_rate: 0.2500, format_rate: 1.0000, no_answer_rate: 0.0000, valid_groups: 1/2, all_correct: 0, all_wrong: 1
+Epoch:[1/1](490/1000), Reward: 0.4167, KL_ref: -0.0007, Adv Std: 0.7384, Adv Mean: -0.0000, Actor Loss: 0.0001, Avg Response Len: 56.83, Learning Rate: 0.00000017
+    correct_rate: 0.4167, format_rate: 1.0000, no_answer_rate: 0.0000, valid_groups: 1/2, all_correct: 0, all_wrong: 1
+Epoch:[1/1](495/1000), Reward: 0.2500, KL_ref: -0.0073, Adv Std: 0.7384, Adv Mean: 0.0000, Actor Loss: 0.0005, Avg Response Len: 119.92, Learning Rate: 0.00000017
+    correct_rate: 0.2500, format_rate: 1.0000, no_answer_rate: 0.0000, valid_groups: 1/2, all_correct: 0, all_wrong: 1
+[DEBUG] step=500, sample[0], gt=86, difficulty=hard
+----------------------------------------------------------------------------------------------------
+============================== [DEBUG] sample[0] CONTEXT_BEGIN ==============================
+<|im_start|>user
+请计算 (4**2)+(12**2)-74，并在最后一行以‘答案是 数字’输出。<|im_end|>
+<|im_start|>assistant
+<think>
+
+=============================== [DEBUG] sample[0] CONTEXT_END ===============================
+============================ [DEBUG] gen[0] RESPONSE_BEGIN ============================
+(4**2)+(12**2)-74：4*4=16；12 拆成 10 和 2；12*10=120；12*2=24；120+24=144；个位 6+4=10，写 0、向高位进 1；十位 1+4+1=6；百位 0+1=1；个位 不够减，0+10=10，10-4=6，向高位借 1；十位 不够减，6+10=16，16-1-7=7，向高位借 1；百位 1-1=0。所以结果是 76。
+</think>
+
+答案是 76
+============================= [DEBUG] gen[0] RESPONSE_END =============================
+[DEBUG] gen[0] reward=0.0000, status=incorrect, tokens=161
+============================ [DEBUG] gen[1] RESPONSE_BEGIN ============================
+(4**2)+(12**2)-74：4*4=16；12 拆成 10 和 2；12*10=120；12*2=24；120+24=144；个位 6+4=10，写 0、向高位进 1；十位 1+4+1=6；百位 0+1=1；个位 不够减，0+10=10，10-4=6，向高位借 1；十位 不够减，6+10=16，16-1-7=8，向高位借 1；百位 1-1=0。所以结果是 86。
+</think>
+
+答案是 86
+============================= [DEBUG] gen[1] RESPONSE_END =============================
+[DEBUG] gen[1] reward=1.0000, status=correct, tokens=161
+============================ [DEBUG] gen[2] RESPONSE_BEGIN ============================
+(4**2)+(12**2)-74：4*4=16；12 拆成 10 和 2；12*10=120；12*2=24；120+24=144；个位 6+4=10，写 0、向高位进 1；十位 1+4+1=6；百位 0+1=1；个位 不够减，0+10=10，10-4=6，向高位借 1；十位 6-1=5，5-7=0；百位 落 1。所以结果是 106。
+</think>
+
+答案是 106
+============================= [DEBUG] gen[2] RESPONSE_END =============================
+[DEBUG] gen[2] reward=0.0000, status=incorrect, tokens=146
+============================ [DEBUG] gen[3] RESPONSE_BEGIN ============================
+(4**2)+(12**2)-74：4*4=16；12 拆成 10 和 2；12*10=120；12*2=24；120+24=144；个位 6+4=10，写 0、向高位进 1；十位 1+4+1=6；百位 0+1=1；个位 不够减，0+10=10，10-4=6，向高位借 1；十位 6-1=5，5-7=/9；百位 落 1。所以结果是 136。
+</think>
+
+答案是 136
+============================= [DEBUG] gen[3] RESPONSE_END =============================
+[DEBUG] gen[3] reward=0.0000, status=incorrect, tokens=147
+============================ [DEBUG] gen[4] RESPONSE_BEGIN ============================
+(4**2)+(12**2)-74：4*4=16；12 拆成 10 和 2；12*10=120；12*2=24；120+24=144；个位 6+4=10，写 0、向高位进 1；十位 1+4+1=6；百位 0+1=1；个位 不够减，0+10=10，10-4=6，向高位借 1；十位 6-1=5，5-7=0；百位 落 1。所以结果是 106。
+</think>
+
+答案是 106
+============================= [DEBUG] gen[4] RESPONSE_END =============================
+[DEBUG] gen[4] reward=0.0000, status=incorrect, tokens=146
+============================ [DEBUG] gen[5] RESPONSE_BEGIN ============================
+(4**2)+(12**2)-74：4*4=16；12 拆成 10 和 2；12*10=120；12*2=24；120+24=144；个位 6+4=10，写 0、向高位进 1；十位 1+4+1=6；百位 0+1=1；个位 不够减，0+10=10，10-4=6，向高位借 1；十位 6-1=5，5-7==0；百位 落 1。所以结果是 106。
+</think>
+
+答案是 106
+============================= [DEBUG] gen[5] RESPONSE_END =============================
+[DEBUG] gen[5] reward=0.0000, status=incorrect, tokens=147
+====================================================================================================
+[DEBUG] step=500, sample[1], gt=142, difficulty=medium
+----------------------------------------------------------------------------------------------------
+============================== [DEBUG] sample[1] CONTEXT_BEGIN ==============================
+<|im_start|>user
+请计算 (29+13)*5-68，并在最后一行以‘答案是 数字’输出。<|im_end|>
+<|im_start|>assistant
+<think>
+
+=============================== [DEBUG] sample[1] CONTEXT_END ===============================
+============================ [DEBUG] gen[0] RESPONSE_BEGIN ============================
+(29+13)*5-68：个位 9+3=12，写 2、向高位进 1；十位 2+1+1=4；42 拆成 40 和 2；40*5=200；2*5=10；200+10=210；个位 不够减，0+10=10，10-8=2，向高位借 1；十位 不够减，1+10=11，11-1-6=4，向高位借 1；百位 2-1=1，1-1=0。所以结果是 42。
+</think>
+
+答案是 42
+============================= [DEBUG] gen[0] RESPONSE_END =============================
+[DEBUG] gen[0] reward=0.0000, status=incorrect, tokens=148
+============================ [DEBUG] gen[1] RESPONSE_BEGIN ============================
+(29+13)*5-68：个位 9+3=12，写 2、向高位进 1；十位 2+1+1=4；42 拆成 40 和 2；40*5=200；2*5=10；200+10=210；个位 不够减，0+10=10，10-8=2，向高位借 1；十位 不够减，1+10=11，11-1-6=5，向高位借 1；百位 2-1=1，1-1=0。所以结果是 52。
+</think>
+
+答案是 52
+============================= [DEBUG] gen[1] RESPONSE_END =============================
+[DEBUG] gen[1] reward=0.0000, status=incorrect, tokens=148
+============================ [DEBUG] gen[2] RESPONSE_BEGIN ============================
+(29+13)*5-68：个位 9+3=12，写 2、向高位进 1；十位 2+1+1=4；42 拆成 40 和 2；40*5=200；2*5=10；200+10=210；个位 不够减，0+10=10，10-8=2，向高位借 1；十位 不够减，1+10=11，11-1-6=4，向高位借 1；百位 2-1=1，1-1=0。所以结果是 42。
+</think>
+
+答案是 42
+============================= [DEBUG] gen[2] RESPONSE_END =============================
+[DEBUG] gen[2] reward=0.0000, status=incorrect, tokens=148
+============================ [DEBUG] gen[3] RESPONSE_BEGIN ============================
+(29+13)*5-68：个位 9+3=12，写 2、向高位进 1；十位 2+1+1=4；42 拆成 40 和 2；40*5=200；2*5=10；200+10=210；个位 不够减，0+10=10，10-8=2，向高位借 1；十位 不够减，1+10=11，11-1-6=4，向高位借 1；百位 2-1=1，1-0=1。所以结果是 142。
+</think>
+
+答案是 142
+============================= [DEBUG] gen[3] RESPONSE_END =============================
+[DEBUG] gen[3] reward=1.0000, status=correct, tokens=148
+============================ [DEBUG] gen[4] RESPONSE_BEGIN ============================
+(29+13)*5-68：个位 9+3=12，写 2、向高位进 1；十位 2+1+1=4；42 拆成 40 和 2；40*5=200；2*5=10；200+10=210；个位 不够减，0+10=10，10-8=2，向高位借 1；十位 不够减，1+10=11，11-1-6=3，向高位借 1；百位 2-1=1，1-1=0。所以结果是 32。
+</think>
+
+答案是 32
+============================= [DEBUG] gen[4] RESPONSE_END =============================
+[DEBUG] gen[4] reward=0.0000, status=incorrect, tokens=148
+============================ [DEBUG] gen[5] RESPONSE_BEGIN ============================
+(29+13)*5-68：个位 9+3=12，写 2、向高位进 1；十位 2+1+1=4；42 拆成 40 和 2；40*5=200；2*5=10；200+10=210；个位 不够减，0+10=10，10-8=2，向高位借 1；十位 不够减，1+10=11，11-1-6=3，向高位借 1；百位 2-1=1，1-1=0。所以结果是 32。
+</think>
+
+答案是 32
+============================= [DEBUG] gen[5] RESPONSE_END =============================
+[DEBUG] gen[5] reward=0.0000, status=incorrect, tokens=148
+====================================================================================================
+Epoch:[1/1](500/1000), Reward: 0.1667, KL_ref: -0.0030, Adv Std: 1.0442, Adv Mean: -0.0000, Actor Loss: 0.0004, Avg Response Len: 149.67, Learning Rate: 0.00000016
+    correct_rate: 0.1667, format_rate: 1.0000, no_answer_rate: 0.0000, valid_groups: 2/2, all_correct: 0, all_wrong: 0
+Epoch:[1/1](505/1000), Reward: 0.5833, KL_ref: -0.0046, Adv Std: 0.7384, Adv Mean: -0.0000, Actor Loss: 0.0002, Avg Response Len: 101.00, Learning Rate: 0.00000016
+    correct_rate: 0.5833, format_rate: 1.0000, no_answer_rate: 0.0000, valid_groups: 1/2, all_correct: 1, all_wrong: 0
+Epoch:[1/1](510/1000), Reward: 0.4167, KL_ref: 0.0006, Adv Std: 0.7384, Adv Mean: -0.0000, Actor Loss: 0.0001, Avg Response Len: 94.50, Learning Rate: 0.00000016
+    correct_rate: 0.4167, format_rate: 1.0000, no_answer_rate: 0.0000, valid_groups: 1/2, all_correct: 0, all_wrong: 1
+Epoch:[1/1](515/1000), Reward: 0.5833, KL_ref: -0.0057, Adv Std: 1.0443, Adv Mean: 0.0000, Actor Loss: 0.0002, Avg Response Len: 140.92, Learning Rate: 0.00000016
+    correct_rate: 0.5833, format_rate: 1.0000, no_answer_rate: 0.0000, valid_groups: 2/2, all_correct: 0, all_wrong: 0
+Epoch:[1/1](520/1000), Reward: 1.0000, KL_ref: 0.0000, Adv Std: 0.0000, Adv Mean: 0.0000, Actor Loss: 0.0000, Avg Response Len: 102.50, Learning Rate: 0.00000016
+    correct_rate: 1.0000, format_rate: 1.0000, no_answer_rate: 0.0000, valid_groups: 0/2, all_correct: 2, all_wrong: 0
+Epoch:[1/1](525/1000), Reward: 0.3333, KL_ref: -0.0053, Adv Std: 1.0442, Adv Mean: -0.0000, Actor Loss: 0.0002, Avg Response Len: 143.42, Learning Rate: 0.00000015
+    correct_rate: 0.3333, format_rate: 1.0000, no_answer_rate: 0.0000, valid_groups: 2/2, all_correct: 0, all_wrong: 0
+Epoch:[1/1](530/1000), Reward: 0.1667, KL_ref: -0.0029, Adv Std: 0.7384, Adv Mean: -0.0000, Actor Loss: 0.0003, Avg Response Len: 139.08, Learning Rate: 0.00000015
+    correct_rate: 0.1667, format_rate: 1.0000, no_answer_rate: 0.0000, valid_groups: 1/2, all_correct: 0, all_wrong: 1
+Epoch:[1/1](535/1000), Reward: 0.5833, KL_ref: -0.0100, Adv Std: 0.7384, Adv Mean: -0.0000, Actor Loss: 0.0002, Avg Response Len: 62.42, Learning Rate: 0.00000015
+    correct_rate: 0.5833, format_rate: 1.0000, no_answer_rate: 0.0000, valid_groups: 1/2, all_correct: 1, all_wrong: 0
+Epoch:[1/1](540/1000), Reward: 0.3333, KL_ref: -0.0176, Adv Std: 0.7384, Adv Mean: -0.0000, Actor Loss: 0.0010, Avg Response Len: 128.83, Learning Rate: 0.00000015
+    correct_rate: 0.3333, format_rate: 1.0000, no_answer_rate: 0.0000, valid_groups: 1/2, all_correct: 0, all_wrong: 1
+Epoch:[1/1](545/1000), Reward: 0.1667, KL_ref: -0.0057, Adv Std: 0.7384, Adv Mean: -0.0000, Actor Loss: 0.0003, Avg Response Len: 152.75, Learning Rate: 0.00000015
+    correct_rate: 0.1667, format_rate: 1.0000, no_answer_rate: 0.0000, valid_groups: 1/2, all_correct: 0, all_wrong: 1
+[DEBUG] step=550, sample[0], gt=623, difficulty=hard
+----------------------------------------------------------------------------------------------------
+============================== [DEBUG] sample[0] CONTEXT_BEGIN ==============================
+<|im_start|>user
+请计算 (5**2)+(25**2)-27，并在最后一行以‘答案是 数字’输出。<|im_end|>
+<|im_start|>assistant
+<think>
+
+=============================== [DEBUG] sample[0] CONTEXT_END ===============================
+============================ [DEBUG] gen[0] RESPONSE_BEGIN ============================
+(5**2)+(25**2)-27：5*5=25；25 拆成 20 和 5；25*20=500；25*5=125；500+125=625；个位 5+5=10，写 0、向高位进 1；十位 2+2+1=5；百位 0+6=6；个位 不够减，0+10=10，10-7=3，向高位借 1；十位 5-1=4，4-2=2；百位 落 6。所以结果是 623。
+</think>
+
+答案是 623
+============================= [DEBUG] gen[0] RESPONSE_END =============================
+[DEBUG] gen[0] reward=1.0000, status=correct, tokens=150
+============================ [DEBUG] gen[1] RESPONSE_BEGIN ============================
+(5**2)+(25**2)-27：5*5=25；25 拆成 20 和 5；25*20=500；25*5=125；500+125=625；个位 5+5=10，写 0、向高位进 1；十位 2+2+1=5；百位 0+6=6；个位 不够减，0+10=10，10-7=3，向高位借 1；十位 5-1=4，4-2=2；百位 落 6。所以结果是 623。
+</think>
+
+答案是 623
+============================= [DEBUG] gen[1] RESPONSE_END =============================
+[DEBUG] gen[1] reward=1.0000, status=correct, tokens=150
+============================ [DEBUG] gen[2] RESPONSE_BEGIN ============================
+(5**2)+(25**2)-27：5*5=25；25 拆成 20 和 5；25*20=500；25*5=125；500+125=625；个位 5+5=10，写 0、向高位进 1；十位 2+2+1=5；百位 0+6=6；个位 不够减，0+10=10，10-7=3，向高位借 1；十位 不够减，5+10=15，15-1-2=9，向高位借 1；百位 6-1=5。所以结果是 593。
+</think>
+
+答案是 593
+============================= [DEBUG] gen[2] RESPONSE_END =============================
+[DEBUG] gen[2] reward=0.0000, status=incorrect, tokens=165
+============================ [DEBUG] gen[3] RESPONSE_BEGIN ============================
+(5**2)+(25**2)-27：5*5=25；25 拆成 20 和 5；25*20=500；25*5=125；500+125=625；个位 5+5=10，写 0、向高位进 1；十位 2+2+1=5；百位 0+6=6；个位 不够减，0+10=10，10-7=3，向高位借 1；十位 不够减，5+10=15，15-1-2=9，向高位借 1；百位 6-1=5。所以结果是 593。
+</think>
+
+答案是 593
+============================= [DEBUG] gen[3] RESPONSE_END =============================
+[DEBUG] gen[3] reward=0.0000, status=incorrect, tokens=165
+============================ [DEBUG] gen[4] RESPONSE_BEGIN ============================
+(5**2)+(25**2)-27：5*5=25；25 拆成 20 和 5；25*20=500；25*5=125；500+125=625；个位 5+5=10，写 0、向高位进 1；十位 2+2+1=5；百位 0+6=6；个位 不够减，0+10=10，10-7=3，向高位借 1；十位 不够减，5+10=15，15-1-2=9，向高位借 1；百位 6-1=5。所以结果是 593。
+</think>
+
+答案是 593
+============================= [DEBUG] gen[4] RESPONSE_END =============================
+[DEBUG] gen[4] reward=0.0000, status=incorrect, tokens=165
+============================ [DEBUG] gen[5] RESPONSE_BEGIN ============================
+(5**2)+(25**2)-27：5*5=25；25 拆成 20 和 5；25*20=500；25*5=125；500+125=625；个位 5+5=10，写 0、向高位进 1；十位 2+2+1=5；百位 0+6=6；个位 不够减，0+10=10，10-7=3，向高位借 1；十位 5-1=4，4-2=2；百位 落 6。所以结果是 623。
+</think>
+
+答案是 623
+============================= [DEBUG] gen[5] RESPONSE_END =============================
+[DEBUG] gen[5] reward=1.0000, status=correct, tokens=148
+====================================================================================================
+[DEBUG] step=550, sample[1], gt=249, difficulty=medium
+----------------------------------------------------------------------------------------------------
+============================== [DEBUG] sample[1] CONTEXT_BEGIN ==============================
+<|im_start|>user
+请计算 (28+28)*6-87，并在最后一行以‘答案是 数字’输出。<|im_end|>
+<|im_start|>assistant
+<think>
+
+=============================== [DEBUG] sample[1] CONTEXT_END ===============================
+============================ [DEBUG] gen[0] RESPONSE_BEGIN ============================
+(28+28)*6-87：个位 8+8=16，写 6、向高位进 1；十位 2+2+1=5；56 拆成 50 和 6；50*6=300；6*6=36；300+36=366；个位 6-7=0；十位 不够减，6+10=16，16-8=8，向高位借 1；百位 3-1=2。所以结果是 280。
+</think>
+
+答案是 280
+============================= [DEBUG] gen[0] RESPONSE_END =============================
+[DEBUG] gen[0] reward=0.0000, status=incorrect, tokens=128
+============================ [DEBUG] gen[1] RESPONSE_BEGIN ============================
+(28+28)*6-87：个位 8+8=16，写 6、向高位进 1；十位 2+2+1=5；56 拆成 50 和 6；50*6=300；6*6=36；300+36=336；个位 6-7=1；十位 不够减，3+10=13，13-8=5，向高位借 1；百位 3-1=2，2-1=1。所以结果是 151。
+</think>
+
+答案是 151
+============================= [DEBUG] gen[1] RESPONSE_END =============================
+[DEBUG] gen[1] reward=0.0000, status=incorrect, tokens=133
+============================ [DEBUG] gen[2] RESPONSE_BEGIN ============================
+(28+28)*6-87：个位 8+8=16，写 6、向高位进 1；十位 2+2+1=5；56 拆成 50 和 6；50*6=300；6*6=36；300+36=366；个位 6-7=1；十位 不够减，6+10=16，16-8=8，向高位借 1；百位 3-1=2，2-1=1。所以结果是 181。
+</think>
+
+答案是 181
+============================= [DEBUG] gen[2] RESPONSE_END =============================
+[DEBUG] gen[2] reward=0.0000, status=incorrect, tokens=134
+============================ [DEBUG] gen[3] RESPONSE_BEGIN ============================
+(28+28)*6-87：个位 8+8=16，写 6、向高位进 1；十位 2+2+1=5；56 拆成 50 和 6；50*6=300；6*6=36；300+36=366；个位 不够减，6+10=16，16-7=9，向高位借 1；十位 6-1=5，5-8=1；百位 3-2=1。所以结果是 119。
+</think>
+
+答案是 119
+============================= [DEBUG] gen[3] RESPONSE_END =============================
+[DEBUG] gen[3] reward=0.0000, status=incorrect, tokens=134
+============================ [DEBUG] gen[4] RESPONSE_BEGIN ============================
+(28+28)*6-87：个位 8+8=16，写 6、向高位进 1；十位 2+2+1=5；56 拆成 50 和 6；50*6=300；6*6=36；300+36=336；个位 不够减，6+10=16，16-7=9，向高位借 1；十位 不够减，3+10=13，13-1-8=4，向高位借 1；百位 3-1=2，2-1=1。所以结果是 149。
+</think>
+
+答案是 149
+============================= [DEBUG] gen[4] RESPONSE_END =============================
+[DEBUG] gen[4] reward=0.0000, status=incorrect, tokens=152
+============================ [DEBUG] gen[5] RESPONSE_BEGIN ============================
+(28+28)*6-87：个位 8+8=16，写 6、向高位进 1；十位 2+2+1=5；56 拆成 50 和 6；50*6=300；6*6=36；300+36=366；个位 不够减，6+10=16，16-7=9，向高位借 1；十位 6-1=5，5-8=0；百位 3-2=1。所以结果是 109。
+</think>
+
+答案是 109
+============================= [DEBUG] gen[5] RESPONSE_END =============================
+[DEBUG] gen[5] reward=0.0000, status=incorrect, tokens=134
+====================================================================================================
+Epoch:[1/1](550/1000), Reward: 0.2500, KL_ref: 0.0008, Adv Std: 0.7384, Adv Mean: 0.0000, Actor Loss: 0.0008, Avg Response Len: 146.50, Learning Rate: 0.00000014
+    correct_rate: 0.2500, format_rate: 1.0000, no_answer_rate: 0.0000, valid_groups: 1/2, all_correct: 0, all_wrong: 1
+Epoch:[1/1](555/1000), Reward: 0.2500, KL_ref: -0.0063, Adv Std: 0.7384, Adv Mean: 0.0000, Actor Loss: 0.0002, Avg Response Len: 81.17, Learning Rate: 0.00000014
+    correct_rate: 0.2500, format_rate: 1.0000, no_answer_rate: 0.0000, valid_groups: 1/2, all_correct: 0, all_wrong: 1
+Epoch:[1/1](560/1000), Reward: 0.5000, KL_ref: -0.0004, Adv Std: 0.0000, Adv Mean: 0.0000, Actor Loss: 0.0001, Avg Response Len: 153.00, Learning Rate: 0.00000014
+    correct_rate: 0.5000, format_rate: 1.0000, no_answer_rate: 0.0000, valid_groups: 0/2, all_correct: 1, all_wrong: 1
+Epoch:[1/1](565/1000), Reward: 0.3333, KL_ref: -0.0077, Adv Std: 0.7384, Adv Mean: -0.0000, Actor Loss: 0.0008, Avg Response Len: 90.50, Learning Rate: 0.00000014
+    correct_rate: 0.3333, format_rate: 1.0000, no_answer_rate: 0.0000, valid_groups: 1/2, all_correct: 0, all_wrong: 1
+Epoch:[1/1](570/1000), Reward: 0.0000, KL_ref: -0.0028, Adv Std: 0.0000, Adv Mean: 0.0000, Actor Loss: 0.0002, Avg Response Len: 150.25, Learning Rate: 0.00000014
+    correct_rate: 0.0000, format_rate: 1.0000, no_answer_rate: 0.0000, valid_groups: 0/2, all_correct: 0, all_wrong: 2
+Epoch:[1/1](575/1000), Reward: 0.8333, KL_ref: 0.0008, Adv Std: 0.7384, Adv Mean: -0.0000, Actor Loss: 0.0000, Avg Response Len: 101.00, Learning Rate: 0.00000013
+    correct_rate: 0.8333, format_rate: 1.0000, no_answer_rate: 0.0000, valid_groups: 1/2, all_correct: 1, all_wrong: 0
+Epoch:[1/1](580/1000), Reward: 0.7500, KL_ref: -0.0035, Adv Std: 0.7384, Adv Mean: 0.0000, Actor Loss: 0.0001, Avg Response Len: 103.25, Learning Rate: 0.00000013
+    correct_rate: 0.7500, format_rate: 1.0000, no_answer_rate: 0.0000, valid_groups: 1/2, all_correct: 1, all_wrong: 0
+Epoch:[1/1](585/1000), Reward: 0.2500, KL_ref: -0.0032, Adv Std: 0.7384, Adv Mean: 0.0000, Actor Loss: 0.0004, Avg Response Len: 111.92, Learning Rate: 0.00000013
+    correct_rate: 0.2500, format_rate: 1.0000, no_answer_rate: 0.0000, valid_groups: 1/2, all_correct: 0, all_wrong: 1
+Epoch:[1/1](590/1000), Reward: 0.2500, KL_ref: -0.0018, Adv Std: 0.7384, Adv Mean: 0.0000, Actor Loss: 0.0003, Avg Response Len: 119.08, Learning Rate: 0.00000013
+    correct_rate: 0.2500, format_rate: 1.0000, no_answer_rate: 0.0000, valid_groups: 1/2, all_correct: 0, all_wrong: 1
+Epoch:[1/1](595/1000), Reward: 0.0000, KL_ref: -0.0038, Adv Std: 0.0000, Adv Mean: 0.0000, Actor Loss: 0.0003, Avg Response Len: 140.50, Learning Rate: 0.00000013
+    correct_rate: 0.0000, format_rate: 1.0000, no_answer_rate: 0.0000, valid_groups: 0/2, all_correct: 0, all_wrong: 2
+[DEBUG] step=600, sample[0], gt=6075, difficulty=easy
+----------------------------------------------------------------------------------------------------
+============================== [DEBUG] sample[0] CONTEXT_BEGIN ==============================
+<|im_start|>user
+请计算 75*81，并在最后一行以‘答案是 数字’输出。<|im_end|>
+<|im_start|>assistant
+<think>
+
+=============================== [DEBUG] sample[0] CONTEXT_END ===============================
+============================ [DEBUG] gen[0] RESPONSE_BEGIN ============================
+75*81：81 拆成 80 和 1；75*80=600；75*1=75；600+75=675。所以结果是 675。
+</think>
+
+答案是 675
+============================= [DEBUG] gen[0] RESPONSE_END =============================
+[DEBUG] gen[0] reward=0.0000, status=incorrect, tokens=52
+============================ [DEBUG] gen[1] RESPONSE_BEGIN ============================
+75*81：81 拆成 80 和 1；75*80=6000；75*1=75；6000+75=6555。所以结果是 6555。
+</think>
+
+答案是 6555
+============================= [DEBUG] gen[1] RESPONSE_END =============================
+[DEBUG] gen[1] reward=0.0000, status=incorrect, tokens=58
+============================ [DEBUG] gen[2] RESPONSE_BEGIN ============================
+75*81：81 拆成 80 和 1；75*80=600；75*1=75；600+75=675。所以结果是 675。
+</think>
+
+答案是 675
+============================= [DEBUG] gen[2] RESPONSE_END =============================
+[DEBUG] gen[2] reward=0.0000, status=incorrect, tokens=52
+============================ [DEBUG] gen[3] RESPONSE_BEGIN ============================
+75*81：81 拆成 80 和 1；75*80=600；75*1=75；600+75=675。所以结果是 675。
+</think>
+
+答案是 675
+============================= [DEBUG] gen[3] RESPONSE_END =============================
+[DEBUG] gen[3] reward=0.0000, status=incorrect, tokens=52
+============================ [DEBUG] gen[4] RESPONSE_BEGIN ============================
+75*81：81 拆成 80 和 1；75*80=600；75*1=75；600+75=675。所以结果是 675。
+</think>
+
+答案是 675
+============================= [DEBUG] gen[4] RESPONSE_END =============================
+[DEBUG] gen[4] reward=0.0000, status=incorrect, tokens=52
+============================ [DEBUG] gen[5] RESPONSE_BEGIN ============================
+75*81：81 拆成 80 和 1；75*80=6000；75*1=75；6000+75=675。所以结果是 675。
+</think>
+
+答案是 675
+============================= [DEBUG] gen[5] RESPONSE_END =============================
+[DEBUG] gen[5] reward=0.0000, status=incorrect, tokens=52
+====================================================================================================
+[DEBUG] step=600, sample[1], gt=350, difficulty=easy
+----------------------------------------------------------------------------------------------------
+============================== [DEBUG] sample[1] CONTEXT_BEGIN ==============================
+<|im_start|>user
+请计算 25*14，并在最后一行以‘答案是 数字’输出。<|im_end|>
+<|im_start|>assistant
+<think>
+
+=============================== [DEBUG] sample[1] CONTEXT_END ===============================
+============================ [DEBUG] gen[0] RESPONSE_BEGIN ============================
+25*14：14 拆成 10 和 4；25*10=250；25*4=100；250+100=300。所以结果是 300。
+</think>
+
+答案是 300
+============================= [DEBUG] gen[0] RESPONSE_END =============================
+[DEBUG] gen[0] reward=0.0000, status=incorrect, tokens=49
+============================ [DEBUG] gen[1] RESPONSE_BEGIN ============================
+25*14：14 拆成 10 和 4；25*10=250；25*4=100；250+100=300。所以结果是 300。
+</think>
+
+答案是 300
+============================= [DEBUG] gen[1] RESPONSE_END =============================
+[DEBUG] gen[1] reward=0.0000, status=incorrect, tokens=49
+============================ [DEBUG] gen[2] RESPONSE_BEGIN ============================
+25*14：14 拆成 10 和 4；25*10=250；25*4=100；250+100=350。所以结果是 350。
+</think>
+
+答案是 350
+============================= [DEBUG] gen[2] RESPONSE_END =============================
+[DEBUG] gen[2] reward=1.0000, status=correct, tokens=49
+============================ [DEBUG] gen[3] RESPONSE_BEGIN ============================
+25*14：14 拆成 10 和 4；25*10=250；25*4=100；250+100=300。所以结果是 300。
+</think>
+
+答案是 300
+============================= [DEBUG] gen[3] RESPONSE_END =============================
+[DEBUG] gen[3] reward=0.0000, status=incorrect, tokens=49
+============================ [DEBUG] gen[4] RESPONSE_BEGIN ============================
+25*14：14 拆成 10 和 4；25*10=250；25*4=100；250+100=300。所以结果是 300。
+</think>
+
+答案是 300
+============================= [DEBUG] gen[4] RESPONSE_END =============================
+[DEBUG] gen[4] reward=0.0000, status=incorrect, tokens=49
+============================ [DEBUG] gen[5] RESPONSE_BEGIN ============================
+25*14：14 拆成 10 和 4；25*10=250；25*4=100；250+100=350。所以结果是 350。
+</think>
+
+答案是 350
+============================= [DEBUG] gen[5] RESPONSE_END =============================
+[DEBUG] gen[5] reward=1.0000, status=correct, tokens=49
+====================================================================================================
+Epoch:[1/1](600/1000), Reward: 0.1667, KL_ref: -0.0022, Adv Std: 0.7384, Adv Mean: -0.0000, Actor Loss: 0.0000, Avg Response Len: 51.00, Learning Rate: 0.00000012
+    correct_rate: 0.1667, format_rate: 1.0000, no_answer_rate: 0.0000, valid_groups: 1/2, all_correct: 0, all_wrong: 1
+Epoch:[1/1](605/1000), Reward: 0.1667, KL_ref: -0.0036, Adv Std: 0.7384, Adv Mean: -0.0000, Actor Loss: 0.0005, Avg Response Len: 185.58, Learning Rate: 0.00000012
+    correct_rate: 0.1667, format_rate: 1.0000, no_answer_rate: 0.0000, valid_groups: 1/2, all_correct: 0, all_wrong: 1
+Epoch:[1/1](610/1000), Reward: 0.0833, KL_ref: -0.0060, Adv Std: 0.7384, Adv Mean: -0.0000, Actor Loss: 0.0006, Avg Response Len: 115.92, Learning Rate: 0.00000012
+    correct_rate: 0.0833, format_rate: 1.0000, no_answer_rate: 0.0000, valid_groups: 1/2, all_correct: 0, all_wrong: 1
+Epoch:[1/1](615/1000), Reward: 0.4167, KL_ref: -0.0023, Adv Std: 0.7384, Adv Mean: -0.0000, Actor Loss: 0.0002, Avg Response Len: 78.42, Learning Rate: 0.00000012
+    correct_rate: 0.4167, format_rate: 1.0000, no_answer_rate: 0.0000, valid_groups: 1/2, all_correct: 0, all_wrong: 1
+Epoch:[1/1](620/1000), Reward: 1.0000, KL_ref: -0.0010, Adv Std: 0.0000, Adv Mean: 0.0000, Actor Loss: 0.0000, Avg Response Len: 89.50, Learning Rate: 0.00000012
+    correct_rate: 1.0000, format_rate: 1.0000, no_answer_rate: 0.0000, valid_groups: 0/2, all_correct: 2, all_wrong: 0
+Epoch:[1/1](625/1000), Reward: 0.0000, KL_ref: -0.0041, Adv Std: 0.0000, Adv Mean: 0.0000, Actor Loss: 0.0003, Avg Response Len: 144.50, Learning Rate: 0.00000011
+    correct_rate: 0.0000, format_rate: 1.0000, no_answer_rate: 0.0000, valid_groups: 0/2, all_correct: 0, all_wrong: 2
+Epoch:[1/1](630/1000), Reward: 0.4167, KL_ref: -0.0126, Adv Std: 0.7384, Adv Mean: -0.0000, Actor Loss: 0.0010, Avg Response Len: 131.42, Learning Rate: 0.00000011
+    correct_rate: 0.4167, format_rate: 1.0000, no_answer_rate: 0.0000, valid_groups: 1/2, all_correct: 0, all_wrong: 1
+Epoch:[1/1](635/1000), Reward: 0.9167, KL_ref: -0.0031, Adv Std: 0.7384, Adv Mean: -0.0000, Actor Loss: 0.0001, Avg Response Len: 124.50, Learning Rate: 0.00000011
+    correct_rate: 0.9167, format_rate: 1.0000, no_answer_rate: 0.0000, valid_groups: 1/2, all_correct: 1, all_wrong: 0
+Epoch:[1/1](640/1000), Reward: 0.2500, KL_ref: -0.0044, Adv Std: 0.7384, Adv Mean: 0.0000, Actor Loss: 0.0003, Avg Response Len: 130.17, Learning Rate: 0.00000011
+    correct_rate: 0.2500, format_rate: 1.0000, no_answer_rate: 0.0000, valid_groups: 1/2, all_correct: 0, all_wrong: 1
+Epoch:[1/1](645/1000), Reward: 0.5000, KL_ref: -0.0028, Adv Std: 0.0000, Adv Mean: 0.0000, Actor Loss: 0.0002, Avg Response Len: 111.33, Learning Rate: 0.00000011
+    correct_rate: 0.5000, format_rate: 1.0000, no_answer_rate: 0.0000, valid_groups: 0/2, all_correct: 1, all_wrong: 1
+[DEBUG] step=650, sample[0], gt=147, difficulty=easy
+----------------------------------------------------------------------------------------------------
+============================== [DEBUG] sample[0] CONTEXT_BEGIN ==============================
+<|im_start|>user
+请计算 68+79，并在最后一行以‘答案是 数字’输出。<|im_end|>
+<|im_start|>assistant
+<think>
+
+=============================== [DEBUG] sample[0] CONTEXT_END ===============================
+============================ [DEBUG] gen[0] RESPONSE_BEGIN ============================
+68+79：个位 8+9=17，写 7、向高位进 1；十位 6+7+1=14，写 4、向高位进 1；最高位再加上进位的 1。所以结果是 147。
+</think>
+
+答案是 147
+============================= [DEBUG] gen[0] RESPONSE_END =============================
+[DEBUG] gen[0] reward=1.0000, status=correct, tokens=68
+============================ [DEBUG] gen[1] RESPONSE_BEGIN ============================
+68+79：个位 8+9=17，写 7、向高位进 1；十位 6+7+1=13，写 3、向高位进 1；最高位再加上进位的 1。所以结果是 137。
+</think>
+
+答案是 137
+============================= [DEBUG] gen[1] RESPONSE_END =============================
+[DEBUG] gen[1] reward=0.0000, status=incorrect, tokens=68
+============================ [DEBUG] gen[2] RESPONSE_BEGIN ============================
+68+79：个位 8+9=17，写 7、向高位进 1；十位 6+7+1=14，写 4、向高位进 1；最高位再加上进位的 1。所以结果是 147。
+</think>
+
+答案是 147
+============================= [DEBUG] gen[2] RESPONSE_END =============================
+[DEBUG] gen[2] reward=1.0000, status=correct, tokens=68
+============================ [DEBUG] gen[3] RESPONSE_BEGIN ============================
+68+79：个位 8+9=17，写 7、向高位进 1；十位 6+7+1=14，写 4、向高位进 1；最高位再加上进位的 1。所以结果是 147。
+</think>
+
+答案是 147
+============================= [DEBUG] gen[3] RESPONSE_END =============================
+[DEBUG] gen[3] reward=1.0000, status=correct, tokens=68
+============================ [DEBUG] gen[4] RESPONSE_BEGIN ============================
+68+79：个位 8+9=17，写 7、向高位进 1；十位 6+7+1=14，写 4、向高位进 1；最高位再加上进位的 1。所以结果是 147。
+</think>
+
+答案是 147
+============================= [DEBUG] gen[4] RESPONSE_END =============================
+[DEBUG] gen[4] reward=1.0000, status=correct, tokens=68
+============================ [DEBUG] gen[5] RESPONSE_BEGIN ============================
+68+79：个位 8+9=17，写 7、向高位进 1；十位 6+7+1=14，写 4、向高位进 1；最高位再加上进位的 1。所以结果是 147。
+</think>
+
+答案是 147
+============================= [DEBUG] gen[5] RESPONSE_END =============================
+[DEBUG] gen[5] reward=1.0000, status=correct, tokens=68
+====================================================================================================
+[DEBUG] step=650, sample[1], gt=373, difficulty=medium
+----------------------------------------------------------------------------------------------------
+============================== [DEBUG] sample[1] CONTEXT_BEGIN ==============================
+<|im_start|>user
+请计算 (56+31)*7-236，并在最后一行以‘答案是 数字’输出。<|im_end|>
+<|im_start|>assistant
+<think>
+
+=============================== [DEBUG] sample[1] CONTEXT_END ===============================
+============================ [DEBUG] gen[0] RESPONSE_BEGIN ============================
+(56+31)*7-236：个位 6+1=7；十位 5+3=8；87 拆成 80 和 7；80*7=560；7*7=49；560+49=539；个位 9-6=3；十位 不够减，3+10=13，13-3=8，向高位借 1；百位 5-1=4，4-2=2。所以结果是 283。
+</think>
+
+答案是 283
+============================= [DEBUG] gen[0] RESPONSE_END =============================
+[DEBUG] gen[0] reward=0.0000, status=incorrect, tokens=128
+============================ [DEBUG] gen[1] RESPONSE_BEGIN ============================
+(56+31)*7-236：个位 6+1=7；十位 5+3=8；87 拆成 80 和 7；80*7=560；7*7=49；560+49=599；个位 9-6=3；十位 9-3=6；百位 5-2=3。所以结果是 363。
+</think>
+
+答案是 363
+============================= [DEBUG] gen[1] RESPONSE_END =============================
+[DEBUG] gen[1] reward=0.0000, status=incorrect, tokens=105
+============================ [DEBUG] gen[2] RESPONSE_BEGIN ============================
+(56+31)*7-236：个位 6+1=7；十位 5+3=8；87 拆成 80 和 7；80*7=560；7*7=49；560+49=529；个位 9-6=3；十位 不够减，2+10=12，12-3=9，向高位借 1；百位 5-1=4，4-2=2。所以结果是 293。
+</think>
+
+答案是 293
+============================= [DEBUG] gen[2] RESPONSE_END =============================
+[DEBUG] gen[2] reward=0.0000, status=incorrect, tokens=127
+============================ [DEBUG] gen[3] RESPONSE_BEGIN ============================
+(56+31)*7-236：个位 6+1=7；十位 5+3=8；87 拆成 80 和 7；80*7=560；7*7=49；560+49=539；个位 9-6=3；十位 不够减，3+10=13，13-3=12，向高位借 1；百位 5-1=4，4-2=2。所以结果是 212。
+</think>
+
+答案是 212
+============================= [DEBUG] gen[3] RESPONSE_END =============================
+[DEBUG] gen[3] reward=0.0000, status=incorrect, tokens=126
+============================ [DEBUG] gen[4] RESPONSE_BEGIN ============================
+(56+31)*7-236：个位 6+1=7；十位 5+3=8；87 拆成 80 和 7；80*7=560；7*7=49；560+49=529；个位 9-6=3；十位 不够减，2+10=12，12-3=9，向高位借 1；百位 5-1=4，4-2=2。所以结果是 293。
+</think>
+
+答案是 293
+============================= [DEBUG] gen[4] RESPONSE_END =============================
+[DEBUG] gen[4] reward=0.0000, status=incorrect, tokens=127
+============================ [DEBUG] gen[5] RESPONSE_BEGIN ============================
+(56+31)*7-236：个位 6+1=7；十位 5+3=8；87 拆成 80 和 7；80*7=560；7*7=49；560+49=639；个位 9-6=3；十位 不够减，3+10=13，13-3=8，向高位借 1；百位 6-1=5，5-2=3。所以结果是 383。
+</think>
+
+答案是 383
+============================= [DEBUG] gen[5] RESPONSE_END =============================
+[DEBUG] gen[5] reward=0.0000, status=incorrect, tokens=128
+====================================================================================================
+Epoch:[1/1](650/1000), Reward: 0.4167, KL_ref: 0.0004, Adv Std: 0.7384, Adv Mean: -0.0000, Actor Loss: 0.0001, Avg Response Len: 95.75, Learning Rate: 0.00000010
+    correct_rate: 0.4167, format_rate: 1.0000, no_answer_rate: 0.0000, valid_groups: 1/2, all_correct: 0, all_wrong: 1
+Epoch:[1/1](655/1000), Reward: 0.5000, KL_ref: -0.0014, Adv Std: 0.0000, Adv Mean: 0.0000, Actor Loss: 0.0001, Avg Response Len: 165.08, Learning Rate: 0.00000010
+    correct_rate: 0.5000, format_rate: 1.0000, no_answer_rate: 0.0000, valid_groups: 0/2, all_correct: 1, all_wrong: 1
+Epoch:[1/1](660/1000), Reward: 0.5000, KL_ref: -0.0004, Adv Std: 0.0000, Adv Mean: 0.0000, Actor Loss: 0.0001, Avg Response Len: 118.08, Learning Rate: 0.00000010
+    correct_rate: 0.5000, format_rate: 1.0000, no_answer_rate: 0.0000, valid_groups: 0/2, all_correct: 1, all_wrong: 1
+Epoch:[1/1](665/1000), Reward: 0.3333, KL_ref: -0.0012, Adv Std: 1.0442, Adv Mean: -0.0000, Actor Loss: 0.0001, Avg Response Len: 85.08, Learning Rate: 0.00000010
+    correct_rate: 0.3333, format_rate: 1.0000, no_answer_rate: 0.0000, valid_groups: 2/2, all_correct: 0, all_wrong: 0
+Epoch:[1/1](670/1000), Reward: 1.0000, KL_ref: 0.0009, Adv Std: 0.0000, Adv Mean: 0.0000, Actor Loss: 0.0000, Avg Response Len: 46.00, Learning Rate: 0.00000010
+    correct_rate: 1.0000, format_rate: 1.0000, no_answer_rate: 0.0000, valid_groups: 0/2, all_correct: 2, all_wrong: 0
+Epoch:[1/1](675/1000), Reward: 0.3333, KL_ref: -0.0046, Adv Std: 1.0442, Adv Mean: -0.0000, Actor Loss: 0.0003, Avg Response Len: 154.83, Learning Rate: 0.00000009
+    correct_rate: 0.3333, format_rate: 1.0000, no_answer_rate: 0.0000, valid_groups: 2/2, all_correct: 0, all_wrong: 0
+Epoch:[1/1](680/1000), Reward: 0.5000, KL_ref: -0.0038, Adv Std: 0.0000, Adv Mean: 0.0000, Actor Loss: 0.0001, Avg Response Len: 61.25, Learning Rate: 0.00000009
+    correct_rate: 0.5000, format_rate: 1.0000, no_answer_rate: 0.0000, valid_groups: 0/2, all_correct: 1, all_wrong: 1
+Epoch:[1/1](685/1000), Reward: 0.0833, KL_ref: -0.0028, Adv Std: 0.7384, Adv Mean: -0.0000, Actor Loss: 0.0001, Avg Response Len: 91.83, Learning Rate: 0.00000009
+    correct_rate: 0.0833, format_rate: 1.0000, no_answer_rate: 0.0000, valid_groups: 1/2, all_correct: 0, all_wrong: 1
+Epoch:[1/1](690/1000), Reward: 0.7500, KL_ref: -0.0042, Adv Std: 1.0442, Adv Mean: -0.0000, Actor Loss: 0.0003, Avg Response Len: 148.25, Learning Rate: 0.00000009
+    correct_rate: 0.7500, format_rate: 1.0000, no_answer_rate: 0.0000, valid_groups: 2/2, all_correct: 0, all_wrong: 0
+Epoch:[1/1](695/1000), Reward: 0.0000, KL_ref: -0.0056, Adv Std: 0.0000, Adv Mean: 0.0000, Actor Loss: 0.0005, Avg Response Len: 145.83, Learning Rate: 0.00000009
+    correct_rate: 0.0000, format_rate: 1.0000, no_answer_rate: 0.0000, valid_groups: 0/2, all_correct: 0, all_wrong: 2
+[DEBUG] step=700, sample[0], gt=56, difficulty=medium
+----------------------------------------------------------------------------------------------------
+============================== [DEBUG] sample[0] CONTEXT_BEGIN ==============================
+<|im_start|>user
+请计算 (15+54)*5-289，并在最后一行以‘答案是 数字’输出。<|im_end|>
+<|im_start|>assistant
+<think>
+
+=============================== [DEBUG] sample[0] CONTEXT_END ===============================
+============================ [DEBUG] gen[0] RESPONSE_BEGIN ============================
+(15+54)*5-289：个位 5+4=9；十位 1+5=6；69 拆成 60 和 9；60*5=300；9*5=45；300+45=305；个位 5-9=-2；十位 不够减，0+10=10，10-8=2，向高位借 1；百位 3-1=2，2-2=0。所以结果是 2。
+</think>
+
+答案是 2
+============================= [DEBUG] gen[0] RESPONSE_END =============================
+[DEBUG] gen[0] reward=0.0000, status=incorrect, tokens=120
+============================ [DEBUG] gen[1] RESPONSE_BEGIN ============================
+(15+54)*5-289：个位 5+4=9；十位 1+5=6；69 拆成 60 和 9；60*5=300；9*5=45；300+45=345；个位 不够减，5+10=15，15-9=6，向高位借 1；十位 4-1=3，3-2=1；百位 3-2=1。所以结果是 116。
+</think>
+
+答案是 116
+============================= [DEBUG] gen[1] RESPONSE_END =============================
+[DEBUG] gen[1] reward=0.0000, status=incorrect, tokens=121
+============================ [DEBUG] gen[2] RESPONSE_BEGIN ============================
+(15+54)*5-289：个位 5+4=9；十位 1+5=6；69 拆成 60 和 9；60*5=300；9*5=45；300+45=345；个位 不够减，5+10=15，15-9=6，向高位借 1；十位 4-1=3，3-2=1；百位 3-2=1。所以结果是 116。
+</think>
+
+答案是 116
+============================= [DEBUG] gen[2] RESPONSE_END =============================
+[DEBUG] gen[2] reward=0.0000, status=incorrect, tokens=121
+============================ [DEBUG] gen[3] RESPONSE_BEGIN ============================
+(15+54)*5-289：个位 5+4=9；十位 1+5=6；69 拆成 60 和 9；60*5=300；9*5=45；300+45=305；个位 5-9=0；十位 不够减，0+10=10，10-8=2，向高位借 1；百位 3-1=2，2-2=0。所以结果是 20。
+</think>
+
+答案是 20
+============================= [DEBUG] gen[3] RESPONSE_END =============================
+[DEBUG] gen[3] reward=0.0000, status=incorrect, tokens=121
+============================ [DEBUG] gen[4] RESPONSE_BEGIN ============================
+(15+54)*5-289：个位 5+4=9；十位 1+5=6；69 拆成 60 和 9；60*5=300；9*5=45；300+45=345；个位 不够减，5+10=15，15-9=6，向高位借 1；十位 4-1=3，3-2=1；百位 3-2=1。所以结果是 116。
+</think>
+
+答案是 116
+============================= [DEBUG] gen[4] RESPONSE_END =============================
+[DEBUG] gen[4] reward=0.0000, status=incorrect, tokens=121
+============================ [DEBUG] gen[5] RESPONSE_BEGIN ============================
+(15+54)*5-289：个位 5+4=9；十位 1+5=6；69 拆成 60 和 9；60*5=300；9*5=45；300+45=345；个位 不够减，5+10=15，15-9=6，向高位借 1；十位 4-1=3，3-2=1；百位 3-2=1。所以结果是 116。
+</think>
+
+答案是 116
+============================= [DEBUG] gen[5] RESPONSE_END =============================
+[DEBUG] gen[5] reward=0.0000, status=incorrect, tokens=121
+====================================================================================================
+[DEBUG] step=700, sample[1], gt=4059, difficulty=easy
+----------------------------------------------------------------------------------------------------
+============================== [DEBUG] sample[1] CONTEXT_BEGIN ==============================
+<|im_start|>user
+请计算 41*99，并在最后一行以‘答案是 数字’输出。<|im_end|>
+<|im_start|>assistant
+<think>
+
+=============================== [DEBUG] sample[1] CONTEXT_END ===============================
+============================ [DEBUG] gen[0] RESPONSE_BEGIN ============================
+41*99：99 拆成 90 和 9；41*90=4020；41*9=368；4020+368=5788。所以结果是 5788。
+</think>
+
+答案是 5788
+============================= [DEBUG] gen[0] RESPONSE_END =============================
+[DEBUG] gen[0] reward=0.0000, status=incorrect, tokens=63
+============================ [DEBUG] gen[1] RESPONSE_BEGIN ============================
+41*99：99 拆成 90 和 9；41*90=4030；41*9=376；4030+376=4296。所以结果是 4296。
+</think>
+
+答案是 4296
+============================= [DEBUG] gen[1] RESPONSE_END =============================
+[DEBUG] gen[1] reward=0.0000, status=incorrect, tokens=60
+============================ [DEBUG] gen[2] RESPONSE_BEGIN ============================
+41*99：99 拆成 90 和 9；41*90=4105；41*9=381；4105+381=4171。所以结果是 4171。
+</think>
+
+答案是 4171
+============================= [DEBUG] gen[2] RESPONSE_END =============================
+[DEBUG] gen[2] reward=0.0000, status=incorrect, tokens=62
+============================ [DEBUG] gen[3] RESPONSE_BEGIN ============================
+41*99：99 拆成 90 和 9；41*90=4320；41*9=396；4320+396=4446。所以结果是 4446。
+</think>
+
+答案是 4446
+============================= [DEBUG] gen[3] RESPONSE_END =============================
+[DEBUG] gen[3] reward=0.0000, status=incorrect, tokens=65
+============================ [DEBUG] gen[4] RESPONSE_BEGIN ============================
+41*99：99 拆成 90 和 9；41*90=4010；41*9=457；4010+457=4187。所以结果是 4187。
+</think>
+
+答案是 4187
+============================= [DEBUG] gen[4] RESPONSE_END =============================
+[DEBUG] gen[4] reward=0.0000, status=incorrect, tokens=58
+============================ [DEBUG] gen[5] RESPONSE_BEGIN ============================
+41*99：99 拆成 90 和 9；41*90=3680；41*9=381；3680+381=4091。所以结果是 4091。
+</think>
+
+答案是 4091
+============================= [DEBUG] gen[5] RESPONSE_END =============================
+[DEBUG] gen[5] reward=0.0000, status=incorrect, tokens=62
+====================================================================================================
+Epoch:[1/1](700/1000), Reward: 0.0000, KL_ref: -0.0034, Adv Std: 0.0000, Adv Mean: 0.0000, Actor Loss: 0.0002, Avg Response Len: 91.25, Learning Rate: 0.00000009
+    correct_rate: 0.0000, format_rate: 1.0000, no_answer_rate: 0.0000, valid_groups: 0/2, all_correct: 0, all_wrong: 2
+Epoch:[1/1](705/1000), Reward: 0.5000, KL_ref: 0.0018, Adv Std: 0.0000, Adv Mean: 0.0000, Actor Loss: 0.0000, Avg Response Len: 118.00, Learning Rate: 0.00000008
+    correct_rate: 0.5000, format_rate: 1.0000, no_answer_rate: 0.0000, valid_groups: 0/2, all_correct: 1, all_wrong: 1
+Epoch:[1/1](710/1000), Reward: 0.3333, KL_ref: -0.0040, Adv Std: 1.0442, Adv Mean: -0.0000, Actor Loss: 0.0002, Avg Response Len: 153.83, Learning Rate: 0.00000008
+    correct_rate: 0.3333, format_rate: 1.0000, no_answer_rate: 0.0000, valid_groups: 2/2, all_correct: 0, all_wrong: 0
+Epoch:[1/1](715/1000), Reward: 0.1667, KL_ref: -0.0003, Adv Std: 0.7384, Adv Mean: -0.0000, Actor Loss: 0.0001, Avg Response Len: 170.83, Learning Rate: 0.00000008
+    correct_rate: 0.1667, format_rate: 1.0000, no_answer_rate: 0.0000, valid_groups: 1/2, all_correct: 0, all_wrong: 1
+Epoch:[1/1](720/1000), Reward: 0.5833, KL_ref: -0.0011, Adv Std: 0.7384, Adv Mean: -0.0000, Actor Loss: 0.0000, Avg Response Len: 88.33, Learning Rate: 0.00000008
+    correct_rate: 0.5833, format_rate: 1.0000, no_answer_rate: 0.0000, valid_groups: 1/2, all_correct: 1, all_wrong: 0
+Epoch:[1/1](725/1000), Reward: 0.5000, KL_ref: 0.0023, Adv Std: 1.0443, Adv Mean: 0.0000, Actor Loss: 0.0002, Avg Response Len: 115.58, Learning Rate: 0.00000008
+    correct_rate: 0.5000, format_rate: 1.0000, no_answer_rate: 0.0000, valid_groups: 2/2, all_correct: 0, all_wrong: 0
+Epoch:[1/1](730/1000), Reward: 0.2500, KL_ref: -0.0016, Adv Std: 1.0442, Adv Mean: -0.0000, Actor Loss: 0.0002, Avg Response Len: 131.33, Learning Rate: 0.00000008
+    correct_rate: 0.2500, format_rate: 1.0000, no_answer_rate: 0.0000, valid_groups: 2/2, all_correct: 0, all_wrong: 0
+Epoch:[1/1](735/1000), Reward: 0.2500, KL_ref: -0.0007, Adv Std: 0.7384, Adv Mean: 0.0000, Actor Loss: 0.0001, Avg Response Len: 128.75, Learning Rate: 0.00000007
+    correct_rate: 0.2500, format_rate: 1.0000, no_answer_rate: 0.0000, valid_groups: 1/2, all_correct: 0, all_wrong: 1
+Epoch:[1/1](740/1000), Reward: 0.5000, KL_ref: 0.0029, Adv Std: 0.0000, Adv Mean: 0.0000, Actor Loss: 0.0000, Avg Response Len: 77.83, Learning Rate: 0.00000007
+    correct_rate: 0.5000, format_rate: 1.0000, no_answer_rate: 0.0000, valid_groups: 0/2, all_correct: 1, all_wrong: 1
+Epoch:[1/1](745/1000), Reward: 0.5000, KL_ref: -0.0033, Adv Std: 0.0000, Adv Mean: 0.0000, Actor Loss: 0.0000, Avg Response Len: 60.75, Learning Rate: 0.00000007
+    correct_rate: 0.5000, format_rate: 1.0000, no_answer_rate: 0.0000, valid_groups: 0/2, all_correct: 1, all_wrong: 1
+[DEBUG] step=750, sample[0], gt=461, difficulty=hard
+----------------------------------------------------------------------------------------------------
+============================== [DEBUG] sample[0] CONTEXT_BEGIN ==============================
+<|im_start|>user
+请计算 (8**2)+(21**2)-44，并在最后一行以‘答案是 数字’输出。<|im_end|>
+<|im_start|>assistant
+<think>
+
+=============================== [DEBUG] sample[0] CONTEXT_END ===============================
+============================ [DEBUG] gen[0] RESPONSE_BEGIN ============================
+(8**2)+(21**2)-44：8*8=64；21 拆成 20 和 1；21*20=420；21*1=21；420+21=441；个位 4+1=5；十位 6+4=10，写 0、向高位进 1；百位 0+4+1=5；个位 不够减，5+10=15，15-4=9，向高位借 1；十位 不够减，0+10=10，10-1-4=5，向高位借 1；百位 5-1=4。所以结果是 459。
+</think>
+
+答案是 459
+============================= [DEBUG] gen[0] RESPONSE_END =============================
+[DEBUG] gen[0] reward=0.0000, status=incorrect, tokens=164
+============================ [DEBUG] gen[1] RESPONSE_BEGIN ============================
+(8**2)+(21**2)-44：8*8=64；21 拆成 20 和 1；21*20=420；21*1=21；420+21=441；个位 4+1=5；十位 6+4=10，写 0、向高位进 1；百位 0+4+1=5；个位 5-4=1；十位 不够减，0+10=10，10-4=6，向高位借 1；百位 5-1=4。所以结果是 461。
+</think>
+
+答案是 461
+============================= [DEBUG] gen[1] RESPONSE_END =============================
+[DEBUG] gen[1] reward=1.0000, status=correct, tokens=145
+============================ [DEBUG] gen[2] RESPONSE_BEGIN ============================
+(8**2)+(21**2)-44：8*8=64；21 拆成 20 和 1；21*20=420；21*1=21；420+21=441；个位 4+1=5；十位 6+4=10，写 0、向高位进 1；百位 0+4+1=5；个位 5-4=1；十位 不够减，0+10=10，10-4=6，向高位借 1；百位 5-1=4。所以结果是 461。
+</think>
+
+答案是 461
+============================= [DEBUG] gen[2] RESPONSE_END =============================
+[DEBUG] gen[2] reward=1.0000, status=correct, tokens=145
+============================ [DEBUG] gen[3] RESPONSE_BEGIN ============================
+(8**2)+(21**2)-44：8*8=64；21 拆成 20 和 1；21*20=420；21*1=21；420+21=441；个位 4+1=5；十位 6+4=10，写 0、向高位进 1；百位 0+4+1=5；个位 5-4=1；十位 不够减，0+10=10，10-4=6，向高位借 1；百位 5-1=4。所以结果是 461。
+</think>
+
+答案是 461
+============================= [DEBUG] gen[3] RESPONSE_END =============================
+[DEBUG] gen[3] reward=1.0000, status=correct, tokens=145
+============================ [DEBUG] gen[4] RESPONSE_BEGIN ============================
+(8**2)+(21**2)-44：8*8=64；21 拆成 20 和 1；21*20=420；21*1=21；420+21=441；个位 4+1=5；十位 6+4=10，写 0、向高位进 1；百位 0+4+1=5；个位 5-4=1；十位 不够减，0+10=10，10-4=6，向高位借 1；百位 5-1=4。所以结果是 461。
+</think>
+
+答案是 461
+============================= [DEBUG] gen[4] RESPONSE_END =============================
+[DEBUG] gen[4] reward=1.0000, status=correct, tokens=145
+============================ [DEBUG] gen[5] RESPONSE_BEGIN ============================
+(8**2)+(21**2)-44：8*8=64；21 拆成 20 和 1；21*20=420；21*1=21；420+21=441；个位 4+1=5；十位 6+4=10，写 0、向高位进 1；百位 0+4+1=5；个位 5-4=1；十位 不够减，0+10=10，10-4=6，向高位借 1；百位 5-1=4。所以结果是 461。
+</think>
+
+答案是 461
+============================= [DEBUG] gen[5] RESPONSE_END =============================
+[DEBUG] gen[5] reward=1.0000, status=correct, tokens=145
+====================================================================================================
+[DEBUG] step=750, sample[1], gt=154, difficulty=medium
+----------------------------------------------------------------------------------------------------
+============================== [DEBUG] sample[1] CONTEXT_BEGIN ==============================
+<|im_start|>user
+请计算 (24+42)*5-176，并在最后一行以‘答案是 数字’输出。<|im_end|>
+<|im_start|>assistant
+<think>
+
+=============================== [DEBUG] sample[1] CONTEXT_END ===============================
+============================ [DEBUG] gen[0] RESPONSE_BEGIN ============================
+(24+42)*5-176：个位 4+2=6；十位 2+4=6；66 拆成 60 和 6；60*5=300；6*5=30；300+30=330；个位 不够减，0+10=10，10-6=4，向高位借 1；十位 不够减，3+10=13，13-1-7=4，向高位借 1；百位 3-1=2，2-1=1。所以结果是 144。
+</think>
+
+答案是 144
+============================= [DEBUG] gen[0] RESPONSE_END =============================
+[DEBUG] gen[0] reward=0.0000, status=incorrect, tokens=140
+============================ [DEBUG] gen[1] RESPONSE_BEGIN ============================
+(24+42)*5-176：个位 4+2=6；十位 2+4=6；66 拆成 60 和 6；60*5=300；6*5=30；300+30=330；个位 不够减，0+10=10，10-6=4，向高位借 1；十位 不够减，3+10=13，13-1-7=4，向高位借 1；百位 3-1=2，2-1=1。所以结果是 144。
+</think>
+
+答案是 144
+============================= [DEBUG] gen[1] RESPONSE_END =============================
+[DEBUG] gen[1] reward=0.0000, status=incorrect, tokens=140
+============================ [DEBUG] gen[2] RESPONSE_BEGIN ============================
+(24+42)*5-176：个位 4+2=6；十位 2+4=6；66 拆成 60 和 6；60*5=300；6*5=30；300+30=330；个位 不够减，0+10=10，10-6=4，向高位借 1；十位 不够减，3+10=13，13-1-7=4，向高位借 1；百位 3-1=2，2-1=1。所以结果是 144。
+</think>
+
+答案是 144
+============================= [DEBUG] gen[2] RESPONSE_END =============================
+[DEBUG] gen[2] reward=0.0000, status=incorrect, tokens=140
+============================ [DEBUG] gen[3] RESPONSE_BEGIN ============================
+(24+42)*5-176：个位 4+2=6；十位 2+4=6；66 拆成 60 和 6；60*5=300；6*5=30；300+30=330；个位 不够减，0+10=10，10-6=4，向高位借 1；十位 不够减，3+10=13，13-1-7=4，向高位借 1；百位 3-1=2，2-1=1。所以结果是 144。
+</think>
+
+答案是 144
+============================= [DEBUG] gen[3] RESPONSE_END =============================
+[DEBUG] gen[3] reward=0.0000, status=incorrect, tokens=140
+============================ [DEBUG] gen[4] RESPONSE_BEGIN ============================
+(24+42)*5-176：个位 4+2=6；十位 2+4=6；66 拆成 60 和 6；60*5=300；6*5=30；300+30=330；个位 不够减，0+10=10，10-6=4，向高位借 1；十位 不够减，3+10=13，13-1-7=4，向高位借 1；百位 3-1=2，2-1=1。所以结果是 144。
+</think>
+
+答案是 144
+============================= [DEBUG] gen[4] RESPONSE_END =============================
+[DEBUG] gen[4] reward=0.0000, status=incorrect, tokens=140
+============================ [DEBUG] gen[5] RESPONSE_BEGIN ============================
+(24+42)*5-176：个位 4+2=6；十位 2+4=6；66 拆成 60 和 6；60*5=300；6*5=30；300+30=330；个位 不够减，0+10=10，10-6=4，向高位借 1；十位 不够减，3+10=13，13-1-7=4，向高位借 1；百位 3-1=2，2-1=1。所以结果是 144。
+</think>
+
+答案是 144
+============================= [DEBUG] gen[5] RESPONSE_END =============================
+[DEBUG] gen[5] reward=0.0000, status=incorrect, tokens=140
+====================================================================================================
+Epoch:[1/1](750/1000), Reward: 0.4167, KL_ref: -0.0013, Adv Std: 0.7384, Adv Mean: -0.0000, Actor Loss: 0.0001, Avg Response Len: 144.08, Learning Rate: 0.00000007
+    correct_rate: 0.4167, format_rate: 1.0000, no_answer_rate: 0.0000, valid_groups: 1/2, all_correct: 0, all_wrong: 1
+Epoch:[1/1](755/1000), Reward: 0.0000, KL_ref: -0.0004, Adv Std: 0.0000, Adv Mean: 0.0000, Actor Loss: 0.0001, Avg Response Len: 144.17, Learning Rate: 0.00000007
+    correct_rate: 0.0000, format_rate: 1.0000, no_answer_rate: 0.0000, valid_groups: 0/2, all_correct: 0, all_wrong: 2
+Epoch:[1/1](760/1000), Reward: 0.0000, KL_ref: 0.0006, Adv Std: 0.0000, Adv Mean: 0.0000, Actor Loss: 0.0002, Avg Response Len: 124.92, Learning Rate: 0.00000007
+    correct_rate: 0.0000, format_rate: 1.0000, no_answer_rate: 0.0000, valid_groups: 0/2, all_correct: 0, all_wrong: 2
+Epoch:[1/1](765/1000), Reward: 0.8333, KL_ref: -0.0013, Adv Std: 0.7384, Adv Mean: -0.0000, Actor Loss: 0.0000, Avg Response Len: 118.00, Learning Rate: 0.00000007
+    correct_rate: 0.8333, format_rate: 1.0000, no_answer_rate: 0.0000, valid_groups: 1/2, all_correct: 1, all_wrong: 0
+Epoch:[1/1](770/1000), Reward: 0.7500, KL_ref: -0.0009, Adv Std: 1.0442, Adv Mean: -0.0000, Actor Loss: 0.0002, Avg Response Len: 95.75, Learning Rate: 0.00000006
+    correct_rate: 0.7500, format_rate: 1.0000, no_answer_rate: 0.0000, valid_groups: 2/2, all_correct: 0, all_wrong: 0
+Epoch:[1/1](775/1000), Reward: 0.4167, KL_ref: -0.0079, Adv Std: 1.0443, Adv Mean: -0.0000, Actor Loss: 0.0011, Avg Response Len: 91.17, Learning Rate: 0.00000006
+    correct_rate: 0.4167, format_rate: 1.0000, no_answer_rate: 0.0000, valid_groups: 2/2, all_correct: 0, all_wrong: 0
+Epoch:[1/1](780/1000), Reward: 0.6667, KL_ref: -0.0046, Adv Std: 0.7384, Adv Mean: -0.0000, Actor Loss: 0.0002, Avg Response Len: 93.17, Learning Rate: 0.00000006
+    correct_rate: 0.6667, format_rate: 1.0000, no_answer_rate: 0.0000, valid_groups: 1/2, all_correct: 1, all_wrong: 0
+Epoch:[1/1](785/1000), Reward: 0.7500, KL_ref: -0.0033, Adv Std: 0.7384, Adv Mean: 0.0000, Actor Loss: 0.0002, Avg Response Len: 115.75, Learning Rate: 0.00000006
+    correct_rate: 0.7500, format_rate: 1.0000, no_answer_rate: 0.0000, valid_groups: 1/2, all_correct: 1, all_wrong: 0
+Epoch:[1/1](790/1000), Reward: 0.5000, KL_ref: 0.0004, Adv Std: 0.0000, Adv Mean: 0.0000, Actor Loss: 0.0000, Avg Response Len: 127.50, Learning Rate: 0.00000006
+    correct_rate: 0.5000, format_rate: 1.0000, no_answer_rate: 0.0000, valid_groups: 0/2, all_correct: 1, all_wrong: 1
+Epoch:[1/1](795/1000), Reward: 0.5000, KL_ref: -0.0013, Adv Std: 0.0000, Adv Mean: 0.0000, Actor Loss: 0.0000, Avg Response Len: 98.50, Learning Rate: 0.00000006
+    correct_rate: 0.5000, format_rate: 1.0000, no_answer_rate: 0.0000, valid_groups: 0/2, all_correct: 1, all_wrong: 1
+[DEBUG] step=800, sample[0], gt=302, difficulty=hard
+----------------------------------------------------------------------------------------------------
+============================== [DEBUG] sample[0] CONTEXT_BEGIN ==============================
+<|im_start|>user
+请计算 (9**2)+(17**2)-68，并在最后一行以‘答案是 数字’输出。<|im_end|>
+<|im_start|>assistant
+<think>
+
+=============================== [DEBUG] sample[0] CONTEXT_END ===============================
+============================ [DEBUG] gen[0] RESPONSE_BEGIN ============================
+(9**2)+(17**2)-68：9*9=81；17 拆成 10 和 7；17*10=170；17*7=119；170+119=289；个位 1+9=10，写 0、向高位进 1；十位 8+8+1=15，写 5、向高位进 1；百位 0+2+1=3；个位 不够减，0+10=10，10-8=2，向高位借 1；十位 5-1=4，4-6=0；百位 落 3。所以结果是 302。
+</think>
+
+答案是 302
+============================= [DEBUG] gen[0] RESPONSE_END =============================
+[DEBUG] gen[0] reward=1.0000, status=correct, tokens=160
+============================ [DEBUG] gen[1] RESPONSE_BEGIN ============================
+(9**2)+(17**2)-68：9*9=81；17 拆成 10 和 7；17*10=170；17*7=119；170+119=289；个位 1+9=10，写 0、向高位进 1；十位 8+8+1=15，写 5、向高位进 1；百位 0+2+1=3；个位 不够减，0+10=10，10-8=2，向高位借 1；十位 不够减，5+10=15，15-1-6=8，向高位借 1；百位 3-1=2。所以结果是 282。
+</think>
+
+答案是 282
+============================= [DEBUG] gen[1] RESPONSE_END =============================
+[DEBUG] gen[1] reward=0.0000, status=incorrect, tokens=177
+============================ [DEBUG] gen[2] RESPONSE_BEGIN ============================
+(9**2)+(17**2)-68：9*9=81；17 拆成 10 和 7；17*10=170；17*7=119；170+119=289；个位 1+9=10，写 0、向高位进 1；十位 8+8+1=17，写 7、向高位进 1；百位 0+2+1=3；个位 不够减，0+10=10，10-8=2，向高位借 1；十位 7-1=6，6-6=0；百位 落 3。所以结果是 302。
+</think>
+
+答案是 302
+============================= [DEBUG] gen[2] RESPONSE_END =============================
+[DEBUG] gen[2] reward=1.0000, status=correct, tokens=160
+============================ [DEBUG] gen[3] RESPONSE_BEGIN ============================
+(9**2)+(17**2)-68：9*9=81；17 拆成 10 和 7；17*10=170；17*7=119；170+119=289；个位 1+9=10，写 0、向高位进 1；十位 8+8+1=17，写 7、向高位进 1；百位 0+2+1=3；个位 不够减，0+10=10，10-8=2，向高位借 1；十位 7-1=6，6-6=0；百位 落 3。所以结果是 302。
+</think>
+
+答案是 302
+============================= [DEBUG] gen[3] RESPONSE_END =============================
+[DEBUG] gen[3] reward=1.0000, status=correct, tokens=160
+============================ [DEBUG] gen[4] RESPONSE_BEGIN ============================
+(9**2)+(17**2)-68：9*9=81；17 拆成 10 和 7；17*10=170；17*7=119；170+119=289；个位 1+9=10，写 0、向高位进 1；十位 8+8+1=17，写 7、向高位进 1；百位 0+2+1=3；个位 不够减，0+10=10，10-8=2，向高位借 1；十位 7-1=6，6-6=0；百位 落 3。所以结果是 302。
+</think>
+
+答案是 302
+============================= [DEBUG] gen[4] RESPONSE_END =============================
+[DEBUG] gen[4] reward=1.0000, status=correct, tokens=160
+============================ [DEBUG] gen[5] RESPONSE_BEGIN ============================
+(9**2)+(17**2)-68：9*9=81；17 拆成 10 和 7；17*10=170；17*7=119；170+119=289；个位 1+9=10，写 0、向高位进 1；十位 8+8+1=15，写 5、向高位进 1；百位 0+2+1=3；个位 不够减，0+10=10，10-8=2，向高位借 1；十位 5-1=4，4-6=0；百位 落 3。所以结果是 302。
+</think>
+
+答案是 302
+============================= [DEBUG] gen[5] RESPONSE_END =============================
+[DEBUG] gen[5] reward=1.0000, status=correct, tokens=160
+====================================================================================================
+[DEBUG] step=800, sample[1], gt=354, difficulty=medium
+----------------------------------------------------------------------------------------------------
+============================== [DEBUG] sample[1] CONTEXT_BEGIN ==============================
+<|im_start|>user
+请计算 (40+31)*6-72，并在最后一行以‘答案是 数字’输出。<|im_end|>
+<|im_start|>assistant
+<think>
+
+=============================== [DEBUG] sample[1] CONTEXT_END ===============================
+============================ [DEBUG] gen[0] RESPONSE_BEGIN ============================
+(40+31)*6-72：个位 0+1=1；十位 4+3=7；71 拆成 70 和 1；70*6=420；1*6=6；420+6=436；个位 6-2=4；十位 不够减，3+10=13，13-7=6，向高位借 1；百位 4-1=3，3-2=1。所以结果是 164。
+</think>
+
+答案是 164
+============================= [DEBUG] gen[0] RESPONSE_END =============================
+[DEBUG] gen[0] reward=0.0000, status=incorrect, tokens=123
+============================ [DEBUG] gen[1] RESPONSE_BEGIN ============================
+(40+31)*6-72：个位 0+1=1；十位 4+3=7；71 拆成 70 和 1；70*6=420；1*6=6；420+6=446；个位 6-2=4；十位 4-7=1；百位 4-7=-1。所以结果是 114。
+</think>
+
+答案是 114
+============================= [DEBUG] gen[1] RESPONSE_END =============================
+[DEBUG] gen[1] reward=0.0000, status=incorrect, tokens=101
+============================ [DEBUG] gen[2] RESPONSE_BEGIN ============================
+(40+31)*6-72：个位 0+1=1；十位 4+3=7；71 拆成 70 和 1；70*6=420；1*6=6；420+6=436；个位 6-2=4；十位 不够减，3+10=13，13-7=6，向高位借 1；百位 4-1=3，3-2=1。所以结果是 164。
+</think>
+
+答案是 164
+============================= [DEBUG] gen[2] RESPONSE_END =============================
+[DEBUG] gen[2] reward=0.0000, status=incorrect, tokens=123
+============================ [DEBUG] gen[3] RESPONSE_BEGIN ============================
+(40+31)*6-72：个位 0+1=1；十位 4+3=7；71 拆成 70 和 1；70*6=420；1*6=6；420+6=446；个位 6-2=4；十位 4-7=0；百位 4-7=0。所以结果是 4。
+</think>
+
+答案是 4
+============================= [DEBUG] gen[3] RESPONSE_END =============================
+[DEBUG] gen[3] reward=0.0000, status=incorrect, tokens=98
+============================ [DEBUG] gen[4] RESPONSE_BEGIN ============================
+(40+31)*6-72：个位 0+1=1；十位 4+3=7；71 拆成 70 和 1；70*6=420；1*6=6；420+6=436；个位 6-2=4；十位 不够减，3+10=13，13-7=6，向高位借 1；百位 4-1=3，3-2=1。所以结果是 164。
+</think>
+
+答案是 164
+============================= [DEBUG] gen[4] RESPONSE_END =============================
+[DEBUG] gen[4] reward=0.0000, status=incorrect, tokens=123
+============================ [DEBUG] gen[5] RESPONSE_BEGIN ============================
+(40+31)*6-72：个位 0+1=1；十位 4+3=7；71 拆成 70 和 1；70*6=420；1*6=6；420+6=446；个位 6-2=4；十位 4-7=0；百位 4-7=1。所以结果是 104。
+</think>
+
+答案是 104
+============================= [DEBUG] gen[5] RESPONSE_END =============================
+[DEBUG] gen[5] reward=0.0000, status=incorrect, tokens=100
+====================================================================================================
+Epoch:[1/1](800/1000), Reward: 0.4167, KL_ref: -0.0008, Adv Std: 0.7384, Adv Mean: -0.0000, Actor Loss: 0.0004, Avg Response Len: 137.08, Learning Rate: 0.00000006
+    correct_rate: 0.4167, format_rate: 1.0000, no_answer_rate: 0.0000, valid_groups: 1/2, all_correct: 0, all_wrong: 1
+Epoch:[1/1](805/1000), Reward: 0.5000, KL_ref: -0.0014, Adv Std: 0.0000, Adv Mean: 0.0000, Actor Loss: 0.0001, Avg Response Len: 87.92, Learning Rate: 0.00000005
+    correct_rate: 0.5000, format_rate: 1.0000, no_answer_rate: 0.0000, valid_groups: 0/2, all_correct: 1, all_wrong: 1
+Epoch:[1/1](810/1000), Reward: 0.3333, KL_ref: -0.0016, Adv Std: 0.7384, Adv Mean: -0.0000, Actor Loss: 0.0001, Avg Response Len: 86.25, Learning Rate: 0.00000005
+    correct_rate: 0.3333, format_rate: 1.0000, no_answer_rate: 0.0000, valid_groups: 1/2, all_correct: 0, all_wrong: 1
+Epoch:[1/1](815/1000), Reward: 0.6667, KL_ref: -0.0009, Adv Std: 0.7384, Adv Mean: -0.0000, Actor Loss: 0.0001, Avg Response Len: 108.25, Learning Rate: 0.00000005
+    correct_rate: 0.6667, format_rate: 1.0000, no_answer_rate: 0.0000, valid_groups: 1/2, all_correct: 1, all_wrong: 0
+Epoch:[1/1](820/1000), Reward: 0.5833, KL_ref: -0.0027, Adv Std: 0.7384, Adv Mean: -0.0000, Actor Loss: 0.0004, Avg Response Len: 148.17, Learning Rate: 0.00000005
+    correct_rate: 0.5833, format_rate: 1.0000, no_answer_rate: 0.0000, valid_groups: 1/2, all_correct: 1, all_wrong: 0
+Epoch:[1/1](825/1000), Reward: 0.5000, KL_ref: 0.0018, Adv Std: 0.0000, Adv Mean: 0.0000, Actor Loss: 0.0001, Avg Response Len: 52.58, Learning Rate: 0.00000005
+    correct_rate: 0.5000, format_rate: 1.0000, no_answer_rate: 0.0000, valid_groups: 0/2, all_correct: 1, all_wrong: 1
+Epoch:[1/1](830/1000), Reward: 0.9167, KL_ref: 0.0002, Adv Std: 0.7384, Adv Mean: -0.0000, Actor Loss: 0.0001, Avg Response Len: 100.50, Learning Rate: 0.00000005
+    correct_rate: 0.9167, format_rate: 1.0000, no_answer_rate: 0.0000, valid_groups: 1/2, all_correct: 1, all_wrong: 0
+Epoch:[1/1](835/1000), Reward: 0.0833, KL_ref: -0.0022, Adv Std: 0.7384, Adv Mean: -0.0000, Actor Loss: 0.0005, Avg Response Len: 83.42, Learning Rate: 0.00000005
+    correct_rate: 0.0833, format_rate: 1.0000, no_answer_rate: 0.0000, valid_groups: 1/2, all_correct: 0, all_wrong: 1
+Epoch:[1/1](840/1000), Reward: 0.0000, KL_ref: 0.0019, Adv Std: 0.0000, Adv Mean: 0.0000, Actor Loss: 0.0002, Avg Response Len: 116.67, Learning Rate: 0.00000005
+    correct_rate: 0.0000, format_rate: 1.0000, no_answer_rate: 0.0000, valid_groups: 0/2, all_correct: 0, all_wrong: 2
+Epoch:[1/1](845/1000), Reward: 0.5000, KL_ref: -0.0043, Adv Std: 0.0000, Adv Mean: 0.0000, Actor Loss: 0.0004, Avg Response Len: 158.25, Learning Rate: 0.00000005
+    correct_rate: 0.5000, format_rate: 1.0000, no_answer_rate: 0.0000, valid_groups: 0/2, all_correct: 1, all_wrong: 1
+[DEBUG] step=850, sample[0], gt=1431, difficulty=easy
+----------------------------------------------------------------------------------------------------
+============================== [DEBUG] sample[0] CONTEXT_BEGIN ==============================
+<|im_start|>user
+请计算 53*27，并在最后一行以‘答案是 数字’输出。<|im_end|>
+<|im_start|>assistant
+<think>
+
+=============================== [DEBUG] sample[0] CONTEXT_END ===============================
+============================ [DEBUG] gen[0] RESPONSE_BEGIN ============================
+53*27：27 拆成 20 和 7；53*20=1060；53*7=401；1060+401=1431。所以结果是 1431。
+</think>
+
+答案是 1431
+============================= [DEBUG] gen[0] RESPONSE_END =============================
+[DEBUG] gen[0] reward=1.0000, status=correct, tokens=59
+============================ [DEBUG] gen[1] RESPONSE_BEGIN ============================
+53*27：27 拆成 20 和 7；53*20=1060；53*7=341；1060+341=1131。所以结果是 1131。
+</think>
+
+答案是 1131
+============================= [DEBUG] gen[1] RESPONSE_END =============================
+[DEBUG] gen[1] reward=0.0000, status=incorrect, tokens=61
+============================ [DEBUG] gen[2] RESPONSE_BEGIN ============================
+53*27：27 拆成 20 和 7；53*20=1060；53*7=403；1060+403=1393。所以结果是 1393。
+</think>
+
+答案是 1393
+============================= [DEBUG] gen[2] RESPONSE_END =============================
+[DEBUG] gen[2] reward=0.0000, status=incorrect, tokens=59
+============================ [DEBUG] gen[3] RESPONSE_BEGIN ============================
+53*27：27 拆成 20 和 7；53*20=1060；53*7=391；1060+391=1691。所以结果是 1691。
+</think>
+
+答案是 1691
+============================= [DEBUG] gen[3] RESPONSE_END =============================
+[DEBUG] gen[3] reward=0.0000, status=incorrect, tokens=61
+============================ [DEBUG] gen[4] RESPONSE_BEGIN ============================
+53*27：27 拆成 20 和 7；53*20=1060；53*7=269；1060+269=1139。所以结果是 1149。
+</think>
+
+答案是 1149
+============================= [DEBUG] gen[4] RESPONSE_END =============================
+[DEBUG] gen[4] reward=0.0000, status=incorrect, tokens=61
+============================ [DEBUG] gen[5] RESPONSE_BEGIN ============================
+53*27：27 拆成 20 和 7；53*20=1060；53*7=271；1060+271=1471。所以结果是 1471。
+</think>
+
+答案是 1471
+============================= [DEBUG] gen[5] RESPONSE_END =============================
+[DEBUG] gen[5] reward=0.0000, status=incorrect, tokens=61
+====================================================================================================
+[DEBUG] step=850, sample[1], gt=1008, difficulty=easy
+----------------------------------------------------------------------------------------------------
+============================== [DEBUG] sample[1] CONTEXT_BEGIN ==============================
+<|im_start|>user
+请计算 56*18，并在最后一行以‘答案是 数字’输出。<|im_end|>
+<|im_start|>assistant
+<think>
+
+=============================== [DEBUG] sample[1] CONTEXT_END ===============================
+============================ [DEBUG] gen[0] RESPONSE_BEGIN ============================
+56*18：18 拆成 10 和 8；56*10=560；56*8=432；560+432=1172。所以结果是 1172。
+</think>
+
+答案是 1172
+============================= [DEBUG] gen[0] RESPONSE_END =============================
+[DEBUG] gen[0] reward=0.0000, status=incorrect, tokens=59
+============================ [DEBUG] gen[1] RESPONSE_BEGIN ============================
+56*18：18 拆成 10 和 8；56*10=560；56*8=448；560+448=928。所以结果是 928。
+</think>
+
+答案是 928
+============================= [DEBUG] gen[1] RESPONSE_END =============================
+[DEBUG] gen[1] reward=0.0000, status=incorrect, tokens=54
+============================ [DEBUG] gen[2] RESPONSE_BEGIN ============================
+56*18：18 拆成 10 和 8；56*10=560；56*8=408；560+408=1188。所以结果是 1188。
+</think>
+
+答案是 1188
+============================= [DEBUG] gen[2] RESPONSE_END =============================
+[DEBUG] gen[2] reward=0.0000, status=incorrect, tokens=57
+============================ [DEBUG] gen[3] RESPONSE_BEGIN ============================
+56*18：18 拆成 10 和 8；56*10=560；56*8=432；560+432=1072。所以结果是 1072。
+</think>
+
+答案是 1072
+============================= [DEBUG] gen[3] RESPONSE_END =============================
+[DEBUG] gen[3] reward=0.0000, status=incorrect, tokens=59
+============================ [DEBUG] gen[4] RESPONSE_BEGIN ============================
+56*18：18 拆成 10 和 8；56*10=560；56*8=408；560+408=1178。所以结果是 1148。
+</think>
+
+答案是 1148
+============================= [DEBUG] gen[4] RESPONSE_END =============================
+[DEBUG] gen[4] reward=0.0000, status=incorrect, tokens=57
+============================ [DEBUG] gen[5] RESPONSE_BEGIN ============================
+56*18：18 拆成 10 和 8；56*10=560；56*8=448；560+448=988。所以结果是 988。
+</think>
+
+答案是 988
+============================= [DEBUG] gen[5] RESPONSE_END =============================
+[DEBUG] gen[5] reward=0.0000, status=incorrect, tokens=57
+====================================================================================================
+Epoch:[1/1](850/1000), Reward: 0.0833, KL_ref: -0.0033, Adv Std: 0.7384, Adv Mean: -0.0000, Actor Loss: 0.0001, Avg Response Len: 58.75, Learning Rate: 0.00000004
+    correct_rate: 0.0833, format_rate: 1.0000, no_answer_rate: 0.0000, valid_groups: 1/2, all_correct: 0, all_wrong: 1
+Epoch:[1/1](855/1000), Reward: 0.6667, KL_ref: 0.0009, Adv Std: 1.0442, Adv Mean: -0.0000, Actor Loss: 0.0000, Avg Response Len: 162.50, Learning Rate: 0.00000004
+    correct_rate: 0.6667, format_rate: 1.0000, no_answer_rate: 0.0000, valid_groups: 2/2, all_correct: 0, all_wrong: 0
+Epoch:[1/1](860/1000), Reward: 0.5833, KL_ref: 0.0041, Adv Std: 0.7384, Adv Mean: -0.0000, Actor Loss: 0.0001, Avg Response Len: 48.67, Learning Rate: 0.00000004
+    correct_rate: 0.5833, format_rate: 1.0000, no_answer_rate: 0.0000, valid_groups: 1/2, all_correct: 1, all_wrong: 0
+Epoch:[1/1](865/1000), Reward: 0.7500, KL_ref: 0.0004, Adv Std: 0.7384, Adv Mean: 0.0000, Actor Loss: 0.0001, Avg Response Len: 109.42, Learning Rate: 0.00000004
+    correct_rate: 0.7500, format_rate: 1.0000, no_answer_rate: 0.0000, valid_groups: 1/2, all_correct: 1, all_wrong: 0
+Epoch:[1/1](870/1000), Reward: 0.0000, KL_ref: -0.0101, Adv Std: 0.0000, Adv Mean: 0.0000, Actor Loss: 0.0006, Avg Response Len: 82.42, Learning Rate: 0.00000004
+    correct_rate: 0.0000, format_rate: 1.0000, no_answer_rate: 0.0000, valid_groups: 0/2, all_correct: 0, all_wrong: 2
+Epoch:[1/1](875/1000), Reward: 0.9167, KL_ref: 0.0010, Adv Std: 0.7384, Adv Mean: -0.0000, Actor Loss: 0.0000, Avg Response Len: 97.58, Learning Rate: 0.00000004
+    correct_rate: 0.9167, format_rate: 1.0000, no_answer_rate: 0.0000, valid_groups: 1/2, all_correct: 1, all_wrong: 0
+Epoch:[1/1](880/1000), Reward: 0.3333, KL_ref: 0.0007, Adv Std: 0.7384, Adv Mean: -0.0000, Actor Loss: 0.0002, Avg Response Len: 108.00, Learning Rate: 0.00000004
+    correct_rate: 0.3333, format_rate: 1.0000, no_answer_rate: 0.0000, valid_groups: 1/2, all_correct: 0, all_wrong: 1
+Epoch:[1/1](885/1000), Reward: 0.4167, KL_ref: -0.0035, Adv Std: 1.0442, Adv Mean: -0.0000, Actor Loss: 0.0002, Avg Response Len: 147.50, Learning Rate: 0.00000004
+    correct_rate: 0.4167, format_rate: 1.0000, no_answer_rate: 0.0000, valid_groups: 2/2, all_correct: 0, all_wrong: 0
+Epoch:[1/1](890/1000), Reward: 0.1667, KL_ref: -0.0015, Adv Std: 0.7384, Adv Mean: -0.0000, Actor Loss: 0.0003, Avg Response Len: 110.83, Learning Rate: 0.00000004
+    correct_rate: 0.1667, format_rate: 1.0000, no_answer_rate: 0.0000, valid_groups: 1/2, all_correct: 0, all_wrong: 1
+Epoch:[1/1](895/1000), Reward: 0.5000, KL_ref: -0.0015, Adv Std: 0.0000, Adv Mean: 0.0000, Actor Loss: 0.0001, Avg Response Len: 81.67, Learning Rate: 0.00000004
+    correct_rate: 0.5000, format_rate: 1.0000, no_answer_rate: 0.0000, valid_groups: 0/2, all_correct: 1, all_wrong: 1
+[DEBUG] step=900, sample[0], gt=180, difficulty=medium
+----------------------------------------------------------------------------------------------------
+============================== [DEBUG] sample[0] CONTEXT_BEGIN ==============================
+<|im_start|>user
+请计算 (11+24)*6-30，并在最后一行以‘答案是 数字’输出。<|im_end|>
+<|im_start|>assistant
+<think>
+
+=============================== [DEBUG] sample[0] CONTEXT_END ===============================
+============================ [DEBUG] gen[0] RESPONSE_BEGIN ============================
+(11+24)*6-30：个位 1+4=5；十位 1+2=3；35 拆成 30 和 5；30*6=180；5*6=30；180+30=270；个位 不够减，0+10=10，10-3=7，向高位借 1；十位 7-1=6，6-2=4；百位 2-3=1。所以结果是 147。
+</think>
+
+答案是 147
+============================= [DEBUG] gen[0] RESPONSE_END =============================
+[DEBUG] gen[0] reward=0.0000, status=incorrect, tokens=119
+============================ [DEBUG] gen[1] RESPONSE_BEGIN ============================
+(11+24)*6-30：个位 1+4=5；十位 1+2=3；35 拆成 30 和 5；30*6=180；5*6=30；180+30=270；个位 不够减，0+10=10，10-3=7，向高位借 1；十位 7-1=6，6-0=6；百位 2-3=1。所以结果是 167。
+</think>
+
+答案是 167
+============================= [DEBUG] gen[1] RESPONSE_END =============================
+[DEBUG] gen[1] reward=0.0000, status=incorrect, tokens=119
+============================ [DEBUG] gen[2] RESPONSE_BEGIN ============================
+(11+24)*6-30：个位 1+4=5；十位 1+2=3；35 拆成 30 和 5；30*6=180；5*6=30；180+30=270；个位 不够减，0+10=10，10-3=7，向高位借 1；十位 7-1=6，6-0=6；百位 2-3=1。所以结果是 167。
+</think>
+
+答案是 167
+============================= [DEBUG] gen[2] RESPONSE_END =============================
+[DEBUG] gen[2] reward=0.0000, status=incorrect, tokens=119
+============================ [DEBUG] gen[3] RESPONSE_BEGIN ============================
+(11+24)*6-30：个位 1+4=5；十位 1+2=3；35 拆成 30 和 5；30*6=180；5*6=30；180+30=270；个位 落 0；十位 不够减，0+10=10，10-3=7，向高位借 1；百位 2-1=1，1-0=1。所以结果是 170。
+</think>
+
+答案是 170
+============================= [DEBUG] gen[3] RESPONSE_END =============================
+[DEBUG] gen[3] reward=0.0000, status=incorrect, tokens=117
+============================ [DEBUG] gen[4] RESPONSE_BEGIN ============================
+(11+24)*6-30：个位 1+4=5；十位 1+2=3；35 拆成 30 和 5；30*6=180；5*6=30；180+30=290；个位 不够减，0+10=10，10-3=7，向高位借 1；十位 9-1=8，8-0=8；百位 2-3=0。所以结果是 87。
+</think>
+
+答案是 87
+============================= [DEBUG] gen[4] RESPONSE_END =============================
+[DEBUG] gen[4] reward=0.0000, status=incorrect, tokens=119
+============================ [DEBUG] gen[5] RESPONSE_BEGIN ============================
+(11+24)*6-30：个位 1+4=5；十位 1+2=3；35 拆成 30 和 5；30*6=180；5*6=30；180+30=270；个位 不够减，0+10=10，10-3=7，向高位借 1；十位 7-1=6，6-2=4；百位 2-3=0。所以结果是 47。
+</think>
+
+答案是 47
+============================= [DEBUG] gen[5] RESPONSE_END =============================
+[DEBUG] gen[5] reward=0.0000, status=incorrect, tokens=119
+====================================================================================================
+[DEBUG] step=900, sample[1], gt=114, difficulty=medium
+----------------------------------------------------------------------------------------------------
+============================== [DEBUG] sample[1] CONTEXT_BEGIN ==============================
+<|im_start|>user
+请计算 (43+29)*4-174，并在最后一行以‘答案是 数字’输出。<|im_end|>
+<|im_start|>assistant
+<think>
+
+=============================== [DEBUG] sample[1] CONTEXT_END ===============================
+============================ [DEBUG] gen[0] RESPONSE_BEGIN ============================
+(43+29)*4-174：个位 3+9=12，写 2、向高位进 1；十位 4+2+1=7；72 拆成 70 和 2；70*4=280；2*4=8；280+8=288；个位 8-4=4；十位 8-7=1；百位 2-1=1。所以结果是 114。
+</think>
+
+答案是 114
+============================= [DEBUG] gen[0] RESPONSE_END =============================
+[DEBUG] gen[0] reward=1.0000, status=correct, tokens=110
+============================ [DEBUG] gen[1] RESPONSE_BEGIN ============================
+(43+29)*4-174：个位 3+9=12，写 2、向高位进 1；十位 4+2+1=7；72 拆成 70 和 2；70*4=280；2*4=8；280+8=288；个位 8-4=4；十位 8-7=1；百位 2-1=1。所以结果是 114。
+</think>
+
+答案是 114
+============================= [DEBUG] gen[1] RESPONSE_END =============================
+[DEBUG] gen[1] reward=1.0000, status=correct, tokens=110
+============================ [DEBUG] gen[2] RESPONSE_BEGIN ============================
+(43+29)*4-174：个位 3+9=12，写 2、向高位进 1；十位 4+2+1=7；72 拆成 70 和 2；70*4=280；2*4=8；280+8=288；个位 8-4=4；十位 8-7=1；百位 2-1=1。所以结果是 114。
+</think>
+
+答案是 114
+============================= [DEBUG] gen[2] RESPONSE_END =============================
+[DEBUG] gen[2] reward=1.0000, status=correct, tokens=110
+============================ [DEBUG] gen[3] RESPONSE_BEGIN ============================
+(43+29)*4-174：个位 3+9=12，写 2、向高位进 1；十位 4+2+1=7；72 拆成 70 和 2；70*4=280；2*4=8；280+8=288；个位 8-4=4；十位 8-7=1；百位 2-1=1。所以结果是 124。
+</think>
+
+答案是 124
+============================= [DEBUG] gen[3] RESPONSE_END =============================
+[DEBUG] gen[3] reward=0.0000, status=incorrect, tokens=110
+============================ [DEBUG] gen[4] RESPONSE_BEGIN ============================
+(43+29)*4-174：个位 3+9=12，写 2、向高位进 1；十位 4+2+1=7；72 拆成 70 和 2；70*4=280；2*4=8；280+8=288；个位 8-4=4；十位 8-7=1；百位 2-1=1。所以结果是 124。
+</think>
+
+答案是 124
+============================= [DEBUG] gen[4] RESPONSE_END =============================
+[DEBUG] gen[4] reward=0.0000, status=incorrect, tokens=110
+============================ [DEBUG] gen[5] RESPONSE_BEGIN ============================
+(43+29)*4-174：个位 3+9=12，写 2、向高位进 1；十位 4+2+1=7；72 拆成 70 和 2；70*4=280；2*4=8；280+8=288；个位 8-4=4；十位 8-7=1；百位 2-1=1。所以结果是 114。
+</think>
+
+答案是 114
+============================= [DEBUG] gen[5] RESPONSE_END =============================
+[DEBUG] gen[5] reward=1.0000, status=correct, tokens=110
+====================================================================================================
+Epoch:[1/1](900/1000), Reward: 0.3333, KL_ref: -0.0021, Adv Std: 0.7384, Adv Mean: -0.0000, Actor Loss: 0.0002, Avg Response Len: 114.33, Learning Rate: 0.00000004
+    correct_rate: 0.3333, format_rate: 1.0000, no_answer_rate: 0.0000, valid_groups: 1/2, all_correct: 0, all_wrong: 1
+Epoch:[1/1](905/1000), Reward: 0.1667, KL_ref: -0.0009, Adv Std: 0.7384, Adv Mean: -0.0000, Actor Loss: 0.0002, Avg Response Len: 81.50, Learning Rate: 0.00000004
+    correct_rate: 0.1667, format_rate: 1.0000, no_answer_rate: 0.0000, valid_groups: 1/2, all_correct: 0, all_wrong: 1
+Epoch:[1/1](910/1000), Reward: 0.5000, KL_ref: -0.0045, Adv Std: 0.0000, Adv Mean: 0.0000, Actor Loss: 0.0006, Avg Response Len: 82.92, Learning Rate: 0.00000004
+    correct_rate: 0.5000, format_rate: 1.0000, no_answer_rate: 0.0000, valid_groups: 0/2, all_correct: 1, all_wrong: 1
+Epoch:[1/1](915/1000), Reward: 0.0833, KL_ref: -0.0021, Adv Std: 0.7384, Adv Mean: 0.0000, Actor Loss: 0.0004, Avg Response Len: 155.25, Learning Rate: 0.00000003
+    correct_rate: 0.0833, format_rate: 1.0000, no_answer_rate: 0.0000, valid_groups: 1/2, all_correct: 0, all_wrong: 1
+Epoch:[1/1](920/1000), Reward: 0.5000, KL_ref: -0.0014, Adv Std: 0.0000, Adv Mean: 0.0000, Actor Loss: 0.0000, Avg Response Len: 124.50, Learning Rate: 0.00000003
+    correct_rate: 0.5000, format_rate: 1.0000, no_answer_rate: 0.0000, valid_groups: 0/2, all_correct: 1, all_wrong: 1
+Epoch:[1/1](925/1000), Reward: 0.0000, KL_ref: -0.0050, Adv Std: 0.0000, Adv Mean: 0.0000, Actor Loss: 0.0003, Avg Response Len: 118.83, Learning Rate: 0.00000003
+    correct_rate: 0.0000, format_rate: 1.0000, no_answer_rate: 0.0000, valid_groups: 0/2, all_correct: 0, all_wrong: 2
+Epoch:[1/1](930/1000), Reward: 0.1667, KL_ref: -0.0036, Adv Std: 1.0442, Adv Mean: -0.0000, Actor Loss: 0.0004, Avg Response Len: 59.25, Learning Rate: 0.00000003
+    correct_rate: 0.1667, format_rate: 1.0000, no_answer_rate: 0.0000, valid_groups: 2/2, all_correct: 0, all_wrong: 0
+Epoch:[1/1](935/1000), Reward: 0.4167, KL_ref: 0.0026, Adv Std: 0.7384, Adv Mean: -0.0000, Actor Loss: 0.0000, Avg Response Len: 42.25, Learning Rate: 0.00000003
+    correct_rate: 0.4167, format_rate: 1.0000, no_answer_rate: 0.0000, valid_groups: 1/2, all_correct: 0, all_wrong: 1
+Epoch:[1/1](940/1000), Reward: 0.3333, KL_ref: -0.0029, Adv Std: 1.0442, Adv Mean: -0.0000, Actor Loss: 0.0003, Avg Response Len: 98.42, Learning Rate: 0.00000003
+    correct_rate: 0.3333, format_rate: 1.0000, no_answer_rate: 0.0000, valid_groups: 2/2, all_correct: 0, all_wrong: 0
+Epoch:[1/1](945/1000), Reward: 0.5000, KL_ref: 0.0014, Adv Std: 0.0000, Adv Mean: 0.0000, Actor Loss: 0.0000, Avg Response Len: 60.42, Learning Rate: 0.00000003
+    correct_rate: 0.5000, format_rate: 1.0000, no_answer_rate: 0.0000, valid_groups: 0/2, all_correct: 1, all_wrong: 1
+[DEBUG] step=950, sample[0], gt=463, difficulty=medium
+----------------------------------------------------------------------------------------------------
+============================== [DEBUG] sample[0] CONTEXT_BEGIN ==============================
+<|im_start|>user
+请计算 (42+51)*7-188，并在最后一行以‘答案是 数字’输出。<|im_end|>
+<|im_start|>assistant
+<think>
+
+=============================== [DEBUG] sample[0] CONTEXT_END ===============================
+============================ [DEBUG] gen[0] RESPONSE_BEGIN ============================
+(42+51)*7-188：个位 2+1=3；十位 4+5=9；93 拆成 90 和 3；90*7=630；3*7=21；630+21=651；个位 不够减，1+10=11，11-8=3，向高位借 1；十位 5-1=4，4-1=3；百位 6-8=1。所以结果是 133。
+</think>
+
+答案是 133
+============================= [DEBUG] gen[0] RESPONSE_END =============================
+[DEBUG] gen[0] reward=0.0000, status=incorrect, tokens=124
+============================ [DEBUG] gen[1] RESPONSE_BEGIN ============================
+(42+51)*7-188：个位 2+1=3；十位 4+5=9；93 拆成 90 和 3；90*7=630；3*7=21；630+21=651；个位 不够减，1+10=11，11-8=3，向高位借 1；十位 5-1=4，4-1=3；百位 6-8=0。所以结果是 33。
+</think>
+
+答案是 33
+============================= [DEBUG] gen[1] RESPONSE_END =============================
+[DEBUG] gen[1] reward=0.0000, status=incorrect, tokens=124
+============================ [DEBUG] gen[2] RESPONSE_BEGIN ============================
+(42+51)*7-188：个位 2+1=3；十位 4+5=9；93 拆成 90 和 3；90*7=630；3*7=21；630+21=651；个位 不够减，1+10=11，11-8=3，向高位借 1；十位 5-1=4，4-1=3；百位 6-8=0。所以结果是 33。
+</think>
+
+答案是 33
+============================= [DEBUG] gen[2] RESPONSE_END =============================
+[DEBUG] gen[2] reward=0.0000, status=incorrect, tokens=124
+============================ [DEBUG] gen[3] RESPONSE_BEGIN ============================
+(42+51)*7-188：个位 2+1=3；十位 4+5=9；93 拆成 90 和 3；90*7=630；3*7=21；630+21=651；个位 不够减，1+10=11，11-8=3，向高位借 1；十位 5-1=4，4-1=3；百位 6-8=1。所以结果是 133。
+</think>
+
+答案是 133
+============================= [DEBUG] gen[3] RESPONSE_END =============================
+[DEBUG] gen[3] reward=0.0000, status=incorrect, tokens=124
+============================ [DEBUG] gen[4] RESPONSE_BEGIN ============================
+(42+51)*7-188：个位 2+1=3；十位 4+5=9；93 拆成 90 和 3；90*7=630；3*7=21；630+21=651；个位 不够减，1+10=11，11-8=3，向高位借 1；十位 5-1=4，4-1=3；百位 6-8=1。所以结果是 133。
+</think>
+
+答案是 133
+============================= [DEBUG] gen[4] RESPONSE_END =============================
+[DEBUG] gen[4] reward=0.0000, status=incorrect, tokens=124
+============================ [DEBUG] gen[5] RESPONSE_BEGIN ============================
+(42+51)*7-188：个位 2+1=3；十位 4+5=9；93 拆成 90 和 3；90*7=630；3*7=21；630+21=651；个位 不够减，1+10=11，11-8=3，向高位借 1；十位 5-1=4，4-1=3；百位 6-8=1。所以结果是 133。
+</think>
+
+答案是 133
+============================= [DEBUG] gen[5] RESPONSE_END =============================
+[DEBUG] gen[5] reward=0.0000, status=incorrect, tokens=124
+====================================================================================================
+[DEBUG] step=950, sample[1], gt=94, difficulty=easy
+----------------------------------------------------------------------------------------------------
+============================== [DEBUG] sample[1] CONTEXT_BEGIN ==============================
+<|im_start|>user
+请计算 55+39，并在最后一行以‘答案是 数字’输出。<|im_end|>
+<|im_start|>assistant
+<think>
+
+=============================== [DEBUG] sample[1] CONTEXT_END ===============================
+============================ [DEBUG] gen[0] RESPONSE_BEGIN ============================
+55+39：个位 5+9=14，写 4、向高位进 1；十位 5+3+1=10，写 0、向高位进 1；最高位再加上进位的 1。所以结果是 104。
+</think>
+
+答案是 104
+============================= [DEBUG] gen[0] RESPONSE_END =============================
+[DEBUG] gen[0] reward=0.0000, status=incorrect, tokens=68
+============================ [DEBUG] gen[1] RESPONSE_BEGIN ============================
+55+39：个位 5+9=14，写 4、向高位进 1；十位 5+3+1=9。所以结果是 94。
+</think>
+
+答案是 94
+============================= [DEBUG] gen[1] RESPONSE_END =============================
+[DEBUG] gen[1] reward=1.0000, status=correct, tokens=48
+============================ [DEBUG] gen[2] RESPONSE_BEGIN ============================
+55+39：个位 5+9=14，写 4、向高位进 1；十位 5+3+1=9。所以结果是 94。
+</think>
+
+答案是 94
+============================= [DEBUG] gen[2] RESPONSE_END =============================
+[DEBUG] gen[2] reward=1.0000, status=correct, tokens=48
+============================ [DEBUG] gen[3] RESPONSE_BEGIN ============================
+55+39：个位 5+9=14，写 4、向高位进 1；十位 5+3+1=9。所以结果是 94。
+</think>
+
+答案是 94
+============================= [DEBUG] gen[3] RESPONSE_END =============================
+[DEBUG] gen[3] reward=1.0000, status=correct, tokens=48
+============================ [DEBUG] gen[4] RESPONSE_BEGIN ============================
+55+39：个位 5+9=14，写 4、向高位进 1；十位 5+3+1=10，写 0、向高位进 1；最高位再加上进位的 1。所以结果是 104。
+</think>
+
+答案是 104
+============================= [DEBUG] gen[4] RESPONSE_END =============================
+[DEBUG] gen[4] reward=0.0000, status=incorrect, tokens=68
+============================ [DEBUG] gen[5] RESPONSE_BEGIN ============================
+55+39：个位 5+9=14，写 4、向高位进 1；十位 5+3+1=9。所以结果是 94。
+</think>
+
+答案是 94
+============================= [DEBUG] gen[5] RESPONSE_END =============================
+[DEBUG] gen[5] reward=1.0000, status=correct, tokens=48
+====================================================================================================
+Epoch:[1/1](950/1000), Reward: 0.3333, KL_ref: -0.0085, Adv Std: 0.7384, Adv Mean: -0.0000, Actor Loss: 0.0002, Avg Response Len: 89.33, Learning Rate: 0.00000003
+    correct_rate: 0.3333, format_rate: 1.0000, no_answer_rate: 0.0000, valid_groups: 1/2, all_correct: 0, all_wrong: 1
+Epoch:[1/1](955/1000), Reward: 0.0000, KL_ref: -0.0015, Adv Std: 0.0000, Adv Mean: 0.0000, Actor Loss: 0.0001, Avg Response Len: 77.83, Learning Rate: 0.00000003
+    correct_rate: 0.0000, format_rate: 1.0000, no_answer_rate: 0.0000, valid_groups: 0/2, all_correct: 0, all_wrong: 2
+Epoch:[1/1](960/1000), Reward: 0.5000, KL_ref: -0.0011, Adv Std: 0.0000, Adv Mean: 0.0000, Actor Loss: 0.0001, Avg Response Len: 133.08, Learning Rate: 0.00000003
+    correct_rate: 0.5000, format_rate: 1.0000, no_answer_rate: 0.0000, valid_groups: 0/2, all_correct: 1, all_wrong: 1
+Epoch:[1/1](965/1000), Reward: 0.0833, KL_ref: -0.0064, Adv Std: 0.7384, Adv Mean: -0.0000, Actor Loss: 0.0003, Avg Response Len: 118.17, Learning Rate: 0.00000003
+    correct_rate: 0.0833, format_rate: 1.0000, no_answer_rate: 0.0000, valid_groups: 1/2, all_correct: 0, all_wrong: 1
+Epoch:[1/1](970/1000), Reward: 0.5000, KL_ref: 0.0001, Adv Std: 0.0000, Adv Mean: 0.0000, Actor Loss: 0.0001, Avg Response Len: 130.33, Learning Rate: 0.00000003
+    correct_rate: 0.5000, format_rate: 1.0000, no_answer_rate: 0.0000, valid_groups: 0/2, all_correct: 1, all_wrong: 1
+Epoch:[1/1](975/1000), Reward: 0.0000, KL_ref: -0.0020, Adv Std: 0.0000, Adv Mean: 0.0000, Actor Loss: 0.0001, Avg Response Len: 57.67, Learning Rate: 0.00000003
+    correct_rate: 0.0000, format_rate: 1.0000, no_answer_rate: 0.0000, valid_groups: 0/2, all_correct: 0, all_wrong: 2
+Epoch:[1/1](980/1000), Reward: 0.5833, KL_ref: -0.0020, Adv Std: 0.7384, Adv Mean: 0.0000, Actor Loss: 0.0001, Avg Response Len: 164.67, Learning Rate: 0.00000003
+    correct_rate: 0.5833, format_rate: 1.0000, no_answer_rate: 0.0000, valid_groups: 1/2, all_correct: 1, all_wrong: 0
+Epoch:[1/1](985/1000), Reward: 0.1667, KL_ref: -0.0077, Adv Std: 0.7384, Adv Mean: -0.0000, Actor Loss: 0.0006, Avg Response Len: 125.17, Learning Rate: 0.00000003
+    correct_rate: 0.1667, format_rate: 1.0000, no_answer_rate: 0.0000, valid_groups: 1/2, all_correct: 0, all_wrong: 1
+Epoch:[1/1](990/1000), Reward: 0.3333, KL_ref: -0.0095, Adv Std: 1.0442, Adv Mean: -0.0000, Actor Loss: 0.0007, Avg Response Len: 103.67, Learning Rate: 0.00000003
+    correct_rate: 0.3333, format_rate: 1.0000, no_answer_rate: 0.0000, valid_groups: 2/2, all_correct: 0, all_wrong: 0
+Epoch:[1/1](995/1000), Reward: 0.7500, KL_ref: -0.0038, Adv Std: 1.0442, Adv Mean: -0.0000, Actor Loss: 0.0003, Avg Response Len: 190.67, Learning Rate: 0.00000003
+    correct_rate: 0.7500, format_rate: 1.0000, no_answer_rate: 0.0000, valid_groups: 2/2, all_correct: 0, all_wrong: 0
+[DEBUG] step=1000, sample[0], gt=395, difficulty=medium
+----------------------------------------------------------------------------------------------------
+============================== [DEBUG] sample[0] CONTEXT_BEGIN ==============================
+<|im_start|>user
+请计算 (60+30)*5-55，并在最后一行以‘答案是 数字’输出。<|im_end|>
+<|im_start|>assistant
+<think>
+
+=============================== [DEBUG] sample[0] CONTEXT_END ===============================
+============================ [DEBUG] gen[0] RESPONSE_BEGIN ============================
+(60+30)*5-55：个位 0+0=0；十位 6+3=9；9*5=45；个位 不够减，0+10=10，10-5=5，向高位借 1；十位 4-1=3，3-5=0；百位 落 1。所以结果是 105。
+</think>
+
+答案是 105
+============================= [DEBUG] gen[0] RESPONSE_END =============================
+[DEBUG] gen[0] reward=0.0000, status=incorrect, tokens=93
+============================ [DEBUG] gen[1] RESPONSE_BEGIN ============================
+(60+30)*5-55：个位 0+0=0；十位 6+3=9；9*5=45；个位 不够减，0+10=10，10-5=5，向高位借 1；十位 4-1=3，3-5=0；百位 5-5=0。所以结果是 5。
+</think>
+
+答案是 5
+============================= [DEBUG] gen[1] RESPONSE_END =============================
+[DEBUG] gen[1] reward=0.0000, status=incorrect, tokens=93
+============================ [DEBUG] gen[2] RESPONSE_BEGIN ============================
+(60+30)*5-55：个位 0+0=0；十位 6+3=9；9*5=45；个位 不够减，0+10=10，10-5=5，向高位借 1；十位 4-1=3，3-5=0；百位 5-5=0。所以结果是 5。
+</think>
+
+答案是 5
+============================= [DEBUG] gen[2] RESPONSE_END =============================
+[DEBUG] gen[2] reward=0.0000, status=incorrect, tokens=93
+============================ [DEBUG] gen[3] RESPONSE_BEGIN ============================
+(60+30)*5-55：个位 0+0=0；十位 6+3=9；90 先看成 9*5=45；再补一个 0 得 450；个位 不够减，0+10=10，10-5=5，向高位借 1；十位 5-1=4，4-5=0；百位 4-5=1。所以结果是 105。
+</think>
+
+答案是 105
+============================= [DEBUG] gen[3] RESPONSE_END =============================
+[DEBUG] gen[3] reward=0.0000, status=incorrect, tokens=109
+============================ [DEBUG] gen[4] RESPONSE_BEGIN ============================
+(60+30)*5-55：个位 0+0=0；十位 6+3=9；9*5=45；个位 不够减，0+10=10，10-5=5，向高位借 1；十位 4-1=3，3-5=0；百位 5-5=0。所以结果是 50。
+</think>
+
+答案是 50
+============================= [DEBUG] gen[4] RESPONSE_END =============================
+[DEBUG] gen[4] reward=0.0000, status=incorrect, tokens=93
+============================ [DEBUG] gen[5] RESPONSE_BEGIN ============================
+(60+30)*5-55：个位 0+0=0；十位 6+3=9；9*5=45；个位 不够减，0+10=10，10-5=5，向高位借 1；十位 4-1=3，3-5=0；百位 5-5=0。所以结果是 50。
+</think>
+
+答案是 50
+============================= [DEBUG] gen[5] RESPONSE_END =============================
+[DEBUG] gen[5] reward=0.0000, status=incorrect, tokens=93
+====================================================================================================
+[DEBUG] step=1000, sample[1], gt=68, difficulty=medium
+----------------------------------------------------------------------------------------------------
+============================== [DEBUG] sample[1] CONTEXT_BEGIN ==============================
+<|im_start|>user
+请计算 (24+34)*5-222，并在最后一行以‘答案是 数字’输出。<|im_end|>
+<|im_start|>assistant
+<think>
+
+=============================== [DEBUG] sample[1] CONTEXT_END ===============================
+============================ [DEBUG] gen[0] RESPONSE_BEGIN ============================
+(24+34)*5-222：个位 4+4=8；十位 2+3=5；58 拆成 50 和 8；50*5=250；8*5=40；250+40=290；个位 不够减，0+10=10，10-2=8，向高位借 1；十位 9-1=8，8-2=6；百位 2-2=0。所以结果是 68。
+</think>
+
+答案是 68
+============================= [DEBUG] gen[0] RESPONSE_END =============================
+[DEBUG] gen[0] reward=1.0000, status=correct, tokens=121
+============================ [DEBUG] gen[1] RESPONSE_BEGIN ============================
+(24+34)*5-222：个位 4+4=8；十位 2+3=5；58 拆成 50 和 8；50*5=250；8*5=40；250+40=290；个位 8-2=6；十位 9-2=7；百位 2-2=0。所以结果是 76。
+</think>
+
+答案是 76
+============================= [DEBUG] gen[1] RESPONSE_END =============================
+[DEBUG] gen[1] reward=0.0000, status=incorrect, tokens=98
+============================ [DEBUG] gen[2] RESPONSE_BEGIN ============================
+(24+34)*5-222：个位 4+4=8；十位 2+3=5；58 拆成 50 和 8；50*5=250；8*5=40；250+40=290；个位 8-2=6；十位 9-2=7；百位 2-2=0。所以结果是 76。
+</think>
+
+答案是 76
+============================= [DEBUG] gen[2] RESPONSE_END =============================
+[DEBUG] gen[2] reward=0.0000, status=incorrect, tokens=98
+============================ [DEBUG] gen[3] RESPONSE_BEGIN ============================
+(24+34)*5-222：个位 4+4=8；十位 2+3=5；58 拆成 50 和 8；50*5=250；8*5=40；250+40=290；个位 不够减，0+10=10，10-2=8，向高位借 1；十位 9-1=8，8-2=6；百位 2-2=0。所以结果是 68。
+</think>
+
+答案是 68
+============================= [DEBUG] gen[3] RESPONSE_END =============================
+[DEBUG] gen[3] reward=1.0000, status=correct, tokens=121
+============================ [DEBUG] gen[4] RESPONSE_BEGIN ============================
+(24+34)*5-222：个位 4+4=8；十位 2+3=5；58 拆成 50 和 8；50*5=250；8*5=40；250+40=290；个位 不够减，0+10=10，10-2=8，向高位借 1；十位 9-1=8，8-2=6；百位 2-2=0。所以结果是 68。
+</think>
+
+答案是 68
+============================= [DEBUG] gen[4] RESPONSE_END =============================
+[DEBUG] gen[4] reward=1.0000, status=correct, tokens=121
+============================ [DEBUG] gen[5] RESPONSE_BEGIN ============================
+(24+34)*5-222：个位 4+4=8；十位 2+3=5；58 拆成 50 和 8；50*5=250；8*5=40；250+40=270；个位 不够减，0+10=10，10-2=8，向高位借 1；十位 7-1=6，6-2=4；百位 2-2=0。所以结果是 48。
+</think>
+
+答案是 48
+============================= [DEBUG] gen[5] RESPONSE_END =============================
+[DEBUG] gen[5] reward=0.0000, status=incorrect, tokens=121
+====================================================================================================
+Epoch:[1/1](1000/1000), Reward: 0.2500, KL_ref: -0.0048, Adv Std: 0.7384, Adv Mean: 0.0000, Actor Loss: 0.0003, Avg Response Len: 104.50, Learning Rate: 0.00000003
+    correct_rate: 0.2500, format_rate: 1.0000, no_answer_rate: 0.0000, valid_groups: 1/2, all_correct: 0, all_wrong: 1

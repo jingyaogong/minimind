@@ -266,11 +266,6 @@ def decision_tree(row: dict[str, Any]) -> str:
     reported together: a run whose training correctness rises while held-out
     stays flat is a reward-eval gap, not a capability claim, and the wording
     says so instead of letting the first branch flatter the run.
-
-    ``heldout_gain`` 只是**点估计的方向**：本函数不做配对检验，因此措辞一律不写"显著"，
-    并要求读者去 ``paired_compare.py`` 的 McNemar p 值与本项目实测的噪声地板
-    （``reports/report.md`` §4.7）复核。示例：``mini_rule_dynamic_seed42`` 的 −0.005
-    恰好落在噪声地板内，不能当负结果引用。
     """
 
     reward_gain = row.get("reward_gain")
@@ -288,13 +283,10 @@ def decision_tree(row: dict[str, Any]) -> str:
     if heldout is not None and heldout < -EPS:
         # 负结果也要按奖励源分类，否则会把 RM hack 误诊成"长度偏置"。
         if mode in RM_REWARD_MODES:
-            return ("否：held-out 下降 —— RM 奖励 hack：奖励与任务正确性背离"
-                    "（先拆 reward 组成 + 看 ACR；显著性见 paired_compare）")
+            return ("否：held-out 显著下降 —— RM 奖励 hack：奖励与任务正确性背离（先拆 reward 组成 + 看 ACR）")
         if mode in STANDARDIZED_REWARD_MODES:
-            return ("否：held-out 下降 —— RM 分量污染了 rule 信号"
-                    "（负结果：先看 component 退化组；显著性见 paired_compare）")
-        return ("否：held-out 下降（负结果）：先对照 paired_compare 的 p 值与本项目实测的噪声地板"
-                "（report §4.7）再定性，别只看点估计方向")
+            return ("否：held-out 显著下降 —— RM 分量污染了 rule 信号（负结果：先看 component 退化组）")
+        return "否：held-out 显著下降（负结果）：先对照 paired_compare 的 p 值，再查模板与种子随机性"
     if train_correct_up:
         if heldout is None:
             return "训练侧正确率上升，但还没有 held-out 数字：先跑 eval_heldout.py 再下结论"

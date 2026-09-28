@@ -4,11 +4,6 @@
 
 </div>
 
-> **📌 本副本的用途（这不是上游原始仓库）**：在 MiniMind-64M 上做一次 **RLVR 训练动态审计**——
-> 训练里 reward 上升是否等于能力上升。实验报告 → [reports/report.md](reports/report.md)
-> ｜项目说明与最小复现路径 → [README-rlvr-audit.md](README-rlvr-audit.md)
-> ｜实验协议 → [docs/posttraining-rlvr-sop.md](docs/posttraining-rlvr-sop.md)
-
 <div align="center">
 
 ![visitors](https://visitor-badge.laobi.icu/badge?page_id=jingyaogong/minimind)

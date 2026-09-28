@@ -1,0 +1,669 @@
+{
+  "model": "out/math_cold_cot_seed42_768.pth",
+  "created_at": "2026-09-27T10:08:42+00:00",
+  "device": "cuda:0",
+  "seed": 42,
+  "temperature": 0.8,
+  "top_p": 0.85,
+  "top_k": 50,
+  "repetition_penalty": 1.0,
+  "num_samples": 1,
+  "max_new_tokens": 512,
+  "marker": "答案是",
+  "hidden_size": 768,
+  "num_hidden_layers": 8,
+  "use_moe": 0,
+  "rows_evaluated": 20,
+  "rows_available": 400,
+  "metric_scope": "sampled (greedy_* keys are computed on the greedy pass)",
+  "data_path": "dataset/math_heldout.jsonl",
+  "data_file_sha256": "f829eb084a3e428dd157e7ec20c7ed4160de183990e2cc83d0688a4c558ce4fa",
+  "verifier_sha256": "bdb84fe35eb20e6169347e00a5ce66b3c2befa3969956aa0242b7a71362f023c",
+  "data_manifest_sha256": "85cc1dee808267a75cd0c4b51f6a6882cfe31e0ac1c589de75e00d1fb382904b",
+  "data_manifest_recorded_sha256": "f829eb084a3e428dd157e7ec20c7ed4160de183990e2cc83d0688a4c558ce4fa",
+  "data_matches_manifest": true,
+  "greedy_accuracy": 0.55,
+  "sampled_pass_at_1": 0.45,
+  "format_rate": 1.0,
+  "no_answer_rate": 0.0,
+  "mean_completion_tokens": 51.4,
+  "median_completion_tokens": 55.0,
+  "pass_at_1": 0.45,
+  "pass_at_4": null,
+  "pass_at_8": null,
+  "pass_at_16": null,
+  "by_difficulty": {
+    "easy": {
+      "rows": 20,
+      "sample_budget": 1,
+      "greedy_accuracy": 0.55,
+      "sampled_pass_at_1": 0.45,
+      "format_rate": 1.0,
+      "no_answer_rate": 0.0,
+      "mean_completion_tokens": 51.4,
+      "median_completion_tokens": 55.0,
+      "greedy_format_rate": 1.0,
+      "greedy_no_answer_rate": 0.0,
+      "greedy_mean_completion_tokens": 51.35,
+      "status_counts": {
+        "correct": 9,
+        "incorrect": 11,
+        "no_answer": 0,
+        "invalid_gt": 0
+      },
+      "marker_hit_rate": 1.0,
+      "pass_at_1": 0.45,
+      "pass_at_4": null,
+      "pass_at_8": null,
+      "pass_at_16": null
+    }
+  },
+  "status_counts": {
+    "correct": 9,
+    "incorrect": 11,
+    "no_answer": 0,
+    "invalid_gt": 0
+  },
+  "samples": [
+    {
+      "sample_id": "easy-7856194cdb122d8d",
+      "difficulty": "easy",
+      "source": "synthetic",
+      "gt": "5",
+      "prompt": "<|im_start|>user\n请计算 32-27，并在最后一行以‘答案是 数字’输出。<|im_end|>\n<|im_start|>assistant\n<think>\n",
+      "greedy": {
+        "text": "32-27：个位 不够减，2+10=12，12-7=5，向高位借 1；十位 3-1=2，2-2=0。所以结果是 5。\n</think>\n\n答案是 5",
+        "status": "correct",
+        "extracted": "5",
+        "correct": true,
+        "think_closed": true,
+        "marker_hit": true,
+        "format_ok": true,
+        "tokens": 58
+      },
+      "sampled": [
+        {
+          "text": "32-27：个位 不够减，2+10=12，12-7=5，向高位借 1；十位 3-1=2，2-2=0。所以结果是 5。\n</think>\n\n答案是 5",
+          "status": "correct",
+          "extracted": "5",
+          "correct": true,
+          "think_closed": true,
+          "marker_hit": true,
+          "format_ok": true,
+          "tokens": 58
+        }
+      ],
+      "sampled_n_correct": 1
+    },
+    {
+      "sample_id": "easy-f5a7f87ce1336db6",
+      "difficulty": "easy",
+      "source": "synthetic",
+      "gt": "23",
+      "prompt": "<|im_start|>user\n请计算 66-43，并在最后一行以‘答案是 数字’输出。<|im_end|>\n<|im_start|>assistant\n<think>\n",
+      "greedy": {
+        "text": "66-43：个位 6-3=3；十位 6-4=2。所以结果是 23。\n</think>\n\n答案是 23",
+        "status": "correct",
+        "extracted": "23",
+        "correct": true,
+        "think_closed": true,
+        "marker_hit": true,
+        "format_ok": true,
+        "tokens": 37
+      },
+      "sampled": [
+        {
+          "text": "66-43：个位 6-3=3；十位 6-4=2。所以结果是 23。\n</think>\n\n答案是 23",
+          "status": "correct",
+          "extracted": "23",
+          "correct": true,
+          "think_closed": true,
+          "marker_hit": true,
+          "format_ok": true,
+          "tokens": 37
+        }
+      ],
+      "sampled_n_correct": 1
+    },
+    {
+      "sample_id": "easy-f5773748409ec8a4",
+      "difficulty": "easy",
+      "source": "synthetic",
+      "gt": "1518",
+      "prompt": "<|im_start|>user\n请计算 66*23，并在最后一行以‘答案是 数字’输出。<|im_end|>\n<|im_start|>assistant\n<think>\n",
+      "greedy": {
+        "text": "66*23：23 拆成 20 和 3；66*20=1440；66*3=184；1440+184=1728。所以结果是 1728。\n</think>\n\n答案是 1728",
+        "status": "incorrect",
+        "extracted": "1728",
+        "correct": false,
+        "think_closed": true,
+        "marker_hit": true,
+        "format_ok": true,
+        "tokens": 54
+      },
+      "sampled": [
+        {
+          "text": "66*23：23 拆成 20 和 3；66*20=1280；66*3=183；1280+183=1333。所以结果是 1333。\n</think>\n\n答案是 1333",
+          "status": "incorrect",
+          "extracted": "1333",
+          "correct": false,
+          "think_closed": true,
+          "marker_hit": true,
+          "format_ok": true,
+          "tokens": 57
+        }
+      ],
+      "sampled_n_correct": 0
+    },
+    {
+      "sample_id": "easy-938802f2343db95d",
+      "difficulty": "easy",
+      "source": "synthetic",
+      "gt": "5917",
+      "prompt": "<|im_start|>user\n请计算 97*61，并在最后一行以‘答案是 数字’输出。<|im_end|>\n<|im_start|>assistant\n<think>\n",
+      "greedy": {
+        "text": "97*61：61 拆成 60 和 1；97*60=6360；97*1=97；6360+97=6577。所以结果是 6577。\n</think>\n\n答案是 6577",
+        "status": "incorrect",
+        "extracted": "6577",
+        "correct": false,
+        "think_closed": true,
+        "marker_hit": true,
+        "format_ok": true,
+        "tokens": 64
+      },
+      "sampled": [
+        {
+          "text": "97*61：61 拆成 60 和 1；97*60=6540；97*1=97；6540+97=6577。所以结果是 6577。\n</think>\n\n答案是 6577",
+          "status": "incorrect",
+          "extracted": "6577",
+          "correct": false,
+          "think_closed": true,
+          "marker_hit": true,
+          "format_ok": true,
+          "tokens": 64
+        }
+      ],
+      "sampled_n_correct": 0
+    },
+    {
+      "sample_id": "easy-6eedd46899952885",
+      "difficulty": "easy",
+      "source": "synthetic",
+      "gt": "74",
+      "prompt": "<|im_start|>user\n请计算 51+23，并在最后一行以‘答案是 数字’输出。<|im_end|>\n<|im_start|>assistant\n<think>\n",
+      "greedy": {
+        "text": "51+23：个位 1+3=4；十位 5+2=7。所以结果是 74。\n</think>\n\n答案是 74",
+        "status": "correct",
+        "extracted": "74",
+        "correct": true,
+        "think_closed": true,
+        "marker_hit": true,
+        "format_ok": true,
+        "tokens": 36
+      },
+      "sampled": [
+        {
+          "text": "51+23：个位 1+3=4；十位 5+2=7。所以结果是 74。\n</think>\n\n答案是 74",
+          "status": "correct",
+          "extracted": "74",
+          "correct": true,
+          "think_closed": true,
+          "marker_hit": true,
+          "format_ok": true,
+          "tokens": 36
+        }
+      ],
+      "sampled_n_correct": 1
+    },
+    {
+      "sample_id": "easy-10073072e7846e0c",
+      "difficulty": "easy",
+      "source": "synthetic",
+      "gt": "2350",
+      "prompt": "<|im_start|>user\n请计算 25*94，并在最后一行以‘答案是 数字’输出。<|im_end|>\n<|im_start|>assistant\n<think>\n",
+      "greedy": {
+        "text": "25*94：29 拆成 20 和 9；25*20=500；25*9=275；500+275=625。所以结果是 625。\n</think>\n\n答案是 625",
+        "status": "incorrect",
+        "extracted": "625",
+        "correct": false,
+        "think_closed": true,
+        "marker_hit": true,
+        "format_ok": true,
+        "tokens": 52
+      },
+      "sampled": [
+        {
+          "text": "25*94：29 拆成 20 和 9；25*20=500；25*94=2658；500+2658=6758。所以结果是 6758。\n</think>\n\n答案是 6758",
+          "status": "incorrect",
+          "extracted": "6758",
+          "correct": false,
+          "think_closed": true,
+          "marker_hit": true,
+          "format_ok": true,
+          "tokens": 60
+        }
+      ],
+      "sampled_n_correct": 0
+    },
+    {
+      "sample_id": "easy-93768934fc2667ba",
+      "difficulty": "easy",
+      "source": "synthetic",
+      "gt": "2300",
+      "prompt": "<|im_start|>user\n请计算 92*25，并在最后一行以‘答案是 数字’输出。<|im_end|>\n<|im_start|>assistant\n<think>\n",
+      "greedy": {
+        "text": "92*25：25 拆成 20 和 5；92*20=1920；92*5=475；1920+475=2035。所以结果是 2035。\n</think>\n\n答案是 2035",
+        "status": "incorrect",
+        "extracted": "2035",
+        "correct": false,
+        "think_closed": true,
+        "marker_hit": true,
+        "format_ok": true,
+        "tokens": 57
+      },
+      "sampled": [
+        {
+          "text": "92*25：25 拆成 20 和 5；92*20=1820；92*5=455；1820+455=1855。所以结果是 1855。\n</think>\n\n答案是 1855",
+          "status": "incorrect",
+          "extracted": "1855",
+          "correct": false,
+          "think_closed": true,
+          "marker_hit": true,
+          "format_ok": true,
+          "tokens": 57
+        }
+      ],
+      "sampled_n_correct": 0
+    },
+    {
+      "sample_id": "easy-855899e7423e13a2",
+      "difficulty": "easy",
+      "source": "synthetic",
+      "gt": "145",
+      "prompt": "<|im_start|>user\n请计算 50+95，并在最后一行以‘答案是 数字’输出。<|im_end|>\n<|im_start|>assistant\n<think>\n",
+      "greedy": {
+        "text": "50+95：个位 0+5=5；十位 5+9=14，写 4、向高位进 1；最高位再加上进位的 1。所以结果是 145。\n</think>\n\n答案是 145",
+        "status": "correct",
+        "extracted": "145",
+        "correct": true,
+        "think_closed": true,
+        "marker_hit": true,
+        "format_ok": true,
+        "tokens": 56
+      },
+      "sampled": [
+        {
+          "text": "50+95：个位 0+5=5；十位 5+9=14，写 4、向高位进 1；最高位再加上进位的 1。所以结果是 145。\n</think>\n\n答案是 145",
+          "status": "correct",
+          "extracted": "145",
+          "correct": true,
+          "think_closed": true,
+          "marker_hit": true,
+          "format_ok": true,
+          "tokens": 56
+        }
+      ],
+      "sampled_n_correct": 1
+    },
+    {
+      "sample_id": "easy-1441e958810409f5",
+      "difficulty": "easy",
+      "source": "synthetic",
+      "gt": "92",
+      "prompt": "<|im_start|>user\n请计算 38+54，并在最后一行以‘答案是 数字’输出。<|im_end|>\n<|im_start|>assistant\n<think>\n",
+      "greedy": {
+        "text": "38+54：个位 8+4=12，写 2、向高位进 1；十位 3+5+1=9。所以结果是 92。\n</think>\n\n答案是 92",
+        "status": "correct",
+        "extracted": "92",
+        "correct": true,
+        "think_closed": true,
+        "marker_hit": true,
+        "format_ok": true,
+        "tokens": 48
+      },
+      "sampled": [
+        {
+          "text": "38+54：个位 8+4=12，写 2、向高位进 1；十位 3+5+1=10，写 0、向高位进 1；最高位再加上进位的 1。所以结果是 102。\n</think>\n\n答案是 102",
+          "status": "incorrect",
+          "extracted": "102",
+          "correct": false,
+          "think_closed": true,
+          "marker_hit": true,
+          "format_ok": true,
+          "tokens": 68
+        }
+      ],
+      "sampled_n_correct": 0
+    },
+    {
+      "sample_id": "easy-b659188790eeb84d",
+      "difficulty": "easy",
+      "source": "synthetic",
+      "gt": "27",
+      "prompt": "<|im_start|>user\n请计算 52-25，并在最后一行以‘答案是 数字’输出。<|im_end|>\n<|im_start|>assistant\n<think>\n",
+      "greedy": {
+        "text": "52-25：个位 不够减，2+10=12，12-5=7，向高位借 1；十位 5-1=4，4-2=2。所以结果是 27。\n</think>\n\n答案是 27",
+        "status": "correct",
+        "extracted": "27",
+        "correct": true,
+        "think_closed": true,
+        "marker_hit": true,
+        "format_ok": true,
+        "tokens": 59
+      },
+      "sampled": [
+        {
+          "text": "52-25：个位 2-5=0；十位 5-2=3。所以结果是 30。\n</think>\n\n答案是 30",
+          "status": "incorrect",
+          "extracted": "30",
+          "correct": false,
+          "think_closed": true,
+          "marker_hit": true,
+          "format_ok": true,
+          "tokens": 34
+        }
+      ],
+      "sampled_n_correct": 0
+    },
+    {
+      "sample_id": "easy-50f6979dc799b38a",
+      "difficulty": "easy",
+      "source": "synthetic",
+      "gt": "4",
+      "prompt": "<|im_start|>user\n请计算 47-43，并在最后一行以‘答案是 数字’输出。<|im_end|>\n<|im_start|>assistant\n<think>\n",
+      "greedy": {
+        "text": "47-43：个位 7-3=4；十位 4-4=0。所以结果是 4。\n</think>\n\n答案是 4",
+        "status": "correct",
+        "extracted": "4",
+        "correct": true,
+        "think_closed": true,
+        "marker_hit": true,
+        "format_ok": true,
+        "tokens": 35
+      },
+      "sampled": [
+        {
+          "text": "47-43：个位 7-3=4；十位 4-4=0。所以结果是 4。\n</think>\n\n答案是 4",
+          "status": "correct",
+          "extracted": "4",
+          "correct": true,
+          "think_closed": true,
+          "marker_hit": true,
+          "format_ok": true,
+          "tokens": 35
+        }
+      ],
+      "sampled_n_correct": 1
+    },
+    {
+      "sample_id": "easy-7b5526f136f59921",
+      "difficulty": "easy",
+      "source": "synthetic",
+      "gt": "172",
+      "prompt": "<|im_start|>user\n请计算 85+87，并在最后一行以‘答案是 数字’输出。<|im_end|>\n<|im_start|>assistant\n<think>\n",
+      "greedy": {
+        "text": "85+87：个位 5+7=12，写 2、向高位进 1；十位 8+8+1=17，写 7、向高位进 1；最高位再加上进位的 1。所以结果是 172。\n</think>\n\n答案是 172",
+        "status": "correct",
+        "extracted": "172",
+        "correct": true,
+        "think_closed": true,
+        "marker_hit": true,
+        "format_ok": true,
+        "tokens": 68
+      },
+      "sampled": [
+        {
+          "text": "85+87：个位 5+7=12，写 2、向高位进 1；十位 8+8+1=17，写 7、向高位进 1；最高位再加上进位的 1。所以结果是 172。\n</think>\n\n答案是 172",
+          "status": "correct",
+          "extracted": "172",
+          "correct": true,
+          "think_closed": true,
+          "marker_hit": true,
+          "format_ok": true,
+          "tokens": 68
+        }
+      ],
+      "sampled_n_correct": 1
+    },
+    {
+      "sample_id": "easy-5f1d37ea137f5ac6",
+      "difficulty": "easy",
+      "source": "synthetic",
+      "gt": "97",
+      "prompt": "<|im_start|>user\n请计算 69+28，并在最后一行以‘答案是 数字’输出。<|im_end|>\n<|im_start|>assistant\n<think>\n",
+      "greedy": {
+        "text": "69+28：个位 9+8=17，写 7、向高位进 1；十位 6+2+1=9。所以结果是 97。\n</think>\n\n答案是 97",
+        "status": "correct",
+        "extracted": "97",
+        "correct": true,
+        "think_closed": true,
+        "marker_hit": true,
+        "format_ok": true,
+        "tokens": 47
+      },
+      "sampled": [
+        {
+          "text": "69+28：个位 9+8=17，写 7、向高位进 1；十位 6+2+1=9。所以结果是 97。\n</think>\n\n答案是 97",
+          "status": "correct",
+          "extracted": "97",
+          "correct": true,
+          "think_closed": true,
+          "marker_hit": true,
+          "format_ok": true,
+          "tokens": 47
+        }
+      ],
+      "sampled_n_correct": 1
+    },
+    {
+      "sample_id": "easy-44397feca1018fec",
+      "difficulty": "easy",
+      "source": "synthetic",
+      "gt": "6853",
+      "prompt": "<|im_start|>user\n请计算 77*89，并在最后一行以‘答案是 数字’输出。<|im_end|>\n<|im_start|>assistant\n<think>\n",
+      "greedy": {
+        "text": "77*89：89 拆成 80 和 9；77*80=6360；77*9=636；6360+636=6536。所以结果是 6536。\n</think>\n\n答案是 6536",
+        "status": "incorrect",
+        "extracted": "6536",
+        "correct": false,
+        "think_closed": true,
+        "marker_hit": true,
+        "format_ok": true,
+        "tokens": 67
+      },
+      "sampled": [
+        {
+          "text": "77*89：89 拆成 80 和 9；77*80=6560；77*9=665；6560+665=6585。所以结果是 6585。\n</think>\n\n答案是 6585",
+          "status": "incorrect",
+          "extracted": "6585",
+          "correct": false,
+          "think_closed": true,
+          "marker_hit": true,
+          "format_ok": true,
+          "tokens": 67
+        }
+      ],
+      "sampled_n_correct": 0
+    },
+    {
+      "sample_id": "easy-0047544e34efb6d2",
+      "difficulty": "easy",
+      "source": "synthetic",
+      "gt": "33",
+      "prompt": "<|im_start|>user\n请计算 67-34，并在最后一行以‘答案是 数字’输出。<|im_end|>\n<|im_start|>assistant\n<think>\n",
+      "greedy": {
+        "text": "67-34：个位 7-4=3；十位 6-3=3。所以结果是 33。\n</think>\n\n答案是 33",
+        "status": "correct",
+        "extracted": "33",
+        "correct": true,
+        "think_closed": true,
+        "marker_hit": true,
+        "format_ok": true,
+        "tokens": 36
+      },
+      "sampled": [
+        {
+          "text": "67-34：个位 7-4=3；十位 6-3=3。所以结果是 33。\n</think>\n\n答案是 33",
+          "status": "correct",
+          "extracted": "33",
+          "correct": true,
+          "think_closed": true,
+          "marker_hit": true,
+          "format_ok": true,
+          "tokens": 36
+        }
+      ],
+      "sampled_n_correct": 1
+    },
+    {
+      "sample_id": "easy-b7bab6c13c3bbd8e",
+      "difficulty": "easy",
+      "source": "synthetic",
+      "gt": "2304",
+      "prompt": "<|im_start|>user\n请计算 48*48，并在最后一行以‘答案是 数字’输出。<|im_end|>\n<|im_start|>assistant\n<think>\n",
+      "greedy": {
+        "text": "48*48：48 拆成 80 和 4；48*80=3200；48*4=248；3200+248=3488。所以结果是 3488。\n</think>\n\n答案是 3488",
+        "status": "incorrect",
+        "extracted": "3488",
+        "correct": false,
+        "think_closed": true,
+        "marker_hit": true,
+        "format_ok": true,
+        "tokens": 58
+      },
+      "sampled": [
+        {
+          "text": "48*48：48 拆成 40 和 8；48*40=1920；48*8=324；1920+324=1464。所以结果是 1464。\n</think>\n\n答案是 1464",
+          "status": "incorrect",
+          "extracted": "1464",
+          "correct": false,
+          "think_closed": true,
+          "marker_hit": true,
+          "format_ok": true,
+          "tokens": 54
+        }
+      ],
+      "sampled_n_correct": 0
+    },
+    {
+      "sample_id": "easy-f44b7b17da91a4e8",
+      "difficulty": "easy",
+      "source": "synthetic",
+      "gt": "1254",
+      "prompt": "<|im_start|>user\n请计算 57*22，并在最后一行以‘答案是 数字’输出。<|im_end|>\n<|im_start|>assistant\n<think>\n",
+      "greedy": {
+        "text": "57*22：22 拆成 20 和 2；57*20=1160；57*2=116；1160+116=1466。所以结果是 1466。\n</think>\n\n答案是 1466",
+        "status": "incorrect",
+        "extracted": "1466",
+        "correct": false,
+        "think_closed": true,
+        "marker_hit": true,
+        "format_ok": true,
+        "tokens": 57
+      },
+      "sampled": [
+        {
+          "text": "57*22：22 拆成 20 和 2；57*20=1060；57*2=119；1060+119=1019。所以结果是 1019。\n</think>\n\n答案是 1019",
+          "status": "incorrect",
+          "extracted": "1019",
+          "correct": false,
+          "think_closed": true,
+          "marker_hit": true,
+          "format_ok": true,
+          "tokens": 54
+        }
+      ],
+      "sampled_n_correct": 0
+    },
+    {
+      "sample_id": "easy-978891b837a8739e",
+      "difficulty": "easy",
+      "source": "synthetic",
+      "gt": "7",
+      "prompt": "<|im_start|>user\n请计算 56-49，并在最后一行以‘答案是 数字’输出。<|im_end|>\n<|im_start|>assistant\n<think>\n",
+      "greedy": {
+        "text": "56-49：个位 6-9=0；十位 5-4=1。所以结果是 10。\n</think>\n\n答案是 10",
+        "status": "incorrect",
+        "extracted": "10",
+        "correct": false,
+        "think_closed": true,
+        "marker_hit": true,
+        "format_ok": true,
+        "tokens": 35
+      },
+      "sampled": [
+        {
+          "text": "56-49：个位 6-9=0；十位 5-4=1。所以结果是 10。\n</think>\n\n答案是 10",
+          "status": "incorrect",
+          "extracted": "10",
+          "correct": false,
+          "think_closed": true,
+          "marker_hit": true,
+          "format_ok": true,
+          "tokens": 35
+        }
+      ],
+      "sampled_n_correct": 0
+    },
+    {
+      "sample_id": "easy-cf3b68353191d6cd",
+      "difficulty": "easy",
+      "source": "synthetic",
+      "gt": "540",
+      "prompt": "<|im_start|>user\n请计算 30*18，并在最后一行以‘答案是 数字’输出。<|im_end|>\n<|im_start|>assistant\n<think>\n",
+      "greedy": {
+        "text": "30*18：30 先看成 3*18=54；再补一个 0 得 540。所以结果是 540。\n</think>\n\n答案是 540",
+        "status": "correct",
+        "extracted": "540",
+        "correct": true,
+        "think_closed": true,
+        "marker_hit": true,
+        "format_ok": true,
+        "tokens": 40
+      },
+      "sampled": [
+        {
+          "text": "30*18：30 先看成 3*18=54；再补一个 0 得 540。所以结果是 540。\n</think>\n\n答案是 540",
+          "status": "correct",
+          "extracted": "540",
+          "correct": true,
+          "think_closed": true,
+          "marker_hit": true,
+          "format_ok": true,
+          "tokens": 40
+        }
+      ],
+      "sampled_n_correct": 1
+    },
+    {
+      "sample_id": "easy-1a8dad5b83c37188",
+      "difficulty": "easy",
+      "source": "synthetic",
+      "gt": "5720",
+      "prompt": "<|im_start|>user\n请计算 88*65，并在最后一行以‘答案是 数字’输出。<|im_end|>\n<|im_start|>assistant\n<think>\n",
+      "greedy": {
+        "text": "88*65：65 拆成 60 和 5；88*60=5360；88*5=4360；5360+4360=9860。所以结果是 9860。\n</think>\n\n答案是 9860",
+        "status": "incorrect",
+        "extracted": "9860",
+        "correct": false,
+        "think_closed": true,
+        "marker_hit": true,
+        "format_ok": true,
+        "tokens": 63
+      },
+      "sampled": [
+        {
+          "text": "88*65：65 拆成 60 和 5；88*60=5840；88*5=5840；5840+588=7038。所以结果是 77038。\n</think>\n\n答案是 77038",
+          "status": "incorrect",
+          "extracted": "77038",
+          "correct": false,
+          "think_closed": true,
+          "marker_hit": true,
+          "format_ok": true,
+          "tokens": 65
+        }
+      ],
+      "sampled_n_correct": 0
+    }
+  ]
+}
