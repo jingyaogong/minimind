@@ -1,0 +1,16 @@
+[build-system]
+requires = ["setuptools>=68"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "minimind-vllm-native"
+version = "0.1.0"
+description = "Native vLLM plugin for MiniMind hybrid checkpoints"
+requires-python = ">=3.10"
+dependencies = []
+
+[project.entry-points."vllm.general_plugins"]
+minimind_vllm = "minimind_vllm:register"
+
+[tool.setuptools]
+packages = ["minimind_vllm"]

@@ -1,0 +1,117 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>MiniMind 聊天</title>
+  <style>
+    :root { color-scheme: light; font-family: "Segoe UI", "Microsoft YaHei", sans-serif; }
+    * { box-sizing: border-box; }
+    body { margin: 0; background: #f4f6fa; color: #182230; }
+    main { width: min(900px, 100%); height: 100dvh; margin: auto; display: flex; flex-direction: column; padding: 20px; }
+    header { display: flex; align-items: center; justify-content: space-between; gap: 12px; padding: 4px 2px 16px; }
+    h1 { margin: 0; font-size: 20px; font-weight: 650; }
+    #status { color: #667085; font-size: 13px; }
+    #status.ready { color: #16803c; }
+    #messages { flex: 1; overflow: auto; display: flex; flex-direction: column; gap: 14px; padding: 18px 4px; }
+    .message { max-width: min(78%, 720px); padding: 12px 15px; border-radius: 16px; line-height: 1.65; white-space: pre-wrap; overflow-wrap: anywhere; }
+    .user { align-self: flex-end; color: #fff; background: #3159c9; border-bottom-right-radius: 5px; }
+    .assistant { align-self: flex-start; background: #fff; border: 1px solid #e4e7ec; border-bottom-left-radius: 5px; }
+    .system { align-self: center; color: #667085; font-size: 13px; }
+    form { display: flex; align-items: flex-end; gap: 10px; padding: 12px; border: 1px solid #e4e7ec; border-radius: 18px; background: #fff; box-shadow: 0 5px 20px #1822300d; }
+    textarea { flex: 1; resize: none; max-height: 180px; min-height: 48px; border: 0; outline: 0; padding: 12px 4px; font: inherit; }
+    button { border: 0; border-radius: 12px; padding: 12px 18px; background: #3159c9; color: #fff; font: inherit; cursor: pointer; }
+    button:disabled { opacity: .55; cursor: wait; }
+    .toolbar { display: flex; align-items: center; gap: 10px; }
+    .clear { padding: 8px 12px; color: #475467; background: #eaecf0; font-size: 13px; }
+    @media (max-width: 600px) { main { padding: 12px; } .message { max-width: 90%; } }
+  </style>
+</head>
+<body>
+  <main>
+    <header>
+      <h1>MiniMind 聊天</h1>
+      <div class="toolbar"><span id="status">正在连接模型…</span><button class="clear" id="clear" type="button">新对话</button></div>
+    </header>
+    <section id="messages" aria-live="polite">
+      <div class="message system">你好！发送消息开始与本地 MiniMind 对话。</div>
+    </section>
+    <form id="form">
+      <textarea id="prompt" placeholder="输入消息…（Enter 发送，Shift+Enter 换行）" rows="1" required></textarea>
+      <button id="send" type="submit">发送</button>
+    </form>
+  </main>
+  <script>
+    const form = document.querySelector('#form');
+    const promptBox = document.querySelector('#prompt');
+    const sendButton = document.querySelector('#send');
+    const messagesBox = document.querySelector('#messages');
+    const statusLabel = document.querySelector('#status');
+    const history = [];
+
+    function addMessage(role, content) {
+      const item = document.createElement('div');
+      item.className = `message ${role}`;
+      item.textContent = content;
+      messagesBox.append(item);
+      messagesBox.scrollTop = messagesBox.scrollHeight;
+      return item;
+    }
+
+    async function checkService() {
+      try {
+        const response = await fetch('/health');
+        statusLabel.textContent = response.ok ? '模型服务已连接' : '模型服务启动中';
+        statusLabel.classList.toggle('ready', response.ok);
+      } catch {
+        statusLabel.textContent = '暂时无法连接模型';
+      }
+    }
+
+    form.addEventListener('submit', async (event) => {
+      event.preventDefault();
+      const content = promptBox.value.trim();
+      if (!content) return;
+      history.push({ role: 'user', content });
+      addMessage('user', content);
+      promptBox.value = '';
+      sendButton.disabled = true;
+      const waiting = addMessage('assistant', '正在思考…');
+      try {
+        const response = await fetch('/api/chat', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ model: 'minimind', messages: history, max_tokens: 512, temperature: 0.7 })
+        });
+        const data = await response.json();
+        if (!response.ok) throw new Error(data.error?.message || data.error || `HTTP ${response.status}`);
+        const answer = data.choices?.[0]?.message?.content ?? '(模型没有返回文本)';
+        waiting.textContent = answer;
+        history.push({ role: 'assistant', content: answer });
+      } catch (error) {
+        waiting.textContent = `请求失败：${error.message}`;
+        history.pop();
+      } finally {
+        sendButton.disabled = false;
+        promptBox.focus();
+        messagesBox.scrollTop = messagesBox.scrollHeight;
+      }
+    });
+
+    promptBox.addEventListener('keydown', (event) => {
+      if (event.key === 'Enter' && !event.shiftKey) {
+        event.preventDefault();
+        form.requestSubmit();
+      }
+    });
+    document.querySelector('#clear').addEventListener('click', () => {
+      history.length = 0;
+      messagesBox.replaceChildren();
+      addMessage('system', '新对话已开始。');
+      promptBox.focus();
+    });
+    checkService();
+    setInterval(checkService, 10000);
+  </script>
+</body>
+</html>

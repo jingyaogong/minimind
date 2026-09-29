@@ -4,3 +4,37 @@ __pycache__/
 out
 website/
 docs-minimind/
+
+# Model weights and exported checkpoints (keep large binaries out of Git)
+*.bin
+*.safetensors
+*.pt
+*.pth
+*.ckpt
+*.gguf
+*.ggml
+*.onnx
+*.onnx_data
+*.tflite
+*.engine
+*.plan
+*.h5
+*.hdf5
+*.npy
+*.npz
+*.parquet
+*.arrow
+
+# Training datasets and local experiment output
+dataset/*.jsonl
+dataset/**/*.jsonl
+wandb/
+swanlog/
+
+# Downloaded archives and model bundles
+*.tar
+*.tar.gz
+*.tgz
+*.zip
+*.7z
+*.rar

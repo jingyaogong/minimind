@@ -1,0 +1,10 @@
+FROM vllm/vllm-openai:v0.17.0
+
+COPY vllm_native /opt/minimind-vllm
+RUN uv pip install --system --no-deps /opt/minimind-vllm
+
+ENV VLLM_PLUGINS=minimind_vllm
+EXPOSE 8000
+
+ENTRYPOINT ["vllm", "serve"]
+CMD ["/models/minimind", "--host", "0.0.0.0", "--port", "8000", "--served-model-name", "minimind", "--trust-remote-code", "--chat-template", "/models/minimind/chat_template.jinja", "--max-model-len", "4096", "--gpu-memory-utilization", "0.5", "--mamba-cache-mode", "align", "--enforce-eager"]
