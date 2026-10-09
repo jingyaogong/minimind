@@ -1153,7 +1153,9 @@ python train_grpo.py
 
 > MiniMind 在 GRPO 训练阶段的优化走势
 
-从训练曲线可以看出，GRPO的**reward呈现更加稳定的上升趋势**，达到4左右，说明GRPO本身能更好地利用RLAIF信号。Policy Loss整体下降平稳，相比PPO的双网络优化，GRPO单网络架构训练更稳定且收敛上限更高。
+从训练曲线可以看出，GRPO的**reward呈现更加稳定的上升趋势**，达到4左右，说明GRPO本身能更好地利用RLAIF信号。相比PPO的双网络优化，GRPO单网络架构训练更稳定且收敛上限更高。
+
+需要说明的是，Policy Loss 并不是监督学习里那种“越低越好”的 loss：它是按一阶导等于策略梯度构造的代理目标（TRPO like），并且每一轮都会做组内优势归一化，因此它的绝对值主要取决于当前策略与采样分布的偏离程度，“整体下降平稳”并不等于模型在变好。判断 GRPO 是否收敛，应该看 reward 和实际生成质量。
 
 #### 7.3 [Clipped Importance Sampling Policy Optimization](https://huggingface.co/papers/2506.13585)
 
