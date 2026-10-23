@@ -1,0 +1,10 @@
+# Versions used for local validation. Install the appropriate CUDA torch build first.
+torch==2.6.0
+transformers==4.57.6
+accelerate==1.14.0
+peft==0.20.0
+bitsandbytes==0.50.2
+streamlit==1.50.0
+fastapi==0.141.1
+uvicorn==0.52.4
+httpx==0.28.1
