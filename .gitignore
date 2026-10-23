@@ -4,3 +4,30 @@ __pycache__/
 out
 website/
 docs-minimind/
+
+# ---- 本地临时产物 ----
+scratch_*.txt
+sample_output.txt
+output/
+tdoc_index_cache.json
+.agents/
+career_research/
+
+# ---- 生成的数据集（可由 prepare_data.py 重新生成）----
+dataset/ran2_expert_sft_1000.jsonl
+dataset/ran2_expert_sft_1200.jsonl
+dataset/ran2_train_382.jsonl
+dataset/telecom_patent_sft.jsonl
+dataset/train_ffs_sft.jsonl
+# 根目录这几份是 dataset/ 内同名文件的副本
+/ran2_*.jsonl
+
+# ---- 虚拟环境 ----
+.venv/
+venv/
+
+# ---- 模型权重 ----
+*.pt
+*.bin
+*.safetensors
+*.ckpt
