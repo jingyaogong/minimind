@@ -1,7 +1,7 @@
 import math, torch, torch.nn.functional as F
 from torch import nn
 from transformers.activations import ACT2FN
-from transformers import PreTrainedModel, GenerationMixin, PretrainedConfig
+from transformers import PreTrainedModel, GenerationMixin, PretrainedConfig  # type: ignore[reportMissingImports]
 from transformers.modeling_outputs import MoeCausalLMOutputWithPast
 
 # 🌏🌎🌍🌏🌎🌍🌏🌎🌍🌏🌎🌍🌏🌎🌍🌏🌎🌍🌏🌎🌍🌏🌎🌍🌏🌎🌍🌏🌎🌍🌏🌎🌍🌏🌎🌍🌏🌎🌍🌏🌎🌍🌏🌎🌍🌏🌎🌍🌏🌎🌍🌏
