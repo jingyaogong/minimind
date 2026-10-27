@@ -78,7 +78,7 @@ def parse_tool_calls(text):
     for m in re.findall(r'<tool_call>(.*?)</tool_call>', text, re.DOTALL):
         try: call = json.loads(m.strip())
         except: continue
-        if isinstance(call, dict): calls.append(call)  # 模型偶尔输出非对象JSON，直接丢弃避免下游崩溃
+        if isinstance(call, dict): calls.append(call)
     return calls
 
 def execute_tool(name, args):
@@ -133,7 +133,7 @@ def rollout_single(rollout_engine, tokenizer, messages, tools, max_turns=3, max_
             if isinstance(raw, str):
                 try: raw = json.loads(raw)
                 except: raw = {}
-            if not isinstance(raw, dict): raw = {}  # arguments 结构异常按空参处理
+            if not isinstance(raw, dict): raw = {}
             result = execute_tool(name, raw)
             result_str = (json.dumps(result, ensure_ascii=False) if result else '{"error": "tool not found"}')[:2048]  # 防止天文数字撑爆tokenizer
             messages.append({"role": "tool", "content": result_str})
@@ -227,7 +227,7 @@ def calculate_rewards(prompts, completions, gt_batch, tools_batch, num_gen, rewa
                 if isinstance(raw, str):
                     try: raw = json.loads(raw)
                     except: raw = {}
-                if not isinstance(raw, dict): raw = {}  # arguments 结构异常按空参处理
+                if not isinstance(raw, dict): raw = {}
                 check = CHECK_ARGS.get(name)
                 valid_call_count += int(bool(name in valid_names and check and check(raw)))
             tool_gap = abs(valid_call_count - len(gt)) + max(0, len(tool_calls) - valid_call_count)  # tool数差值

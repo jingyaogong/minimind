@@ -39,7 +39,7 @@ def init_model(args):
         ))
         model.load_state_dict(torch.load(ckp, map_location=device), strict=True)
         if args.lora_weight != 'None':
-            apply_lora(model)
+            apply_lora(model, rank=args.lora_rank)
             load_lora(model, f'../{args.save_dir}/{args.lora_weight}_{args.hidden_size}{moe_suffix}.pth')
     else:
         model = AutoModelForCausalLM.from_pretrained(args.load_from, trust_remote_code=True)
@@ -172,7 +172,6 @@ def generate_stream_response(messages, temperature, top_p, max_tokens, tools=Non
                 field = 'content' if thinking_ended else 'reasoning_content'
                 pos = pending.find(marker)
                 if pos < 0:
-                    # 保留可能跨 chunk 的标记前缀，其余文本立即发送。
                     keep = next((n for n in range(len(marker) - 1, 0, -1)
                                  if pending.endswith(marker[:n])), 0)
                     end = len(pending) - keep
@@ -264,6 +263,7 @@ if __name__ == "__main__":
     parser.add_argument('--save_dir', default='out', type=str, help="模型权重目录")
     parser.add_argument('--weight', default='full_sft', type=str, help="权重名称前缀（pretrain, full_sft, dpo, reason, ppo_actor, grpo, spo）")
     parser.add_argument('--lora_weight', default='None', type=str, help="LoRA权重名称（None表示不使用，可选：lora_identity, lora_medical）")
+    parser.add_argument('--lora_rank', default=16, type=int, help="LoRA rank，需与训练时一致（默认16）")
     parser.add_argument('--hidden_size', default=768, type=int, help="隐藏层维度")
     parser.add_argument('--num_hidden_layers', default=8, type=int, help="隐藏层数量")
     parser.add_argument('--max_seq_len', default=8192, type=int, help="最大序列长度")
