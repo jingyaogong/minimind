@@ -129,9 +129,11 @@ def generate_stream_response(messages, temperature, top_p, max_tokens, tools=Non
 
         Thread(target=_generate).start()
 
-        full_text = ""
-        emitted = 0
+        pending = ""
+        in_tool_call = False
+        tool_count = 0
         thinking_ended = not bool(open_thinking)
+        strip_newlines = False
 
         while True:
             text = queue.get()
@@ -140,36 +142,58 @@ def generate_stream_response(messages, temperature, top_p, max_tokens, tools=Non
             if isinstance(text, dict):
                 yield json.dumps(text, ensure_ascii=False)
                 continue
-            full_text += text
+            pending += text
 
-            if not thinking_ended:
-                pos = full_text.find('</think>')
-                if pos >= 0:
-                    thinking_ended = True
-                    new_r = full_text[emitted:pos]
-                    if new_r:
-                        yield json.dumps({"choices": [{"delta": {"reasoning_content": new_r}}]}, ensure_ascii=False)
-                    emitted = pos + len('</think>')
-                    after = full_text[emitted:].lstrip('\n')
-                    emitted = len(full_text) - len(after)
-                    if after:
-                        yield json.dumps({"choices": [{"delta": {"content": after}}]}, ensure_ascii=False)
-                        emitted = len(full_text)
+            while pending:
+                if strip_newlines:
+                    pending = pending.lstrip('\n')
+                    if not pending:
+                        break
+                    strip_newlines = False
+                if in_tool_call:
+                    end = pending.find('</tool_call>')
+                    if end < 0:
+                        break
+                    end += len('</tool_call>')
+                    block, pending = pending[:end], pending[end:]
+                    _, _, tool_calls = parse_response(block)
+                    if tool_calls:
+                        call = tool_calls[0]
+                        call['index'] = tool_count
+                        call['id'] = f"call_{int(time.time())}_{tool_count}"
+                        tool_count += 1
+                        yield json.dumps({"choices": [{"delta": {"tool_calls": [call]}}]}, ensure_ascii=False)
+                    else:
+                        yield json.dumps({"choices": [{"delta": {"content": block}}]}, ensure_ascii=False)
+                    in_tool_call = False
+                    continue
+
+                marker = '<tool_call>' if thinking_ended else '</think>'
+                field = 'content' if thinking_ended else 'reasoning_content'
+                pos = pending.find(marker)
+                if pos < 0:
+                    # 保留可能跨 chunk 的标记前缀，其余文本立即发送。
+                    keep = next((n for n in range(len(marker) - 1, 0, -1)
+                                 if pending.endswith(marker[:n])), 0)
+                    end = len(pending) - keep
+                    if end:
+                        yield json.dumps({"choices": [{"delta": {field: pending[:end]}}]}, ensure_ascii=False)
+                        pending = pending[end:]
+                    break
+                if pos:
+                    yield json.dumps({"choices": [{"delta": {field: pending[:pos]}}]}, ensure_ascii=False)
+                pending = pending[pos:]
+                if thinking_ended:
+                    in_tool_call = True
                 else:
-                    new_r = full_text[emitted:]
-                    if new_r:
-                        yield json.dumps({"choices": [{"delta": {"reasoning_content": new_r}}]}, ensure_ascii=False)
-                        emitted = len(full_text)
-            else:
-                new_c = full_text[emitted:]
-                if new_c:
-                    yield json.dumps({"choices": [{"delta": {"content": new_c}}]}, ensure_ascii=False)
-                    emitted = len(full_text)
+                    pending = pending[len(marker):]
+                    thinking_ended = True
+                    strip_newlines = True
 
-        _, _, tool_calls = parse_response(full_text)
-        if tool_calls:
-            yield json.dumps({"choices": [{"delta": {"tool_calls": tool_calls}}]}, ensure_ascii=False)
-        yield json.dumps({"choices": [{"delta": {}, "finish_reason": "tool_calls" if tool_calls else "stop"}]}, ensure_ascii=False)
+        if pending:
+            field = 'content' if thinking_ended else 'reasoning_content'
+            yield json.dumps({"choices": [{"delta": {field: pending}}]}, ensure_ascii=False)
+        yield json.dumps({"choices": [{"delta": {}, "finish_reason": "tool_calls" if tool_count else "stop"}]}, ensure_ascii=False)
 
     except Exception as e:
         yield json.dumps({"error": str(e)})
