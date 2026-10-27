@@ -111,7 +111,18 @@ class SFTDataset(Dataset):
         conversations = pre_processing_chat(sample['conversations'])
         prompt = self.create_chat_prompt(conversations)
         prompt = post_processing_chat(prompt)
-        input_ids = self.tokenizer(prompt).input_ids[:self.max_length]
+        input_ids = self.tokenizer(prompt).input_ids
+        if len(input_ids) > self.max_length:
+            # 若右侧截断会把首个 assistant 头切掉/切残（导致 labels 全 -100、该样本无监督信号），
+            # 则改为左移窗口，优先保留回复段；注意 bos_pos+len(bos_id)==max_length 时回复恰好
+            # 从窗口边界开始、labels 全空，因此边界也需触发左移，条件取 >=
+            bos_pos = next((i for i in range(len(input_ids) - len(self.bos_id) + 1)
+                            if input_ids[i:i + len(self.bos_id)] == self.bos_id), None)
+            if bos_pos is not None and bos_pos + len(self.bos_id) >= self.max_length:
+                start = min(bos_pos, len(input_ids) - self.max_length)
+                input_ids = input_ids[start:start + self.max_length]
+            else:
+                input_ids = input_ids[:self.max_length]
         input_ids += [self.tokenizer.pad_token_id] * (self.max_length - len(input_ids))
         labels = self.generate_labels(input_ids)
         # # === 调试打印 ===
