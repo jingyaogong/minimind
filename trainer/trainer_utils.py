@@ -71,10 +71,10 @@ def lm_checkpoint(lm_config, weight='full_sft', model=None, optimizer=None, epoc
     if model is not None:
         raw_model = model.module if isinstance(model, DistributedDataParallel) else model
         raw_model = getattr(raw_model, '_orig_mod', raw_model)
-        state_dict = raw_model.state_dict()
-        state_dict = {k: v.half().cpu() for k, v in state_dict.items()}
+        # 续训权重保持fp32（fp16会抹掉小于半个ulp的累计更新），推理权重另存fp16；先.cpu()避免显存增长(#559)
+        state_dict = {k: v.cpu() for k, v in raw_model.state_dict().items()}
         ckp_tmp = ckp_path + '.tmp'
-        torch.save(state_dict, ckp_tmp)
+        torch.save({k: v.half() for k, v in state_dict.items()}, ckp_tmp)
         os.replace(ckp_tmp, ckp_path)
         wandb_id = None
         if wandb:
