@@ -485,6 +485,8 @@ Besides this, other RL data maintains the same format as SFT data, typically fil
 
 MiniMind training dataset download links: [ModelScope](https://www.modelscope.cn/datasets/gongjy/minimind_dataset/files) | [HuggingFace](https://huggingface.co/datasets/jingyaogong/minimind_dataset/tree/main)
 
+For downloads, file-to-trainer mapping, final schemas, and a custom-data checklist, see the [bilingual dataset quick reference](./dataset/dataset.md).
+
 > No need to clone everything, you can download individual files as needed
 
 Place the downloaded dataset files in the `./dataset/` directory (✨ indicates recommended essentials)
