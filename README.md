@@ -27,7 +27,7 @@
 
 <div align="center">
 
-中文 | [English](./README_en.md)
+中文 | [English](./README_en.md) | [العربية](./README_i18n.md#arabic) | [Français](./README_i18n.md#french) | [Español](./README_i18n.md#spanish) | [Português](./README_i18n.md#portuguese) | [Deutsch](./README_i18n.md#german) | [فارسی](./README_i18n.md#persian) | [日本語](./README_i18n.md#japanese) | [한국어](./README_i18n.md#korean)
 
 </div>
 
