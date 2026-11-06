@@ -2,5 +2,6 @@ __pycache__/
 *.pyc
 .DS_Store
 out
+minimind-3/
 website/
 docs-minimind/
