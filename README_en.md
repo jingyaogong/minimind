@@ -94,6 +94,7 @@ At the same time, third-party LLM frameworks and toolkits such as `transformers`
 - Supports evaluation on third-party benchmark suites such as C-Eval, C-MMLU, OpenBookQA, etc., and supports RoPE long context extrapolation through YaRN.
 - Provides a lightweight OpenAI-compatible API server for integration with third-party Chat UIs such as FastGPT and Open-WebUI, with support for `reasoning_content`, `tool_calls`, and `open_thinking`.
 - Provides a minimalist chat WebUI based on Streamlit, supporting thinking display, tool selection, and multi-turn Tool Call.
+- Provides a local command-line code execution demo where the model can request Python execution through `<tool_call>`, with user confirmation before each run.
 - Includes experimental extensions: diffusion language model ([dLM](https://github.com/jingyaogong/minimind/discussions/618)) and linear attention model ([Linear Attention](https://github.com/jingyaogong/minimind/discussions/704)), both of which can be further trained from the main autoregressive model.
 
 #### 🎉 Released Model List
@@ -252,7 +253,19 @@ python eval_llm.py --load_from ./minimind-3
 python eval_llm.py --load_from ./model --weight full_sft
 ```
 
-### 3' (Optional) WebUI
+### 3' Local CLI Code Execution
+
+After downloading the Transformers-format model, start an interactive chat where the model can request Python execution:
+
+```bash
+python scripts/chat_code.py --model ./minimind-3
+```
+
+`--model` defaults to `./minimind-3` and can also point to another compatible Transformers model directory or a Hugging Face Hub model ID. The model must provide a compatible chat template and emit tool requests in MiniMind's `<tool_call>` format.
+
+This demo shows the basic Coding Agent loop: the model requests a tool call, the user approves it, the code runs locally, the result is returned to the model, and the model continues the answer. Every execution is shown and requires confirmation. Code runs in a separate Python subprocess and temporary working directory with a timeout, captured output, and best-effort resource limits. This is a lightweight experimental guard, not a security sandbox; do not approve untrusted code or expose it as a network service. The default download directory `minimind-3/` is git-ignored.
+
+### 4' (Optional) WebUI
 
 ```bash
 # May need `python>=3.10`, install `pip install streamlit`
@@ -260,7 +273,7 @@ python eval_llm.py --load_from ./model --weight full_sft
 cd scripts && streamlit run web_demo.py
 ```
 
-### 4' (Optional) Third-party Inference Frameworks
+### 5' (Optional) Third-party Inference Frameworks
 
 ```bash
 # ollama
