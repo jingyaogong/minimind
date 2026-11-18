@@ -9,6 +9,7 @@ import argparse
 import warnings
 import torch
 from datetime import datetime
+from zoneinfo import ZoneInfo
 from transformers import AutoTokenizer, AutoModelForCausalLM, TextStreamer
 from openai import OpenAI
 from model.model_minimind import MiniMindConfig, MiniMindForCausalLM
@@ -28,7 +29,7 @@ TOOLS = [
 
 MOCK_RESULTS = {
     "calculate_math": lambda args: {"result": str(safe_math_eval(args.get("expression", "0")))},
-    "get_current_time": lambda args: {"datetime": datetime.now().strftime("%Y-%m-%d %H:%M:%S"), "timezone": args.get("timezone", "Asia/Shanghai")},
+    "get_current_time": lambda args: {"datetime": datetime.now(ZoneInfo(args.get("timezone", "Asia/Shanghai"))).strftime("%Y-%m-%d %H:%M:%S"), "timezone": args.get("timezone", "Asia/Shanghai")},
     "random_number": lambda args: {"result": random.randint(int(args.get("min", 0)), int(args.get("max", 100)))},
     "text_length": lambda args: {"characters": len(args.get("text", "")), "words": len(args.get("text", "").split())},
     "unit_converter": lambda args: {"result": round(float(args.get("value", 0)) * 0.621371, 2), "from": f"{args.get('value', 0)} {args.get('from_unit', '')}", "to": args.get("to_unit", "")},

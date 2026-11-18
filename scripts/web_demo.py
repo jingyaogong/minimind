@@ -127,12 +127,13 @@ TOOL_SHORT_NAMES = {
 
 def execute_tool(tool_name, args):
     import datetime
+    from zoneinfo import ZoneInfo
     try:
         if tool_name == 'calculate_math':
             return {"result": safe_math_eval(args.get('expression', '0'))}
         elif tool_name == 'get_current_time':
             tz = args.get('timezone', 'Asia/Shanghai')
-            return {"result": datetime.datetime.now().strftime('%Y-%m-%d %H:%M:%S')}
+            return {"result": datetime.datetime.now(ZoneInfo(tz)).strftime('%Y-%m-%d %H:%M:%S')}
         elif tool_name == 'random_number':
             return {"result": random.randint(args.get('min', 0), args.get('max', 100))}
         elif tool_name == 'text_length':
