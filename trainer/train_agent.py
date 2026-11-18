@@ -183,9 +183,10 @@ def rollout_batch(rollout_engine, tokenizer, messages_batch, tools_batch, num_ge
 
 # ======== Reward 计算 ========
 def validate_gt_in_text(text, gt_list):
+    # 数值型 gt 只按数值比对（子串会让 gt=9 命中 "19"、gt=100 命中 "1000"）；数字边界只看 ASCII 字母数字，中文紧挨数字（"答案是59。"）也能取到
     text, text_num = str(text), str(text).replace(',', '')
-    nums = [float(x) for x in re.findall(r'(?<![\w.])[-+]?\d+(?:\.\d+)?(?![\w.])', text_num)]
-    return {g for g in gt_list if ((s := str(g).strip()) and s.lower() in text.lower()) or (re.fullmatch(r'[-+]?\d+(?:\.\d+)?', str(g).strip().replace(',', '')) and any(abs(float(str(g).strip().replace(',', '')) - n) < 1e-6 for n in nums))}
+    nums = [float(x) for x in re.findall(r'(?<![A-Za-z0-9_.])[-+]?\d+(?:\.\d+)?(?![A-Za-z0-9_]|\.\d)', text_num)]
+    return {g for g in gt_list if (s := str(g).strip()) and (any(abs(float(s.replace(',', '')) - n) < 1e-6 for n in nums) if re.fullmatch(r'[-+]?\d+(?:\.\d+)?', s.replace(',', '')) else s.lower() in text.lower())}
 
 def calculate_rewards(prompts, completions, gt_batch, tools_batch, num_gen, reward_model=None, device="cuda", turn_outputs_batch=None, unfinished_batch=None):
     rewards = torch.zeros(len(completions), device=device)
