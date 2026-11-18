@@ -199,7 +199,7 @@ def generate_stream_response(messages, temperature, top_p, max_tokens, tools=Non
 
 
 @app.post("/v1/chat/completions")
-async def chat_completions(request: ChatRequest):
+def chat_completions(request: ChatRequest):
     try:
         if request.stream:
             return StreamingResponse(
