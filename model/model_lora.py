@@ -41,7 +41,10 @@ def load_lora(model, path):
     for name, module in model.named_modules():
         if hasattr(module, 'lora'):
             lora_state = {k.replace(f'{name}.lora.', ''): v for k, v in state_dict.items() if f'{name}.lora.' in k}
-            module.lora.load_state_dict(lora_state, strict=False)
+            incompatible = module.lora.load_state_dict(lora_state, strict=False)
+            missing = [key for key in incompatible.missing_keys if key != "scaling"]
+            if missing or incompatible.unexpected_keys:
+                raise RuntimeError(f"Invalid LoRA weights for {name}: missing {missing}; unexpected {incompatible.unexpected_keys}")
 
 
 def save_lora(model, path):
