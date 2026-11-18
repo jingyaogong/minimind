@@ -26,15 +26,15 @@ def logits_to_log_probs(logits, labels):
     # logits shape: (batch_size, seq_len, vocab_size)
     # labels shape: (batch_size, seq_len)
     # log_probs shape: (batch_size, seq_len)
-    log_probs = F.log_softmax(logits, dim=2)
+    log_probs = F.log_softmax(logits.float(), dim=2)
     log_probs_per_token = torch.gather(log_probs, dim=2, index=labels.unsqueeze(2)).squeeze(-1)
     return log_probs_per_token
 
 
 def dpo_loss(ref_log_probs, policy_log_probs, mask, beta):
     # ref_log_probs 和 policy_log_probs 都是 shape: (batch_size, seq_len)
-    ref_log_probs = (ref_log_probs * mask).sum(dim=1)
-    policy_log_probs = (policy_log_probs * mask).sum(dim=1)
+    ref_log_probs = (ref_log_probs.float() * mask).sum(dim=1)
+    policy_log_probs = (policy_log_probs.float() * mask).sum(dim=1)
 
     # 将 chosen 和 rejected 数据分开
     batch_size = ref_log_probs.shape[0]
