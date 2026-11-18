@@ -49,10 +49,10 @@ def init_model(args):
 
 class ChatRequest(BaseModel):
     model: str
-    messages: list
-    temperature: float = 0.7
-    top_p: float = 0.92
-    max_tokens: int = 8192
+    messages: list = Field(min_length=1)
+    temperature: float = Field(default=0.7, ge=0.0, le=2.0, allow_inf_nan=False)
+    top_p: float = Field(default=0.92, ge=0.0, le=1.0, allow_inf_nan=False)
+    max_tokens: int = Field(default=8192, gt=0)
     stream: bool = True
     tools: list = Field(default_factory=list)
     open_thinking: bool = False
