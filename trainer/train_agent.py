@@ -23,7 +23,7 @@ from torch.optim.lr_scheduler import CosineAnnealingLR
 from transformers import AutoTokenizer
 from model.model_minimind import MiniMindConfig, MiniMindForCausalLM
 from dataset.lm_dataset import AgentRLDataset
-from trainer.trainer_utils import Logger, is_main_process, lm_checkpoint, init_distributed_mode, setup_seed, SkipBatchSampler, init_model, LMForRewardModel, safe_math_eval
+from trainer.trainer_utils import get_accumulation_steps, Logger, is_main_process, lm_checkpoint, init_distributed_mode, setup_seed, SkipBatchSampler, init_model, LMForRewardModel, safe_math_eval
 from trainer.rollout_engine import create_rollout_engine, compute_per_token_logps
 
 warnings.filterwarnings('ignore')
@@ -244,6 +244,7 @@ def calculate_rewards(prompts, completions, gt_batch, tools_batch, num_gen, rewa
 # ================================ 工具与 Reward = End ================================
 def rl_train_epoch(epoch, loader, iters, rollout_engine, ref_model, reward_model=None, start_step=0, wandb=None, use_sglang=False):
     for step, batch in enumerate(loader, start=start_step + 1):
+        accumulation_steps = get_accumulation_steps(step, iters, args.accumulation_steps)
         messages_batch = batch['messages']
         tools_batch = batch['tools']
         gt_batch = batch['gt']
@@ -329,7 +330,7 @@ def rl_train_epoch(epoch, loader, iters, rollout_engine, ref_model, reward_model
             per_token_loss = -(torch.min(per_token_loss1, per_token_loss2) - args.beta * per_token_kl)
         policy_loss = (((per_token_loss * completion_mask).sum(dim=1)[valid_rows] / token_counts[valid_rows].clamp(min=1)).mean()
                        if valid_rows.any() else per_token_loss.sum() * 0.0)
-        loss = (policy_loss + aux_loss) / args.accumulation_steps
+        loss = (policy_loss + aux_loss) / accumulation_steps
         loss.backward()
 
         if step % args.accumulation_steps == 0 or step == iters:
@@ -337,7 +338,7 @@ def rl_train_epoch(epoch, loader, iters, rollout_engine, ref_model, reward_model
             optimizer.step(); scheduler.step(); optimizer.zero_grad()
 
         if step % args.log_interval == 0 or step == iters:
-            pl = loss.item() * args.accumulation_steps
+            pl = loss.item() * accumulation_steps
             ar = rewards.mean().item()
             al = token_counts.float().mean().item()
             kl = ((ref_per_token_logps - per_token_logps) * completion_mask).sum().item() / max(token_counts.sum().item(), 1)
@@ -452,7 +453,7 @@ if __name__ == "__main__":
     def collate_fn(batch): return {'messages': [b['messages'] for b in batch], 'tools': [b['tools'] for b in batch], 'gt': [b['gt'] for b in batch]}
     loader_for_count = DataLoader(train_ds, batch_size=args.batch_size, sampler=train_sampler, collate_fn=collate_fn)
     iters = len(loader_for_count)
-    total_optimizer_steps = math.ceil(iters / args.accumulation_steps) * args.epochs
+    total_optimizer_steps = math.ceil(iters / accumulation_steps) * args.epochs
     scheduler = CosineAnnealingLR(optimizer, T_max=total_optimizer_steps, eta_min=args.learning_rate / 10)
 
     start_epoch, start_step = 0, 0

@@ -17,7 +17,7 @@ from torch.nn.parallel import DistributedDataParallel
 from torch.utils.data import DataLoader, DistributedSampler
 from model.model_minimind import MiniMindConfig
 from dataset.lm_dataset import SFTDataset
-from trainer.trainer_utils import get_lr, Logger, is_main_process, lm_checkpoint, init_distributed_mode, setup_seed, init_model, SkipBatchSampler
+from trainer.trainer_utils import get_accumulation_steps, get_lr, Logger, is_main_process, lm_checkpoint, init_distributed_mode, setup_seed, init_model, SkipBatchSampler
 
 warnings.filterwarnings('ignore')
 
@@ -44,6 +44,7 @@ def train_epoch(epoch, loader, iters, teacher_model, lm_config_student, start_st
         teacher_model.requires_grad_(False)
 
     for step, (input_ids, labels) in enumerate(loader, start=start_step + 1):
+        accumulation_steps = get_accumulation_steps(step, iters, args.accumulation_steps)
         input_ids = input_ids.to(args.device)
         labels = labels.to(args.device)
         loss_mask = (labels[..., 1:] != -100).float()
@@ -88,7 +89,7 @@ def train_epoch(epoch, loader, iters, teacher_model, lm_config_student, start_st
             distill_loss = torch.tensor(0.0, device=args.device)
 
         # 3) 总损失 = alpha * CE + (1-alpha) * Distill
-        loss = (alpha * ce_loss + (1 - alpha) * distill_loss) / args.accumulation_steps
+        loss = (alpha * ce_loss + (1 - alpha) * distill_loss) / accumulation_steps
 
         scaler.scale(loss).backward()
 
@@ -101,7 +102,7 @@ def train_epoch(epoch, loader, iters, teacher_model, lm_config_student, start_st
 
         if step % args.log_interval == 0 or step == iters:
             spend_time = time.time() - start_time
-            current_loss = loss.item() * args.accumulation_steps
+            current_loss = loss.item() * accumulation_steps
             current_ce_loss = ce_loss_raw.item()
             current_aux_loss = res.aux_loss.item() if lm_config_student.use_moe else 0.0
             current_lr = optimizer.param_groups[-1]['lr']

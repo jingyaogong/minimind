@@ -43,6 +43,11 @@ def get_lr(current_step, total_steps, lr):
     return lr*(0.1 + 0.45*(1 + math.cos(math.pi * current_step / total_steps)))
 
 
+def get_accumulation_steps(step, total_steps, accumulation_steps):
+    window_start = ((step - 1) // accumulation_steps) * accumulation_steps
+    return min(accumulation_steps, total_steps - window_start)
+
+
 def init_distributed_mode():
     if int(os.environ.get("RANK", -1)) == -1:
         return 0  # 非DDP模式

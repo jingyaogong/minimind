@@ -17,7 +17,7 @@ from torch.utils.data import DataLoader, DistributedSampler
 from model.model_minimind import MiniMindConfig
 from dataset.lm_dataset import SFTDataset
 from model.model_lora import save_lora, apply_lora
-from trainer.trainer_utils import get_lr, Logger, is_main_process, lm_checkpoint, init_distributed_mode, setup_seed, init_model, SkipBatchSampler
+from trainer.trainer_utils import get_accumulation_steps, get_lr, Logger, is_main_process, lm_checkpoint, init_distributed_mode, setup_seed, init_model, SkipBatchSampler
 
 warnings.filterwarnings('ignore')
 
@@ -25,6 +25,7 @@ warnings.filterwarnings('ignore')
 def train_epoch(epoch, loader, iters, lora_params, start_step=0, wandb=None):
     start_time = time.time()
     for step, (input_ids, labels) in enumerate(loader, start=start_step + 1):
+        accumulation_steps = get_accumulation_steps(step, iters, args.accumulation_steps)
         input_ids = input_ids.to(args.device)
         labels = labels.to(args.device)
         lr = get_lr(epoch * iters + step, args.epochs * iters, args.learning_rate)
@@ -34,7 +35,7 @@ def train_epoch(epoch, loader, iters, lora_params, start_step=0, wandb=None):
         with autocast_ctx:
             res = model(input_ids, labels=labels)
             loss = res.loss + res.aux_loss
-            loss = loss / args.accumulation_steps
+            loss = loss / accumulation_steps
 
         scaler.scale(loss).backward()
 
@@ -47,7 +48,7 @@ def train_epoch(epoch, loader, iters, lora_params, start_step=0, wandb=None):
 
         if step % args.log_interval == 0 or step == iters:
             spend_time = time.time() - start_time
-            current_loss = loss.item() * args.accumulation_steps
+            current_loss = loss.item() * accumulation_steps
             current_aux_loss = res.aux_loss.item() if res.aux_loss is not None else 0.0
             current_logits_loss = current_loss - current_aux_loss
             current_lr = optimizer.param_groups[-1]['lr']

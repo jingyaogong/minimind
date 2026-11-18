@@ -17,7 +17,7 @@ from torch.nn.parallel import DistributedDataParallel
 from torch.utils.data import DataLoader, DistributedSampler
 from model.model_minimind import MiniMindConfig
 from dataset.lm_dataset import DPODataset
-from trainer.trainer_utils import get_lr, Logger, is_main_process, lm_checkpoint, init_distributed_mode, setup_seed, init_model, SkipBatchSampler
+from trainer.trainer_utils import get_accumulation_steps, get_lr, Logger, is_main_process, lm_checkpoint, init_distributed_mode, setup_seed, init_model, SkipBatchSampler
 
 warnings.filterwarnings('ignore')
 
@@ -54,6 +54,7 @@ def train_epoch(epoch, loader, iters, ref_model, lm_config, start_step=0, wandb=
     start_time = time.time()
 
     for step, batch in enumerate(loader, start=start_step + 1):
+        accumulation_steps = get_accumulation_steps(step, iters, args.accumulation_steps)
         x_chosen = batch['x_chosen'].to(args.device)
         x_rejected = batch['x_rejected'].to(args.device)
         y_chosen = batch['y_chosen'].to(args.device)
@@ -80,7 +81,7 @@ def train_epoch(epoch, loader, iters, ref_model, lm_config, start_step=0, wandb=
             
             dpo_loss_val = dpo_loss(ref_log_probs, policy_log_probs, mask, beta=beta)
             loss = dpo_loss_val + outputs.aux_loss
-            loss = loss / args.accumulation_steps
+            loss = loss / accumulation_steps
 
         scaler.scale(loss).backward()
 
@@ -93,7 +94,7 @@ def train_epoch(epoch, loader, iters, ref_model, lm_config, start_step=0, wandb=
 
         if step % args.log_interval == 0 or step == iters:
             spend_time = time.time() - start_time
-            current_loss = loss.item() * args.accumulation_steps
+            current_loss = loss.item() * accumulation_steps
             current_dpo_loss = dpo_loss_val.item()
             current_aux_loss = outputs.aux_loss.item()
             current_lr = optimizer.param_groups[-1]['lr']

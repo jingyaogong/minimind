@@ -22,7 +22,7 @@ from torch.optim.lr_scheduler import CosineAnnealingLR
 from transformers import AutoModel
 from model.model_minimind import MiniMindConfig, MiniMindForCausalLM
 from dataset.lm_dataset import RLAIFDataset
-from trainer.trainer_utils import Logger, is_main_process, lm_checkpoint, init_distributed_mode, setup_seed, SkipBatchSampler, init_model, LMForRewardModel
+from trainer.trainer_utils import get_accumulation_steps, Logger, is_main_process, lm_checkpoint, init_distributed_mode, setup_seed, SkipBatchSampler, init_model, LMForRewardModel
 from trainer.rollout_engine import create_rollout_engine
 
 warnings.filterwarnings('ignore')
@@ -70,6 +70,7 @@ def calculate_rewards(prompts, responses, reward_model):
 
 def grpo_train_epoch(epoch, loader, iters, rollout_engine, ref_model, reward_model, start_step=0, wandb=None, use_sglang=False):
     for step, batch in enumerate(loader, start=start_step + 1):
+        accumulation_steps = get_accumulation_steps(step, iters, args.accumulation_steps)
         prompts = batch['prompt']  # list[str], length B
         prompt_inputs = tokenizer(prompts, return_tensors="pt", padding=True, return_token_type_ids=False,
                                   padding_side="left", add_special_tokens=False).to(args.device)
@@ -141,7 +142,7 @@ def grpo_train_epoch(epoch, loader, iters, rollout_engine, ref_model, reward_mod
             per_token_loss2 = clipped_ratio * advantages.unsqueeze(1)
             per_token_loss = -(torch.min(per_token_loss1, per_token_loss2) - args.beta * per_token_kl)
         policy_loss = ((per_token_loss * completion_mask).sum(dim=1) / completion_mask.sum(dim=1).clamp(min=1)).mean()
-        loss = (policy_loss + aux_loss) / args.accumulation_steps  # scalar
+        loss = (policy_loss + aux_loss) / accumulation_steps  # scalar
         loss.backward()
 
         if step % args.accumulation_steps == 0 or step == iters:
@@ -152,7 +153,7 @@ def grpo_train_epoch(epoch, loader, iters, rollout_engine, ref_model, reward_mod
             optimizer.zero_grad()
 
         if step % args.log_interval == 0 or step == iters:
-            policy_loss_val = loss.item() * args.accumulation_steps
+            policy_loss_val = loss.item() * accumulation_steps
             current_aux_loss = aux_loss.item()
             avg_reward_val = rewards.mean().item()
             avg_len_val = completion_mask.sum(dim=1).float().mean().item()
@@ -287,7 +288,7 @@ if __name__ == "__main__":
     optimizer = optim.AdamW(model.parameters(), lr=args.learning_rate)
     loader_for_count = DataLoader(train_ds, batch_size=args.batch_size, sampler=train_sampler)
     iters = len(loader_for_count)
-    total_optimizer_steps = math.ceil(iters / args.accumulation_steps) * args.epochs
+    total_optimizer_steps = math.ceil(iters / accumulation_steps) * args.epochs
     scheduler = CosineAnnealingLR(optimizer, T_max=total_optimizer_steps, eta_min=args.learning_rate / 10)
     
     # ========== 6. 从ckp恢复状态 ==========
