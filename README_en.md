@@ -750,6 +750,8 @@ White-box distillation typically fits the teacher distribution in addition to th
 
 The `train_distillation.py` script is intended as a reference implementation for understanding the white-box distillation pipeline: it demonstrates teacher/student dual model loading, `CE + KL` mixed loss, temperature scaling, MoE and dense combination distillation, as well as key details such as checkpoint resume and distributed training.
 
+For on-policy distillation through multi-turn tool interactions, see [`train_agent_opd.py`](trainer/train_agent_opd.py). The student executes tools and reads their results while a frozen teacher supervises token distributions along the student's sampled trajectory. See the [Agent OPD guide](docs/agent_opd.md) for usage, single-device scope and validation limits.
+
 ```bash
 # Method 1
 torchrun --nproc_per_node 1 train_distillation.py

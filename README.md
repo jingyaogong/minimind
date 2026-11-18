@@ -750,6 +750,8 @@ python eval_llm.py --weight full_sft
 
 仓库中提供的 `train_distillation.py` 更适合作为理解白盒蒸馏流程的参考实现：它完整展示了教师/学生双模型加载、`CE + KL` 混合损失、温度缩放、MoE 与 dense 组合蒸馏，以及断点续训和分布式训练等关键细节。
 
+多轮工具交互的在线蒸馏参考实现见 [`train_agent_opd.py`](trainer/train_agent_opd.py)：学生执行工具并读取结果，冻结教师沿着学生实际生成的交互轨迹提供 token 分布监督。使用方式、单设备限制与验证范围见 [Agent OPD 指南](docs/agent_opd.md)。
+
 ```bash
 # 方式1
 torchrun --nproc_per_node 1 train_distillation.py
