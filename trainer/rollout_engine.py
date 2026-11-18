@@ -62,7 +62,7 @@ class RolloutEngine(ABC):
 
 # ===== PyTorch 原生推理引擎 =====
 class TorchRolloutEngine(RolloutEngine):
-    def __init__(self, policy_model: torch.nn.Module, tokenizer, device: str = "cuda", autocast_ctx=None):
+    def __init__(self, policy_model: torch.nn.Module, tokenizer, device: str = "cuda" if torch.cuda.is_available() else "cpu", autocast_ctx=None):
         self.policy_model = policy_model
         self.tokenizer = tokenizer
         self.device = device
@@ -210,7 +210,7 @@ def create_rollout_engine(
     engine_type: str = "torch",
     policy_model: torch.nn.Module = None,
     tokenizer = None,
-    device: str = "cuda",
+    device: str = "cuda" if torch.cuda.is_available() else "cpu",
     autocast_ctx = None,
     sglang_base_url: str = None,
     sglang_model_path: str = None,
