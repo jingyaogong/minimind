@@ -260,8 +260,8 @@ class MiniMindForCausalLM(PreTrainedModel, GenerationMixin):
     # https://github.com/jingyaogong/minimind/discussions/611
     @torch.inference_mode()
     def generate(self, inputs=None, attention_mask=None, max_new_tokens=8192, temperature=0.85, top_p=0.85, top_k=50, eos_token_id=2, streamer=None, use_cache=True, num_return_sequences=1, do_sample=True, repetition_penalty=1.0, **kwargs):
-        input_ids = kwargs.pop("input_ids", inputs).repeat(num_return_sequences, 1)
-        attention_mask = attention_mask.repeat(num_return_sequences, 1) if attention_mask is not None else None
+        input_ids = kwargs.pop("input_ids", inputs).repeat_interleave(num_return_sequences, dim=0)
+        attention_mask = attention_mask.repeat_interleave(num_return_sequences, dim=0) if attention_mask is not None else None
         past_key_values = kwargs.pop("past_key_values", None)
         finished = torch.zeros(input_ids.shape[0], dtype=torch.bool, device=input_ids.device)
         if streamer: streamer.put(input_ids.cpu())
