@@ -122,8 +122,25 @@ class Attention(nn.Module):
             xv = torch.cat([past_key_value[1], xv], dim=1)
         past_kv = (xk, xv) if use_cache else None
         xq, xk, xv = (xq.transpose(1, 2), repeat_kv(xk, self.n_rep).transpose(1, 2), repeat_kv(xv, self.n_rep).transpose(1, 2))
-        if self.flash and (seq_len > 1) and (not self.is_causal or past_key_value is None) and (attention_mask is None or torch.all(attention_mask == 1)):
-            output = F.scaled_dot_product_attention(xq, xk, xv, dropout_p=self.dropout if self.training else 0.0, is_causal=self.is_causal)
+        # 无 KV cache 的 padded batch 合并因果和 key padding mask，继续使用 SDPA。
+        # bool mask 为 [B,1,L,L]，True 表示允许参与 attention；实际后端由 SDPA 选择。
+        use_sdpa = self.flash and (seq_len > 1) and (not self.is_causal or past_key_value is None)
+        pad_mask = None
+        if use_sdpa and attention_mask is not None and not torch.all(attention_mask == 1):
+            if past_key_value is None:
+                pad_mask = torch.ones(seq_len, seq_len, dtype=torch.bool, device=xq.device)
+                if self.is_causal:
+                    pad_mask = torch.tril(pad_mask)
+                pad_mask = pad_mask & attention_mask.bool()[:, None, None, :]
+            else:
+                use_sdpa = False  # 有 KV cache 时 Lq != Lk，保持原实现
+        if use_sdpa:
+            output = F.scaled_dot_product_attention(
+                xq, xk, xv,
+                attn_mask=pad_mask,
+                dropout_p=self.dropout if self.training else 0.0,
+                is_causal=self.is_causal if pad_mask is None else False,
+            )
         else:
             scores = (xq @ xk.transpose(-2, -1)).float() / math.sqrt(self.head_dim)
             if self.is_causal: scores[:, :, :, -seq_len:] += torch.full((seq_len, seq_len), float("-inf"), device=scores.device).triu(1)
