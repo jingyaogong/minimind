@@ -50,7 +50,7 @@ def init_model(args):
 class ChatRequest(BaseModel):
     model: str
     messages: list
-    temperature: float = 0.7
+    temperature: float = Field(default=0.7, ge=0.0, allow_inf_nan=False)
     top_p: float = 0.92
     max_tokens: int = 8192
     stream: bool = True
@@ -115,7 +115,7 @@ def generate_stream_response(messages, temperature, top_p, max_tokens, tools=Non
                 model.generate(
                     inputs.input_ids,
                     max_new_tokens=max_tokens,
-                    do_sample=True,
+                    do_sample=temperature > 0,
                     temperature=temperature,
                     top_p=top_p,
                     attention_mask=inputs.attention_mask,
@@ -226,7 +226,7 @@ def chat_completions(request: ChatRequest):
                 generated_ids = model.generate(
                     inputs["input_ids"],
                     max_new_tokens=request.max_tokens,
-                    do_sample=True,
+                    do_sample=request.temperature > 0,
                     attention_mask=inputs["attention_mask"],
                     pad_token_id=tokenizer.pad_token_id,
                     eos_token_id=tokenizer.eos_token_id,
