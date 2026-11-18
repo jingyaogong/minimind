@@ -23,6 +23,8 @@ warnings.filterwarnings('ignore')
 
 
 def distillation_loss(student_logits, teacher_logits, temperature=1.0, reduction='batchmean'):
+    if student_logits.size(0) == 0 and reduction == 'batchmean':
+        return student_logits.sum() * 0.0
     with torch.no_grad():
         teacher_probs = F.softmax(teacher_logits / temperature, dim=-1).detach()
 
