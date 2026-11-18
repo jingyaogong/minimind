@@ -263,6 +263,7 @@ class MiniMindForCausalLM(PreTrainedModel, GenerationMixin):
         input_ids = kwargs.pop("input_ids", inputs).repeat(num_return_sequences, 1)
         attention_mask = attention_mask.repeat(num_return_sequences, 1) if attention_mask is not None else None
         past_key_values = kwargs.pop("past_key_values", None)
+        eos_ids = torch.as_tensor(eos_token_id, device=input_ids.device, dtype=input_ids.dtype).reshape(-1) if eos_token_id is not None else None
         finished = torch.zeros(input_ids.shape[0], dtype=torch.bool, device=input_ids.device)
         if streamer: streamer.put(input_ids.cpu())
         for _ in range(max_new_tokens):
@@ -281,12 +282,12 @@ class MiniMindForCausalLM(PreTrainedModel, GenerationMixin):
                 mask[..., 1:], mask[..., 0] = mask[..., :-1].clone(), 0
                 logits[mask.scatter(1, sorted_indices, mask)] = -float('inf')
             next_token = torch.multinomial(torch.softmax(logits, dim=-1), num_samples=1) if do_sample else torch.argmax(logits, dim=-1, keepdim=True)
-            if eos_token_id is not None: next_token = torch.where(finished.unsqueeze(-1), next_token.new_full((next_token.shape[0], 1), eos_token_id), next_token)
+            if eos_ids is not None and eos_ids.numel(): next_token = torch.where(finished.unsqueeze(-1), eos_ids[0], next_token)
             input_ids = torch.cat([input_ids, next_token], dim=-1)
             past_key_values = outputs.past_key_values if use_cache else None
             if streamer: streamer.put(next_token.cpu())
-            if eos_token_id is not None:
-                finished |= next_token.squeeze(-1).eq(eos_token_id)
+            if eos_ids is not None and eos_ids.numel():
+                finished |= torch.isin(next_token.squeeze(-1), eos_ids)
                 if finished.all(): break
         if streamer: streamer.end()
         if kwargs.get("return_kv"): return {'generated_ids': input_ids, 'past_kv': past_key_values}
