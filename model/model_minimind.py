@@ -274,7 +274,7 @@ class MiniMindForCausalLM(PreTrainedModel, GenerationMixin):
                 for i in range(input_ids.shape[0]):
                     seen = torch.unique(input_ids[i]); score = logits[i, seen]; logits[i, seen] = torch.where(score > 0, score / repetition_penalty, score * repetition_penalty)
             if top_k > 0: 
-                logits[logits < torch.topk(logits, top_k)[0][..., -1, None]] = -float('inf')
+                logits[logits < torch.topk(logits, min(top_k, logits.size(-1)))[0][..., -1, None]] = -float('inf')
             if top_p < 1.0:
                 sorted_logits, sorted_indices = torch.sort(logits, descending=True)
                 mask = torch.cumsum(torch.softmax(sorted_logits, dim=-1), dim=-1) > top_p
