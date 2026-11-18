@@ -265,6 +265,7 @@ class MiniMindForCausalLM(PreTrainedModel, GenerationMixin):
         past_key_values = kwargs.pop("past_key_values", None)
         finished = torch.zeros(input_ids.shape[0], dtype=torch.bool, device=input_ids.device)
         if streamer: streamer.put(input_ids.cpu())
+        kwargs.setdefault("logits_to_keep", 1)
         for _ in range(max_new_tokens):
             past_len = past_key_values[0][0].shape[1] if past_key_values else 0
             outputs = self.forward(input_ids[:, past_len:], attention_mask, past_key_values, use_cache=use_cache, **kwargs)
