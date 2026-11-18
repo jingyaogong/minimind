@@ -21,8 +21,8 @@ class LoRA(nn.Module):
 
 
 def apply_lora(model, rank=16, lora_alpha=None):
-    for name, module in model.named_modules():
-        if isinstance(module, nn.Linear) and module.in_features == module.out_features:
+    for name, module in list(model.named_modules()):
+        if isinstance(module, nn.Linear) and module.in_features == module.out_features and not hasattr(module, "lora") and ".lora." not in name:
             lora = LoRA(module.in_features, module.out_features, rank=rank, lora_alpha=lora_alpha).to(model.device)
             setattr(module, "lora", lora)
             original_forward = module.forward
