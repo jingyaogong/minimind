@@ -62,8 +62,9 @@ def merge_lora(model, lora_path, save_path):
     state_dict = {k: v.cpu().half() for k, v in raw_model.state_dict().items() if '.lora.' not in k}
     for name, module in raw_model.named_modules():
         if isinstance(module, nn.Linear) and '.lora.' not in name:
-            state_dict[f'{name}.weight'] = module.weight.data.clone().cpu().half()
+            state_dict[f'{name}.weight'] = module.weight.data.clone().cpu().float()
             if hasattr(module, 'lora'):
-                delta = (module.lora.B.weight.data @ module.lora.A.weight.data) * module.lora.scaling
-                state_dict[f'{name}.weight'] += delta.cpu().half()
+                delta = (module.lora.B.weight.data.float() @ module.lora.A.weight.data.float()) * module.lora.scaling.float()
+                state_dict[f'{name}.weight'] += delta.cpu()
+            state_dict[f'{name}.weight'] = state_dict[f'{name}.weight'].half()
     torch.save(state_dict, save_path)
