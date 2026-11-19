@@ -365,8 +365,8 @@ if __name__ == "__main__":
     device_type = "cuda" if "cuda" in args.device else "cpu"
     if device_type == "cpu":
         torch.set_num_threads(min(12, os.cpu_count() or 12))
-    dtype = torch.bfloat16 if args.dtype == "bfloat16" else torch.float16
-    autocast_ctx = nullcontext() if device_type == "cpu" else torch.cuda.amp.autocast(dtype=dtype)
+    dtype = torch.bfloat16 if args.dtype == "bfloat16" else (torch.float16 if args.dtype == "float16" else torch.float32)
+    autocast_ctx = nullcontext() if (device_type == "cpu" or args.dtype == "float32") else torch.cuda.amp.autocast(dtype=dtype)
     
     # ========== 4. 配wandb ==========
     wandb = None
