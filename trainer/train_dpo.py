@@ -73,6 +73,7 @@ def train_epoch(epoch, loader, iters, ref_model, lm_config, start_step=0, wandb=
                 ref_outputs = ref_model(x)
                 ref_logits = ref_outputs.logits
             ref_log_probs = logits_to_log_probs(ref_logits, y)
+            del ref_outputs, ref_logits
             
             outputs = model(x)
             logits = outputs.logits
@@ -116,7 +117,7 @@ def train_epoch(epoch, loader, iters, ref_model, lm_config, start_step=0, wandb=
             del state_dict
 
         del x_chosen, x_rejected, y_chosen, y_rejected, mask_chosen, mask_rejected, x, y, mask
-        del ref_outputs, ref_logits, ref_log_probs, outputs, logits, policy_log_probs, loss
+        del ref_log_probs, outputs, logits, policy_log_probs, loss
 
 
 if __name__ == "__main__":
