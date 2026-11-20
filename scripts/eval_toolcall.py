@@ -134,7 +134,7 @@ def chat_api(client, messages, tools, args, stream=True):
     response = client.chat.completions.create(
         model=args.api_model, messages=messages, tools=tools,
         stream=stream, temperature=args.temperature,
-        max_tokens=8192, top_p=args.top_p
+        max_tokens=args.max_new_tokens, top_p=args.top_p
     )
     if not stream:
         choice = response.choices[0]
@@ -176,13 +176,16 @@ def chat_api(client, messages, tools, args, stream=True):
 
 def run_case(prompt, tools, args, model=None, tokenizer=None, client=None):
     messages = [{"role": "user", "content": prompt}]
-    while True:
+    for tool_round in range(args.max_tool_rounds + 1):
         if args.backend == 'local':
             content = generate(model, tokenizer, messages, tools, args)
             tool_calls = parse_tool_calls(content)
         else:
             content, tool_calls = chat_api(client, messages, tools, args, stream=bool(args.stream))
         if not tool_calls:
+            break
+        if tool_round == args.max_tool_rounds:
+            print(f"⚠️ 已达到最大工具调用轮数 {args.max_tool_rounds}，结束当前测试。")
             break
         tool_calls = [{
             "id": tc.id if hasattr(tc, 'id') else tc.get("id", ""),
@@ -209,6 +212,7 @@ def main():
     parser.add_argument('--num_hidden_layers', default=8, type=int, help="隐藏层数量")
     parser.add_argument('--use_moe', default=0, type=int, choices=[0, 1], help="是否使用MoE架构（0=否，1=是）")
     parser.add_argument('--max_new_tokens', default=512, type=int, help="最大生成长度")
+    parser.add_argument('--max_tool_rounds', default=16, type=int, help="每个测试允许的最大工具调用轮数（0表示不执行工具）")
     parser.add_argument('--temperature', default=0.9, type=float, help="生成温度，控制随机性（0-1，越大越随机）")
     parser.add_argument('--top_p', default=0.9, type=float, help="nucleus采样阈值（0-1）")
     parser.add_argument('--show_speed', default=0, type=int, help="显示decode速度（tokens/s）")
@@ -218,6 +222,8 @@ def main():
     parser.add_argument('--api_model', default='jingyaogong/minimind-3:latest', type=str, help="API请求时使用的模型名称")
     parser.add_argument('--stream', default=1, type=int, help="API模式下是否流式输出（0=否，1=是）")
     args = parser.parse_args()
+    if args.max_new_tokens < 1 or args.max_tool_rounds < 0:
+        parser.error("max_new_tokens 必须大于 0，max_tool_rounds 不能为负数")
 
     model = tokenizer = client = None
     if args.backend == 'local': model, tokenizer = init_model(args)
