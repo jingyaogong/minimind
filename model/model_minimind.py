@@ -156,13 +156,13 @@ class MOEFeedForward(nn.Module):
     def forward(self, x):
         batch_size, seq_len, hidden_dim = x.shape
         x_flat = x.view(-1, hidden_dim)
-        scores = F.softmax(self.gate(x_flat), dim=-1)
+        scores = F.softmax(self.gate(x_flat), dim=-1, dtype=torch.float32)
         topk_weight, topk_idx = torch.topk(scores, k=self.config.num_experts_per_tok, dim=-1, sorted=False)
         if self.config.norm_topk_prob:
             if self.config.num_experts_per_tok > 1: 
                 topk_weight = topk_weight / (topk_weight.sum(dim=-1, keepdim=True) + 1e-20)
             else:
-                top1 = torch.topk(F.softmax(self.gate(x_flat.detach()), dim=-1), k=1, dim=-1, sorted=False)[0]
+                top1 = torch.topk(F.softmax(self.gate(x_flat.detach()), dim=-1, dtype=torch.float32), k=1, dim=-1, sorted=False)[0]
                 topk_weight = top1 - top1.detach() + 1.0 # k=1: 1.0 forward on purpose, gradient via straight-through
         y = torch.zeros_like(x_flat)
         for i, expert in enumerate(self.experts):
