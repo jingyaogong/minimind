@@ -76,8 +76,7 @@ def train_epoch(epoch, loader, iters, teacher_model, lm_config_student, start_st
             reduction='none'
         )
         ce_loss_raw = torch.sum(ce_loss * loss_mask_flat) / (loss_mask_flat.sum() + 1e-8)
-        if lm_config_student.use_moe: ce_loss = ce_loss_raw + res.aux_loss
-        else: ce_loss = ce_loss_raw
+        aux_loss = res.aux_loss if lm_config_student.use_moe else 0.0
 
         # 2) Distillation Loss
         if teacher_model is not None:
@@ -89,8 +88,8 @@ def train_epoch(epoch, loader, iters, teacher_model, lm_config_student, start_st
         else:
             distill_loss = torch.tensor(0.0, device=args.device)
 
-        # 3) 总损失 = alpha * CE + (1-alpha) * Distill
-        loss = (alpha * ce_loss + (1 - alpha) * distill_loss) / args.accumulation_steps
+        # 3) alpha 只调节 CE/KL 混合，路由正则保持模型配置的系数
+        loss = (alpha * ce_loss_raw + (1 - alpha) * distill_loss + aux_loss) / args.accumulation_steps
 
         scaler.scale(loss).backward()
 
