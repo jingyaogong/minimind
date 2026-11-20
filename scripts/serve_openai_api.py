@@ -94,7 +94,10 @@ def parse_response(text):
     for i, m in enumerate(re.findall(r'<tool_call>(.*?)</tool_call>', text, re.DOTALL)):
         try:
             call = json.loads(m.strip())
-            tool_calls.append({"id": f"call_{int(time.time())}_{i}", "type": "function", "function": {"name": call.get("name", ""), "arguments": json.dumps(call.get("arguments", {}), ensure_ascii=False)}})
+            arguments = call.get("arguments", {})
+            if isinstance(arguments, str):
+                arguments = json.loads(arguments)
+            tool_calls.append({"id": f"call_{int(time.time())}_{i}", "type": "function", "function": {"name": call.get("name", ""), "arguments": json.dumps(arguments, ensure_ascii=False)}})
         except Exception:
             pass
     if tool_calls:
