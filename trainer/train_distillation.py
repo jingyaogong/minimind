@@ -26,9 +26,9 @@ def distillation_loss(student_logits, teacher_logits, temperature=1.0, reduction
     if student_logits.size(0) == 0 and reduction == 'batchmean':
         return student_logits.sum() * 0.0
     with torch.no_grad():
-        teacher_probs = F.softmax(teacher_logits / temperature, dim=-1).detach()
+        teacher_probs = F.softmax(teacher_logits.float() / temperature, dim=-1).detach()
 
-    student_log_probs = F.log_softmax(student_logits / temperature, dim=-1)
+    student_log_probs = F.log_softmax(student_logits.float() / temperature, dim=-1)
 
     kl = F.kl_div(
         student_log_probs,
@@ -60,7 +60,7 @@ def train_epoch(epoch, loader, iters, teacher_model, lm_config_student, start_st
 
         # 教师模型前向传播（只在eval & no_grad）
         if teacher_model is not None:
-            with torch.no_grad():
+            with torch.no_grad(), autocast_ctx:
                 teacher_logits = teacher_model(input_ids).logits[..., :-1, :].contiguous()
                 vocab_size_student = student_logits.size(-1)
                 teacher_logits = teacher_logits[..., :vocab_size_student]
