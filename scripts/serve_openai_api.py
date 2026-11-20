@@ -15,7 +15,7 @@ from threading import Thread
 from queue import Queue
 from fastapi import FastAPI, HTTPException
 from fastapi.responses import StreamingResponse
-from pydantic import BaseModel, Field
+from pydantic import BaseModel, Field, field_validator
 from transformers import AutoTokenizer, AutoModelForCausalLM, TextStreamer
 from model.model_minimind import MiniMindConfig, MiniMindForCausalLM
 from model.model_lora import apply_lora, load_lora
@@ -57,6 +57,20 @@ class ChatRequest(BaseModel):
     tools: list = Field(default_factory=list)
     open_thinking: bool = False
     chat_template_kwargs: dict = None
+
+    @field_validator('messages')
+    @classmethod
+    def normalize_text_content(cls, messages):
+        normalized = []
+        for message in messages:
+            content = message.get('content') if isinstance(message, dict) else None
+            if isinstance(content, list):
+                if any(not isinstance(part, dict) or part.get('type') != 'text'
+                       or not isinstance(part.get('text'), str) for part in content):
+                    raise ValueError('Only text content parts are supported')
+                message = {**message, 'content': ''.join(part['text'] for part in content)}
+            normalized.append(message)
+        return normalized
     
     def get_open_thinking(self) -> bool:
         """兼容多种方式开启 thinking"""
