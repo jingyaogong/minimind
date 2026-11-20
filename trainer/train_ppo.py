@@ -42,7 +42,7 @@ class CriticModel(MiniMindForCausalLM):
     def forward(self, input_ids=None, attention_mask=None, **kwargs):
         # 使用基础模型获取隐藏状态
         outputs = self.model(input_ids=input_ids, attention_mask=attention_mask, **kwargs)
-        hidden_states = self.model.norm(outputs[0])
+        hidden_states = outputs[0]  # MiniMindModel 已执行最终 RMSNorm
         # 使用value_head获取价值估计
         values = self.value_head(hidden_states).squeeze(-1)
         return values
