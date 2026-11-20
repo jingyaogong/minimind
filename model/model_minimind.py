@@ -254,6 +254,7 @@ class MiniMindForCausalLM(PreTrainedModel, GenerationMixin):
         loss = None
         if labels is not None:
             x, y = logits[..., :-1, :].contiguous(), labels[..., 1:].contiguous()
+            if x.dtype in (torch.float16, torch.bfloat16): x = x.float()
             loss = F.cross_entropy(x.view(-1, x.size(-1)), y.view(-1), ignore_index=-100)
         return MoeCausalLMOutputWithPast(loss=loss, aux_loss=aux_loss, logits=logits, past_key_values=past_key_values, hidden_states=hidden_states)
     
