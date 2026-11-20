@@ -313,6 +313,15 @@ def setup_seed(seed):
     torch.backends.cudnn.benchmark = False
 
 
+def trim_chat_history(messages, history_messages_num):
+    # 一个工具调用轮次可能包含多条 assistant/tool 消息，不能从轮次中间截断。
+    starts = [i for i, message in enumerate(messages) if message["role"] == "user"]
+    turns = history_messages_num // 2 + 1
+    if not starts:
+        return []
+    return messages[starts[max(0, len(starts) - turns)]:]
+
+
 def main():
     model, tokenizer = load_model_tokenizer(model_path)
 
@@ -353,7 +362,7 @@ def main():
 
         tools = [t for t in TOOLS if t['function']['name'] in st.session_state.get('selected_tools', [])] or None
         sys_prompt = [] if tools else [{"role": "system", "content": "你是MiniMind，一个乐于助人、知识渊博的AI助手。请用完整且友好的方式回答用户问题。"}]
-        st.session_state.chat_messages = sys_prompt + st.session_state.chat_messages[-(st.session_state.history_chat_num + 1):]
+        st.session_state.chat_messages = sys_prompt + trim_chat_history(st.session_state.chat_messages, st.session_state.history_chat_num)
         template_kwargs = {"tokenize": False, "add_generation_prompt": True}
         if st.session_state.get('enable_thinking', False):
             template_kwargs["open_thinking"] = True
@@ -414,9 +423,7 @@ def main():
                 answer += new_text
                 placeholder.markdown(process_assistant_content(full_answer + answer, is_streaming=True), unsafe_allow_html=True)
             full_answer += answer
-        answer = full_answer
-
-        messages.append({"role": "assistant", "content": answer})
+        messages.append({"role": "assistant", "content": full_answer})
         st.session_state.chat_messages.append({"role": "assistant", "content": answer})
 
 
