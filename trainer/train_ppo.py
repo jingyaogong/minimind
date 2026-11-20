@@ -78,9 +78,9 @@ def calculate_rewards(prompts, responses, reward_model):
 def ppo_train_epoch(epoch, loader, iters, rollout_engine, ref_model, actor_scheduler, critic_scheduler, reward_model, start_step=0, wandb=None):
     actor_model.train()
     critic_model.train()
-    grad_accum_step = 0
 
     for step, batch in enumerate(loader, start=start_step + 1):
+        grad_accum_step = 0  # 每批 rollout 结束都会 flush；只统计当前未清空的窗口
         prompts = batch["prompt"]  # list[str], length B
         enc = tokenizer(prompts, return_tensors="pt", padding=True, truncation=True, max_length=args.max_seq_len,
                         padding_side="left").to(args.device)  # input_ids: [B, P], attention_mask: [B, P]
@@ -217,7 +217,7 @@ def ppo_train_epoch(epoch, loader, iters, rollout_engine, ref_model, actor_sched
 
                 # 早停时必须保证 forward-backward 闭环，故只截断 loss 不中断 DDP 通信
                 if stop_ppo:
-                    loss = (policy_loss + args.vf_coef * value_loss + aux_loss) * 0.0
+                    loss = (res.logits.float().sum() + mb_values_seq.float().sum() + aux_loss) * 0.0
                 else:
                     loss = (policy_loss + args.vf_coef * value_loss + aux_loss) / args.accumulation_steps
                 
@@ -230,6 +230,10 @@ def ppo_train_epoch(epoch, loader, iters, rollout_engine, ref_model, actor_sched
                 clipfrac_sum += clipfrac.item()
                 aux_loss_sum += aux_loss.item()
                 log_count += 1
+
+                # 已完成本轮 backward，所有 rank 可安全退出；不让零梯度触发 AdamW 更新。
+                if stop_ppo:
+                    break
 
                 grad_accum_step += 1
 
