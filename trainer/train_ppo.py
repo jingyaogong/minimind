@@ -381,9 +381,10 @@ if __name__ == "__main__":
     ref_model = ref_model.eval().requires_grad_(False)
     moe_suffix = '_moe' if lm_config.use_moe else ''
     ckp = f'{args.save_dir}/{base_weight}_{lm_config.hidden_size}{moe_suffix}.pth'
-    state_dict = torch.load(ckp, map_location=args.device)
+    state_dict = torch.load(ckp, map_location='cpu')
     critic_model = CriticModel(lm_config)
     critic_model.load_state_dict(state_dict, strict=False)
+    del state_dict
     critic_model = critic_model.to(args.device)
     reward_model = LMForRewardModel(args.reward_model_path, device=args.device, dtype=torch.float16)
     # Rollout引擎
