@@ -4,6 +4,7 @@ python -m sglang.launch_server --model-path ./minimind-3 --attention-backend tri
 """
 import os
 import sys
+import math
 
 __package__ = "trainer"
 sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), '..')))
@@ -128,6 +129,8 @@ class SGLangRolloutEngine(RolloutEngine):
         results = resp.json()
         if not isinstance(results, list):
             results = [results]
+        if len(results) != len(all_input_ids):
+            raise RuntimeError(f"SGLang returned {len(results)} results for {len(all_input_ids)} prompts")
         
         all_output_ids, all_completion_ids, all_logprobs = [], [], []
         completions = []
@@ -143,11 +146,13 @@ class SGLangRolloutEngine(RolloutEngine):
                     logprobs.append(item[0])
                 elif isinstance(item, (int, float)):
                     logprobs.append(item)
+                else:
+                    raise RuntimeError(f"SGLang result {i} has an invalid token logprob")
             
-            if len(logprobs) < len(completion_ids):
-                logprobs = [0.0] * (len(completion_ids) - len(logprobs)) + logprobs
-            elif len(logprobs) > len(completion_ids):
-                logprobs = logprobs[-len(completion_ids):] if completion_ids else []
+            if len(logprobs) != len(completion_ids):
+                raise RuntimeError(f"SGLang result {i} has {len(completion_ids)} tokens but {len(logprobs)} logprobs")
+            if any(not isinstance(lp, (int, float)) or not math.isfinite(lp) for lp in logprobs):
+                raise RuntimeError(f"SGLang result {i} has a nonfinite or invalid token logprob")
             prompt = all_input_ids[i]
             full_output = prompt + completion_ids
             all_output_ids.append(full_output)
