@@ -73,11 +73,25 @@ class CustomStreamer(TextStreamer):
         super().__init__(tokenizer, skip_prompt=True, skip_special_tokens=True)
         self.queue = queue
         self.tokenizer = tokenizer
+        self.generated_tokens = 0
+        self.last_token_id = None
+
+    def put(self, value):
+        if not self.next_tokens_are_prompt:
+            self.generated_tokens += value.numel()
+            self.last_token_id = value.reshape(-1)[-1].item()
+        super().put(value)
 
     def on_finalized_text(self, text: str, stream_end: bool = False):
         self.queue.put(text)
         if stream_end:
             self.queue.put(None)
+
+
+def get_finish_reason(generated_tokens, last_token_id, max_tokens, tool_calls):
+    if generated_tokens >= max_tokens and last_token_id != tokenizer.eos_token_id:
+        return "length"
+    return "tool_calls" if tool_calls else "stop"
 
 
 def parse_response(text):
@@ -192,7 +206,7 @@ def generate_stream_response(messages, temperature, top_p, max_tokens, tools=Non
         if pending:
             field = 'content' if thinking_ended else 'reasoning_content'
             yield json.dumps({"choices": [{"delta": {field: pending}}]}, ensure_ascii=False)
-        yield json.dumps({"choices": [{"delta": {}, "finish_reason": "tool_calls" if tool_count else "stop"}]}, ensure_ascii=False)
+        yield json.dumps({"choices": [{"delta": {}, "finish_reason": get_finish_reason(streamer.generated_tokens, streamer.last_token_id, max_tokens, tool_count)}]}, ensure_ascii=False)
 
     except Exception as e:
         yield json.dumps({"error": str(e)})
@@ -233,7 +247,8 @@ def chat_completions(request: ChatRequest):
                     top_p=request.top_p,
                     temperature=request.temperature
                 )
-                answer = tokenizer.decode(generated_ids[0][inputs["input_ids"].shape[1]:], skip_special_tokens=True)
+                completion_ids = generated_ids[0][inputs["input_ids"].shape[1]:]
+                answer = tokenizer.decode(completion_ids, skip_special_tokens=True)
             content, reasoning_content, tool_calls = parse_response(answer)
             message = {"role": "assistant", "content": content}
             if reasoning_content:
@@ -249,7 +264,7 @@ def chat_completions(request: ChatRequest):
                     {
                         "index": 0,
                         "message": message,
-                        "finish_reason": "tool_calls" if tool_calls else "stop"
+                        "finish_reason": get_finish_reason(completion_ids.numel(), completion_ids[-1].item() if completion_ids.numel() else None, request.max_tokens, tool_calls)
                     }
                 ]
             }
