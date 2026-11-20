@@ -348,7 +348,9 @@ def rl_train_epoch(epoch, loader, iters, rollout_engine, ref_model, reward_model
             if wandb and is_main_process():
                 wandb.log({"reward":ar,"kl_ref":kl,"group_reward_std":gs,"advantages_std":ast,"policy_loss":pl,"avg_response_len":al,"advantages_mean":am,"learning_rate":lr})
 
-        if (step % args.save_interval == 0 or step == iters) and is_main_process():
+        # 保存点落在累积窗口内时，延后至 optimizer.step 完成，避免续训丢失未保存的梯度。
+        should_save = (step % args.accumulation_steps == 0 or step == iters) and (step % args.save_interval < args.accumulation_steps or step == iters)
+        if should_save and is_main_process():
             model.eval()
             moe_suffix = '_moe' if lm_config.use_moe else ''
             ckp = f'{args.save_dir}/{args.save_weight}_{lm_config.hidden_size}{moe_suffix}.pth'
@@ -361,7 +363,7 @@ def rl_train_epoch(epoch, loader, iters, rollout_engine, ref_model, reward_model
             model.train()
             del state_dict
 
-        if step % args.save_interval == 0 or step == iters: rollout_engine.update_policy(model)
+        if should_save: rollout_engine.update_policy(model)
 
         del per_token_logps, ref_per_token_logps
         del completions, rewards, grouped_rewards, mean_r, std_r, advantages, completion_mask

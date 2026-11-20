@@ -121,7 +121,9 @@ def train_epoch(epoch, loader, iters, teacher_model, lm_config_student, start_st
                     "epoch_time": eta_min
                 })
 
-        if (step % args.save_interval == 0 or step == iters) and is_main_process():
+        # 保存点落在累积窗口内时，延后至 optimizer.step 完成，避免续训丢失未保存的梯度。
+        should_save = (step % args.accumulation_steps == 0 or step == iters) and (step % args.save_interval < args.accumulation_steps or step == iters)
+        if should_save and is_main_process():
             model.eval()
             moe_suffix = '_moe' if lm_config_student.use_moe else ''
             ckp = f'{args.save_dir}/{args.save_weight}_{lm_config_student.hidden_size}{moe_suffix}.pth'

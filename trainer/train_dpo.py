@@ -103,7 +103,9 @@ def train_epoch(epoch, loader, iters, ref_model, lm_config, start_step=0, wandb=
             
             if wandb: wandb.log({"loss": current_loss, "dpo_loss": current_dpo_loss, "aux_loss": current_aux_loss, "learning_rate": current_lr, "epoch_time": eta_min})
 
-        if (step % args.save_interval == 0 or step == iters) and is_main_process():
+        # 保存点落在累积窗口内时，延后至 optimizer.step 完成，避免续训丢失未保存的梯度。
+        should_save = (step % args.accumulation_steps == 0 or step == iters) and (step % args.save_interval < args.accumulation_steps or step == iters)
+        if should_save and is_main_process():
             model.eval()
             moe_suffix = '_moe' if lm_config.use_moe else ''
             ckp = f'{args.save_dir}/{args.save_weight}_{lm_config.hidden_size}{moe_suffix}.pth'

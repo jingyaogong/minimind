@@ -55,7 +55,9 @@ def train_epoch(epoch, loader, iters, lora_params, start_step=0, wandb=None):
             Logger(f'Epoch:[{epoch + 1}/{args.epochs}]({step}/{iters}), loss: {current_loss:.4f}, logits_loss: {current_logits_loss:.4f}, aux_loss: {current_aux_loss:.4f}, lr: {current_lr:.8f}, epoch_time: {eta_min:.1f}min')
             if wandb: wandb.log({"loss": current_loss, "logits_loss": current_logits_loss, "aux_loss": current_aux_loss, "learning_rate": current_lr, "epoch_time": eta_min})
 
-        if (step % args.save_interval == 0 or step == iters) and is_main_process():
+        # 保存点落在累积窗口内时，延后至 optimizer.step 完成，避免续训丢失未保存的梯度。
+        should_save = (step % args.accumulation_steps == 0 or step == iters) and (step % args.save_interval < args.accumulation_steps or step == iters)
+        if should_save and is_main_process():
             model.eval()
             moe_suffix = '_moe' if lm_config.use_moe else ''
             lora_save_path = f'{args.save_dir}/{args.lora_name}_{lm_config.hidden_size}{moe_suffix}.pth'
