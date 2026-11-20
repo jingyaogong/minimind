@@ -119,7 +119,7 @@ def rollout_single(rollout_engine, tokenizer, messages, tools, max_turns=3, max_
         new_text = rollout_result.completions[0]
         all_outputs.append(new_text)
         response_ids.extend(new_ids)
-        response_mask.extend([int(t != tokenizer.eos_token_id) for t in new_ids])
+        response_mask.extend([1] * len(new_ids))  # 生成的回合结束符也需要学习
         response_old_logps.extend(new_logps)
         final_context = context + new_text
         calls = parse_tool_calls(new_text)
@@ -283,12 +283,6 @@ def rl_train_epoch(epoch, loader, iters, rollout_engine, ref_model, reward_model
             ref_per_token_logps = compute_per_token_logps(ref_model, input_ids, input_ids.size(1) - 1, attention_mask=full_mask)
 
         completion_mask = full_response_masks[:, 1:]
-        is_eos = (input_ids[:, 1:] == tokenizer.eos_token_id) & completion_mask.bool()
-        eos_idx = torch.full((completion_mask.size(0),), completion_mask.size(1) - 1, device=args.device, dtype=torch.long)
-        has_eos = is_eos.any(dim=1)
-        eos_idx[has_eos] = is_eos.int().argmax(dim=1)[has_eos]
-        pos = torch.arange(completion_mask.size(1), device=args.device).unsqueeze(0)
-        completion_mask = completion_mask * (pos <= eos_idx.unsqueeze(1)).float()
         token_counts = completion_mask.sum(dim=1)
         valid_rows = token_counts > 0
 
