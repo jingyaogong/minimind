@@ -366,7 +366,7 @@ def main():
         streamer = TextIteratorStreamer(tokenizer, skip_prompt=True, skip_special_tokens=True)
         generation_kwargs = {
             "input_ids": inputs.input_ids,
-            "max_length": inputs.input_ids.shape[1] + st.session_state.max_new_tokens,
+            "max_new_tokens": st.session_state.max_new_tokens,
             "num_return_sequences": 1,
             "do_sample": True,
             "attention_mask": inputs.attention_mask,
@@ -406,7 +406,6 @@ def main():
             streamer = TextIteratorStreamer(tokenizer, skip_prompt=True, skip_special_tokens=True)
             generation_kwargs["input_ids"] = inputs.input_ids
             generation_kwargs["attention_mask"] = inputs.attention_mask
-            generation_kwargs["max_length"] = inputs.input_ids.shape[1] + st.session_state.max_new_tokens
             generation_kwargs["streamer"] = streamer
             Thread(target=model.generate, kwargs=generation_kwargs).start()
             answer = ""
