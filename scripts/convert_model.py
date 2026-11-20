@@ -19,7 +19,7 @@ def convert_torch2transformers_minimind(torch_path, transformers_path, dtype=tor
     lm_model = MiniMindForCausalLM(lm_config)
     device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
     state_dict = torch.load(torch_path, map_location=device)
-    lm_model.load_state_dict(state_dict, strict=False)
+    lm_model.load_state_dict(state_dict, strict=True)
     lm_model = lm_model.to(dtype)  # 转换模型权重精度
     model_params = sum(p.numel() for p in lm_model.parameters() if p.requires_grad)
     print(f'模型参数: {model_params / 1e6} 百万 = {model_params / 1e9} B (Billion)')
@@ -106,7 +106,7 @@ def convert_merge_base_lora(base_torch_path, lora_path, merged_torch_path, lora_
     device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
     lm_model = MiniMindForCausalLM(lm_config).to(device)
     state_dict = torch.load(base_torch_path, map_location=device)
-    lm_model.load_state_dict(state_dict, strict=False)
+    lm_model.load_state_dict(state_dict, strict=True)
     apply_lora(lm_model, rank=lora_rank)
     merge_lora(lm_model, lora_path, merged_torch_path)
     print(f"LoRA 已合并并保存为基模结构 PyTorch 格式: {merged_torch_path}")
