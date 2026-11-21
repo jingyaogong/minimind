@@ -209,7 +209,7 @@ def load_model_tokenizer(model_path):
         model_path,
         trust_remote_code=True
     )
-    model = model.half().eval().to(device)
+    model = (model.half() if 'cuda' in str(device) else model).eval().to(device)
     return model, tokenizer
 
 

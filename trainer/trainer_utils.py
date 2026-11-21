@@ -39,6 +39,22 @@ def Logger(content):
         print(content)
 
 
+def auto_dtype(device):
+    """CUDA 上按硬件选择：支持 bf16 用 bfloat16，否则 float16；CPU 上返回 float32。"""
+    if not str(device).startswith('cuda') or not torch.cuda.is_available():
+        return 'float32'
+    return 'bfloat16' if torch.cuda.is_bf16_supported() else 'float16'
+
+
+def describe_device(device):
+    """返回设备描述字符串，用于启动时的日志输出。"""
+    if not str(device).startswith('cuda') or not torch.cuda.is_available():
+        return f'CPU ({os.cpu_count()} 逻辑核)'
+    idx = torch.device(device).index or 0
+    props = torch.cuda.get_device_properties(idx)
+    return f'{props.name} | {props.total_memory / 1024**3:.1f} GB 显存 | bf16={torch.cuda.is_bf16_supported()}'
+
+
 def get_lr(current_step, total_steps, lr):
     return lr*(0.1 + 0.45*(1 + math.cos(math.pi * current_step / total_steps)))
 
@@ -104,7 +120,8 @@ def lm_checkpoint(lm_config, weight='full_sft', model=None, optimizer=None, epoc
         torch.save(resume_data, resume_tmp)
         os.replace(resume_tmp, resume_path)
         del state_dict, resume_data
-        torch.cuda.empty_cache()
+        if torch.cuda.is_available():
+            torch.cuda.empty_cache()
     else:  # 加载模式
         if os.path.exists(resume_path):
             ckp_data = torch.load(resume_path, map_location='cpu')
