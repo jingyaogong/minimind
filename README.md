@@ -94,6 +94,7 @@
 - 支持在 C-Eval、C-MMLU、OpenBookQA 等第三方测评集上进行评测，并支持通过 YaRN 实现 RoPE 长文本外推。
 - 提供兼容 OpenAI API 协议的极简服务端，便于接入 FastGPT、Open-WebUI 等第三方 Chat UI，并支持 `reasoning_content`、`tool_calls`、`open_thinking`。
 - 提供基于 Streamlit 的极简聊天 WebUI，支持思考展示、工具选择与多轮 Tool Call。
+- 提供本地命令行代码执行演示，模型可通过 `<tool_call>` 请求运行 Python，执行前需用户确认。
 - 包含实验性拓展：离散扩散语言模型（[dLM](https://github.com/jingyaogong/minimind/discussions/618)）与线性注意力模型（[Linear Attention](https://github.com/jingyaogong/minimind/discussions/704)），均可基于主线 AR 模型进行续训。
 
 #### 🎉 已发布模型列表
@@ -253,7 +254,19 @@ python eval_llm.py --load_from ./minimind-3
 python eval_llm.py --load_from ./model --weight full_sft
 ```
 
-### 3'（可选）WebUI
+### 3' 本地 CLI 代码执行
+
+下载 Transformers 格式模型后，可以启动交互式聊天，并允许模型请求执行 Python：
+
+```bash
+python scripts/chat_code.py --model ./minimind-3
+```
+
+`--model` 默认为 `./minimind-3`，也可指向其他兼容 Transformers 的本地模型目录或 Hugging Face Hub 模型 ID。模型需要提供兼容的聊天模板，并能按 MiniMind 使用的 `<tool_call>` 格式返回工具请求。该示例用于演示 Coding Agent 的基本循环：模型发起工具调用 → 用户确认 → 本地执行 → 结果回传 → 模型继续回答。
+
+每次执行前 CLI 都会展示代码并要求确认。代码在独立 Python 子进程和临时工作目录中运行，带有超时、输出捕获及尽力而为的资源限制。这是实验性轻量防护，不是安全沙箱；不要批准不可信代码，也不要用于暴露给网络的服务。默认下载目录 `minimind-3/` 已加入 Git 忽略规则，不会进入提交。
+
+### 4'（可选）WebUI
 
 ```bash
 # 可能需要`python>=3.10`，安装 `pip install streamlit`
@@ -261,7 +274,7 @@ python eval_llm.py --load_from ./model --weight full_sft
 cd scripts && streamlit run web_demo.py
 ```
 
-### 4'（可选）第三方推理框架
+### 5'（可选）第三方推理框架
 
 ```bash
 # ollama
