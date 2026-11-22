@@ -85,11 +85,11 @@ def parse_tool_calls(text):
 
 def execute_tool(name, args):
     fn = MOCK_RESULTS.get(name)
-    if not fn: return None
+    if not fn: return {"error": f"未知工具: {name}"}
     try:
         return fn(args)
-    except Exception:
-        return None
+    except Exception as e:
+        return {"error": f"工具执行失败: {str(e)[:80]}"}
 
 # ======== 多轮 Rollout ========
 def rollout_single(rollout_engine, tokenizer, messages, tools, max_turns=3, max_new_tokens=256, thinking_ratio=0.5, device="cuda"):
@@ -137,7 +137,7 @@ def rollout_single(rollout_engine, tokenizer, messages, tools, max_turns=3, max_
                 except: raw = {}
             if not isinstance(raw, dict): raw = {}
             result = execute_tool(name, raw)
-            result_str = (json.dumps(result, ensure_ascii=False) if result else '{"error": "tool not found"}')[:2048]  # 防止天文数字撑爆tokenizer
+            result_str = json.dumps(result, ensure_ascii=False)[:2048]  # 防止天文数字撑爆tokenizer
             messages.append({"role": "tool", "content": result_str})
 
         marker = f"<|agent_observation_{id(messages)}_{len(response_ids)}|>"
