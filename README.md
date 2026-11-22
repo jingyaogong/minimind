@@ -72,6 +72,39 @@
 
 ---
 
+## ❤️ 赞助
+
+<div align="center">
+
+<table>
+  <tr>
+    <td align="center" width="76">
+      <a href="https://www.infistar.cc/register?aff=VCHAAHCH&ref_source=link">
+        <img src="https://infistar.cc/logo.png" width="48" alt="无限星河AI" />
+      </a>
+    </td>
+    <td>
+      <b>感谢 <a href="https://www.infistar.cc/register?aff=VCHAAHCH&ref_source=link">Infistar</a> 赞助</b>：多模型API网关，一个Key调用主流AI模型，低至官方0.1折。欢迎通过<a href="https://www.infistar.cc/register?aff=VCHAAHCH&ref_source=link"><b>项目专属链接</b></a>注册使用。
+    </td>
+  </tr>
+</table>
+
+</div>
+
+<details>
+<summary>关于赞助与合作</summary>
+<br>
+
+MiniMind 以 Apache 2.0 协议完全开源、永久免费。赞助完全自愿，不换取任何特权，也不影响项目使用。感谢每一位支持者，让这个业余时间维护的项目得以持续。
+
+赞助方式包括按月占位，或直接赞助 GPU 服务器（算力可能用于项目相关或不相关的研究性探索）。
+
+如有意向，欢迎通过 [邮件](mailto:gongjy.cs@foxmail.com) 联系。
+
+</details>
+
+---
+
 # 📌 项目介绍
 
 大语言模型（Large Language Model, LLM）的出现，引发了全球范围内对 AI 的空前关注。无论是 ChatGPT、DeepSeek 还是 Qwen，都以惊艳的效果让人真切感受到这场技术浪潮的冲击力。然而，动辄数百亿参数的模型规模，使得它们对个人设备而言不仅难以训练，甚至连部署都显得遥不可及。打开大模型的“黑盒子”，真正去理解其内部运作机制，本应是一件令人心潮澎湃的事。遗憾的是，绝大多数探索最终都止步于使用 LoRA 等技术对现有大模型做少量微调，学习一些新指令或特定任务。这更像是在教牛顿如何使用 21 世纪的智能手机——虽然有趣，却偏离了理解物理本质的初衷。
