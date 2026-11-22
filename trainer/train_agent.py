@@ -23,19 +23,12 @@ from torch.optim.lr_scheduler import CosineAnnealingLR
 from transformers import AutoTokenizer
 from model.model_minimind import MiniMindConfig, MiniMindForCausalLM
 from dataset.lm_dataset import AgentRLDataset
-from trainer.trainer_utils import Logger, is_main_process, lm_checkpoint, init_distributed_mode, setup_seed, SkipBatchSampler, init_model, LMForRewardModel, safe_math_eval
+from trainer.trainer_utils import Logger, is_main_process, lm_checkpoint, init_distributed_mode, setup_seed, SkipBatchSampler, init_model, LMForRewardModel, safe_math_eval, rep_penalty
 from trainer.rollout_engine import create_rollout_engine, compute_per_token_logps
 
 warnings.filterwarnings('ignore')
 
 # ================================ 工具与 Reward = Start ================================
-
-def rep_penalty(text, n=3, cap=0.5):
-    cjk = ("\u3007\u3040-\u30ff\u3400-\u4dbf\u4e00-\u9fff\uf900-\ufaff\uac00-\ud7af"
-           "\U00020000-\U0002ee5f\U0002f800-\U0002fa1f\U00030000-\U0003347f")
-    toks = re.findall(rf"[{cjk}]|[^\W{cjk}]+|[^\w\s]", text.lower())
-    grams = [tuple(toks[i:i + n]) for i in range(len(toks) - n + 1)]
-    return min(cap, (len(grams) - len(set(grams))) * cap * 2 / len(grams)) if grams else 0.0
 
 # ======== 工具定义 ========
 TOOLS = [
@@ -80,12 +73,20 @@ def parse_tool_calls(text):
     for m in re.findall(r'<tool_call>(.*?)</tool_call>', text, re.DOTALL):
         try: call = json.loads(m.strip())
         except: continue
-        if isinstance(call, dict): calls.append(call)
+        if not isinstance(call, dict): continue
+        args = call.get("arguments", {})
+        if isinstance(args, str):
+            try: args = json.loads(args)
+            except (ValueError, RecursionError): args = {}
+        call["name"], call["arguments"] = str(call.get("name", "")), args if isinstance(args, dict) else {}
+        calls.append(call)
     return calls
 
-def execute_tool(name, args):
+def execute_tool(name, args, valid_names=None):
     fn = MOCK_RESULTS.get(name)
     if not fn: return {"error": f"未知工具: {name}"}
+    if valid_names is not None and name not in valid_names: return {"error": f"当前样本未提供工具: {name}"}
+    if not CHECK_ARGS[name](args): return {"error": f"工具参数无效: {name}"}
     try:
         return fn(args)
     except Exception as e:
@@ -93,6 +94,7 @@ def execute_tool(name, args):
 
 # ======== 多轮 Rollout ========
 def rollout_single(rollout_engine, tokenizer, messages, tools, max_turns=3, max_new_tokens=256, thinking_ratio=0.5, device="cuda"):
+    valid_names = {t['function']['name'] for t in tools} if tools else set()
     all_outputs = []
     prompt_ids = None
     response_ids = []
@@ -131,12 +133,7 @@ def rollout_single(rollout_engine, tokenizer, messages, tools, max_turns=3, max_
         assistant_message = {"role": "assistant", "content": new_text}
         messages.append(assistant_message)
         for call in calls:
-            name, raw = call.get("name", ""), call.get("arguments", {})
-            if isinstance(raw, str):
-                try: raw = json.loads(raw)
-                except: raw = {}
-            if not isinstance(raw, dict): raw = {}
-            result = execute_tool(name, raw)
+            result = execute_tool(call["name"], call["arguments"], valid_names)
             result_str = json.dumps(result, ensure_ascii=False)[:2048]  # 防止天文数字撑爆tokenizer
             messages.append({"role": "tool", "content": result_str})
 
@@ -225,11 +222,7 @@ def calculate_rewards(prompts, completions, gt_batch, tools_batch, num_gen, rewa
             gt = gt_batch[sample_idx]
             valid_call_count = 0
             for tool_call in tool_calls:
-                name, raw = tool_call.get("name", ""), tool_call.get("arguments", {})
-                if isinstance(raw, str):
-                    try: raw = json.loads(raw)
-                    except: raw = {}
-                if not isinstance(raw, dict): raw = {}
+                name, raw = tool_call["name"], tool_call["arguments"]
                 check = CHECK_ARGS.get(name)
                 valid_call_count += int(bool(name in valid_names and check and check(raw)))
             tool_gap = abs(valid_call_count - len(gt)) + max(0, len(tool_calls) - valid_call_count)  # tool数差值
