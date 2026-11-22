@@ -44,16 +44,12 @@ def Logger(content):
 
 
 # ======== 学习率 ========
-def get_lr(current_step, total_steps, lr, warmup_frac=0.0):
-    # warmup_frac=0（默认）时与原实现逐值相同。需要 warmup 的场景可以传入一个比例，
-    # 前 warmup_frac*total_steps 步把 lr 线性升到满值，其后在剩余步数上走原来的余弦。
-    if warmup_frac > 0:
-        warmup_steps = max(1, int(warmup_frac * total_steps))
-        if current_step < warmup_steps:
-            return lr * (current_step + 1) / warmup_steps
-        current_step -= warmup_steps
-        total_steps = max(1, total_steps - warmup_steps)
-    return lr*(0.1 + 0.45*(1 + math.cos(math.pi * current_step / total_steps)))
+def get_lr(current_step, total_steps, lr, warmup_ratio=0.0):
+    warmup = max(1, int(warmup_ratio * total_steps)) if warmup_ratio > 0 else 0
+    if current_step < warmup:
+        return lr * (current_step + 1) / warmup
+    angle = math.pi * (current_step - warmup) / max(1, total_steps - warmup)
+    return lr * (0.1 + 0.45 * (1 + math.cos(angle)))
 
 
 # ======== 分布式初始化 ========
