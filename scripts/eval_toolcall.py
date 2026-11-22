@@ -64,7 +64,8 @@ def init_model(args):
     else:
         model = AutoModelForCausalLM.from_pretrained(args.load_from, trust_remote_code=True)
     get_model_params(model, model.config)
-    return model.half().eval().to(args.device), tokenizer
+    if torch.device(args.device).type == 'cuda': model = model.half()
+    return model.eval().to(args.device), tokenizer
 
 
 def parse_tool_calls(text):

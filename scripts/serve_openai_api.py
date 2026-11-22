@@ -44,7 +44,8 @@ def init_model(args):
     else:
         model = AutoModelForCausalLM.from_pretrained(args.load_from, trust_remote_code=True)
     print(f'MiniMind模型参数量: {sum(p.numel() for p in model.parameters()) / 1e6:.2f} M(illion)')
-    return model.half().eval().to(device), tokenizer
+    if torch.device(device).type == 'cuda': model = model.half()
+    return model.eval().to(device), tokenizer
 
 
 class ChatRequest(BaseModel):

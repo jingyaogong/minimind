@@ -43,6 +43,16 @@ def Logger(content):
         print(content)
 
 
+# ======== 混合精度类型 ========
+def resolve_dtype(dtype, device):
+    if dtype != "bfloat16" or not torch.cuda.is_available() or torch.device(device).type != "cuda":
+        return dtype
+    if torch.cuda.is_bf16_supported(including_emulation=False):
+        return dtype
+    Logger(f"{torch.cuda.get_device_name(device)} 不原生支持 bfloat16，已回退为 float16")
+    return "float16"
+
+
 # ======== 学习率 ========
 def get_lr(current_step, total_steps, lr, warmup_ratio=0.0):
     warmup = max(1, int(warmup_ratio * total_steps)) if warmup_ratio > 0 else 0
