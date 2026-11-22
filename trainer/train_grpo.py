@@ -22,16 +22,10 @@ from torch.optim.lr_scheduler import CosineAnnealingLR
 from transformers import AutoModel
 from model.model_minimind import MiniMindConfig, MiniMindForCausalLM
 from dataset.lm_dataset import RLAIFDataset
-from trainer.trainer_utils import Logger, is_main_process, lm_checkpoint, init_distributed_mode, setup_seed, SkipBatchSampler, init_model, LMForRewardModel
+from trainer.trainer_utils import Logger, is_main_process, lm_checkpoint, init_distributed_mode, setup_seed, SkipBatchSampler, init_model, LMForRewardModel, rep_penalty
 from trainer.rollout_engine import create_rollout_engine
 
 warnings.filterwarnings('ignore')
-
-
-def rep_penalty(text, n=3, cap=0.5):
-    toks = re.findall(r"\w+|[^\w\s]", text.lower())
-    grams = [tuple(toks[i:i + n]) for i in range(len(toks) - n + 1)]
-    return min(cap, (len(grams) - len(set(grams))) * cap * 2 / len(grams)) if grams else 0.0
 
 
 def calculate_rewards(prompts, responses, reward_model):
@@ -144,7 +138,7 @@ def grpo_train_epoch(epoch, loader, iters, rollout_engine, ref_model, reward_mod
         loss = (policy_loss + aux_loss) / args.accumulation_steps  # scalar
         loss.backward()
 
-        if step % args.accumulation_steps == 0:
+        if step % args.accumulation_steps == 0 or step == iters:
             if args.grad_clip > 0:
                 torch.nn.utils.clip_grad_norm_(model.parameters(), args.grad_clip)
             optimizer.step()
@@ -194,13 +188,6 @@ def grpo_train_epoch(epoch, loader, iters, rollout_engine, ref_model, reward_mod
 
         del prompt_inputs, outputs, completion_ids, per_token_logps, ref_per_token_logps
         del completions, rewards, grouped_rewards, mean_r, std_r, advantages, completion_mask, completion_pad_mask, prompt_lens, logp_pos
-
-    if step > start_step and step % args.accumulation_steps != 0:
-        if args.grad_clip > 0:
-            torch.nn.utils.clip_grad_norm_(model.parameters(), args.grad_clip)
-        optimizer.step()
-        scheduler.step()
-        optimizer.zero_grad()
 
 
 if __name__ == "__main__":

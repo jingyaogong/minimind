@@ -1153,7 +1153,9 @@ python train_grpo.py
 
 > MiniMind optimization trends during the GRPO training stage
 
-From the training curves, it can be seen that GRPO's **reward shows a more stable upward trend**, reaching around 4, indicating that GRPO itself can better utilize RLAIF signals. Policy Loss decreases steadily overall, and compared to PPO's dual-network optimization, GRPO's single-network architecture trains more stably with a higher convergence ceiling.
+From the training curves, it can be seen that GRPO's **reward shows a more stable upward trend**, reaching around 4, indicating that GRPO itself can better utilize RLAIF signals. Compared to PPO's dual-network optimization, GRPO's single-network architecture trains more stably with a higher convergence ceiling.
+
+Worth noting: Policy Loss is not a supervised loss where "lower is better". It is a surrogate objective constructed so that its first-order derivative equals the policy gradient (TRPO like), and advantages are normalized within each group on every iteration. Its absolute value therefore mainly reflects how far the current policy has drifted from the sampling distribution, so a "steady overall decline" does not mean the model is getting better. Whether GRPO is converging should be judged from the reward and the actual generation quality.
 
 #### 7.3 [Clipped Importance Sampling Policy Optimization](https://huggingface.co/papers/2506.13585)
 

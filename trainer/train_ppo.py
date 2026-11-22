@@ -20,16 +20,10 @@ from torch.nn.utils import clip_grad_norm_
 from torch.optim.lr_scheduler import CosineAnnealingLR
 from model.model_minimind import MiniMindConfig, MiniMindForCausalLM
 from dataset.lm_dataset import RLAIFDataset
-from trainer.trainer_utils import Logger, is_main_process, lm_checkpoint, init_distributed_mode, setup_seed, SkipBatchSampler, init_model, LMForRewardModel
+from trainer.trainer_utils import Logger, is_main_process, lm_checkpoint, init_distributed_mode, setup_seed, SkipBatchSampler, init_model, LMForRewardModel, rep_penalty
 from trainer.rollout_engine import create_rollout_engine
 
 warnings.filterwarnings('ignore')
-
-
-def rep_penalty(text, n=3, cap=0.5):
-    toks = re.findall(r"\w+|[^\w\s]", text.lower())
-    grams = [tuple(toks[i:i + n]) for i in range(len(toks) - n + 1)]
-    return min(cap, (len(grams) - len(set(grams))) * cap * 2 / len(grams)) if grams else 0.0
 
 
 # 自定义的Critic模型，继承自MiniMindLM

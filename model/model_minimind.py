@@ -127,7 +127,7 @@ class Attention(nn.Module):
         else:
             scores = (xq @ xk.transpose(-2, -1)).float() / math.sqrt(self.head_dim)
             if self.is_causal: scores[:, :, :, -seq_len:] += torch.full((seq_len, seq_len), float("-inf"), device=scores.device).triu(1)
-            if attention_mask is not None: scores += (1.0 - attention_mask.unsqueeze(1).unsqueeze(2)) * -1e9
+            if attention_mask is not None: scores += (1.0 - attention_mask.to(scores.dtype).unsqueeze(1).unsqueeze(2)) * -1e9
             output = self.attn_dropout(F.softmax(scores, dim=-1).type_as(xq)) @ xv
         output = output.transpose(1, 2).reshape(bsz, seq_len, -1)
         output = self.resid_dropout(self.o_proj(output))
@@ -260,6 +260,7 @@ class MiniMindForCausalLM(PreTrainedModel, GenerationMixin):
     # https://github.com/jingyaogong/minimind/discussions/611
     @torch.inference_mode()
     def generate(self, inputs=None, attention_mask=None, max_new_tokens=8192, temperature=0.85, top_p=0.85, top_k=50, eos_token_id=2, streamer=None, use_cache=True, num_return_sequences=1, do_sample=True, repetition_penalty=1.0, **kwargs):
+        if do_sample and not 0 < temperature < math.inf: raise ValueError("Sampling temperature must be finite and positive")
         input_ids = kwargs.pop("input_ids", inputs).repeat(num_return_sequences, 1)
         attention_mask = attention_mask.repeat(num_return_sequences, 1) if attention_mask is not None else None
         past_key_values = kwargs.pop("past_key_values", None)
@@ -269,17 +270,16 @@ class MiniMindForCausalLM(PreTrainedModel, GenerationMixin):
             past_len = past_key_values[0][0].shape[1] if past_key_values else 0
             outputs = self.forward(input_ids[:, past_len:], attention_mask, past_key_values, use_cache=use_cache, **kwargs)
             attention_mask = torch.cat([attention_mask, attention_mask.new_ones(attention_mask.shape[0], 1)], -1) if attention_mask is not None else None
-            logits = outputs.logits[:, -1, :] / temperature
+            logits = outputs.logits[:, -1] / temperature if do_sample else outputs.logits[:, -1]
             if repetition_penalty != 1.0:
                 for i in range(input_ids.shape[0]):
                     seen = torch.unique(input_ids[i]); score = logits[i, seen]; logits[i, seen] = torch.where(score > 0, score / repetition_penalty, score * repetition_penalty)
-            if top_k > 0: 
+            if do_sample and top_k > 0:
                 logits[logits < torch.topk(logits, top_k)[0][..., -1, None]] = -float('inf')
-            if top_p < 1.0:
+            if do_sample and top_p < 1.0:
                 sorted_logits, sorted_indices = torch.sort(logits, descending=True)
                 mask = torch.cumsum(torch.softmax(sorted_logits, dim=-1), dim=-1) > top_p
-                mask[..., 1:], mask[..., 0] = mask[..., :-1].clone(), 0
-                logits[mask.scatter(1, sorted_indices, mask)] = -float('inf')
+                logits[mask.scatter(1, sorted_indices, F.pad(mask[..., :-1], (1, 0)))] = -float('inf')
             next_token = torch.multinomial(torch.softmax(logits, dim=-1), num_samples=1) if do_sample else torch.argmax(logits, dim=-1, keepdim=True)
             if eos_token_id is not None: next_token = torch.where(finished.unsqueeze(-1), next_token.new_full((next_token.shape[0], 1), eos_token_id), next_token)
             input_ids = torch.cat([input_ids, next_token], dim=-1)

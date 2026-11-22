@@ -24,11 +24,9 @@ warnings.filterwarnings('ignore')
 
 def train_epoch(epoch, loader, iters, lora_params, start_step=0, wandb=None):
     start_time = time.time()
-    last_step = start_step
     for step, (input_ids, labels) in enumerate(loader, start=start_step + 1):
         input_ids = input_ids.to(args.device)
         labels = labels.to(args.device)
-        last_step = step
         lr = get_lr(epoch * iters + step, args.epochs * iters, args.learning_rate)
         for param_group in optimizer.param_groups:
             param_group['lr'] = lr
@@ -40,7 +38,7 @@ def train_epoch(epoch, loader, iters, lora_params, start_step=0, wandb=None):
 
         scaler.scale(loss).backward()
 
-        if step % args.accumulation_steps == 0:
+        if step % args.accumulation_steps == 0 or step == iters:
             scaler.unscale_(optimizer)
             torch.nn.utils.clip_grad_norm_(lora_params, args.grad_clip)
             scaler.step(optimizer)
@@ -68,16 +66,11 @@ def train_epoch(epoch, loader, iters, lora_params, start_step=0, wandb=None):
 
         del input_ids, labels, res, loss
 
-    if last_step > start_step and last_step % args.accumulation_steps != 0:
-        scaler.unscale_(optimizer)
-        torch.nn.utils.clip_grad_norm_(lora_params, args.grad_clip)
-        scaler.step(optimizer)
-        scaler.update()
-        optimizer.zero_grad(set_to_none=True)
-
 if __name__ == "__main__":
     parser = argparse.ArgumentParser(description="MiniMind LoRA Fine-tuning")
     parser.add_argument("--save_dir", type=str, default="../out", help="模型保存目录")
+    parser.add_argument("--lora_rank", default=16, type=int, help="LoRA rank")
+    parser.add_argument("--lora_alpha", default=None, type=float, help="LoRA alpha（默认等于 rank，即 scaling=1）")
     parser.add_argument("--lora_name", type=str, default="lora_medical", help="LoRA权重名称(如lora_identity/lora_medical等)")
     parser.add_argument("--epochs", type=int, default=10, help="训练轮数")
     parser.add_argument("--batch_size", type=int, default=32, help="batch size")
@@ -127,7 +120,7 @@ if __name__ == "__main__":
     
     # ========== 5. 定义模型、应用LoRA、冻结非LoRA参数 ==========
     model, tokenizer = init_model(lm_config, args.from_weight, device=args.device)
-    apply_lora(model)
+    apply_lora(model, rank=args.lora_rank, lora_alpha=args.lora_alpha)
     
     # 统计参数
     total_params = sum(p.numel() for p in model.parameters())

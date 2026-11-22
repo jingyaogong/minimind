@@ -102,12 +102,12 @@ def convert_transformers2torch(transformers_path, torch_path):
     print(f"模型已保存为 PyTorch 格式: {torch_path}")
 
 
-def convert_merge_base_lora(base_torch_path, lora_path, merged_torch_path):
+def convert_merge_base_lora(base_torch_path, lora_path, merged_torch_path, lora_rank=16):
     device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
     lm_model = MiniMindForCausalLM(lm_config).to(device)
     state_dict = torch.load(base_torch_path, map_location=device)
     lm_model.load_state_dict(state_dict, strict=False)
-    apply_lora(lm_model)
+    apply_lora(lm_model, rank=lora_rank)
     merge_lora(lm_model, lora_path, merged_torch_path)
     print(f"LoRA 已合并并保存为基模结构 PyTorch 格式: {merged_torch_path}")
 
