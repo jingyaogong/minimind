@@ -84,7 +84,7 @@
       </a>
     </td>
     <td>
-      <b>Thanks to <a href="https://www.infistar.cc/register?aff=VCHAAHCH&ref_source=link">Infistar</a> for sponsoring</b>: Multi-model API gateway with one key for mainstream AI models, starting at 0.1× official prices. Welcome to register via <a href="https://www.infistar.cc/register?aff=VCHAAHCH&ref_source=link"><b>this exclusive link</b></a>.
+      <b>MiniMind × <a href="https://www.infistar.cc/register?aff=VCHAAHCH&ref_source=link">Infistar.cc</a></b>: 200+ models (Claude, GPT, Gemini, DeepSeek) via one key. Up to 99% off (from 0.1x official pricing), 100% genuine & verifiable, 1,000+ failover routes. MiniMind users get ¥5 free at sign-up via the <a href="https://www.infistar.cc/register?aff=VCHAAHCH&ref_source=link"><b>exclusive link</b></a>.
     </td>
   </tr>
 </table>

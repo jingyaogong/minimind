@@ -84,7 +84,7 @@
       </a>
     </td>
     <td>
-      <b>感谢 <a href="https://www.infistar.cc/register?aff=VCHAAHCH&ref_source=link">Infistar</a> 赞助</b>：多模型API网关，一个Key调用主流AI模型，低至官方0.1折。欢迎通过<a href="https://www.infistar.cc/register?aff=VCHAAHCH&ref_source=link"><b>项目专属链接</b></a>注册使用。
+      <b>MiniMind × <a href="https://www.infistar.cc/register?aff=VCHAAHCH&ref_source=link">Infistar.cc</a></b>：Claude、GPT、Gemini、DeepSeek等200+模型一个Key搞定，低至官方0.1折（省99%），100%官方纯血可验真，千条线路自动切换。通过<a href="https://www.infistar.cc/register?aff=VCHAAHCH&ref_source=link"><b>专属链接</b></a>注册即送¥5。
     </td>
   </tr>
 </table>
