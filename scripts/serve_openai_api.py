@@ -19,6 +19,7 @@ from pydantic import BaseModel, Field
 from transformers import AutoTokenizer, AutoModelForCausalLM, TextStreamer
 from model.model_minimind import MiniMindConfig, MiniMindForCausalLM
 from model.model_lora import apply_lora, load_lora
+from scripts.sanitize import sanitize_messages
 
 warnings.filterwarnings('ignore')
 
@@ -202,10 +203,11 @@ def generate_stream_response(messages, temperature, top_p, max_tokens, tools=Non
 @app.post("/v1/chat/completions")
 def chat_completions(request: ChatRequest):
     try:
+        messages = sanitize_messages(request.messages, tokenizer)
         if request.stream:
             return StreamingResponse(
                 (f"data: {chunk}\n\n" for chunk in generate_stream_response(
-                    messages=request.messages,
+                    messages=messages,
                     temperature=request.temperature,
                     top_p=request.top_p,
                     max_tokens=request.max_tokens,
@@ -216,7 +218,7 @@ def chat_completions(request: ChatRequest):
             )
         else:
             new_prompt = tokenizer.apply_chat_template(
-                request.messages,
+                messages,
                 tokenize=False,
                 add_generation_prompt=True,
                 tools=request.tools or None,
