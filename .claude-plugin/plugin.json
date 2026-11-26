@@ -1,0 +1,23 @@
+{
+  "name": "minimind",
+  "version": "0.1.0",
+  "description": "Agent skills for MiniMind: from-scratch tiny LLM training (pretrain, SFT, LoRA, DPO, PPO/GRPO/CISPO, Agentic RL), evaluation, and OpenAI-compatible serving.",
+  "author": {
+    "name": "Jingyao Gong",
+    "url": "https://github.com/jingyaogong"
+  },
+  "homepage": "https://github.com/jingyaogong/minimind",
+  "repository": "https://github.com/jingyaogong/minimind",
+  "license": "Apache-2.0",
+  "keywords": [
+    "minimind",
+    "llm",
+    "pretrain",
+    "sft",
+    "lora",
+    "dpo",
+    "rlaif",
+    "agent-skills"
+  ],
+  "skills": "./skills/"
+}

@@ -265,6 +265,22 @@ git clone --depth 1 https://github.com/jingyaogong/minimind
 cd minimind && pip install -r requirements.txt -i https://mirrors.aliyun.com/pypi/simple
 ```
 
+## Agent Skills 市场
+
+本仓库提供 **agent-agnostic** 的 skills 插件市场（入口：[`.agents/plugins/marketplace.json`](.agents/plugins/marketplace.json)），插件名为 `minimind`，skills 位于 [`skills/`](skills/)，覆盖环境与数据准备、MiniMind Zero 预训练/SFT、LoRA、RLHF-DPO / RLAIF（PPO/GRPO/CISPO）/ Agentic RL、评测对话与 OpenAI 兼容服务等。Claude Code 与 Codex 仅为接入示例：
+
+```bash
+# Codex
+codex plugin marketplace add jingyaogong/minimind
+codex plugin add minimind@minimind-agent-marketplace
+
+# Claude Code
+claude plugin marketplace add jingyaogong/minimind
+claude plugin install minimind@minimind-agent-marketplace
+```
+
+也可将 `skills/*/SKILL.md` 复制到所用 agent 的 skills 目录手动安装。
+
 ## Ⅰ 🚀 模型推理
 
 ### 1' 下载模型

@@ -264,6 +264,22 @@ git clone --depth 1 https://github.com/jingyaogong/minimind
 cd minimind && pip install -r requirements.txt -i https://mirrors.aliyun.com/pypi/simple
 ```
 
+## Agent Skills Marketplace
+
+This repo ships an **agent-agnostic** skills marketplace (entry: [`.agents/plugins/marketplace.json`](.agents/plugins/marketplace.json)). The plugin name is `minimind`; skills live under [`skills/`](skills/) and cover environment/data setup, MiniMind Zero pretrain+SFT, LoRA, RLHF-DPO / RLAIF (PPO/GRPO/CISPO) / Agentic RL, checkpoint chat, and OpenAI-compatible serving. Claude Code and Codex are install examples only:
+
+```bash
+# Codex
+codex plugin marketplace add jingyaogong/minimind
+codex plugin add minimind@minimind-agent-marketplace
+
+# Claude Code
+claude plugin marketplace add jingyaogong/minimind
+claude plugin install minimind@minimind-agent-marketplace
+```
+
+You can also copy `skills/*/SKILL.md` into your agent's skills directory manually.
+
 ## Ⅰ 🚀 Model Inference
 
 ### 1' Download Model

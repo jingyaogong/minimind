@@ -1,0 +1,40 @@
+{
+  "name": "minimind",
+  "version": "0.1.0",
+  "description": "Agent skills for MiniMind: from-scratch tiny LLM training (pretrain, SFT, LoRA, DPO, PPO/GRPO/CISPO, Agentic RL), evaluation, and OpenAI-compatible serving.",
+  "author": {
+    "name": "Jingyao Gong",
+    "url": "https://github.com/jingyaogong"
+  },
+  "homepage": "https://github.com/jingyaogong/minimind",
+  "repository": "https://github.com/jingyaogong/minimind",
+  "license": "Apache-2.0",
+  "keywords": [
+    "minimind",
+    "llm",
+    "pretrain",
+    "sft",
+    "lora",
+    "dpo",
+    "ppo",
+    "grpo",
+    "cispo",
+    "agentic-rl",
+    "agent-skills"
+  ],
+  "skills": "./skills/",
+  "interface": {
+    "displayName": "MiniMind",
+    "shortDescription": "Train and serve MiniMind from scratch",
+    "longDescription": "Skills for the MiniMind repository: environment and dataset setup, MiniMind Zero pretrain+SFT reproduction, LoRA and RL (DPO / PPO / GRPO / CISPO / Agentic RL), checkpoint chat via eval_llm.py, and OpenAI-compatible API serving plus torch↔transformers conversion.",
+    "developerName": "Jingyao Gong",
+    "category": "Engineering",
+    "websiteUrl": "https://github.com/jingyaogong/minimind",
+    "logo": "./images/logo.png",
+    "defaultPrompt": [
+      "Set up MiniMind and download the mini datasets for MiniMind Zero.",
+      "Reproduce MiniMind Zero with pretrain then SFT.",
+      "Chat with my full_sft checkpoint using eval_llm.py."
+    ]
+  }
+}
