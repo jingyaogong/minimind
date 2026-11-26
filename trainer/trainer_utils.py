@@ -56,8 +56,9 @@ def resolve_dtype(dtype, device):
 # ======== 学习率 ========
 def get_lr(current_step, total_steps, lr, warmup_ratio=0.0):
     warmup = max(1, int(warmup_ratio * total_steps)) if warmup_ratio > 0 else 0
-    if current_step < warmup:
-        return lr * (current_step + 1) / warmup
+    # Training loops pass one-based steps; step 0 is before the first update.
+    if warmup > 0 and current_step <= warmup:
+        return lr * current_step / warmup
     angle = math.pi * (current_step - warmup) / max(1, total_steps - warmup)
     return lr * (0.1 + 0.45 * (1 + math.cos(angle)))
 
