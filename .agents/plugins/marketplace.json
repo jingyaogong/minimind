@@ -1,0 +1,29 @@
+{
+  "name": "minimind-agent-marketplace",
+  "interface": {
+    "displayName": "MiniMind agent skills marketplace"
+  },
+  "plugins": [
+    {
+      "name": "minimind",
+      "description": "Agent skills for MiniMind: setup, MiniMind Zero pretrain/SFT, LoRA, RLHF-DPO, RLAIF (PPO/GRPO/CISPO), Agentic RL, eval, and OpenAI-compatible serving.",
+      "version": "0.1.0",
+      "author": {
+        "name": "Jingyao Gong",
+        "url": "https://github.com/jingyaogong"
+      },
+      "homepage": "https://github.com/jingyaogong/minimind",
+      "repository": "https://github.com/jingyaogong/minimind",
+      "logo": "./images/logo.png",
+      "source": {
+        "source": "local",
+        "path": "./"
+      },
+      "policy": {
+        "installation": "AVAILABLE",
+        "authentication": "ON_INSTALL"
+      },
+      "category": "Engineering"
+    }
+  ]
+}
