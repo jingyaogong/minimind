@@ -263,6 +263,8 @@ minimind2系列旧模型均经过权重映射+（微调训练）QKVO线性层校
 # 克隆仓库、安装依赖
 git clone --depth 1 https://github.com/jingyaogong/minimind
 cd minimind && pip install -r requirements.txt -i https://mirrors.aliyun.com/pypi/simple
+# 或使用 uv
+cd minimind && uv sync --locked
 ```
 
 ## Ⅰ 🚀 模型推理
@@ -273,6 +275,8 @@ cd minimind && pip install -r requirements.txt -i https://mirrors.aliyun.com/pyp
 ```bash
 # 方式1
 modelscope download --model gongjy/minimind-3 --local_dir ./minimind-3
+# 或使用 uv
+uv run modelscope download --model gongjy/minimind-3 --local_dir ./minimind-3
 # 方式2
 git clone https://huggingface.co/jingyaogong/minimind-3
 ```
@@ -282,8 +286,12 @@ git clone https://huggingface.co/jingyaogong/minimind-3
 ```bash
 # 方式1：使用 Transformers 格式模型
 python eval_llm.py --load_from ./minimind-3
+# 或使用 uv
+uv run eval_llm.py --load_from ./minimind-3
 # 方式2：基于 PyTorch 模型（确保./out目录下有对应权重）
 python eval_llm.py --load_from ./model --weight full_sft
+# 或使用 uv
+uv run eval_llm.py --load_from ./model --weight full_sft
 ```
 
 ### 3'（可选）WebUI
@@ -292,6 +300,8 @@ python eval_llm.py --load_from ./model --weight full_sft
 # 可能需要`python>=3.10`，安装 `pip install streamlit`
 # ⚠️ 须先将 transformers 格式模型文件夹复制到 ./scripts/ 目录下（例如：cp -r minimind-3 ./scripts/minimind-3），web_demo 脚本会自动扫描该目录下包含权重文件的子文件夹，如不存在则报错
 cd scripts && streamlit run web_demo.py
+# 或使用 uv
+cd scripts && uv run streamlit run web_demo.py
 ```
 
 ### 4'（可选）第三方推理框架
@@ -335,7 +345,11 @@ print(torch.cuda.is_available())
 
 ```bash
 python train_pretrain.py --from_resume 1
+# 或使用 uv
+uv run train_pretrain.py --from_resume 1
 python train_full_sft.py --from_resume 1
+# 或使用 uv
+uv run train_full_sft.py --from_resume 1
 # ...
 ```
 
@@ -353,6 +367,8 @@ python train_full_sft.py --from_resume 1
 
 ```bash
 cd trainer && python train_pretrain.py
+# 或使用 uv
+cd trainer && uv run train_pretrain.py
 ```
 
 > 训练后，将得到 `out/pretrain_*.pth` 作为输出权重（其中 `*` 为模型 dimension，默认为 `768`）
@@ -361,6 +377,8 @@ cd trainer && python train_pretrain.py
 
 ```bash
 cd trainer && python train_full_sft.py
+# 或使用 uv
+cd trainer && uv run train_full_sft.py
 ```
 
 > 训练后，将得到 `out/full_sft_*.pth` 作为输出权重（其中 `full` 表示全参数微调）
@@ -371,6 +389,8 @@ cd trainer && python train_full_sft.py
 
 ```bash
 python eval_llm.py --weight full_sft
+# 或使用 uv
+uv run eval_llm.py --weight full_sft
 ```
 
 > `--weight` 用于指定权重名称前缀，例如 `pretrain`、`full_sft` 等；更多参数可直接参考 `eval_llm.py`
@@ -384,6 +404,8 @@ python eval_llm.py --weight full_sft
 
 ```bash
 torchrun --nproc_per_node N train_xxx.py
+# 或使用 uv
+uv run torchrun --nproc_per_node N train_xxx.py
 ```
 
 3、可根据需要开启 wandb 记录训练过程。
@@ -711,8 +733,12 @@ LLM 首先要学会的是先把尽可能多的基础知识和语言规律吸收�
 ```bash
 # 方式1
 torchrun --nproc_per_node 1 train_pretrain.py # 1即为单卡训练，可根据硬件情况自行调整 (设置>=2)
+# 或使用 uv
+uv run torchrun --nproc_per_node 1 train_pretrain.py # 1即为单卡训练，可根据硬件情况自行调整 (设置>=2)
 # 方式2
 python train_pretrain.py
+# 或使用 uv
+uv run train_pretrain.py
 ```
 
 > 训练后的模型权重文件默认每隔`save_interval步`保存为:`pretrain_*.pth`（*为模型具体dimension，每次保存时新文件会覆盖旧文件）
@@ -723,6 +749,8 @@ python train_pretrain.py
 ```bash
 # 可对预训练结果做简单测试：
 python eval_llm.py --weight pretrain
+# 或使用 uv
+uv run eval_llm.py --weight pretrain
 
 💬: 为什么天空是蓝色的
 🧠: 天空之所以看起来是蓝色的，主要是因为太阳光进入大气层后，短波长的蓝光更容易被空气分子散射，因此人眼从各个方向接收到的蓝光会更多。
@@ -741,8 +769,12 @@ SFT 并不只是把模型调成“更会聊天”，它同样可以继续向模�
 ```bash
 # 方式1
 torchrun --nproc_per_node 1 train_full_sft.py
+# 或使用 uv
+uv run torchrun --nproc_per_node 1 train_full_sft.py
 # 方式2
 python train_full_sft.py
+# 或使用 uv
+uv run train_full_sft.py
 ```
 
 > 训练后的模型权重文件默认每隔`save_interval步`保存为: `full_sft_*.pth`（*为模型具体dimension，每次保存时新文件会覆盖旧文件）
@@ -753,6 +785,8 @@ python train_full_sft.py
 ```bash
 # 可对SFT结果做简单测试：
 python eval_llm.py --weight full_sft
+# 或使用 uv
+uv run eval_llm.py --weight full_sft
 
 💬: 解释什么是机器学习
 🧠: 机器学习是人工智能的核心技术之一，通过算法让计算机从数据中学习规律，并持续改进预测或决策效果，常见应用包括推荐系统、图像识别、语音识别和自然语言处理。
@@ -786,8 +820,12 @@ python eval_llm.py --weight full_sft
 ```bash
 # 方式1
 torchrun --nproc_per_node 1 train_distillation.py
+# 或使用 uv
+uv run torchrun --nproc_per_node 1 train_distillation.py
 # 方式2
 python train_distillation.py
+# 或使用 uv
+uv run train_distillation.py
 ```
 
 ### 4' LoRA (Low-Rank Adaptation)
@@ -799,8 +837,12 @@ LoRA 是一种常见的参数高效微调（Parameter-Efficient Fine-Tuning, PEF
 # train_lora.py 在 CPU 上通常也能比较轻快地完成
 # 方式1
 cd trainer && torchrun --nproc_per_node 1 train_lora.py
+# 或使用 uv
+cd trainer && uv run torchrun --nproc_per_node 1 train_lora.py
 # 方式2
 cd trainer && python train_lora.py
+# 或使用 uv
+cd trainer && uv run train_lora.py
 ```
 
 > 训练后的模型权重文件默认每隔`save_interval步`保存为: `lora_xxx_*.pth`（*为模型具体dimension，每次保存时新文件会覆盖旧文件）
@@ -828,11 +870,15 @@ LoRA 很适合处理“如何在尽量保留通用能力的前提下，让模型
 ```bash
 # 注意：weight参数指定基础模型类型，需与train_lora训练时使用的基础模型保持一致
 python eval_llm.py  --weight full_sft --lora_weight lora_medical
+# 或使用 uv
+uv run eval_llm.py  --weight full_sft --lora_weight lora_medical
 
 👶: 我最近经常感到头晕，可能是什么原因？
 🤖️: 头晕可能是由于多种原因，包括但不限于：心脏疾病、眼睛损伤、过敏反应、皮肤问题、过敏反应、压力、焦虑、疲劳、药物副作用、性功能障碍或者其他...
 
 python eval_llm.py  --weight full_sft --lora_weight lora_identity
+# 或使用 uv
+uv run eval_llm.py  --weight full_sft --lora_weight lora_identity
 
 👶: 你和openai是什么关系？
 🤖️: 我是 MiniMind，一个由 Jingyao Gong 开发的人工智能助手。我通过自然语言处理和算法训练来与用户进行交互。
@@ -845,6 +891,8 @@ PS：如果有更充足的数据，也可以直接做 `full_sft` 全参微调；
 
 ```bash
 cd scripts && python convert_model.py
+# 或使用 uv
+cd scripts && uv run convert_model.py
 ```
 
 ### **5' 工具调用 & 自适应思考**
@@ -881,6 +929,8 @@ Tool Calling 的 chat template 已统一支持解析为：
 
 ```bash
 python eval_toolcall.py --weight full_sft
+# 或使用 uv
+uv run eval_toolcall.py --weight full_sft
 
 💬: 现在几点了？
 🧠: <tool_call>{"name": "get_current_time", "arguments": {"timezone": "Asia/Shanghai"}}</tool_call>
@@ -902,6 +952,8 @@ python eval_toolcall.py --weight full_sft
 ```bash
 # 测试回答
 python eval_llm.py --load_from ./minimind-3 --open_thinking 1
+# 或使用 uv
+uv run eval_llm.py --load_from ./minimind-3 --open_thinking 1
 ```
 
 OpenAI-API-SDK 用法：
@@ -998,8 +1050,12 @@ $$\mathcal{L}_{DPO} = -\mathbb{E}\left[\log \sigma\left(\beta \left[\log \frac{\
 ```bash
 # 方式1
 torchrun --nproc_per_node 1 train_dpo.py
+# 或使用 uv
+uv run torchrun --nproc_per_node 1 train_dpo.py
 # 方式2
 python train_dpo.py
+# 或使用 uv
+uv run train_dpo.py
 ```
 
 > 训练后的模型权重文件默认每隔`save_interval步`保存为: `dpo_*.pth`（*为模型具体dimension，每次保存时新文件会覆盖旧文件）
@@ -1139,8 +1195,12 @@ MiniMind 的 PPO 实现包含 Actor（生成回答）、Critic（评估回答价
 ```bash
 # 方式1
 torchrun --nproc_per_node N train_ppo.py
+# 或使用 uv
+uv run torchrun --nproc_per_node N train_ppo.py
 # 方式2
 python train_ppo.py
+# 或使用 uv
+uv run train_ppo.py
 ```
 
 > 训练后的模型权重文件默认每隔`save_interval步`保存为: `ppo_actor_*.pth`（*为模型具体dimension）
@@ -1175,8 +1235,12 @@ GRPO 更显著的问题是退化组（Degenerate Groups）：如果某个问题�
 ```bash
 # 方式1
 torchrun --nproc_per_node N train_grpo.py
+# 或使用 uv
+uv run torchrun --nproc_per_node N train_grpo.py
 # 方式2
 python train_grpo.py
+# 或使用 uv
+uv run train_grpo.py
 ```
 
 > 训练后的模型权重文件默认每隔`save_interval步`保存为: `grpo_*.pth`
@@ -1242,8 +1306,12 @@ $$
 # ① 默认使用torch做rollout
 # 方式1
 torchrun --nproc_per_node N train_agent.py
+# 或使用 uv
+uv run torchrun --nproc_per_node N train_agent.py
 # 方式2
 python train_agent.py
+# 或使用 uv
+uv run train_agent.py
 ```
 
 ```bash
@@ -1252,6 +1320,8 @@ python train_agent.py
 python -m sglang.launch_server --model-path ./minimind-3 --attention-backend triton --host 0.0.0.0 --port 8998
 # 训练参数可参考：
 python train_agent.py --rollout_engine sglang --sglang_base_url http://localhost:8998 --sglang_shared_path ./ckpt_mm --data_path ../dataset/agent_rl_math.jsonl --use_wandb
+# 或使用 uv
+uv run train_agent.py --rollout_engine sglang --sglang_base_url http://localhost:8998 --sglang_shared_path ./ckpt_mm --data_path ../dataset/agent_rl_math.jsonl --use_wandb
 ```
 
 > 训练后的模型权重文件默认每隔`save_interval步`保存为: `agent_*.pth`
@@ -1278,6 +1348,8 @@ python train_agent.py --rollout_engine sglang --sglang_base_url http://localhost
 ```bash
 # 测试最终模型 Tool Use 的能力
 python eval_toolcall.py --weight agent
+# 或使用 uv
+uv run eval_toolcall.py --weight agent
 
 💬: 现在几点了？
 🧠: <tool_call>{"name": "get_current_time", "arguments": {"timezone": "Asia/Shanghai"}}</tool_call>
@@ -1572,6 +1644,8 @@ MiniMind 支持通过 YaRN 算法进行 RoPE 位置编码的长度外推，使�
 
 ```bash
 python eval_llm.py --weight full_sft --inference_rope_scaling
+# 或使用 uv
+uv run eval_llm.py --weight full_sft --inference_rope_scaling
 ```
 
 对于 `Transformers` 格式的模型，则可以在 `config.json` 中添加以下配置实现长度外推：
@@ -1685,10 +1759,14 @@ minimind-3-exam 不是更大的基座模型，也几乎没有额外注入新知�
 * 启动服务端
     ```bash
     cd scripts && python serve_openai_api.py
+    # 或使用 uv
+    cd scripts && uv run serve_openai_api.py
     ```
 * 测试服务接口
     ```bash
     cd scripts && python chat_api.py
+    # 或使用 uv
+    cd scripts && uv run chat_api.py
     ```
 * API 请求示例（兼容 OpenAI API 格式）
     ```bash
