@@ -18,7 +18,7 @@ def convert_torch2transformers_minimind(torch_path, transformers_path, dtype=tor
     MiniMindForCausalLM.register_for_auto_class("AutoModelForCausalLM")
     lm_model = MiniMindForCausalLM(lm_config)
     device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
-    state_dict = torch.load(torch_path, map_location=device)
+    state_dict = torch.load(torch_path, map_location=device, weights_only=True)
     lm_model.load_state_dict(state_dict, strict=False)
     lm_model = lm_model.to(dtype)  # 转换模型权重精度
     model_params = sum(p.numel() for p in lm_model.parameters() if p.requires_grad)
@@ -39,7 +39,7 @@ def convert_torch2transformers_minimind(torch_path, transformers_path, dtype=tor
 # QwenForCausalLM/LlamaForCausalLM结构兼容生态
 def convert_torch2transformers(torch_path, transformers_path, dtype=torch.float16):
     device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
-    state_dict = torch.load(torch_path, map_location=device)
+    state_dict = torch.load(torch_path, map_location=device, weights_only=True)
     common_config = {
         "vocab_size": lm_config.vocab_size,
         "hidden_size": lm_config.hidden_size,
@@ -105,7 +105,7 @@ def convert_transformers2torch(transformers_path, torch_path):
 def convert_merge_base_lora(base_torch_path, lora_path, merged_torch_path, lora_rank=16):
     device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
     lm_model = MiniMindForCausalLM(lm_config).to(device)
-    state_dict = torch.load(base_torch_path, map_location=device)
+    state_dict = torch.load(base_torch_path, map_location=device, weights_only=True)
     lm_model.load_state_dict(state_dict, strict=False)
     apply_lora(lm_model, rank=lora_rank)
     merge_lora(lm_model, lora_path, merged_torch_path)

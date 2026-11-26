@@ -149,7 +149,7 @@ def init_model(lm_config, from_weight='pretrain', tokenizer_path='../model', sav
     if from_weight!= 'none':
         moe_suffix = '_moe' if lm_config.use_moe else ''
         weight_path = f'{save_dir}/{from_weight}_{lm_config.hidden_size}{moe_suffix}.pth'
-        weights = torch.load(weight_path, map_location=device)
+        weights = torch.load(weight_path, map_location=device, weights_only=True)
         model.load_state_dict(weights, strict=False)
 
     get_model_params(model, lm_config)
