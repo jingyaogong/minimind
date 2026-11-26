@@ -1,0 +1,47 @@
+[project]
+name = "minimind"
+dynamic = ["version"]
+description = "兩小時從 0 訓練出你的 64M 大模型。Train your own 64M LLM from scratch in 2 hours."
+readme = "README.md"
+requires-python = ">=3.10.16"
+dependencies = [
+    "datasets==3.6.0",
+    "datasketch==1.6.4",
+    "flask==3.0.3",
+    "flask-cors==4.0.0",
+    "jieba==0.42.1",
+    "jsonlines==4.0.0",
+    "marshmallow==3.22.0",
+    "ngrok==1.4.0",
+    "nltk==3.8",
+    "numpy==1.26.4",
+    "pyarrow>=15.0.0,<26",
+    "openai==1.59.6",
+    "psutil==5.9.8",
+    "protobuf==6.33.5",
+    "pydantic==2.11.5",
+    "rich==13.7.1",
+    "scikit-learn==1.5.1",
+    "sentence-transformers==2.3.1",
+    "sentencepiece==0.2.0",
+    "simhash==2.1.2",
+    "tiktoken==0.10.0",
+    "transformers==4.57.6",
+    "jinja2==3.1.2",
+    "trl==0.13.0",
+    "ujson==5.1.0",
+    "wandb==0.22.3",
+    "streamlit==1.50.0",
+    "einops==0.8.1",
+    "swanlab==0.9.8",
+    "modelscope==1.37.0",
+    "fastapi==0.120.1",
+    "uvicorn==0.38.0",
+    "torch==2.6.0",
+]
+
+[tool.uv]
+package = false
+
+[tool.setuptools]
+py-modules = []
