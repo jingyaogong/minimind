@@ -1,0 +1,5 @@
+# .gitignore 忽略下列文件和目录
+
+#比如minimind\scripts\minimind-3和minimind\scripts\minimind-3-moe
+minimind-3/
+minimind-3-moe/
