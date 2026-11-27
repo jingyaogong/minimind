@@ -286,6 +286,29 @@ python eval_llm.py --load_from ./minimind-3
 python eval_llm.py --load_from ./model --weight full_sft
 ```
 
+### 昇腾单卡运行
+
+MiniMind-3 dense 支持通过 TorchNPU 和 CANN OPP 在单张昇腾 950 上运行推理、预训练和全量 SFT。请按 [TorchNPU 版本配套](https://github.com/Ascend/pytorch/blob/master/COMPATIBILITY.md) 安装与硬件匹配的 CANN（含 OPP）、PyTorch 和 TorchNPU，并在同一环境安装 MiniMind 依赖。
+
+实测环境为 Ascend 950PR、CANN 9.3.0、Python 3.11、PyTorch 2.9.0 和 TorchNPU 2.9.0.post4。
+
+将官方原生权重 `full_sft_768.pth` 放在 `out/`，从仓库根目录运行：
+
+```bash
+source /usr/local/Ascend/cann/set_env.sh
+python eval_llm.py --device npu:0 --dtype float32 --greedy --max_new_tokens 64
+```
+
+使用现有 JSONL 格式。全量 SFT 默认从预训练权重启动。将路径替换为实际数据文件后，在 `trainer/` 中运行：
+
+```bash
+cd trainer
+python train_pretrain.py --device npu:0 --dtype bfloat16 --data_path ../dataset/pretrain_t2t_mini.jsonl
+python train_full_sft.py --device npu:0 --dtype bfloat16 --data_path ../dataset/sft_t2t_mini.jsonl
+```
+
+训练支持 `float32` 和 `bfloat16`。如果环境不支持 BF16，请使用 `--dtype float32`。添加 `--from_resume 1` 可从同一训练任务的 checkpoint 续训。
+
 ### 3'（可选）WebUI
 
 ```bash

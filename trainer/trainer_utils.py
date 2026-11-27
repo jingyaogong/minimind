@@ -64,7 +64,11 @@ def get_lr(current_step, total_steps, lr, warmup_ratio=0.0):
 
 
 # ======== 分布式初始化 ========
-def init_distributed_mode():
+def init_distributed_mode(device=None):
+    if device is not None and device.type == "npu":
+        if int(os.environ.get("WORLD_SIZE", "1")) != 1:
+            raise ValueError("Ascend training supports one NPU per run.")
+        return 0
     if int(os.environ.get("RANK", -1)) == -1:
         return 0  # 非DDP模式
 
@@ -75,10 +79,13 @@ def init_distributed_mode():
 
 
 # ======== 随机种子 ========
-def setup_seed(seed: int):
+def setup_seed(seed: int, device=None):
     random.seed(seed)
     np.random.seed(seed)
     torch.manual_seed(seed)
+    if device is not None and device.type == "npu":
+        torch.npu.manual_seed(seed)
+        return
     torch.cuda.manual_seed(seed)
     torch.cuda.manual_seed_all(seed)
     torch.backends.cudnn.deterministic = True
@@ -128,7 +135,8 @@ def lm_checkpoint(lm_config, weight='full_sft', model=None, optimizer=None, epoc
         torch.save(resume_data, resume_tmp)
         os.replace(resume_tmp, resume_path)
         del state_dict, resume_data
-        torch.cuda.empty_cache()
+        if torch.cuda.is_initialized():
+            torch.cuda.empty_cache()
     else:  # 加载模式
         if os.path.exists(resume_path):
             ckp_data = torch.load(resume_path, map_location='cpu')
@@ -149,7 +157,7 @@ def init_model(lm_config, from_weight='pretrain', tokenizer_path='../model', sav
     if from_weight!= 'none':
         moe_suffix = '_moe' if lm_config.use_moe else ''
         weight_path = f'{save_dir}/{from_weight}_{lm_config.hidden_size}{moe_suffix}.pth'
-        weights = torch.load(weight_path, map_location=device)
+        weights = torch.load(weight_path, map_location='cpu')
         model.load_state_dict(weights, strict=False)
 
     get_model_params(model, lm_config)

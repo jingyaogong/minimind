@@ -5,12 +5,14 @@ import random
 import warnings
 import torch
 from transformers import AutoTokenizer, AutoModelForCausalLM, TextStreamer
+from model.device import inference_dtype, initialize_device
 from model.model_minimind import MiniMindConfig, MiniMindForCausalLM
 from model.model_lora import *
 from trainer.trainer_utils import setup_seed, get_model_params
 warnings.filterwarnings('ignore')
 
 def init_model(args):
+    dtype = inference_dtype(args.device, args.dtype)
     tokenizer = AutoTokenizer.from_pretrained(args.load_from)
     if os.path.basename(os.path.normpath(args.load_from)) == 'model':
         model = MiniMindForCausalLM(MiniMindConfig(
@@ -20,16 +22,15 @@ def init_model(args):
             inference_rope_scaling=args.inference_rope_scaling
         ))
         moe_suffix = '_moe' if args.use_moe else ''
-        ckp = f'./{args.save_dir}/{args.weight}_{args.hidden_size}{moe_suffix}.pth'
-        model.load_state_dict(torch.load(ckp, map_location=args.device), strict=True)
+        ckp = os.path.join(args.save_dir, f'{args.weight}_{args.hidden_size}{moe_suffix}.pth')
+        model.load_state_dict(torch.load(ckp, map_location='cpu'), strict=True)
         if args.lora_weight != 'None':
             apply_lora(model, rank=args.lora_rank)
-            load_lora(model, f'./{args.save_dir}/{args.lora_weight}_{args.hidden_size}{moe_suffix}.pth')
+            load_lora(model, os.path.join(args.save_dir, f'{args.lora_weight}_{args.hidden_size}{moe_suffix}.pth'))
     else:
         model = AutoModelForCausalLM.from_pretrained(args.load_from, trust_remote_code=True)
     get_model_params(model, model.config)
-    if torch.device(args.device).type == 'cuda': model = model.half()
-    return model.eval().to(args.device), tokenizer
+    return model.eval().to(device=args.device, dtype=dtype), tokenizer
 
 def main():
     parser = argparse.ArgumentParser(description="MiniMind模型推理与对话")
@@ -49,7 +50,10 @@ def main():
     parser.add_argument('--historys', default=0, type=int, help="携带历史对话轮数（需为偶数，0表示不携带历史）")
     parser.add_argument('--show_speed', default=1, type=int, help="显示decode速度（tokens/s）")
     parser.add_argument('--device', default='cuda' if torch.cuda.is_available() else 'cpu', type=str, help="运行设备")
+    parser.add_argument('--dtype', default='auto', choices=['auto', 'float32', 'float16', 'bfloat16'], help="推理精度")
+    parser.add_argument('--greedy', action='store_true', help="使用贪心解码")
     args = parser.parse_args()
+    args.device = initialize_device(args.device)
     
     prompts = [
         '你有什么特长？',
@@ -69,7 +73,7 @@ def main():
     
     prompt_iter = prompts if input_mode == 0 else iter(lambda: input('💬: '), '')
     for prompt in prompt_iter:
-        setup_seed(random.randint(0, 31415926))
+        setup_seed(random.randint(0, 31415926), args.device)
         if input_mode == 0: print(f'💬: {prompt}')
         conversation = conversation[-args.historys:] if args.historys else []
         conversation.append({"role": "user", "content": prompt})
@@ -84,7 +88,7 @@ def main():
         st = time.time()
         generated_ids = model.generate(
             inputs=inputs["input_ids"], attention_mask=inputs["attention_mask"],
-            max_new_tokens=args.max_new_tokens, do_sample=True, streamer=streamer,
+            max_new_tokens=args.max_new_tokens, do_sample=not args.greedy, streamer=streamer,
             pad_token_id=tokenizer.pad_token_id, eos_token_id=tokenizer.eos_token_id,
             top_p=args.top_p, temperature=args.temperature, repetition_penalty=1
         )

@@ -10,10 +10,10 @@ import time
 import warnings
 import torch
 import torch.distributed as dist
-from contextlib import nullcontext
 from torch import optim, nn
 from torch.nn.parallel import DistributedDataParallel
 from torch.utils.data import DataLoader, DistributedSampler
+from model.device import initialize_device, training_amp
 from model.model_minimind import MiniMindConfig
 from dataset.lm_dataset import PretrainDataset
 from trainer.trainer_utils import get_lr, Logger, is_main_process, lm_checkpoint, init_distributed_mode, setup_seed, init_model, SkipBatchSampler, resolve_dtype
@@ -25,7 +25,8 @@ def train_epoch(epoch, loader, iters, start_step=0, wandb=None):
     start_time = time.time()
     for step, (input_ids, labels) in enumerate(loader, start=start_step + 1):
         input_ids = input_ids.to(args.device)
-        labels = labels.to(args.device)
+        if args.device.type != "npu":
+            labels = labels.to(args.device)
         lr = get_lr(epoch * iters + step, args.epochs * iters, args.learning_rate, args.warmup_ratio)
         for param_group in optimizer.param_groups:
             param_group['lr'] = lr
@@ -63,7 +64,7 @@ def train_epoch(epoch, loader, iters, start_step=0, wandb=None):
             raw_model = model.module if isinstance(model, DistributedDataParallel) else model
             raw_model = getattr(raw_model, '_orig_mod', raw_model)
             state_dict = raw_model.state_dict()
-            torch.save({k: v.half().cpu() for k, v in state_dict.items()}, ckp)
+            torch.save({k: v.cpu().half() for k, v in state_dict.items()}, ckp)
             lm_checkpoint(lm_config, weight=args.save_weight, model=model, optimizer=optimizer, scaler=scaler, epoch=epoch, step=step, wandb=wandb, save_dir='../checkpoints')
             model.train()
             del state_dict
@@ -100,9 +101,10 @@ if __name__ == "__main__":
     args = parser.parse_args()
 
     # ========== 1. 初始化环境和随机种子 ==========
-    local_rank = init_distributed_mode()
-    if dist.is_initialized(): args.device = f"cuda:{local_rank}"
-    setup_seed(args.seed + (dist.get_rank() if dist.is_initialized() else 0))
+    args.device = initialize_device(args.device)
+    local_rank = init_distributed_mode(args.device)
+    if dist.is_initialized(): args.device = torch.device("cuda", local_rank)
+    setup_seed(args.seed + (dist.get_rank() if dist.is_initialized() else 0), args.device)
     
     # ========== 2. 配置目录、模型参数、检查ckp ==========
     os.makedirs(args.save_dir, exist_ok=True)
@@ -110,10 +112,8 @@ if __name__ == "__main__":
     ckp_data = lm_checkpoint(lm_config, weight=args.save_weight, save_dir='../checkpoints') if args.from_resume==1 else None
     
     # ========== 3. 设置混合精度 ==========
-    device_type = "cuda" if torch.device(args.device).type == "cuda" else "cpu"
     args.dtype = resolve_dtype(args.dtype, args.device)
-    dtype = torch.bfloat16 if args.dtype == "bfloat16" else torch.float16
-    autocast_ctx = nullcontext() if device_type == "cpu" else torch.cuda.amp.autocast(dtype=dtype)
+    autocast_ctx, scaler = training_amp(args.device, args.dtype)
     
     # ========== 4. 配wandb ==========
     wandb = None
@@ -128,7 +128,6 @@ if __name__ == "__main__":
     model, tokenizer = init_model(lm_config, args.from_weight, device=args.device)
     train_ds = PretrainDataset(args.data_path, tokenizer, max_length=args.max_seq_len)
     train_sampler = DistributedSampler(train_ds) if dist.is_initialized() else None
-    scaler = torch.cuda.amp.GradScaler(enabled=(args.dtype == 'float16'))
     optimizer = optim.AdamW(model.parameters(), lr=args.learning_rate)
     
     # ========== 6. 从ckp恢复状态 ==========
@@ -150,10 +149,10 @@ if __name__ == "__main__":
     # ========== 8. 开始训练 ==========
     for epoch in range(start_epoch, args.epochs):
         train_sampler and train_sampler.set_epoch(epoch)
-        setup_seed(args.seed + epoch); indices = torch.randperm(len(train_ds)).tolist()
+        setup_seed(args.seed + epoch, args.device); indices = torch.randperm(len(train_ds)).tolist()
         skip = start_step if (epoch == start_epoch and start_step > 0) else 0
         batch_sampler = SkipBatchSampler(train_sampler or indices, args.batch_size, skip)
-        loader = DataLoader(train_ds, batch_sampler=batch_sampler, num_workers=args.num_workers, pin_memory=True)
+        loader = DataLoader(train_ds, batch_sampler=batch_sampler, num_workers=args.num_workers, pin_memory=args.device.type != "npu")
         if skip > 0: 
             Logger(f'Epoch [{epoch + 1}/{args.epochs}]: 跳过前{start_step}个step，从step {start_step + 1}开始')
             train_epoch(epoch, loader, len(loader) + skip, start_step, wandb)

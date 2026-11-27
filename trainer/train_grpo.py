@@ -20,6 +20,7 @@ from torch.nn.parallel import DistributedDataParallel
 from torch.utils.data import DataLoader, DistributedSampler
 from torch.optim.lr_scheduler import CosineAnnealingLR
 from transformers import AutoModel
+from model.device import initialize_device, training_amp
 from model.model_minimind import MiniMindConfig, MiniMindForCausalLM
 from dataset.lm_dataset import RLAIFDataset
 from trainer.trainer_utils import Logger, is_main_process, lm_checkpoint, init_distributed_mode, setup_seed, SkipBatchSampler, init_model, LMForRewardModel, rep_penalty, resolve_dtype
@@ -231,9 +232,12 @@ if __name__ == "__main__":
     args = parser.parse_args()
 
     # ========== 1. 初始化环境和随机种子 ==========
-    local_rank = init_distributed_mode()
+    npu_device = initialize_device(args.device) if args.device.partition(":")[0] == "npu" else None
+    local_rank = init_distributed_mode(npu_device)
+    if npu_device is not None:
+        args.device = npu_device
     if dist.is_initialized(): args.device = f"cuda:{local_rank}"
-    setup_seed(42 + (dist.get_rank() if dist.is_initialized() else 0))
+    setup_seed(42 + (dist.get_rank() if dist.is_initialized() else 0), npu_device)
     
     # ========== 2. 配置目录、模型参数、检查ckp ==========
     os.makedirs(args.save_dir, exist_ok=True)
@@ -245,7 +249,10 @@ if __name__ == "__main__":
     device_type = "cuda" if torch.device(args.device).type == "cuda" else "cpu"
     args.dtype = resolve_dtype(args.dtype, args.device)
     dtype = torch.bfloat16 if args.dtype == "bfloat16" else torch.float16
-    autocast_ctx = nullcontext() if device_type == "cpu" else torch.cuda.amp.autocast(dtype=dtype)
+    if npu_device is not None:
+        autocast_ctx, _ = training_amp(npu_device, args.dtype)
+    else:
+        autocast_ctx = nullcontext() if device_type == "cpu" else torch.cuda.amp.autocast(dtype=dtype)
     
     # ========== 4. 配wandb ==========
     wandb = None
@@ -306,10 +313,10 @@ if __name__ == "__main__":
     # ========== 8. 开始训练 ==========
     for epoch in range(start_epoch, args.epochs):
         train_sampler and train_sampler.set_epoch(epoch)
-        setup_seed(42 + epoch); indices = torch.randperm(len(train_ds)).tolist()
+        setup_seed(42 + epoch, npu_device); indices = torch.randperm(len(train_ds)).tolist()
         skip = start_step if (epoch == start_epoch and start_step > 0) else 0
         batch_sampler = SkipBatchSampler(train_sampler or indices, args.batch_size, skip)
-        loader = DataLoader(train_ds, batch_sampler=batch_sampler, num_workers=args.num_workers, pin_memory=True)
+        loader = DataLoader(train_ds, batch_sampler=batch_sampler, num_workers=args.num_workers, pin_memory=npu_device is None)
         if skip > 0: 
             Logger(f'Epoch [{epoch + 1}/{args.epochs}]: 跳过前{start_step}个step，从step {start_step + 1}开始')
             grpo_train_epoch(epoch, loader, len(loader) + skip, rollout_engine, ref_model, reward_model, start_step, wandb, use_sglang = (args.rollout_engine == "sglang"))
