@@ -12,6 +12,7 @@ from transformers import AutoModelForCausalLM, AutoTokenizer, TextIteratorStream
 
 sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), '..')))
 from trainer.trainer_utils import safe_math_eval
+from scripts.sanitize import sanitize_messages
 
 st.set_page_config(page_title="MiniMind", initial_sidebar_state="collapsed")
 
@@ -360,7 +361,7 @@ def main():
             template_kwargs["open_thinking"] = True
         if tools:
             template_kwargs["tools"] = tools
-        new_prompt = tokenizer.apply_chat_template(st.session_state.chat_messages, **template_kwargs)
+        new_prompt = tokenizer.apply_chat_template(sanitize_messages(st.session_state.chat_messages, tokenizer), **template_kwargs)
 
         inputs = tokenizer(new_prompt, return_tensors="pt", truncation=True).to(device)
 
@@ -402,7 +403,7 @@ def main():
                     pass
             full_answer += "\n" + "\n".join(tool_results) + "\n"
             placeholder.markdown(process_assistant_content(full_answer, is_streaming=True), unsafe_allow_html=True)
-            new_prompt = tokenizer.apply_chat_template(st.session_state.chat_messages, **template_kwargs)
+            new_prompt = tokenizer.apply_chat_template(sanitize_messages(st.session_state.chat_messages, tokenizer), **template_kwargs)
             inputs = tokenizer(new_prompt, return_tensors="pt", truncation=True).to(device)
             streamer = TextIteratorStreamer(tokenizer, skip_prompt=True, skip_special_tokens=True)
             generation_kwargs["input_ids"] = inputs.input_ids
