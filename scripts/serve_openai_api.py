@@ -45,6 +45,7 @@ def init_model(args):
         model = AutoModelForCausalLM.from_pretrained(args.load_from, trust_remote_code=True)
     print(f'MiniMind模型参数量: {sum(p.numel() for p in model.parameters()) / 1e6:.2f} M(illion)')
     if torch.device(device).type == 'cuda': model = model.half()
+    elif torch.device(device).type == 'mps': model = model.to(torch.bfloat16)  # MPS 推理用 bfloat16
     return model.eval().to(device), tokenizer
 
 
@@ -270,7 +271,7 @@ if __name__ == "__main__":
     parser.add_argument('--max_seq_len', default=8192, type=int, help="最大序列长度")
     parser.add_argument('--use_moe', default=0, type=int, choices=[0, 1], help="是否使用MoE架构（0=否，1=是）")
     parser.add_argument('--inference_rope_scaling', default=False, action='store_true', help="启用RoPE位置编码外推（4倍，仅解决位置编码问题）")
-    parser.add_argument('--device', default='cuda' if torch.cuda.is_available() else 'cpu', type=str, help="运行设备")
+    parser.add_argument('--device', default='cuda' if torch.cuda.is_available() else ('mps' if torch.backends.mps.is_available() else 'cpu'), type=str, help="运行设备（默认按 cuda > mps > cpu 自动选择）")
     args = parser.parse_args()
     device = args.device
     model, tokenizer = init_model(args)

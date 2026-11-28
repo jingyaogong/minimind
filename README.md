@@ -265,6 +265,24 @@ git clone --depth 1 https://github.com/jingyaogong/minimind
 cd minimind && pip install -r requirements.txt -i https://mirrors.aliyun.com/pypi/simple
 ```
 
+### Mac (Apple Silicon / MPS) 训练说明
+
+本 fork 已适配 Apple Silicon（M 系芯片）的 MPS 后端训练，无需 NVIDIA 显卡即可完整跑通 Pretrain → SFT → DPO 全流程：
+
+- **设备自动选择**：所有训练/推理脚本默认按 `cuda > mps > cpu` 自动挑选设备，Mac 上无需手动传 `--device mps`
+- **精度自动调整**：MPS 上自动使用 `bfloat16`（如手动指定 `float16` 会被自动回退为 `bfloat16`；不满足 macOS 14+/PyTorch 2.3+ 时回退 `float32`）
+- **已知限制**：`torch.compile` 在 MPS 后端会被自动关闭；DDP 多卡（NCCL）不可用，单机直接 `python train_xxx.py` 即可
+
+```bash
+# Mac 上先安装 PyTorch（MPS 后端，PyTorch >= 2.3 且 macOS >= 14 才支持 bfloat16）
+pip3 install torch torchvision
+# 直接训练（自动检测 MPS）
+python train_pretrain.py --epochs 2 --batch_size 32
+python train_full_sft.py --epochs 2 --batch_size 16
+# 推理验证
+python eval_llm.py --load_from ./model --weight full_sft
+```
+
 ## Ⅰ 🚀 模型推理
 
 ### 1' 下载模型

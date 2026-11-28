@@ -20,7 +20,7 @@ from torch.nn.utils import clip_grad_norm_
 from torch.optim.lr_scheduler import CosineAnnealingLR
 from model.model_minimind import MiniMindConfig, MiniMindForCausalLM
 from dataset.lm_dataset import RLAIFDataset
-from trainer.trainer_utils import Logger, is_main_process, lm_checkpoint, init_distributed_mode, setup_seed, SkipBatchSampler, init_model, LMForRewardModel, rep_penalty, resolve_dtype
+from trainer.trainer_utils import Logger, is_main_process, lm_checkpoint, init_distributed_mode, setup_seed, SkipBatchSampler, init_model, LMForRewardModel, rep_penalty, resolve_dtype, pick_device, make_autocast_ctx
 from trainer.rollout_engine import create_rollout_engine
 
 warnings.filterwarnings('ignore')
@@ -305,7 +305,7 @@ if __name__ == "__main__":
     parser.add_argument("--batch_size", type=int, default=2, help="batch size")
     parser.add_argument("--learning_rate", type=float, default=3e-7, help="Actor学习率")
     parser.add_argument("--critic_learning_rate", type=float, default=5e-7, help="Critic学习率")
-    parser.add_argument("--device", type=str, default="cuda:0" if torch.cuda.is_available() else "cpu", help="训练设备")
+    parser.add_argument("--device", type=str, default=pick_device(), help="训练设备（默认按 cuda > mps > cpu 自动选择）")
     parser.add_argument("--dtype", type=str, default="bfloat16", help="混合精度类型")
     parser.add_argument("--num_workers", type=int, default=0 if os.name == 'nt' else 8, help="数据加载线程数")
     parser.add_argument("--accumulation_steps", type=int, default=1, help="梯度累积步数")
@@ -354,10 +354,9 @@ if __name__ == "__main__":
     ckp_data = lm_checkpoint(lm_config, weight=args.save_weight, save_dir='../checkpoints') if args.from_resume==1 else None
     
     # ========== 3. 设置混合精度 ==========
-    device_type = "cuda" if torch.device(args.device).type == "cuda" else "cpu"
+    device_type = torch.device(args.device).type  # cuda | mps | cpu
     args.dtype = resolve_dtype(args.dtype, args.device)
-    dtype = torch.bfloat16 if args.dtype == "bfloat16" else torch.float16
-    autocast_ctx = nullcontext() if device_type == "cpu" else torch.cuda.amp.autocast(dtype=dtype)
+    autocast_ctx = make_autocast_ctx(args.dtype, args.device)
     
     # ========== 4. 配wandb ==========
     wandb = None
@@ -380,7 +379,7 @@ if __name__ == "__main__":
     critic_model = CriticModel(lm_config)
     critic_model.load_state_dict(state_dict, strict=False)
     critic_model = critic_model.to(args.device)
-    reward_model = LMForRewardModel(args.reward_model_path, device=args.device, dtype=torch.float16)
+    reward_model = LMForRewardModel(args.reward_model_path, device=args.device, dtype=torch.bfloat16 if device_type == "mps" else torch.float16)
     # Rollout引擎
     rollout_engine = create_rollout_engine(
         engine_type=args.rollout_engine,
@@ -416,8 +415,11 @@ if __name__ == "__main__":
     
     # ========== 7. 编译和分布式包装 ==========
     if args.use_compile == 1:
-        actor_model = torch.compile(actor_model)
-        Logger('torch.compile enabled')
+        if device_type == "mps":
+            Logger('torch.compile 在 MPS 后端支持有限，已自动关闭')
+        else:
+            actor_model = torch.compile(actor_model)
+            Logger('torch.compile enabled')
     if dist.is_initialized():
         # freqs_cos/freqs_sin 各 rank 由 config 确定性算出，默认每步广播一次纯属浪费
         actor_model = DistributedDataParallel(actor_model, device_ids=[local_rank], broadcast_buffers=False)
@@ -430,7 +432,7 @@ if __name__ == "__main__":
         setup_seed(42 + epoch); indices = torch.randperm(len(train_ds)).tolist()
         skip = start_step if (epoch == start_epoch and start_step > 0) else 0
         batch_sampler = SkipBatchSampler(train_sampler or indices, args.batch_size, skip)
-        loader = DataLoader(train_ds, batch_sampler=batch_sampler, num_workers=args.num_workers, pin_memory=True)
+        loader = DataLoader(train_ds, batch_sampler=batch_sampler, num_workers=args.num_workers, pin_memory=(device_type == "cuda"))
         if skip > 0: 
             Logger(f'Epoch [{epoch + 1}/{args.epochs}]: 跳过前{start_step}个step，从step {start_step + 1}开始')
             ppo_train_epoch(epoch, loader, len(loader) + skip, rollout_engine, ref_model, actor_scheduler, critic_scheduler, reward_model, start_step, wandb)
