@@ -1684,7 +1684,7 @@ minimind-3-exam 不是更大的基座模型，也几乎没有额外注入新知�
 
 * 启动服务端
     ```bash
-    cd scripts && python serve_openai_api.py
+    cd scripts && python serve_openai_api.py --load_from ../minimind-3
     ```
 * 测试服务接口
     ```bash

@@ -1684,7 +1684,7 @@ What this experiment suggests is simple: for this kind of benchmark, the bottlen
 
 * Start the server
     ```bash
-    cd scripts && python serve_openai_api.py
+    cd scripts && python serve_openai_api.py --load_from ../minimind-3
     ```
 * Test the service interface
     ```bash
