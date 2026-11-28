@@ -29,6 +29,7 @@ def init_model(args):
         model = AutoModelForCausalLM.from_pretrained(args.load_from, trust_remote_code=True)
     get_model_params(model, model.config)
     if torch.device(args.device).type == 'cuda': model = model.half()
+    elif torch.device(args.device).type == 'mps': model = model.to(torch.bfloat16)  # MPS 推理用 bfloat16（float16 精度在部分算子上不稳）
     return model.eval().to(args.device), tokenizer
 
 def main():
@@ -48,7 +49,7 @@ def main():
     parser.add_argument('--open_thinking', default=0, type=int, help="是否开启自适应思考（0=否，1=是）")
     parser.add_argument('--historys', default=0, type=int, help="携带历史对话轮数（需为偶数，0表示不携带历史）")
     parser.add_argument('--show_speed', default=1, type=int, help="显示decode速度（tokens/s）")
-    parser.add_argument('--device', default='cuda' if torch.cuda.is_available() else 'cpu', type=str, help="运行设备")
+    parser.add_argument('--device', default='cuda' if torch.cuda.is_available() else ('mps' if torch.backends.mps.is_available() else 'cpu'), type=str, help="运行设备（默认按 cuda > mps > cpu 自动选择）")
     args = parser.parse_args()
     
     prompts = [

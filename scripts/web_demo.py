@@ -71,7 +71,7 @@ st.markdown("""
     </style>
 """, unsafe_allow_html=True)
 
-device = "cuda" if torch.cuda.is_available() else "cpu"
+device = "cuda" if torch.cuda.is_available() else ("mps" if torch.backends.mps.is_available() else "cpu")  # Mac 自动走 MPS
 
 # 多语言文本
 LANG_TEXTS = {
@@ -210,6 +210,7 @@ def load_model_tokenizer(model_path):
         trust_remote_code=True
     )
     if torch.device(device).type == 'cuda': model = model.half()
+    elif torch.device(device).type == 'mps': model = model.to(torch.bfloat16)  # MPS 推理用 bfloat16
     model = model.eval().to(device)
     return model, tokenizer
 

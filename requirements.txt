@@ -35,3 +35,4 @@ uvicorn==0.38.0
 # torchvision==0.21.0
 # peft==0.7.1
 # matplotlib==3.10.0
+# Mac (Apple Silicon/MPS)：pip3 install torch torchvision（PyTorch>=2.3 且 macOS>=14 才支持 bfloat16）

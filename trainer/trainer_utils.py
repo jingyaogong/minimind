@@ -10,6 +10,7 @@ import operator
 import random
 import re
 import math
+from contextlib import nullcontext
 import numpy as np
 import torch
 import torch.distributed as dist
@@ -43,14 +44,41 @@ def Logger(content):
         print(content)
 
 
+# ======== 设备选择（Mac MPS 适配）========
+def pick_device():
+    """按 CUDA > MPS > CPU 顺序自动选择可用设备"""
+    if torch.cuda.is_available():
+        return "cuda:0"
+    if torch.backends.mps.is_available():
+        return "mps"
+    return "cpu"
+
+
 # ======== 混合精度类型 ========
 def resolve_dtype(dtype, device):
-    if dtype != "bfloat16" or not torch.cuda.is_available() or torch.device(device).type != "cuda":
+    device_type = torch.device(device).type
+    if device_type == "mps":  # MPS：float16+GradScaler 的缩放算子支持不全，统一走 bfloat16/float32
+        if dtype == "float16":
+            Logger("MPS 后端不建议 float16（GradScaler 缩放算子支持不全），已回退为 bfloat16")
+            dtype = "bfloat16"
+        if dtype == "bfloat16" and not (hasattr(torch.backends.mps, "is_macos_or_newer") and torch.backends.mps.is_macos_or_newer(14, 0)):
+            Logger("当前 macOS/PyTorch 版本的 MPS 不支持 bfloat16，已回退为 float32")
+            dtype = "float32"
+        return dtype
+    if dtype != "bfloat16" or not torch.cuda.is_available() or device_type != "cuda":
         return dtype
     if torch.cuda.is_bf16_supported(including_emulation=False):
         return dtype
     Logger(f"{torch.cuda.get_device_name(device)} 不原生支持 bfloat16，已回退为 float16")
     return "float16"
+
+
+# ======== 混合精度上下文 ========
+def make_autocast_ctx(dtype, device):
+    """按设备生成 autocast 上下文：CPU 与 float32 关闭混合精度，CUDA/MPS 用 torch.autocast"""
+    if torch.device(device).type == "cpu" or dtype == "float32":
+        return nullcontext()
+    return torch.autocast(device_type=torch.device(device).type, dtype=torch.bfloat16 if dtype == "bfloat16" else torch.float16)
 
 
 # ======== 学习率 ========
@@ -67,6 +95,9 @@ def get_lr(current_step, total_steps, lr, warmup_ratio=0.0):
 def init_distributed_mode():
     if int(os.environ.get("RANK", -1)) == -1:
         return 0  # 非DDP模式
+
+    if not torch.cuda.is_available():
+        raise RuntimeError("本项目 DDP 多卡训练依赖 NCCL（仅限 NVIDIA GPU）。Mac 上请在单设备（MPS/CPU）直接运行，不要用 torchrun 启动")
 
     dist.init_process_group(backend="nccl")
     local_rank = int(os.environ["LOCAL_RANK"])
@@ -128,7 +159,10 @@ def lm_checkpoint(lm_config, weight='full_sft', model=None, optimizer=None, epoc
         torch.save(resume_data, resume_tmp)
         os.replace(resume_tmp, resume_path)
         del state_dict, resume_data
-        torch.cuda.empty_cache()
+        if torch.cuda.is_available():
+            torch.cuda.empty_cache()
+        elif torch.backends.mps.is_available():
+            torch.mps.empty_cache()
     else:  # 加载模式
         if os.path.exists(resume_path):
             ckp_data = torch.load(resume_path, map_location='cpu')
@@ -142,7 +176,8 @@ def lm_checkpoint(lm_config, weight='full_sft', model=None, optimizer=None, epoc
 
 
 # ======== 模型初始化 ========
-def init_model(lm_config, from_weight='pretrain', tokenizer_path='../model', save_dir='../out', device='cuda'):
+def init_model(lm_config, from_weight='pretrain', tokenizer_path='../model', save_dir='../out', device=None):
+    device = device or pick_device()
     tokenizer = AutoTokenizer.from_pretrained(tokenizer_path)
     model = MiniMindForCausalLM(lm_config)
 

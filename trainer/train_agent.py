@@ -23,7 +23,7 @@ from torch.optim.lr_scheduler import CosineAnnealingLR
 from transformers import AutoTokenizer
 from model.model_minimind import MiniMindConfig, MiniMindForCausalLM
 from dataset.lm_dataset import AgentRLDataset
-from trainer.trainer_utils import Logger, is_main_process, lm_checkpoint, init_distributed_mode, setup_seed, SkipBatchSampler, init_model, LMForRewardModel, safe_math_eval, rep_penalty, resolve_dtype
+from trainer.trainer_utils import Logger, is_main_process, lm_checkpoint, init_distributed_mode, setup_seed, SkipBatchSampler, init_model, LMForRewardModel, safe_math_eval, rep_penalty, resolve_dtype, pick_device, make_autocast_ctx
 from trainer.rollout_engine import create_rollout_engine, compute_per_token_logps
 
 warnings.filterwarnings('ignore')
@@ -369,7 +369,7 @@ if __name__ == "__main__":
     parser.add_argument("--epochs", type=int, default=1, help="训练轮数")
     parser.add_argument("--batch_size", type=int, default=2, help="批次大小")
     parser.add_argument("--learning_rate", type=float, default=3e-7, help="学习率")
-    parser.add_argument("--device", type=str, default="cuda:0" if torch.cuda.is_available() else "cpu", help="训练设备")
+    parser.add_argument("--device", type=str, default=pick_device(), help="训练设备（默认按 cuda > mps > cpu 自动选择）")
     parser.add_argument("--dtype", type=str, default="bfloat16", help="数据类型 bfloat16/float16")
     parser.add_argument("--num_workers", type=int, default=0 if os.name == 'nt' else 8, help="数据加载线程数")
     parser.add_argument("--accumulation_steps", type=int, default=1, help="梯度累积步数")
@@ -412,10 +412,9 @@ if __name__ == "__main__":
                                max_seq_len=args.max_seq_len + args.max_gen_len, use_moe=bool(args.use_moe))
     ckp_data = lm_checkpoint(lm_config, weight=args.save_weight, save_dir='../checkpoints') if args.from_resume == 1 else None
 
-    device_type = "cuda" if torch.device(args.device).type == "cuda" else "cpu"
+    device_type = torch.device(args.device).type  # cuda | mps | cpu
     args.dtype = resolve_dtype(args.dtype, args.device)
-    dtype = torch.bfloat16 if args.dtype == "bfloat16" else torch.float16
-    autocast_ctx = nullcontext() if device_type == "cpu" else torch.cuda.amp.autocast(dtype=dtype)
+    autocast_ctx = make_autocast_ctx(args.dtype, args.device)
 
     wandb = None
     if args.use_wandb and is_main_process():
@@ -429,7 +428,7 @@ if __name__ == "__main__":
     ref_model, _ = init_model(lm_config, args.from_weight, device=args.device)
     ref_model = ref_model.eval().requires_grad_(False)
 
-    reward_model = LMForRewardModel(args.reward_model_path, device=args.device, dtype=torch.float16)
+    reward_model = LMForRewardModel(args.reward_model_path, device=args.device, dtype=torch.bfloat16 if device_type == "mps" else torch.float16)
     Logger(f'Loaded reward model from {args.reward_model_path}')
     # Rollout引擎
     rollout_engine = create_rollout_engine(
@@ -460,8 +459,11 @@ if __name__ == "__main__":
         start_step = ckp_data.get('step', 0)
 
     if args.use_compile == 1:
-        model = torch.compile(model)
-        Logger('torch.compile enabled')
+        if device_type == "mps":
+            Logger('torch.compile 在 MPS 后端支持有限，已自动关闭')
+        else:
+            model = torch.compile(model)
+            Logger('torch.compile enabled')
     if dist.is_initialized():
         # 同 train_ppo：RoPE buffer 各 rank 一致，每步广播纯属浪费
         model = DistributedDataParallel(model, device_ids=[local_rank], broadcast_buffers=False)
@@ -472,7 +474,7 @@ if __name__ == "__main__":
         setup_seed(42 + epoch); indices = torch.randperm(len(train_ds)).tolist()
         skip = start_step if (epoch == start_epoch and start_step > 0) else 0
         batch_sampler = SkipBatchSampler(train_sampler or indices, args.batch_size, skip)
-        loader = DataLoader(train_ds, batch_sampler=batch_sampler, num_workers=args.num_workers, pin_memory=True, collate_fn=collate_fn)
+        loader = DataLoader(train_ds, batch_sampler=batch_sampler, num_workers=args.num_workers, pin_memory=(device_type == "cuda"), collate_fn=collate_fn)
         if skip > 0:
             Logger(f'Epoch [{epoch+1}/{args.epochs}]: skip {start_step} steps')
             rl_train_epoch(epoch, loader, len(loader) + skip, rollout_engine, ref_model, reward_model, start_step, wandb, use_sglang = (args.rollout_engine == "sglang"))
