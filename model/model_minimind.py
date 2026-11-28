@@ -248,12 +248,17 @@ class MiniMindForCausalLM(PreTrainedModel, GenerationMixin):
         self.post_init()
 
     def forward(self, input_ids, attention_mask=None, past_key_values=None, use_cache=False, logits_to_keep=0, labels=None, **kwargs):
+        shifted_labels = None
+        if labels is not None and input_ids.device.type == "npu" and labels.device.type == "cpu":
+            # Materialize the shifted targets on the host before async NPU loss execution.
+            shifted_labels = labels[..., 1:].contiguous().to(input_ids.device)
         hidden_states, past_key_values, aux_loss = self.model(input_ids, attention_mask, past_key_values, use_cache, **kwargs)
         slice_indices = slice(-logits_to_keep, None) if isinstance(logits_to_keep, int) else logits_to_keep
         logits = self.lm_head(hidden_states[:, slice_indices, :])
         loss = None
         if labels is not None:
-            x, y = logits[..., :-1, :].contiguous(), labels[..., 1:].contiguous()
+            x = logits[..., :-1, :].contiguous()
+            y = labels[..., 1:].contiguous() if shifted_labels is None else shifted_labels
             loss = F.cross_entropy(x.view(-1, x.size(-1)), y.view(-1), ignore_index=-100)
         return MoeCausalLMOutputWithPast(loss=loss, aux_loss=aux_loss, logits=logits, past_key_values=past_key_values, hidden_states=hidden_states)
     

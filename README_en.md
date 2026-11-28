@@ -285,6 +285,29 @@ python eval_llm.py --load_from ./minimind-3
 python eval_llm.py --load_from ./model --weight full_sft
 ```
 
+### Single-device Ascend
+
+MiniMind-3 dense supports inference, pretraining, and full SFT on one Ascend 950 device through TorchNPU and CANN OPP. Follow the [TorchNPU compatibility guide](https://github.com/Ascend/pytorch/blob/master/COMPATIBILITY.en.md) to install CANN with OPP, PyTorch, and TorchNPU for your hardware, then install the MiniMind dependencies in that environment.
+
+Validated with Ascend 950PR, CANN 9.3.0, Python 3.11, PyTorch 2.9.0, and TorchNPU 2.9.0.post4.
+
+Place the official native `full_sft_768.pth` checkpoint in `out/` and run from the repository root:
+
+```bash
+source /usr/local/Ascend/cann/set_env.sh
+python eval_llm.py --device npu:0 --dtype float32 --greedy --max_new_tokens 64
+```
+
+Use the existing JSONL data format. Full SFT loads the pretraining weights by default. Replace the paths below with your datasets and run from `trainer/`:
+
+```bash
+cd trainer
+python train_pretrain.py --device npu:0 --dtype bfloat16 --data_path ../dataset/pretrain_t2t_mini.jsonl
+python train_full_sft.py --device npu:0 --dtype bfloat16 --data_path ../dataset/sft_t2t_mini.jsonl
+```
+
+Training supports `float32` and `bfloat16`. Use `--dtype float32` if BF16 is unavailable. Add `--from_resume 1` to resume the same training run from its checkpoint.
+
 ### 3' (Optional) WebUI
 
 ```bash
