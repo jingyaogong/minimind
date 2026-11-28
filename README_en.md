@@ -649,6 +649,7 @@ For reference, GPT-3's parameter settings are as follows:
 - **Cost unit**: CNY (￥); `7￥ ≈ 1 USD`
 - **3090 rental price**: approximately `1.3￥/h` (actual prices may vary)
 - **Note**: The following results are empirical estimates for the `minimind` model on a single `3090` GPU, intended to make the training cost easy to estimate
+- **Epochs and sequence length**: The pretraining column estimates `1 epoch`. `trainer/train_pretrain.py` defaults to `--epochs 2` and `--max_seq_len 340`; when training with the default command, estimate wall-clock time from those actual settings rather than reading the `1 epoch` values in the table directly.
 
 | Model Name | params | pretrain_t2t_mini | sft_t2t_mini | toolcall | RLAIF |
 |------------|--------|-------------------|--------------|----------|-------|
